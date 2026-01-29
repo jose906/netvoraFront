@@ -1,0 +1,295 @@
+<section class="dash">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="title">
+      <h2>Estadísticas — {{ categoria || 'Categoría' }}</h2>
+      <p class="sub">Total, entidades, timeline, sentimientos, usuarios y SentVsUser.</p>
+    </div>
+
+    <div class="actions">
+      <button class="btn" (click)="cargarDatos()" [disabled]="loading">
+        {{ loading ? 'Cargando…' : 'Actualizar' }}
+      </button>
+      <button class="btn ghost" (click)="downloadAllCharts()" [disabled]="loading">
+        Descargar todo
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="errorMsg" class="alert">{{ errorMsg }}</div>
+
+  <!-- KPI row -->
+  <div class="kpi">
+    <div class="kpi-main">
+      <div class="kpi-label">Total posts</div>
+      <div class="kpi-value">{{ totalPosts | number }}</div>
+      <div class="kpi-hint">
+        {{ startDate ? (startDate | date:'yyyy-MM-dd') : '—' }}
+        →
+        {{ endDate ? (endDate | date:'yyyy-MM-dd') : '—' }}
+      </div>
+    </div>
+
+    <div class="kpi-tops">
+      <div class="topbox">
+        <div class="top-title">Top 3 Locación</div>
+        <ul class="toplist">
+          <li *ngFor="let it of topLocacion; trackBy: trackByEntidad">
+            <span class="name">{{ it.entidad }}</span>
+            <span class="val">{{ it.total | number }}</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="topbox">
+        <div class="top-title">Top 3 Organización</div>
+        <ul class="toplist">
+          <li *ngFor="let it of topOrganizacion; trackBy: trackByEntidad">
+            <span class="name">{{ it.entidad }}</span>
+            <span class="val">{{ it.total | number }}</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="topbox">
+        <div class="top-title">Top 3 Persona</div>
+        <ul class="toplist">
+          <li *ngFor="let it of topPersona; trackBy: trackByEntidad">
+            <span class="name">{{ it.entidad }}</span>
+            <span class="val">{{ it.total | number }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="card chart">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Línea de tiempo</div>
+        <div class="card-sub">Posts por día</div>
+      </div>
+      <button class="iconbtn" (click)="downloadChart($event)" title="Descargar gráfico">⬇</button>
+    </div>
+
+    <div class="chart-wrap">
+      <canvas
+        baseChart
+        [type]="'line'"
+        [data]="timelineData"
+        [options]="lineOptions">
+      </canvas>
+    </div>
+  </div>
+
+  <!-- Row: Sentimientos | SentVsUser -->
+  <div class="grid2">
+
+    <!-- Sentimientos -->
+    <div class="card chart">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Sentimientos</div>
+          <div class="card-sub">Distribución general</div>
+        </div>
+
+        <div class="right">
+          <select class="select" [(ngModel)]="sentimentChartType">
+            <option *ngFor="let t of sentimentTypeOptions" [ngValue]="t">{{ t }}</option>
+          </select>
+          <button class="iconbtn" (click)="downloadChart($event)" title="Descargar gráfico">⬇</button>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas
+          baseChart
+          [type]="sentimentChartType"
+          [data]="sentimentData"
+          [options]="commonOptions">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- SentVsUser -->
+    <div class="card chart">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Sentimiento vs Usuario</div>
+          <div class="card-sub">Barras apiladas por medio</div>
+        </div>
+
+        <button class="iconbtn" (click)="downloadChart($event)" title="Descargar gráfico">⬇</button>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas
+          baseChart
+          [type]="'bar'"
+          [data]="sentVsUserData"
+          [options]="sentVsUserOptions">
+        </canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ✅ BLOQUE INFERIOR: 1) Índice chart FULL WIDTH / 2) dos listas lado a lado / 3) wordcloud -->
+  <div class="bottom-grid">
+
+    <!-- 1) ÍNDICE (GRÁFICO) FULL WIDTH -->
+    <div class="card extra-chart-wide chart">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Índice de Sentimientos por usuario</div>
+          <div class="card-sub">Ranking por índice (Top) — gráfico</div>
+        </div>
+
+        <button class="iconbtn" (click)="downloadChart($event)" title="Descargar gráfico">⬇</button>
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="!userIndice.length" class="placeholder-body">
+        <div class="empty-box">
+          <div class="empty-icon">📈</div>
+          <div class="empty-text">Sin datos</div>
+          <div class="empty-sub">No llegó user_indice desde el backend</div>
+        </div>
+      </div>
+
+      <!-- GRÁFICO -->
+      <div *ngIf="userIndice.length" class="chart-wrap extra-chart">
+        <canvas
+          baseChart
+          [type]="'bar'"
+          [data]="userIndiceChartData"
+          [options]="userIndiceChartOptions">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- 2) LISTAS LADO A LADO -->
+    <div class="lists-row">
+
+      <!-- Top users -->
+      <div class="card topusers-card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Top users</div>
+            <div class="card-sub">Mayor volumen en el rango</div>
+          </div>
+        </div>
+
+        <ol class="user-list">
+          <li *ngFor="let u of topUsers; trackBy: trackByUser">
+            <div class="u-left">
+              <span class="u-name">{{ u.usuario }}</span>
+            </div>
+
+            <div class="u-right">
+              <span class="u-val">{{ u.total | number }}</span>
+              <span class="u-bar" [style.width.%]="calcUserBar(u.total)"></span>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <!-- Detalle índice -->
+       <div class="card topusers-card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Detalle del índice</div>
+          <div class="card-sub">Pos / Neg / Total / Índice</div>
+        </div>
+      </div>
+
+      <div *ngIf="!userIndice.length" class="placeholder-body small">
+        <div class="empty-box">
+          <div class="empty-icon">📋</div>
+          <div class="empty-text">Sin datos</div>
+          <div class="empty-sub">No llegó user_indice desde el backend</div>
+        </div>
+      </div>
+
+      <div *ngIf="userIndice.length" class="extra-table compact">
+        <div class="t-head">
+          <span>Usuario</span>
+          <span class="t-num">Pos</span>
+          <span class="t-num">Neg</span>
+          <span class="t-num">Tot</span>
+          <span class="t-num">Índice</span>
+        </div>
+
+        <div
+          class="t-row"
+          *ngFor="let it of userIndice; trackBy: trackByIndiceUser"
+        >
+          <!-- 👇 Usuario legible -->
+          <div class="t-user multiline" title="{{ it.TweetUser }}">
+            {{ it.TweetUser }}
+          </div>
+
+          <div class="t-num">{{ it.pos | number }}</div>
+          <div class="t-num">{{ it.neg | number }}</div>
+          <div class="t-num t-strong">{{ it.total | number }}</div>
+
+          <!-- 👇 Índice visual distinto -->
+          <div class="t-ind alt">
+            <span class="t-ind-val">{{ formatIndice(it.indice) }}</span>
+            <span
+              class="t-ind-bar"
+              [style.width.%]="calcIndiceBar(it.indice)"
+            ></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+     
+
+      
+    </div>
+
+    <!-- 3) WordCloud FULL WIDTH (igual) -->
+    <div class="card wordcloud-card wordcloud-wide">
+      <div class="card-head">
+        <div>
+          <div class="card-title">WordCloud</div>
+          <div class="card-sub">Términos más frecuentes</div>
+        </div>
+
+        <button
+          class="iconbtn accent"
+          (click)="loadWordcloud()"
+          [disabled]="loadingWordcloud"
+          title="Actualizar WordCloud">
+          🔄
+        </button>
+      </div>
+
+      <div class="wordcloud-body">
+        <div *ngIf="loadingWordcloud" class="wc-loading">
+          <div class="spinner"></div>
+          <span>Generando wordcloud…</span>
+        </div>
+
+        <img
+          *ngIf="!loadingWordcloud && wordcloudUrl"
+          [src]="wordcloudUrl"
+          alt="wordcloud"
+          class="wordcloud-img"
+        />
+
+        <div *ngIf="!loadingWordcloud && !wordcloudUrl" class="wc-empty">
+          <div class="empty-icon">☁️</div>
+          <div class="empty-text">Sin datos suficientes</div>
+          <div class="empty-sub">Prueba otro rango o categoría</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</section>

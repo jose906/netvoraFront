@@ -1,0 +1,162 @@
+<div class="container">
+
+  <!-- 🔹 Encabezado principal mejorado -->
+  <div class="header">
+    <div class="header-content">
+      <h1>Noticias Seguridad</h1>
+      <p class="subtitle">
+        Explora las últimas noticias clasificadas por fecha y usuarios.
+        Filtra los resultados fácilmente y mantente al tanto de los temas más relevantes.
+      </p>
+
+      <ul class="info-list">
+        <li>⚡ Resultados en tiempo real</li>
+        <li>📊 Visualiza tendencias por usuario</li>
+        <li>🔍 Filtrado inteligente por fecha</li>
+        <li>📚 Compatible con múltiples formatos</li>
+        <li>📉 Análisis de sentimientos incluido</li>
+      </ul>
+    </div>
+
+    <div class="header-image">
+      <img src="https://via.placeholder.com/180x120" alt="Logo o imagen">
+    </div>
+  </div>
+
+  <!-- 🔹 Filtros -->
+  <div class="filters-section">
+
+    <div class="filters-header">
+      <h3>
+        <mat-icon>tune</mat-icon>
+        Filtros
+      </h3>
+    </div>
+
+    <div class="filters-row">
+      <!-- Fecha -->
+      <mat-form-field appearance="outline" class="filter-item">
+        <mat-label>Rango de fechas</mat-label>
+        <mat-date-range-input [rangePicker]="picker">
+          <input matStartDate placeholder="Inicio" [(ngModel)]="startDate">
+          <input matEndDate placeholder="Fin" [(ngModel)]="endDate">
+        </mat-date-range-input>
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-date-range-picker #picker></mat-date-range-picker>
+      </mat-form-field>
+
+      <!-- Usuarios -->
+      <mat-form-field appearance="fill" class="filter-item">
+        <mat-label>Seleccionar usuarios</mat-label>
+        <mat-select [(ngModel)]="selectedUsers" multiple>
+          <mat-option *ngFor="let user of users" [value]="user.idTweetUser">
+            {{ user.TweetUser }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Búsqueda por texto -->
+      <mat-form-field appearance="outline" class="filter-item">
+        <mat-label>Buscar</mat-label>
+        <input matInput [(ngModel)]="searchText" placeholder="Texto de búsqueda">
+      </mat-form-field>
+
+      <!-- Botones -->
+      <div class="filter-buttons">
+        <button mat-flat-button color="primary" class="filter-btn"
+                (click)="filtrar()">
+          <mat-icon>search</mat-icon>
+          Filtrar
+        </button>
+
+        <button mat-flat-button color="accent" class="filter-btn"
+                >
+          <mat-icon>refresh</mat-icon>
+          Limpiar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔹 Estado de carga -->
+  <div *ngIf="cargando" class="loading">⏳ Cargando noticias...</div>
+
+  <!-- 🔹 Error -->
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <!-- 🔹 Lista de noticias -->
+  <div *ngIf="!cargando && datos.length" class="news-container">
+  <div *ngFor="let item of datos" class="news-item">
+
+    <div class="news-header">
+      <span class="news-title">{{ item.TweetUser }}</span>
+
+      <span
+        class="status-chip"
+        [ngClass]="{
+          'negativo': item.sentimiento === 'negativo',
+          'neutral': item.sentimiento === 'neutro',
+          'positivo': item.sentimiento === 'positivo'
+        }">
+        {{ item.sentimiento }}
+      </span>
+    </div>
+
+    <p class="news-text">{{ item.text }}</p>
+
+    <div class="news-date">
+      {{ item.created | date:'mediumDate' }}
+    </div>
+
+    <div class="sentiment-icons">
+      <div class="icon red">
+        <span class="emoji">😡</span>
+        <span class="count">0</span>
+      </div>
+
+      <div class="icon yellow">
+        <span class="emoji">😐</span>
+        <span class="count">0</span>
+      </div>
+
+      <div class="icon green">
+        <span class="emoji">😊</span>
+        <span class="count">0</span>
+      </div>
+    </div>
+
+   
+
+  </div>
+</div>
+
+  <!-- 🔹 Paginación -->
+  <div class="pagination" *ngIf="!cargando && datos.length">
+    <button
+      mat-flat-button
+      color="primary"
+      class="pagination-btn prev"
+      (click)="loadPreviousPage()"
+      [disabled]="currentPage === 1">
+      <mat-icon>arrow_back_ios_new</mat-icon>
+      Anterior
+    </button>
+
+    <span class="page-indicator">Página {{ currentPage }}</span>
+
+    <button
+      mat-flat-button
+      color="primary"
+      class="pagination-btn next"
+      (click)="loadNextPage()"
+      [disabled]="!hasMore">
+      Siguiente
+      <mat-icon>arrow_forward_ios</mat-icon>
+    </button>
+  </div>
+
+  <!-- 🔹 Sin resultados -->
+  <div *ngIf="!cargando && !error && datos.length === 0" class="no-results">
+    <p>No hay noticias disponibles para los filtros seleccionados.</p>
+  </div>
+</div>

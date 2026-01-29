@@ -1,0 +1,686 @@
+:host{
+  display:block;
+  background:#f6f7fb;
+  color:#0f172a;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --nv-accent: #6d28d9;
+  --nv-accent-2: #7c3aed;
+  --nv-accent-soft: rgba(109,40,217,.12);
+  /* ✅ evita scroll lateral por overflow */
+  overflow-x: hidden;
+}
+
+/* ✅ box sizing global */
+:host, :host *{
+  box-sizing: border-box;
+}
+
+.dash{
+  padding:18px;
+  max-width:1200px;
+  margin:0 auto;
+
+  /* ✅ evita que un canvas o grid empuje horizontal */
+  overflow-x: hidden;
+}
+
+.header{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:14px;
+}
+
+.title h2{
+  margin:0;
+  font-size:18px;
+  font-weight:800;
+}
+
+.sub{
+  margin:4px 0 0;
+  font-size:13px;
+  color:#475569;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+}
+
+.btn{
+  border:1px solid #e5e7eb;
+  background:#ffffff;
+  padding:10px 12px;
+  border-radius:12px;
+  font-weight:700;
+  font-size:13px;
+  cursor:pointer;
+}
+
+.btn:disabled{
+  opacity:0.6;
+  cursor:not-allowed;
+}
+
+.btn.ghost{
+  background:transparent;
+}
+
+.alert{
+  background:#fff;
+  border:1px solid #fecaca;
+  color:#991b1b;
+  padding:10px 12px;
+  border-radius:12px;
+  margin-bottom:14px;
+}
+
+/* =========================
+   KPI
+========================= */
+.kpi{
+  display:grid;
+  grid-template-columns:260px 1fr;
+  gap:12px;
+  margin-bottom:12px;
+}
+
+.kpi-main{
+  background:#ffffff;
+  border:1px solid #e9ecf5;
+  border-radius:16px;
+  padding:14px;
+  min-width:0;
+}
+
+.kpi-label{
+  font-size:12px;
+  color:#64748b;
+  font-weight:700;
+}
+
+.kpi-value{
+  margin-top:6px;
+  font-size:30px;
+  font-weight:900;
+  letter-spacing:-0.02em;
+}
+
+.kpi-hint{
+  margin-top:6px;
+  font-size:12px;
+  color:#64748b;
+}
+
+.kpi-tops{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:12px;
+  min-width:0;
+}
+
+.topbox{
+  background:#ffffff;
+  border:1px solid #e9ecf5;
+  border-radius:16px;
+  padding:14px;
+  min-width:0;
+}
+
+.top-title{
+  font-size:12px;
+  color:#64748b;
+  font-weight:800;
+  margin-bottom:10px;
+}
+
+.toplist{
+  list-style:none;
+  padding:0;
+  margin:0;
+  display:grid;
+  gap:8px;
+}
+
+.toplist li{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+  font-size:13px;
+}
+
+.toplist .name{
+  color:#0f172a;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.toplist .val,
+.u-val{
+  color:#475569;
+  font-variant-numeric:tabular-nums;
+}
+
+/* =========================
+   Cards
+========================= */
+.card{
+  background:#ffffff;
+  border:1px solid #e9ecf5;
+  border-radius:16px;
+  padding:14px;
+
+  /* ✅ clave para que grids/canvas no empujen */
+  min-width:0;
+}
+
+.card-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+
+.card-title{
+  font-size:14px;
+  font-weight:900;
+}
+
+.card-sub{
+  margin-top:3px;
+  font-size:12px;
+  color:#64748b;
+}
+
+.right{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.select{
+  border:1px solid #e5e7eb;
+  background:#fff;
+  border-radius:12px;
+  padding:8px 10px;
+  font-size:13px;
+}
+
+.iconbtn{
+  border:1px solid #e5e7eb;
+  background:#fff;
+  border-radius:12px;
+  padding:8px 10px;
+  cursor:pointer;
+  font-size:13px;
+}
+
+/* =========================
+   Charts (ANTI OVERFLOW)
+========================= */
+.chart-wrap{
+  height:320px;
+  width:100%;
+  position:relative;
+
+  /* ✅ evita overflow si chart.js calcula ancho raro */
+  overflow:hidden;
+}
+
+/* ✅ fuerza canvas a no exceder el contenedor */
+.chart-wrap canvas{
+  max-width:100% !important;
+  width:100% !important;
+}
+
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:12px;
+}
+
+/* =========================
+   ACCENT & INTERACTIONS
+========================= */
+.iconbtn.accent{
+  background: linear-gradient(135deg, var(--nv-accent), var(--nv-accent-2));
+  color:#fff;
+  border:none;
+  font-weight:800;
+}
+
+.iconbtn.accent:hover{
+  filter:brightness(1.05);
+  transform:translateY(-1px);
+}
+
+.iconbtn:hover,
+.btn:hover{
+  box-shadow:0 6px 18px rgba(15,23,42,0.08);
+  transform:translateY(-1px);
+}
+
+.iconbtn:active,
+.btn:active{
+  transform:translateY(0);
+}
+
+/* =========================
+   WORDCLOUD
+========================= */
+.wordcloud-card{
+  display:flex;
+  flex-direction:column;
+}
+
+.wordcloud-body{
+  position:relative;
+  display:grid;
+  place-items:center;
+  aspect-ratio:2 / 1;
+  width:100%;
+  min-height:260px;
+}
+
+.wordcloud-img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  border-radius:14px;
+  box-shadow:0 10px 30px rgba(2,6,23,0.12);
+}
+
+.wc-loading{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  font-size:13px;
+  color:#475569;
+}
+
+.spinner{
+  width:34px;
+  height:34px;
+  border:3px solid #e5e7eb;
+  border-top-color: var(--nv-accent);
+  border-radius:50%;
+  animation:spin 0.9s linear infinite;
+}
+
+@keyframes spin{
+  to{ transform:rotate(360deg); }
+}
+
+.wc-empty{
+  text-align:center;
+}
+
+.wc-empty .empty-icon{
+  font-size:26px;
+}
+
+.wc-empty .empty-text{
+  margin-top:6px;
+  font-weight:900;
+}
+
+.wc-empty .empty-sub{
+  font-size:12px;
+  color:#64748b;
+}
+
+/* =========================
+   PLACEHOLDER
+========================= */
+.placeholder-body{
+  height:320px;
+  display:grid;
+  place-items:center;
+}
+
+.placeholder-body.small{
+  height:240px;
+}
+
+.empty-box{
+  width:100%;
+  border:1px dashed #cbd5e1;
+  border-radius:16px;
+  padding:18px;
+  text-align:center;
+  background:#fbfdff;
+}
+
+.empty-icon{
+  font-size:24px;
+  font-weight:900;
+  margin-bottom:6px;
+}
+
+.empty-text{
+  font-weight:900;
+  font-size:14px;
+}
+
+.empty-sub{
+  margin-top:4px;
+  font-size:12px;
+  color:#64748b;
+}
+
+/* =========================
+   BOTTOM LAYOUT FINAL
+   1) ÍNDICE CHART (FULL WIDTH)
+   2) LISTAS LADO A LADO
+   3) WORDCLOUD (FULL WIDTH)
+========================= */
+.bottom-grid{
+  display:grid;
+  gap:12px;
+  margin-top:12px;
+
+  /* 1 columna lógica, pero cada bloque es full width */
+  grid-template-columns:1fr;
+}
+
+/* 1) Índice chart (full width) */
+.extra-chart-wide{
+  width:100%;
+}
+
+.extra-chart{
+  height:320px;
+}
+
+/* 2) Row de listas (2 columnas) */
+.lists-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  min-width:0;
+}
+
+/* =========================
+   TOP USERS (compact)
+========================= */
+.topusers-card{
+  padding-bottom:10px;
+}
+
+.user-list{
+  margin:0;
+  padding:0;
+  list-style:none;
+
+  counter-reset:rank;
+  display:grid;
+  gap:2px;
+}
+
+.user-list li{
+  counter-increment:rank;
+
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:10px;
+
+  padding:7px 6px;
+  border-radius:10px;
+  border-bottom:1px solid #f1f5f9;
+}
+
+.user-list li:last-child{
+  border-bottom:none;
+}
+
+.user-list li:hover{
+  background:#fbfdff;
+}
+
+.u-left{
+  display:flex;
+  align-items:center;
+  min-width:0;
+  gap:8px;
+}
+
+.u-left::before{
+  content:counter(rank);
+  width:26px;
+  height:22px;
+  display:grid;
+  place-items:center;
+
+  font-weight:900;
+  font-size:12px;
+  color:#0f172a;
+
+  background:#f1f5f9;
+  border:1px solid #e9ecf5;
+  border-radius:999px;
+}
+
+.u-name{
+  color:#0f172a;
+  font-size:13px;
+  font-weight:800;
+
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.u-right{
+  display:grid;
+  grid-template-columns:auto 80px;
+  align-items:center;
+  gap:10px;
+}
+
+.u-val{
+  font-size:12px;
+  color:#475569;
+  font-variant-numeric:tabular-nums;
+  font-weight:800;
+}
+
+.u-bar{
+  height:8px;
+  border-radius:999px;
+  background: linear-gradient(90deg, rgba(109,40,217,.92), rgba(124,58,237,.82));
+  box-shadow:0 6px 16px rgba(2,6,23,0.10);
+  justify-self:end;
+}
+
+/* =========================
+   DETALLE ÍNDICE (tabla)
+========================= */
+.extra-table{
+  display:grid;
+  gap:6px;
+}
+
+.t-head{
+  display:grid;
+  grid-template-columns:1fr 70px 70px 80px 120px;
+  gap:10px;
+
+  font-size:12px;
+  color:#64748b;
+  font-weight:900;
+
+  padding:6px 6px 10px;
+  border-bottom:1px solid #f1f5f9;
+}
+/* Usuario en hasta 2 líneas */
+.t-user.multiline{
+  white-space: normal;
+  overflow: hidden;
+  display: -webkit-box;     /* 👈 máximo 2 líneas */
+  -webkit-box-orient: vertical;
+  line-height: 1.15;
+}
+
+
+.t-row{
+  display:grid;
+  grid-template-columns:1fr 70px 70px 80px 120px;
+  gap:10px;
+
+  align-items:center;
+  padding:7px 6px;
+  border-radius:10px;
+}
+/* Más compacto en columnas numéricas */
+.t-head,
+.t-row{
+  grid-template-columns: 1.6fr 48px 48px 56px 120px;
+  gap: 6px;
+}
+
+
+.t-row:hover{
+  background:#fbfdff;
+}
+
+.t-user{
+  font-size:13px;
+  font-weight:800;
+  color:#0f172a;
+
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  min-width:0;
+}
+
+.t-num{
+  text-align:right;
+  font-size:12px;
+  font-weight:800;
+  color:#475569;
+  font-variant-numeric:tabular-nums;
+}
+
+.t-strong{
+  color:#0f172a;
+}
+
+.t-ind{
+  position:relative;
+  
+  border-radius:999px;
+  height: 20px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  overflow:hidden;
+
+  display:grid;
+  align-items:center;
+  padding:0 10px;
+}
+
+.t-ind-val{
+  position:relative;
+  z-index:2;
+  font-size:12px;
+  font-weight:900;
+  color:#0f172a;
+}
+
+.t-ind-bar{
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  width:0%;
+  background: linear-gradient(90deg, rgba(109,40,217,.92), rgba(124,58,237,.82));
+  opacity:0.85;
+}
+.t-ind.alt .t-ind-bar{
+  background: linear-gradient(
+    90deg,
+    rgba(109,40,217,.85),
+    rgba(124,58,237,.75)
+  );
+  opacity: 0.9;
+}
+.t-ind.alt .t-ind-val{
+  font-size: 11px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.extra-table.compact{
+  border-top:1px solid #f1f5f9;
+  padding-top:10px;
+
+  /* ✅ que scrollee hacia abajo, no lateral */
+  max-height:260px;
+  overflow:auto;
+  overscroll-behavior: contain;
+}
+
+/* =========================
+   WORDCLOUD WIDE (como estaba)
+========================= */
+.wordcloud-wide{
+  padding:14px;
+}
+
+.wordcloud-wide .wordcloud-body{
+  width:100%;
+  max-width:1100px;
+  margin:0 auto;
+
+  aspect-ratio:2.2 / 1;
+  min-height:320px;
+}
+
+.wordcloud-wide .wordcloud-img{
+  border-radius:16px;
+  box-shadow:0 14px 34px rgba(2,6,23,0.14);
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 980px){
+  .kpi{
+    grid-template-columns:1fr;
+  }
+
+  .kpi-tops{
+    grid-template-columns:1fr;
+  }
+
+  .grid2{
+    grid-template-columns:1fr;
+  }
+
+  .chart-wrap{
+    height:280px;
+  }
+
+  .lists-row{
+    grid-template-columns:1fr;
+  }
+
+  .t-head,
+  .t-row{
+    grid-template-columns:1fr 60px 60px 70px 110px;
+  }
+
+  .wordcloud-wide .wordcloud-body{
+    min-height:260px;
+    aspect-ratio:2 / 1;
+  }
+}

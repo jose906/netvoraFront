@@ -1,0 +1,148 @@
+<header class="top-menu">
+  <nav class="menu-items">
+    <button type="button" (click)="onSelect('inicio')">Inicio</button>
+    <button type="button" (click)="onSelect('politica')">Política</button>
+    <button type="button" (click)="onSelect('economia')">Economía</button>
+    <button type="button" (click)="onSelect('seguridad')">Seguridad</button>
+    <button type="button" (click)="onSelect('deportes')">Deportes</button>
+    <button type="button" (click)="onSelect('salud')">Salud</button>
+    <button type="button" (click)="onSelect('sociedad')">Sociedad</button>
+    <button type="button" (click)="onSelect('educacion')">Educación</button>
+    <button type="button" (click)="onSelect('gestion')">Gestiones Públicas</button>
+    <button type="button" (click)="onSelect('otros')">Otros</button>
+    <button type="button" (click)="onSelect('entidades')">Entidades Públicas</button>
+    <button type="button" (click)="onSelect('personas')">Personas Públicas</button>
+  </nav>
+</header>
+
+<div class="page">
+  <!-- Filtros -->
+  <section class="filters-section">
+    <div class="filters-header">
+      <h3>
+        <mat-icon>tune</mat-icon>
+        Filtros
+      </h3>
+
+      <span class="page-indicator">Categoría: {{ activeCategory }}</span>
+    </div>
+
+    <div class="filters-row">
+      <mat-form-field appearance="outline" class="filter-item">
+        <mat-label>Rango de fechas</mat-label>
+        <mat-date-range-input [rangePicker]="picker">
+          <input matStartDate placeholder="Inicio" [(ngModel)]="startDate" />
+          <input matEndDate placeholder="Fin" [(ngModel)]="endDate" />
+        </mat-date-range-input>
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-date-range-picker #picker></mat-date-range-picker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-item">
+        <mat-label>Seleccionar usuarios</mat-label>
+        <mat-select [(ngModel)]="selectedUsers" multiple>
+          <mat-option *ngFor="let user of users" [value]="user.idTweetUser">
+            {{ user.TweetUser }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-item">
+        <mat-label>Buscar</mat-label>
+        <input matInput [(ngModel)]="searchText" placeholder="Texto de búsqueda" />
+      </mat-form-field>
+
+      <div class="filter-buttons">
+        <button mat-flat-button color="primary" class="filter-btn" (click)="filtrar()">
+          <mat-icon>search</mat-icon>
+          Filtrar
+        </button>
+
+        <button mat-stroked-button class="filter-btn" (click)="limpiar()">
+          <mat-icon>refresh</mat-icon>
+          Limpiar
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Estado -->
+  <div *ngIf="cargando" class="state">⏳ Cargando noticias...</div>
+  <div *ngIf="error" class="state state-error">{{ error }}</div>
+
+  <!-- Lista -->
+  <section *ngIf="!cargando && datos.length" class="news-container">
+    <article *ngFor="let item of datos" class="news-item">
+      <div class="news-header">
+        <div class="news-title">{{ item.TweetUser }}</div>
+
+        <span
+          class="status-chip"
+          [ngClass]="{
+            negativo: item.sentimiento === 'negativo',
+            neutral: item.sentimiento === 'neutro',
+            positivo: item.sentimiento === 'positivo'
+          }"
+        >
+          {{ item.sentimiento }}
+        </span>
+      </div>
+
+      <p class="news-text">{{ item.text }}</p>
+
+      <div class="news-meta">
+        <span class="news-date">{{ item.created | date: 'mediumDate' }}</span>
+
+        <div class="sentiment-icons">
+          <span class="icon">😡 <b>0</b></span>
+          <span class="icon">😐 <b>0</b></span>
+          <span class="icon">😊 <b>0</b></span>
+        </div>
+      </div>
+
+      <div class="news-actions">
+        <button type="button" (click)="accion(item.tweetid, 'Politica', item.categoria)">Política</button>
+        <button type="button" (click)="accion(item.tweetid, 'Economia', item.categoria)">Economía</button>
+        <button type="button" (click)="accion(item.tweetid, 'Seguridad', item.categoria)">Seguridad</button>
+        <button type="button" (click)="accion(item.tweetid, 'Deportes', item.categoria)">Deportes</button>
+        <button type="button" (click)="accion(item.tweetid, 'Salud', item.categoria)">Salud</button>
+        <button type="button" (click)="accion(item.tweetid, 'Sociedad', item.categoria)">Sociedad</button>
+        <button type="button" (click)="accion(item.tweetid, 'Educacion', item.categoria)">Educación</button>
+        <button type="button" (click)="accion(item.tweetid, 'Gestion', item.categoria)">Gestión</button>
+        <button type="button" (click)="accion(item.tweetid, 'Otros', item.categoria)">Otros</button>
+      </div>
+    </article>
+  </section>
+
+  <!-- Paginación -->
+  <div class="pagination" *ngIf="!cargando && datos.length">
+    <button
+      mat-flat-button
+      color="primary"
+      class="pagination-btn prev"
+      (click)="loadPreviousPage()"
+      [disabled]="currentPage === 1"
+    >
+      <mat-icon>arrow_back_ios_new</mat-icon>
+      Anterior
+    </button>
+
+    <span class="page-indicator">Página {{ currentPage }}</span>
+
+    <button
+      mat-flat-button
+      color="primary"
+      class="pagination-btn next"
+      (click)="loadNextPage()"
+      [disabled]="!hasMore"
+    >
+      Siguiente
+      <mat-icon>arrow_forward_ios</mat-icon>
+    </button>
+  </div>
+
+  <!-- Sin resultados -->
+  <div *ngIf="!cargando && !datos.length && !error" class="state">
+    No hay noticias disponibles para los filtros seleccionados.
+  </div>
+</div>

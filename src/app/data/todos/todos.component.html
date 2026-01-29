@@ -1,0 +1,150 @@
+<section class="dash">
+
+  <!-- Header / acciones -->
+  <div class="header">
+    <div class="title">
+      <h2>Dashboard general</h2>
+      <p class="sub">Vista global: entidades, timeline, sentimientos y categorías.</p>
+    </div>
+
+    <div class="actions">
+      <button class="btn" (click)="cargarDatos()" [disabled]="loading">
+        {{ loading ? 'Cargando…' : 'Actualizar' }}
+      </button>
+      <button class="btn ghost" (click)="downloadAllCharts()" [disabled]="loading">
+        Descargar todo
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="errorMsg" class="alert">
+    {{ errorMsg }}
+  </div>
+
+  <!-- KPI + Top 3 -->
+  <div class="kpi">
+    <div class="kpi-main">
+      <div class="kpi-label">Total posts</div>
+      <div class="kpi-value">{{ totalPosts | number }}</div>
+      <div class="kpi-hint">
+        Rango: {{ startDate ? (startDate | date:'yyyy-MM-dd') : '—' }} →
+        {{ endDate ? (endDate | date:'yyyy-MM-dd') : '—' }}
+      </div>
+    </div>
+
+    <div class="kpi-tops">
+      <div class="topbox">
+        <div class="top-title">Top 3 Locación</div>
+        <ul class="toplist">
+          <li *ngFor="let it of topLocacion; trackBy: trackByEntidad">
+            <span class="name">{{ it.entidad }}</span>
+            <span class="val">{{ it.total | number }}</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="topbox">
+        <div class="top-title">Top 3 Organización</div>
+        <ul class="toplist">
+          <li *ngFor="let it of topOrganizacion; trackBy: trackByEntidad">
+            <span class="name">{{ it.entidad }}</span>
+            <span class="val">{{ it.total | number }}</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="topbox">
+        <div class="top-title">Top 3 Persona</div>
+        <ul class="toplist">
+          <li *ngFor="let it of topPersona; trackBy: trackByEntidad">
+            <span class="name">{{ it.entidad }}</span>
+            <span class="val">{{ it.total | number }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="card chart">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Línea de tiempo</div>
+        <div class="card-sub">Posts por día</div>
+      </div>
+      <button class="iconbtn" (click)="downloadChart($event)" title="Descargar gráfico">
+        ⬇
+      </button>
+    </div>
+
+    <div class="chart-wrap">
+      <canvas
+        baseChart
+        [type]="'line'"
+        [data]="timelineData"
+        [options]="lineOptions">
+      </canvas>
+    </div>
+  </div>
+
+  <!-- Bottom charts -->
+  <div class="grid2">
+
+    <!-- Sentimientos -->
+    <div class="card chart">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Distribución de Sentimientos</div>
+          <div class="card-sub">Negativo / Neutro / Positivo</div>
+        </div>
+
+        <div class="right">
+          <select class="select" [(ngModel)]="sentimentChartType">
+            <option *ngFor="let t of sentimentTypeOptions" [ngValue]="t">
+              {{ t }}
+            </option>
+          </select>
+          <button class="iconbtn" (click)="downloadChart($event)" title="Descargar gráfico">⬇</button>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas
+          baseChart
+          [type]="sentimentChartType"
+          [data]="sentimentData"
+          [options]="commonCardChartOptions">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- Categorías -->
+    <div class="card chart">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Distribución por Categorías</div>
+          <div class="card-sub">Volumen por tema</div>
+        </div>
+
+        <div class="right">
+          <select class="select" [(ngModel)]="categoriesChartType">
+            <option *ngFor="let t of categoriesTypeOptions" [ngValue]="t">
+              {{ t }}
+            </option>
+          </select>
+          <button class="iconbtn" (click)="downloadChart($event)" title="Descargar gráfico">⬇</button>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas
+          baseChart
+          [type]="categoriesChartType"
+          [data]="categoriesData"
+          [options]="commonCardChartOptions">
+        </canvas>
+      </div>
+    </div>
+
+  </div>
+</section>

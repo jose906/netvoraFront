@@ -1,0 +1,277 @@
+:root{
+  --bg:#f6f7f9;
+  --surface:#ffffff;
+  --surface2:#fbfcfe;
+  --text:#0f172a;
+  --muted:#64748b;
+  --line:#e5e7eb;
+  --ink:#111827;
+
+  --focus: rgba(59, 130, 246, 0.18);     /* azul suave */
+  --accent: #0f172a;                      /* principal */
+  --accent-2: rgba(15,23,42,0.92);
+
+  --radius: 16px;
+}
+
+.estadisticas-container{
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 14px;
+
+  width: 100%;
+  padding: 14px;
+  border-radius: calc(var(--radius) + 2px);
+
+  background: linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.55));
+  border: 1px solid rgba(229,231,235,0.95);
+  box-shadow: 0 14px 34px rgba(2,6,23,0.06);
+}
+
+/* panels */
+.left-panel, .right-panel{
+  background: rgba(255,255,255,0.82);
+  border: 1px solid rgba(229,231,235,0.95);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+/* title */
+.panel-title{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.panel-title h3{
+  margin: 0;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  color: var(--text);
+  text-transform: uppercase;
+}
+
+.panel-subtitle{
+  font-size: 12px;
+  color: var(--muted);
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(248,250,252,0.95);
+  border: 1px solid rgba(148,163,184,0.35);
+  white-space: nowrap;
+}
+
+/* -------- Nav buttons (izquierda) -------- */
+.nav-btn{
+  width: 100%;
+  border-radius: 14px !important;
+  padding: 10px 12px !important;
+  text-transform: none !important;
+
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+
+  font-weight: 800 !important;
+  letter-spacing: 0.2px;
+
+  background: var(--surface2) !important;
+  color: rgba(15,23,42,0.90) !important;
+  border: 1px solid rgba(148,163,184,0.35) !important;
+  box-shadow: none !important;
+
+  transition: transform .12s ease, background .12s ease, border-color .12s ease, filter .12s ease;
+}
+
+.nav-btn mat-icon{
+  font-size: 20px;
+  width: 22px;
+  height: 22px;
+  opacity: 0.92;
+}
+
+.nav-btn:hover{
+  transform: translateY(-1px);
+  background: rgba(241,245,249,0.95) !important;
+  border-color: rgba(148,163,184,0.55) !important;
+}
+
+/* principal */
+.nav-btn--main{
+  background: var(--accent-2) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(148,163,184,0.20) !important;
+}
+.nav-btn--main:hover{ filter: brightness(1.05); }
+
+/* estado activo (más claro y pro) */
+.nav-btn.is-active{
+  background: rgba(15,23,42,0.08) !important;
+  border-color: rgba(15,23,42,0.18) !important;
+  color: var(--text) !important;
+}
+.nav-btn.is-active mat-icon{
+  opacity: 1;
+}
+
+/* grid categorías */
+.nav-grid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.nav-grid .nav-btn{
+  justify-content: center;
+  padding: 10px 10px !important;
+  font-weight: 800 !important;
+}
+.nav-grid .nav-btn span{
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+/* -------- Right panel fields + actions -------- */
+.field{
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+/* Botón derecha */
+.actions-row{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.action-btn{
+  border-radius: 12px !important;
+  padding: 10px 14px !important;
+  text-transform: none !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.2px;
+  box-shadow: none !important;
+
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  transition: transform .12s ease, filter .12s ease;
+}
+
+.action-btn--primary{
+  background: var(--accent-2) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(15,23,42,0.15) !important;
+}
+
+.action-btn:hover{
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.action-btn:focus-visible,
+.nav-btn:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 4px var(--focus) !important;
+}
+
+/* -------- Chart container -------- */
+.chart-container{
+  margin-top: 14px;
+  padding: 14px;
+  background: rgba(255,255,255,0.82);
+  border: 1px solid rgba(229,231,235,0.95);
+  border-radius: var(--radius);
+  box-shadow: 0 14px 34px rgba(2,6,23,0.06);
+}
+
+/* -------- Responsive -------- */
+@media (max-width: 980px){
+  .estadisticas-container{
+    grid-template-columns: 1fr;
+  }
+  .nav-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px){
+  .nav-grid{
+    grid-template-columns: 1fr;
+  }
+}
+/* ========== FIX: botones invisibles (Angular Material) ========== */
+.estadisticas-container .nav-btn{
+  background: var(--surface2) !important;
+  color: rgba(15,23,42,0.92) !important;
+  border-color: rgba(148,163,184,0.40) !important;
+}
+
+/* Icono siempre visible */
+.estadisticas-container .nav-btn mat-icon{
+  color: inherit !important;
+}
+
+/* Por si Material te pinta el label en blanco */
+.estadisticas-container .nav-btn .mdc-button__label,
+.estadisticas-container .nav-btn .mat-mdc-button-touch-target,
+.estadisticas-container .nav-btn .mat-icon{
+  color: inherit !important;
+}
+
+/* Botón principal (oscuro) */
+.estadisticas-container .nav-btn--main{
+  background: var(--accent-2) !important;
+  color: #f8fafc !important;
+  border-color: rgba(15,23,42,0.18) !important;
+}
+.estadisticas-container .nav-btn--main mat-icon{
+  color: #f8fafc !important;
+}
+
+/* Activo: fondo suave + texto oscuro (nunca blanco) */
+.estadisticas-container .nav-btn.is-active{
+  background: rgba(15,23,42,0.08) !important;
+  border-color: rgba(15,23,42,0.18) !important;
+  color: rgba(15,23,42,0.95) !important;
+}
+.estadisticas-container .nav-btn.is-active mat-icon{
+  color: rgba(15,23,42,0.95) !important;
+}
+
+/* Hover consistente */
+.estadisticas-container .nav-btn:hover{
+  background: rgba(241,245,249,0.95) !important;
+  border-color: rgba(148,163,184,0.55) !important;
+}
+/* ===== FIX: texto blanco en "Panel principal" y "Aplicar" (MDC) ===== */
+
+/* Panel principal */
+.estadisticas-container .nav-btn--main,
+.estadisticas-container .nav-btn--main .mdc-button__label,
+.estadisticas-container .nav-btn--main mat-icon{
+  color: #f8fafc !important;
+}
+
+/* Aplicar */
+.estadisticas-container .action-btn--primary,
+.estadisticas-container .action-btn--primary .mdc-button__label,
+.estadisticas-container .action-btn--primary mat-icon{
+  color: #f8fafc !important;
+}
+
+/* por si algún estado/tema lo vuelve a pisar */
+.estadisticas-container .nav-btn--main .mdc-button__label,
+.estadisticas-container .action-btn--primary .mdc-button__label{
+  opacity: 1 !important;
+}
+
+

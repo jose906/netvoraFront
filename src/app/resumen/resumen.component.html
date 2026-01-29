@@ -1,0 +1,16 @@
+
+<div *ngIf="isLoading" class="loading-container">
+  <i class="fas fa-spinner"></i> Cargando...
+</div>
+
+<div class="detalle-container" *ngIf="!isLoading && resumen.length > 0; else noData">
+  <h2>Detalle del Texto</h2>
+  <p><strong>Categoría:</strong> {{ dato.categoria[0] }}</p>
+  <p><strong>Texto:</strong> {{ dato.texto }}</p>
+  <p><strong>Nota:</strong> {{ resumen[0]['resumen'] }}</p>
+  <button (click)="goBack()">Volver</button>
+</div>
+
+<ng-template #noData>
+  <p>No hay resumen disponible.</p>
+</ng-template>

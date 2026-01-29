@@ -1,0 +1,156 @@
+<div class="page">
+  <!-- Header -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-label="Logo">N</div>
+
+      <div class="brand-text">
+        <h1 class="title">Panel de resumen</h1>
+        <p class="subtitle">Estadísticas rápidas de hoy</p>
+      </div>
+    </div>
+
+    <div class="date-pill">
+      <span class="dot"></span>
+      <span class="date-text">{{ todayLabel || '—' }}</span>
+    </div>
+  </header>
+
+  <!-- Estado -->
+  <div *ngIf="cargando" class="state">Cargando resumen…</div>
+  <div *ngIf="!cargando && error" class="state error">{{ error }}</div>
+
+  <!-- Cards -->
+  <section class="grid" *ngIf="!cargando && !error">
+    <!-- 1) Total noticias hoy -->
+    <article class="card">
+      <div class="card-head">
+        <p class="label">Total de noticias hoy</p>
+        <span class="badge">Hoy</span>
+      </div>
+
+      <div class="metric">
+        <div class="value">{{ stats.totalHoy }}</div>
+        <div class="hint">Publicaciones detectadas en el día</div>
+      </div>
+    </article>
+
+    <!-- 2) Sentimientos -->
+    <article class="card">
+      <div class="card-head">
+        <p class="label">Sentimiento (hoy)</p>
+        <span class="badge subtle">Resumen</span>
+      </div>
+
+      <div class="triplet">
+        <div class="mini">
+          <div class="mini-label">Positivas</div>
+          <div class="mini-value positive">{{ stats.positivas }}</div>
+        </div>
+
+        <div class="mini">
+          <div class="mini-label">Neutras</div>
+          <div class="mini-value neutral">{{ stats.neutras }}</div>
+        </div>
+
+        <div class="mini">
+          <div class="mini-label">Negativas</div>
+          <div class="mini-value negative">{{ stats.negativas }}</div>
+        </div>
+      </div>
+
+      <div class="hint">Conteo de sentimiento en las noticias del día</div>
+    </article>
+
+    <!-- 3) Categoría más usada -->
+    <article class="card">
+      <div class="card-head">
+        <p class="label">Categoría más usada</p>
+        <span class="badge subtle">Top</span>
+      </div>
+
+      <div class="metric">
+        <div class="value text">{{ stats.categoriaTop || '—' }}</div>
+        <div class="hint">Categoría predominante en el periodo</div>
+      </div>
+    </article>
+
+    <!-- 4) Top 3 entidades -->
+    <article class="card">
+      <div class="card-head">
+        <p class="label">Top 3 entidades</p>
+        <span class="badge subtle">NER</span>
+      </div>
+
+      <ol class="rank">
+        <li class="rank-item" *ngFor="let e of top3Entidades; index as i; trackBy: trackByIndex">
+          <span class="rank-n">{{ i + 1 }}</span>
+          <span class="rank-name">{{ e || '—' }}</span>
+        </li>
+      </ol>
+
+      <div class="hint">Entidades más mencionadas</div>
+    </article>
+  </section>
+
+  <!-- Gráfica de índice (Últimos 7 días) -->
+  <section class="week-line-card" *ngIf="!cargando && !error">
+    <div class="week-line-head">
+      <div>
+        <h2 class="week-line-title">Índice de sentimiento</h2>
+        <p class="week-line-subtitle">Evolución en los últimos 7 días</p>
+      </div>
+
+      <div class="week-line-pill">7D</div>
+    </div>
+
+    <div class="week-line-chart">
+      <svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-label="Índice 7 días">
+        <polyline
+          [attr.points]="weekPoints"
+          [ngClass]="{
+            'line-pos': weekLineClass === 'pos',
+            'line-neg': weekLineClass === 'neg',
+            'line-zero': weekLineClass === 'zero'
+          }"
+        ></polyline>
+
+        <g class="points">
+          <circle
+            *ngFor="let p of weekCircles; trackBy: trackByCircle"
+            [attr.cx]="p.x"
+            [attr.cy]="p.y"
+            r="0.9"
+            [ngClass]="{
+              'pt-pos': p.v > 0,
+              'pt-neg': p.v < 0,
+              'pt-zero': p.v === 0
+            }"
+          ></circle>
+        </g>
+      </svg>
+
+      <div class="week-x-axis">
+        <span class="mono">{{ weekLabels[0] || '—' }}</span>
+        <span class="mono">{{ weekLabels[weekLabels.length - 1] || '—' }}</span>
+      </div>
+
+      <div class="week-metrics">
+        <div class="wm">
+          <div class="wm-label">Máx</div>
+          <div class="wm-value mono">{{ weekMax | number:'1.3-3' }}</div>
+        </div>
+
+        <div class="wm">
+          <div class="wm-label">Prom</div>
+          <div class="wm-value mono">{{ weekAvg | number:'1.3-3' }}</div>
+        </div>
+
+        <div class="wm">
+          <div class="wm-label">Mín</div>
+          <div class="wm-value mono">{{ weekMin | number:'1.3-3' }}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

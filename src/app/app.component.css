@@ -1,0 +1,76 @@
+:root{
+  --bg: #f6f7f9;
+  --text: #0f172a;
+
+  --sidebar-w: 270px;
+  --sidebar-w-collapsed: 76px;
+
+  --pad: 22px;
+}
+
+html, body { height: 100%; }
+
+body{
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden; /* el scroll vive en .content */
+}
+
+/* ✅ layout real en fila */
+.container{
+  height: 100vh;
+  display: flex;         /* 👈 CLAVE */
+  overflow: hidden;
+}
+
+/* ✅ el menú ahora ocupa espacio real */
+app-menu{
+  flex: 0 0 var(--sidebar-w); /* ancho fijo */
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+}
+
+/* ✅ contenido ocupa el resto */
+.content{
+  flex: 1 1 auto;
+  min-width: 0;          /* 👈 CLAVE para evitar overflow horizontal raro */
+  height: 100vh;
+  overflow: auto;
+  padding: var(--pad);
+  background: var(--bg);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* si quieres que tus páginas no se vean pegadas */
+.content > *{
+  max-width: 1400px;
+  margin: 0 auto;       /* 👈 centra el contenido dentro del área disponible */
+}
+
+/* Scrollbar */
+.content::-webkit-scrollbar{ width: 10px; }
+.content::-webkit-scrollbar-thumb{
+  background: rgba(15,23,42,0.14);
+  border-radius: 999px;
+  border: 3px solid rgba(0,0,0,0);
+  background-clip: padding-box;
+}
+.content::-webkit-scrollbar-track{ background: transparent; }
+
+/* Login */
+.login-wrapper{
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 26px;
+  background: var(--bg);
+}
+
+@media (max-width: 900px){
+  app-menu{
+    flex-basis: var(--sidebar-w-collapsed);
+    width: var(--sidebar-w-collapsed);
+    min-width: var(--sidebar-w-collapsed);
+  }
+}

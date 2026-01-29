@@ -1,0 +1,182 @@
+<div class="contenedor">
+
+  <!-- Header del módulo -->
+  <header class="page-head">
+    <div>
+      <h1 class="page-title">Usuarios</h1>
+      <p class="page-subtitle">Registra, busca y gestiona usuarios del sistema.</p>
+    </div>
+  </header>
+
+  <!-- Layout principal -->
+  <div class="layout">
+
+    <!-- Columna izquierda: Registrar -->
+    <section class="card">
+      <div class="card-head">
+        <h2 class="card-title">Registrar usuario</h2>
+        <p class="card-subtitle">Crea un usuario con rol y estado</p>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input class="input" type="text" placeholder="Ej: Juan" [(ngModel)]="nombre2"/>
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input class="input" type="text" placeholder="tucorreo@ejemplo.com" [(ngModel)]="email"/>
+        </div>
+
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input class="input" type="password" placeholder="••••••••" [(ngModel)]="password"/>
+        </div>
+
+        <div class="form-group">
+          <label>Tipo</label>
+          <select class="select" [(ngModel)]="tipo">
+            <option value="">Todos</option>
+            <option value="Admin">Admin</option>
+            <option value="Usuario">Usuario</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Estado</label>
+          <select class="select" [(ngModel)]="estado">
+            <option value="">Todos</option>
+            <option value="Activo">Activo</option>
+            <option value="Inactivo">Inactivo</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-dark" (click)="registrarUsuario()">
+          Registrar
+        </button>
+        <button class="btn btn-ghost" type="button" (click)="cancelar()">
+          Limpiar
+        </button>
+      </div>
+
+      <div class="hint">
+        Consejo: usa un email válido y una contraseña segura.
+      </div>
+
+      <ng-template #sinTop>
+        <div class="state">No hay resultados aún.</div>
+      </ng-template>
+    </section>
+
+    <!-- Columna derecha: Buscar + Lista -->
+    <section class="stack">
+
+      <!-- Buscar / Agregar -->
+      <div class="card">
+        <div class="card-head">
+          <h2 class="card-title">Administrar usuarios</h2>
+          <p class="card-subtitle">Busca por nombre o ID y agrega al sistema</p>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="nombre">Buscar por nombre</label>
+            <input
+              #inputNombre
+              id="nombre"
+              type="text"
+              placeholder="Ej: juan_perez"
+              class="input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="idUser">Buscar por ID</label>
+            <input
+              #inputId
+              id="idUser"
+              type="text"
+              placeholder="Ej: 123"
+              class="input"
+            />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-dark" (click)="buscar(inputNombre.value, inputId.value)">
+            Buscar
+          </button>
+          <button class="btn btn-ghost" type="button" (click)="cancelar()">
+            Limpiar
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label for="opciones">Clasificación</label>
+          <select #selectOpciones id="opciones" class="select">
+            <option value="">Seleccione una opción</option>
+            <option value="Medio">Medio</option>
+            <option value="Persona">Persona</option>
+            <option value="Entidad">Entidad</option>
+          </select>
+        </div>
+
+        <div class="usuario-detalle" *ngIf="user">
+          <div class="detail-head">
+            <h3 class="section-title">Usuario encontrado</h3>
+            <span class="badge success">Listo</span>
+          </div>
+
+          <ul class="info-list">
+            <li><span class="k">ID TweetUser</span><span class="v">{{ user.id }}</span></li>
+            <li><span class="k">Usuario Twitter</span><span class="v">{{ user.username }}</span></li>
+            <li><span class="k">Nombre</span><span class="v">{{ user.name }}</span></li>
+          </ul>
+        </div>
+
+        <button
+          [disabled]="!user"
+          class="btn btn-success full"
+          (click)="agregar(user!.username, user!.id, user!.name, selectOpciones.value)"
+        >
+          Agregar usuario
+        </button>
+      </div>
+
+      <!-- Lista -->
+      <div class="card card-lista">
+        <div class="card-head row-between">
+          <div>
+            <h2 class="card-title">Lista de usuarios</h2>
+            <p class="card-subtitle">Usuarios ya registrados</p>
+          </div>
+
+          <span class="badge subtle">{{ users || 0 }} total</span>
+        </div>
+
+        <div *ngIf="cargando" class="state">Cargando usuarios...</div>
+
+        <div *ngIf="!cargando && users.length" class="lista-users">
+          <div *ngFor="let item of users" class="user-row">
+            <div class="user-main">
+              <span class="user-name">{{ item.TweetUser }}</span>
+              <span class="chip">{{ item.tipeUser }}</span>
+            </div>
+            <div class="user-sub">
+              <span class="user-id">ID: {{ item.idTweetUser }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!cargando && !users.length" class="state">
+          No hay usuarios registrados.
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+</div>

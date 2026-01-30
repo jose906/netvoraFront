@@ -3,7 +3,9 @@
   background:#f6f7fb;
   color:#0f172a;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-
+  --nv-accent: #6d28d9;
+  --nv-accent-2: #7c3aed;
+  --nv-accent-soft: rgba(109,40,217,.12);
   /* ✅ evita scroll lateral por overflow */
   overflow-x: hidden;
 }
@@ -247,8 +249,8 @@
    ACCENT & INTERACTIONS
 ========================= */
 .iconbtn.accent{
-  background:linear-gradient(135deg,#6366f1,#22d3ee);
-  color:#ffffff;
+  background: linear-gradient(135deg, var(--nv-accent), var(--nv-accent-2));
+  color:#fff;
   border:none;
   font-weight:800;
 }
@@ -307,7 +309,7 @@
   width:34px;
   height:34px;
   border:3px solid #e5e7eb;
-  border-top-color:#6366f1;
+  border-top-color: var(--nv-accent);
   border-radius:50%;
   animation:spin 0.9s linear infinite;
 }
@@ -493,7 +495,7 @@
 .u-bar{
   height:8px;
   border-radius:999px;
-  background:linear-gradient(90deg, rgba(99,102,241,0.9), rgba(34,211,238,0.9));
+  background: linear-gradient(90deg, rgba(109,40,217,.92), rgba(124,58,237,.82));
   box-shadow:0 6px 16px rgba(2,6,23,0.10);
   justify-self:end;
 }
@@ -518,6 +520,15 @@
   padding:6px 6px 10px;
   border-bottom:1px solid #f1f5f9;
 }
+/* Usuario en hasta 2 líneas */
+.t-user.multiline{
+  white-space: normal;
+  overflow: hidden;
+  display: -webkit-box;     /* 👈 máximo 2 líneas */
+  -webkit-box-orient: vertical;
+  line-height: 1.15;
+}
+
 
 .t-row{
   display:grid;
@@ -528,6 +539,13 @@
   padding:7px 6px;
   border-radius:10px;
 }
+/* Más compacto en columnas numéricas */
+.t-head,
+.t-row{
+  grid-template-columns: 1.6fr 48px 48px 56px 120px;
+  gap: 6px;
+}
+
 
 .t-row:hover{
   background:#fbfdff;
@@ -558,10 +576,11 @@
 
 .t-ind{
   position:relative;
-  height:24px;
+  
   border-radius:999px;
-  background:#f1f5f9;
-  border:1px solid #e9ecf5;
+  height: 20px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
   overflow:hidden;
 
   display:grid;
@@ -583,9 +602,23 @@
   top:0;
   bottom:0;
   width:0%;
-  background:linear-gradient(90deg, rgba(99,102,241,0.9), rgba(34,211,238,0.9));
+  background: linear-gradient(90deg, rgba(109,40,217,.92), rgba(124,58,237,.82));
   opacity:0.85;
 }
+.t-ind.alt .t-ind-bar{
+  background: linear-gradient(
+    90deg,
+    rgba(109,40,217,.85),
+    rgba(124,58,237,.75)
+  );
+  opacity: 0.9;
+}
+.t-ind.alt .t-ind-val{
+  font-size: 11px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
 
 .extra-table.compact{
   border-top:1px solid #f1f5f9;

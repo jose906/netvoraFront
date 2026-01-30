@@ -337,7 +337,10 @@ this.userIndiceChartData = {
   datasets: [
     {
       label: 'Índice (%)',
-       data: top.map(x => +(this.normalizeIndiceSigned(x.indice) * 100).toFixed(1))
+       data: top.map(x => +(this.normalizeIndiceSigned(x.indice) * 100).toFixed(1)),
+       backgroundColor: NETVORA_PALETTE.indice.positivo,
+      borderRadius: 8,
+      borderWidth: 0
 
     }
   ]

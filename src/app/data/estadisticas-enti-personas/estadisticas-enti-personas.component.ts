@@ -9,6 +9,7 @@ import { ChartData, ChartOptions, ChartType } from 'chart.js';
 import { finalize } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { BaseChartDirective } from 'ng2-charts';
+import { NETVORA_PALETTE } from '../../utils/helpers';
 
 type EntItem = { entidad: string; total: number };
 type TopUserItem = { usuario: string; total: number };
@@ -71,7 +72,16 @@ export class EstadisticasEntiPersonasComponent implements OnInit {
   // ===== Timeline =====
   timelineData: ChartData<'line'> = {
     labels: [],
-    datasets: [{ label: 'Posts por día', data: [], tension: 0.35, fill: false, pointRadius: 2 }]
+    datasets: [{ label: 'Posts por día', data: [], tension: 0.35, fill: false, pointRadius: 2,
+
+                borderColor: NETVORA_PALETTE.timeline.line,
+                backgroundColor: NETVORA_PALETTE.timeline.fill,
+                pointBackgroundColor: NETVORA_PALETTE.timeline.point,
+                  
+                 
+                  pointHoverRadius: 4,
+                  borderWidth: 2
+     }]
   };
 
   readonly lineOptions: ChartOptions<'line'> = {
@@ -96,11 +106,29 @@ export class EstadisticasEntiPersonasComponent implements OnInit {
   // ===== SentVsUser (stacked bar) =====
   sentVsUserData: ChartData<'bar'> = {
     labels: [],
-    datasets: [
-      { label: 'Negativo', data: [] },
-      { label: 'Neutro', data: [] },
-      { label: 'Positivo', data: [] }
-    ]
+     datasets: [
+    {
+      label: 'Negativo',
+      data: [],
+      backgroundColor: NETVORA_PALETTE.sentVsUser.negativo,
+      borderWidth: 0,
+      borderRadius: 6
+    },
+    {
+      label: 'Neutro',
+      data: [],
+      backgroundColor: NETVORA_PALETTE.sentVsUser.neutro,
+      borderWidth: 0,
+      borderRadius: 6
+    },
+    {
+      label: 'Positivo',
+      data: [],
+      backgroundColor: NETVORA_PALETTE.sentVsUser.positivo,
+      borderWidth: 0,
+      borderRadius: 6
+    }
+  ]
   };
 
   sentVsUserOptions: ChartOptions<'bar'> = {
@@ -212,7 +240,15 @@ export class EstadisticasEntiPersonasComponent implements OnInit {
           data: tl.map((x: any) => Number(x.total || 0)),
           tension: 0.35,
           fill: false,
-          pointRadius: 2
+          pointRadius: 2,
+      
+    
+          
+          borderColor: NETVORA_PALETTE.timeline.line,
+          backgroundColor: NETVORA_PALETTE.timeline.fill,
+          pointBackgroundColor: NETVORA_PALETTE.timeline.point,
+          pointHoverRadius: 4,
+          borderWidth: 2
         }
       ]
     };
@@ -227,7 +263,12 @@ export class EstadisticasEntiPersonasComponent implements OnInit {
           Number(s.negativo || 0),
           Number(s.neutro || 0),
           Number(s.positivo || 0)
-        ]
+        ],
+        backgroundColor: [
+                NETVORA_PALETTE.sentiment.negativo,
+                NETVORA_PALETTE.sentiment.neutro,
+                NETVORA_PALETTE.sentiment.positivo
+              ],
       }]
     };
 
@@ -244,9 +285,12 @@ export class EstadisticasEntiPersonasComponent implements OnInit {
     this.sentVsUserData = {
       labels: users,
       datasets: [
-        { label: 'Negativo', data: users.map(u => Number(svu[u]?.negativo || 0)) },
-        { label: 'Neutro', data: users.map(u => Number(svu[u]?.neutro || 0)) },
-        { label: 'Positivo', data: users.map(u => Number(svu[u]?.positivo || 0)) }
+        { label: 'Negativo', data: users.map(u => Number(svu[u]?.negativo || 0)), backgroundColor: NETVORA_PALETTE.sentiment.negativo, borderWidth: 0,
+      borderRadius: 6 },
+        { label: 'Neutro', data: users.map(u => Number(svu[u]?.neutro || 0)), backgroundColor: NETVORA_PALETTE.sentiment.neutro, borderWidth: 0,
+      borderRadius: 6 },
+        { label: 'Positivo', data: users.map(u => Number(svu[u]?.positivo || 0)), backgroundColor: NETVORA_PALETTE.sentiment.positivo, borderWidth: 0,
+      borderRadius: 6 }
       ]
     };
 

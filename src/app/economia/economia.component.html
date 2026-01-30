@@ -1,82 +1,95 @@
 <div class="container">
 
   <!-- 🔹 Encabezado principal mejorado -->
-  <div class="header">
-    <div class="header-content">
-      <h1>Noticias económicas</h1>
-      <p class="subtitle">
-        Explora las últimas noticias clasificadas por fecha y usuarios.
-        Filtra los resultados fácilmente y mantente al tanto de los temas más relevantes.
-      </p>
+  <!-- 🔹 Encabezado principal -->
+<header class="hero">
+  <div class="hero-main">
+    <div class="hero-kicker">Categoría Economía</div>
 
-      <ul class="info-list">
-        <li>⚡ Resultados en tiempo real</li>
-        <li>📊 Visualiza tendencias por usuario</li>
-        <li>🔍 Filtrado inteligente por fecha</li>
-        <li>📚 Compatible con múltiples formatos</li>
-        <li>📉 Análisis de sentimientos incluido</li>
-      </ul>
-    </div>
+   
+    <p class="hero-subtitle">
+      Clasificación de noticias por fecha y usuarios. Filtra rápido y detecta tendencias con sentimiento incluido.
+    </p>
 
-    <div class="header-image">
-      <img src="https://via.placeholder.com/180x120" alt="Logo o imagen">
+    <!-- ✅ en vez de lista larga -->
+    <div class="hero-chips">
+      <span class="chip">⚡ Tiempo real</span>
+      <span class="chip">📊 Tendencias por usuario</span>
+      <span class="chip">🗓️ Filtro por fecha</span>
+      <span class="chip">📉 Sentimiento</span>
     </div>
   </div>
+
+  <div class="hero-aside" aria-hidden="true">
+    <div class="hero-media">
+      <img src="logo.jpg" alt="" />
+    </div>
+  </div>
+</header>
+
 
   <!-- 🔹 Filtros -->
-  <div class="filters-section">
+ <div class="filters-row">
 
-    <div class="filters-header">
-      <h3>
-        <mat-icon>tune</mat-icon>
-        Filtros
-      </h3>
-    </div>
+  <!-- Fecha -->
+  <mat-form-field appearance="outline" class="filter-item">
+    <mat-label>Rango de fechas</mat-label>
 
-    <div class="filters-row">
-      <!-- Fecha -->
-      <mat-form-field appearance="outline" class="filter-item">
-        <mat-label>Rango de fechas</mat-label>
-        <mat-date-range-input [rangePicker]="picker">
-          <input matStartDate placeholder="Inicio" [(ngModel)]="startDate">
-          <input matEndDate placeholder="Fin" [(ngModel)]="endDate">
-        </mat-date-range-input>
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-date-range-picker #picker></mat-date-range-picker>
-      </mat-form-field>
+    <mat-date-range-input [rangePicker]="picker">
+      <input matStartDate placeholder="Inicio"
+             [(ngModel)]="startDate"
+             [ngModelOptions]="{ standalone: true }">
+      <input matEndDate placeholder="Fin"
+             [(ngModel)]="endDate"
+             [ngModelOptions]="{ standalone: true }">
+    </mat-date-range-input>
 
-      <!-- Usuarios -->
-      <mat-form-field appearance="fill" class="filter-item">
-        <mat-label>Seleccionar usuarios</mat-label>
-        <mat-select [(ngModel)]="selectedUsers" multiple>
-          <mat-option *ngFor="let user of users" [value]="user.idTweetUser">
-            {{ user.TweetUser }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-date-range-picker #picker></mat-date-range-picker>
+  </mat-form-field>
 
-      <!-- Búsqueda por texto -->
-      <mat-form-field appearance="outline" class="filter-item">
-        <mat-label>Buscar</mat-label>
-        <input matInput [(ngModel)]="searchText" placeholder="Texto de búsqueda">
-      </mat-form-field>
+  <!-- Usuarios -->
+  <mat-form-field appearance="outline" class="filter-item">
+    <mat-label>Seleccionar usuarios</mat-label>
 
-      <!-- Botones -->
-      <div class="filter-buttons">
-        <button mat-flat-button color="primary" class="filter-btn"
-                (click)="filtrar()">
-          <mat-icon>search</mat-icon>
-          Filtrar
-        </button>
+    <mat-select [(ngModel)]="selectedUsers"
+                [ngModelOptions]="{ standalone: true }"
+                multiple>
 
-        <button mat-flat-button color="accent" class="filter-btn"
-                >
-          <mat-icon>refresh</mat-icon>
-          Limpiar
-        </button>
-      </div>
-    </div>
+      <mat-option *ngFor="let user of users" [value]="user.idTweetUser">
+        {{ user.TweetUser }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- Búsqueda por texto -->
+  <mat-form-field appearance="outline" class="filter-item">
+    <mat-label>Buscar</mat-label>
+    <input matInput placeholder="Texto de búsqueda"
+           [(ngModel)]="searchText"
+           [ngModelOptions]="{ standalone: true }">
+  </mat-form-field>
+
+  <!-- Botones -->
+  <div class="filter-buttons">
+    <button type="button"
+            mat-flat-button
+            class="filter-btn"
+            (click)="filtrar()">
+      <mat-icon>search</mat-icon>
+      Filtrar
+    </button>
+
+    <button type="button"
+            mat-flat-button
+            class="filter-btn ghost"
+            >
+      <mat-icon>refresh</mat-icon>
+      Limpiar
+    </button>
   </div>
+
+</div>
 
   <!-- 🔹 Estado de carga -->
   <div *ngIf="cargando" class="loading">⏳ Cargando noticias...</div>

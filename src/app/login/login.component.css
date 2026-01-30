@@ -30,34 +30,66 @@
   height: 100%;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-  padding: clamp(18px, 3vw, 40px);
+
+  padding: clamp(28px, 4vw, 64px);
+  padding-left: clamp(32px, 5vw, 90px);
+  padding-right: clamp(28px, 4vw, 64px);
+
+  /* 🔥 CENTRO PERFECTO */
+  display: flex;
+  justify-content: center; /* centro X */
+  align-items: center;     /* centro Y */
 }
+
 
 .left-inner{
   max-width: 520px;
-  /* arriba al inicio, no centrado */
+  width: 100%;
+    transform: translateY(-10%);
+}
+.left-inner{
+  max-width: 520px;
+  width: 100%;
+  transform: none;        /* antes: translateY(-10%) */
 }
 
-.brand{
+/* ✅ como ahora hay header arriba, centrado más natural */
+.left{
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;   /* mejor que center cuando hay header sticky */
+}
+
+
+.brand{
+  position: sticky;     /* se queda arriba si haces scroll */
+  top: 0;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
   gap: 12px;
-  margin-bottom: 18px;
+
+  padding: 18px 0 14px;
+  background: var(--bg);              /* evita transparencia rara al hacer scroll */
+  border-bottom: 1px solid var(--line);
 }
 
 .brand-logo{
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
+  max-width: 44px;
+  max-height: 44px;
   object-fit: contain;
-  border-radius: 12px;
-  box-shadow: 0 10px 22px rgba(2,6,23,0.10);
 }
+
 
 .title{
   margin: 0;
-  font-size: 20px;
+  font-size: 16px;
+  line-height: 1.15;
   font-weight: 950;
-  letter-spacing: 0.2px;
+  white-space: nowrap;
 }
 
 .title span{

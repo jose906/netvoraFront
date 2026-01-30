@@ -2,7 +2,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root{
-  --bg: #f6f7f9;
+  --bg: #ffffff;
   --surface: #ffffff;
   --text: #0f172a;       /* slate-900 */
   --muted: #64748b;      /* slate-500 */
@@ -12,7 +12,7 @@
   --soft: #f1f5f9;       /* slate-100 */
   --soft2:#f8fafc;       /* slate-50 */
   --focus: rgba(15, 23, 42, 0.18);
-  -accent: #6d28d9;
+  --accent: #6d28d9;
   --accent-soft: rgba(109, 40, 217, 0.10);
   --accent-softer: rgba(109, 40, 217, 0.06);
   --accent-border: rgba(109, 40, 217, 0.18);
@@ -39,31 +39,146 @@
   margin-left: auto;
   margin-right: auto;
 }
+:root{
+  /* ...tus variables... */
+  --accent: #6d28d9; /* ✅ ARREGLADO: antes tenías -accent */
+}
+
+/* =======================
+   HERO HEADER (NetVora)
+======================= */
+.hero{
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 18px;
+
+  padding: 18px 18px;
+  border-radius: 18px;
+
+  background:
+    radial-gradient(900px 240px at 10% 0%, var(--accent-softer), transparent 55%),
+    rgba(255,255,255,0.70);
+
+  
+  box-shadow: 0 12px 30px rgba(255,255,255,0.06);
+
+  margin-bottom: 16px;
+}
+
+.hero-kicker{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+
+  color: rgba(109,40,217,0.95);
+  background: rgba(109,40,217,0.10);
+  border: 1px solid rgba(109,40,217,0.18);
+  padding: 6px 10px;
+  border-radius: 999px;
+
+  width: fit-content;
+  margin-bottom: 10px;
+}
+
+.hero-title{
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.12;
+  font-weight: 950;
+  letter-spacing: 0.2px;
+  color: var(--text);
+}
+
+.hero-title span{
+  color: var(--accent);
+}
+
+.hero-subtitle{
+  margin: 10px 0 12px;
+  max-width: 720px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+/* ✅ chips en vez de lista larga */
+.hero-chips{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 6px 10px;
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 850;
+
+  background: rgba(255,255,255,0.70);
+  border: 1px solid rgba(148,163,184,0.35);
+  color: rgba(15,23,42,0.86);
+}
+
+/* ===== Aside image ===== */
+.hero-aside{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.hero-media{
+  width: 220px;
+  height: 130px;
+  border-radius: 16px;
+  overflow: hidden;
+
+  background: rgba(255,255,255,0.60);
+  border: 1px solid rgba(109,40,217,0.18);
+  box-shadow: 0 10px 24px rgba(2,6,23,0.08), 0 0 0 4px var(--accent-softer);
+
+  display: grid;
+  place-items: center;
+}
+
+.hero-media img{
+  width: 76%;
+  height: auto;
+  object-fit: contain;
+  opacity: 0.95;
+}
+
+/* =======================
+   Responsive
+======================= */
+@media (max-width: 768px){
+  .hero{
+    grid-template-columns: 1fr;
+  }
+  .hero-aside{
+    justify-content: flex-start;
+  }
+  .hero-media{
+    width: 180px;
+    height: 110px;
+  }
+}
 
 /* ---------------------- */
 /* Header (más sobrio, pro) */
 /* ---------------------- */
-.header{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 18px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 16px;
-}
 
-.header-content h1{
-  font-size: 28px;
-  line-height: 1.15;
-  font-weight: 900;
-  letter-spacing: 0.2px;
-  color: var(--text);
-  margin-bottom: 8px;
-  display: inline-block;
-  border-bottom: 4px solid rgba(109,40,217,0.18);
-  padding-bottom: 6px;
-}
+
+
 
 .subtitle{
   max-width: 720px;
@@ -74,22 +189,10 @@
 }
 
 /* lista más limpia */
-.info-list{
-  margin: 0;
-  padding-left: 18px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.6;
-}
+
 .info-list li{ margin-bottom: 4px; }
 
-.header-image img{
-  width: 160px;
-  height: auto;
-  border-radius: 14px;
-  border: 1px solid var(--accent-border);
-  box-shadow: 0 6px 18px rgba(2,6,23,0.06), 0 0 0 4px var(--accent-softer);
-}
+
 
 /* ---------------------- */
 /* Filtros (mismo estilo que antes) */
@@ -123,6 +226,40 @@
    background: radial-gradient(700px 220px at 10% 0%, var(--accent-softer), transparent 60%), rgba(255,255,255,0.55);
   border: 1px solid var(--accent-border);
 }
+/* ✅ arregla 'end' -> flex-end */
+.filters-row{
+  align-items: flex-end;
+}
+
+/* ✅ asegura que cada mat-form-field ocupe todo el ancho del item */
+.filter-item{
+  width: 100%;
+}
+
+/* ✅ botones alineados y sin saltos */
+.filter-buttons{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ✅ botón secundario (limpiar) tipo ghost */
+.filter-btn.ghost{
+  background: rgba(255,255,255,0.65) !important;
+  color: rgba(15,23,42,0.86) !important;
+  border: 1px solid rgba(148,163,184,0.35) !important;
+}
+.filter-btn.ghost:hover{
+  background: rgba(241,245,249,0.9) !important;
+  border-color: rgba(148,163,184,0.45) !important;
+}
+
+/* ✅ opcional: que los mat-form-field se vean iguales */
+:host ::ng-deep .filters-row .mat-mdc-form-field{
+  width: 100%;
+}
+
 
 .filter-item{
   flex: 1 1 280px;

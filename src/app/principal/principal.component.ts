@@ -129,6 +129,9 @@ export class PrincipalComponent implements OnInit {
     this.weekMin = 0;
     this.weekAvg = 0;
   }
+   limpiar() {
+   
+  }
 
   private buildWeekIndexLineChart(days: HomePageResponse['last_7_days']): void {
     const safeDays = Array.isArray(days) ? days : [];

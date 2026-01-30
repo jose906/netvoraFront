@@ -61,11 +61,11 @@ app-menu{
 /* Login */
 .login-wrapper{
   min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 26px;
-  background: var(--bg);
+  padding: 0;         /* ✅ */
+  display: block;     /* ✅ evita centrar */
+  background: #fff;   /* ✅ fondo blanco */
 }
+
 
 @media (max-width: 900px){
   app-menu{

@@ -4,7 +4,7 @@
   <!-- 🔹 Header -->
   <div class="sidebar-header">
     <div class="app-logo">
-      <span class="logo-circle">AN</span>
+      <span class="logo-circle">NT</span>
       <div class="app-text">
         <h2>Netvora</h2>
         <small>Panel de control</small>
@@ -159,7 +159,7 @@
 
         <div class="user-meta">
           <span class="user-name">{{ (userDisplayName$ | async) || 'Usuario' }}</span>
-          <span class="user-email">{{ (userEmail$ | async) || '—' }}</span>
+          
         </div>
 
         <span class="role-badge">
@@ -168,16 +168,7 @@
       </div>
 
       <!-- Acciones rápidas (opcionales) -->
-      <div class="user-actions">
-        <a routerLink="/perfil" matTooltip="Ver perfil">
-          <i class="fas fa-id-card"></i>
-          <span>Perfil</span>
-        </a>
-        <a routerLink="/ajustes" matTooltip="Ajustes">
-          <i class="fas fa-gear"></i>
-          <span>Ajustes</span>
-        </a>
-      </div>
+      
     </div>
 
     <button mat-flat-button class="logout-btn" (click)="logout()">

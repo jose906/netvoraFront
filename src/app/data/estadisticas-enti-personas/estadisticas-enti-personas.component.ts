@@ -150,14 +150,29 @@ export class EstadisticasEntiPersonasComponent implements OnInit {
   };
 
   userIndiceChartOptions: ChartOptions<'bar'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: true }, tooltip: { enabled: true } },
-    scales: {
-      x: { ticks: { maxRotation: 0 } },
-      y: { beginAtZero: true }
+  responsive: true,
+  maintainAspectRatio: false,
+  indexAxis: 'y',
+  plugins: {
+    legend: { display: true },
+    tooltip: {
+      callbacks: {
+        label: (ctx) => {
+          const v = Number(ctx.raw ?? 0);
+          return `Índice: ${v.toFixed(1)}%`;
+        }
+      }
     }
-  };
+  },
+  scales: {
+    x: {
+      min: -100,
+      max: 100,
+      ticks: { callback: (v) => `${v}%` }
+    },
+    y: { ticks: { autoSkip: false } }
+  }
+};
 
   // ===== ✅ Wordcloud =====
   wordcloudUrl: string | null = null;

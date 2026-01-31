@@ -17,6 +17,7 @@ type CategoryKey =
   | 'gestion'
   | 'otros'
   | 'entidades'
+  | 'ambiente'
   | 'personas';
 
 interface NewsResponse {
@@ -66,6 +67,7 @@ export class CatSelectComponent implements OnInit{
     otros: (body) => this.apiService.getPostsOtros(body),
     entidades: (body) => this.apiService.getPostsEntidades(body),
     personas: (body) => this.apiService.getPostPer(body),
+    ambiente: (body) => this.apiService.getPostsAmbiente(body),
   };
 
   constructor(

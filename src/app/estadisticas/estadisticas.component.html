@@ -68,6 +68,13 @@
         <mat-icon>school</mat-icon>
         <span>Educación</span>
       </button>
+      
+      <button mat-raised-button class="nav-btn"
+        [class.is-active]="selectedComponent === 'ambiente'"
+        (click)="cambiarGrafico('ambiente')">
+        <mat-icon>eco</mat-icon>
+        <span>Medio Ambiente</span>
+      </button>
 
       <button mat-raised-button class="nav-btn"
         [class.is-active]="selectedComponent === 'gestiones'"
@@ -152,6 +159,9 @@
     [startDate]="startDate" [endDate]="endDate" [selectedUsers]="selectedUsers"></app-politica-estadisticas>
 
   <app-politica-estadisticas *ngIf="selectedComponent === 'social'" categoria="social"
+    [startDate]="startDate" [endDate]="endDate" [selectedUsers]="selectedUsers"></app-politica-estadisticas>
+
+    <app-politica-estadisticas *ngIf="selectedComponent === 'ambiente'" categoria="ambiente"
     [startDate]="startDate" [endDate]="endDate" [selectedUsers]="selectedUsers"></app-politica-estadisticas>
 
   <app-politica-estadisticas *ngIf="selectedComponent === 'salud'" categoria="salud"

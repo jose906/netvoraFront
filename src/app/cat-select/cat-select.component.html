@@ -1,17 +1,94 @@
 <header class="top-menu">
-  <nav class="menu-items">
-    <button type="button" (click)="onSelect('inicio')">Inicio</button>
-    <button type="button" (click)="onSelect('politica')">Política</button>
-    <button type="button" (click)="onSelect('economia')">Economía</button>
-    <button type="button" (click)="onSelect('seguridad')">Seguridad</button>
-    <button type="button" (click)="onSelect('deportes')">Deportes</button>
-    <button type="button" (click)="onSelect('salud')">Salud</button>
-    <button type="button" (click)="onSelect('sociedad')">Sociedad</button>
-    <button type="button" (click)="onSelect('educacion')">Educación</button>
-    <button type="button" (click)="onSelect('gestion')">Gestiones Públicas</button>
-    <button type="button" (click)="onSelect('otros')">Otros</button>
-    <button type="button" (click)="onSelect('entidades')">Entidades Públicas</button>
-    <button type="button" (click)="onSelect('personas')">Personas Públicas</button>
+  <nav class="menu-items" aria-label="Categorías">
+    <button
+      type="button"
+      (click)="onSelect('inicio')"
+      [class.is-active]="activeCategory === 'inicio'">
+      Inicio
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('politica')"
+      [class.is-active]="activeCategory === 'politica'">
+      Política
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('economia')"
+      [class.is-active]="activeCategory === 'economia'">
+      Economía
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('seguridad')"
+      [class.is-active]="activeCategory === 'seguridad'">
+      Seguridad
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('deportes')"
+      [class.is-active]="activeCategory === 'deportes'">
+      Deportes
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('salud')"
+      [class.is-active]="activeCategory === 'salud'">
+      Salud
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('sociedad')"
+      [class.is-active]="activeCategory === 'sociedad'">
+      Sociedad
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('educacion')"
+      [class.is-active]="activeCategory === 'educacion'">
+      Educación
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('gestion')"
+      [class.is-active]="activeCategory === 'gestion'">
+      Gestiones Públicas
+    </button>
+    <button
+      type="button"
+      (click)="onSelect('ambiente')"
+      [class.is-active]="activeCategory === 'ambiente'">
+      Medio Ambiente
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('otros')"
+      [class.is-active]="activeCategory === 'otros'">
+      Otros
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('entidades')"
+      [class.is-active]="activeCategory === 'entidades'">
+      Entidades Públicas
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('personas')"
+      [class.is-active]="activeCategory === 'personas'">
+      Personas Públicas
+    </button>
   </nav>
 </header>
 
@@ -73,19 +150,28 @@
   <!-- Lista -->
   <section *ngIf="!cargando && datos.length" class="news-container">
     <article *ngFor="let item of datos" class="news-item">
+
       <div class="news-header">
         <div class="news-title">{{ item.TweetUser }}</div>
 
-        <span
-          class="status-chip"
-          [ngClass]="{
-            negativo: item.sentimiento === 'negativo',
-            neutral: item.sentimiento === 'neutro',
-            positivo: item.sentimiento === 'positivo'
-          }"
-        >
-          {{ item.sentimiento }}
-        </span>
+        <!-- ✅ Pills derecha: sentimiento + categoría -->
+        <div class="chips-right">
+          <span
+            class="status-chip"
+            [ngClass]="{
+              negativo: item.sentimiento === 'negativo',
+              neutral: item.sentimiento === 'neutro',
+              positivo: item.sentimiento === 'positivo'
+            }"
+          >
+            {{ item.sentimiento }}
+          </span>
+
+          <!-- ✅ NUEVO: pill de categoría -->
+          <span class="category-chip">
+            {{ item.categoria }}
+          </span>
+        </div>
       </div>
 
       <p class="news-text">{{ item.text }}</p>
@@ -100,6 +186,7 @@
         </div>
       </div>
 
+      <!-- Acciones por categoría -->
       <div class="news-actions">
         <button type="button" (click)="accion(item.tweetid, 'Politica', item.categoria)">Política</button>
         <button type="button" (click)="accion(item.tweetid, 'Economia', item.categoria)">Economía</button>
@@ -108,9 +195,18 @@
         <button type="button" (click)="accion(item.tweetid, 'Salud', item.categoria)">Salud</button>
         <button type="button" (click)="accion(item.tweetid, 'Sociedad', item.categoria)">Sociedad</button>
         <button type="button" (click)="accion(item.tweetid, 'Educacion', item.categoria)">Educación</button>
+        <button type="button" (click)="accion(item.tweetid, 'Ambiente', item.categoria)">Medio Ambiente</button>
         <button type="button" (click)="accion(item.tweetid, 'Gestion', item.categoria)">Gestión</button>
         <button type="button" (click)="accion(item.tweetid, 'Otros', item.categoria)">Otros</button>
       </div>
+
+      <!-- ✅ NUEVO: acciones por sentimiento -->
+      <div class="sentiment-actions">
+        <button type="button" class="sbtn pos" (click)="accion(item.tweetid, 'Positivo', item.categoria)">Positivo</button>
+        <button type="button" class="sbtn neu" (click)="accion(item.tweetid, 'Neutro', item.categoria)">Neutro</button>
+        <button type="button" class="sbtn neg" (click)="accion(item.tweetid, 'Negativo', item.categoria)">Negativo</button>
+      </div>
+
     </article>
   </section>
 

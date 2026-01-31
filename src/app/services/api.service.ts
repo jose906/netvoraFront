@@ -35,6 +35,10 @@ export class ApiService {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<NewsData[]>(`${this.apiUrl+'tweets'}`,body,{headers});
   }
+  getPostsAmbiente(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post<NewsData[]>(this.apiUrl+'ambiente',body,{headers});
+  }
 
 
   getPostsEco(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {

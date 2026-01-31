@@ -1,26 +1,25 @@
 /* Base */
 * { margin: 0; padding: 0; box-sizing: border-box; }
+
 :root{
   --bg: #f6f7f9;
-  --text: #0f172a;     /* slate-900 */
-  --muted: #64748b;    /* slate-500 */
+  --text: #0f172a;
+  --muted: #64748b;
   --line: #e5e7eb;
   --surface: #ffffff;
 
-  /* sobrio */
   --ink: #111827;
-  --soft: #f1f5f9;     /* slate-100 */
-  --soft2: #f8fafc;    /* slate-50 */
+  --soft: #f1f5f9;
+  --soft2: #f8fafc;
 
-  /* botones */
   --btn: #0f172a;
   --btnText: #f8fafc;
   --btnLine: #d1d5db;
 
-  /* focus */
   --focus: rgba(15, 23, 42, 0.18);
 }
 
+/* Page */
 .page{
   background: var(--bg);
   min-height: 100vh;
@@ -30,69 +29,69 @@
 }
 
 /* ------------------------------
-   TOP MENU (más premium)
+   TOP MENU (mejorado + activo)
 --------------------------------*/
 .top-menu{
   position: sticky;
   top: 0;
   z-index: 20;
+
   background: rgba(255,255,255,0.92);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
 }
 
-/* contenedor scrollable sin barra fea */
 .menu-items{
   display: flex;
   gap: 10px;
   padding: 10px 14px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;         /* Firefox */
+  scrollbar-width: none;
 }
-.menu-items::-webkit-scrollbar{  /* Chrome/Safari */
-  height: 0;
-}
+.menu-items::-webkit-scrollbar{ height: 0; }
 
 .menu-items button{
-  border: 1px solid rgba(148,163,184,0.45); /* slate-400 suave */
+  border: 1px solid rgba(148,163,184,0.45);
   background: rgba(248,250,252,0.75);
   color: var(--ink);
+
   padding: 8px 12px;
   border-radius: 999px;
+
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 750;
   letter-spacing: 0.2px;
   cursor: pointer;
   white-space: nowrap;
-  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+
+  transition: transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;
 }
 
 .menu-items button:hover{
   background: rgba(241,245,249,0.95);
   border-color: rgba(148,163,184,0.7);
   transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(2,6,23,0.06);
 }
 
-.menu-items button:active{
-  transform: translateY(0px);
-}
+.menu-items button:active{ transform: translateY(0px); }
 
 .menu-items button:focus-visible{
   outline: none;
   box-shadow: 0 0 0 4px var(--focus);
 }
 
-/* (Opcional si luego marcas active con clase) */
-/* .menu-items button.is-active{
-  background: var(--ink);
+/* ✅ Activo: bien visible */
+.menu-items button.is-active{
+  background: rgba(15,23,42,0.92);
   color: var(--btnText);
   border-color: transparent;
-} */
-
+  box-shadow: 0 12px 30px rgba(2,6,23,0.12);
+}
 
 /* ------------------------------
-   FILTROS (más aesthetic, sin card)
+   FILTROS
 --------------------------------*/
 .filters-section{
   margin-top: 16px;
@@ -113,7 +112,7 @@
   align-items: center;
   gap: 8px;
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 900;
   color: var(--text);
   margin: 0;
 }
@@ -128,12 +127,11 @@
   white-space: nowrap;
 }
 
-/* La “barra” de filtros: sin card, pero con superficie sutil */
 .filters-row{
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  align-items: end;
+  align-items: flex-end;
 
   padding: 12px 12px;
   background: rgba(255,255,255,0.55);
@@ -141,7 +139,6 @@
   border-radius: 14px;
 }
 
-/* Ajustes suaves para Angular Material (sin reventar tu look) */
 .filter-item{
   flex: 1 1 280px;
   min-width: 260px;
@@ -151,27 +148,25 @@
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
-/* Botones de filtros: sobrios, pro */
 .filter-btn{
   border-radius: 999px !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
   letter-spacing: 0.2px;
   padding: 10px 14px !important;
   box-shadow: none !important;
 }
 
-/* Para que "Filtrar" se vea más pro sin colores chillones */
 button[mat-flat-button].filter-btn{
   background: var(--ink) !important;
   color: var(--btnText) !important;
 }
 button[mat-flat-button].filter-btn:hover{
-  filter: brightness(1.04);
+  filter: brightness(1.06);
 }
 
-/* "Limpiar" más fino */
 button[mat-stroked-button].filter-btn{
   border-color: rgba(148,163,184,0.55) !important;
   color: var(--ink) !important;
@@ -186,7 +181,6 @@ button.filter-btn:focus-visible{
   box-shadow: 0 0 0 4px var(--focus) !important;
 }
 
-
 /* ------------------------------
    ESTADOS
 --------------------------------*/
@@ -198,9 +192,8 @@ button.filter-btn:focus-visible{
 }
 .state-error{ color: #b91c1c; }
 
-
 /* ------------------------------
-   NOTICIAS (igual idea, solo micro refinado)
+   NOTICIAS
 --------------------------------*/
 .news-container{
   margin-top: 16px;
@@ -223,8 +216,16 @@ button.filter-btn:focus-visible{
 
 .news-title{
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: 0.2px;
+}
+
+.chips-right{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .status-chip{
@@ -237,10 +238,20 @@ button.filter-btn:focus-visible{
   text-transform: capitalize;
 }
 
-/* colores suaves, más sobrios */
 .status-chip.negativo{ background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.18); }
 .status-chip.neutral{  background: rgba(245,158,11,0.10); border-color: rgba(245,158,11,0.20); }
 .status-chip.positivo{ background: rgba(34,197,94,0.10); border-color: rgba(34,197,94,0.20); }
+
+/* ✅ NUEVO: chip de categoría */
+.category-chip{
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.12);
+  background: rgba(15,23,42,0.06);
+  color: rgba(15,23,42,0.86);
+  text-transform: capitalize;
+}
 
 .news-text{
   color: var(--text);
@@ -262,6 +273,7 @@ button.filter-btn:focus-visible{
 .sentiment-icons{
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .sentiment-icons .icon{
@@ -270,13 +282,12 @@ button.filter-btn:focus-visible{
   border-radius: 999px;
   background: rgba(255,255,255,0.85);
 }
-
 .sentiment-icons b{
-  font-weight: 800;
+  font-weight: 900;
   color: var(--ink);
 }
 
-/* Botones de acciones (más limpios y menos “botón default”) */
+/* Botones categoría */
 .news-actions{
   margin-top: 10px;
   display: flex;
@@ -291,15 +302,16 @@ button.filter-btn:focus-visible{
   padding: 7px 10px;
   border-radius: 999px;
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 750;
   cursor: pointer;
-  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;
 }
 
 .news-actions button:hover{
   background: rgba(241,245,249,0.95);
   border-color: rgba(148,163,184,0.7);
   transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(2,6,23,0.06);
 }
 
 .news-actions button:focus-visible{
@@ -307,9 +319,54 @@ button.filter-btn:focus-visible{
   box-shadow: 0 0 0 4px var(--focus);
 }
 
+/* ✅ NUEVO: botones de sentimiento (debajo) */
+.sentiment-actions{
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sentiment-actions .sbtn{
+  border: 1px solid rgba(148,163,184,0.45);
+  background: rgba(255,255,255,0.75);
+  color: var(--ink);
+
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 850;
+  cursor: pointer;
+
+  transition: transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+
+.sentiment-actions .sbtn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(2,6,23,0.06);
+}
+
+/* colores sobrios (no chillones) */
+.sentiment-actions .sbtn.pos{
+  background: rgba(34,197,94,0.10);
+  border-color: rgba(34,197,94,0.22);
+}
+.sentiment-actions .sbtn.neu{
+  background: rgba(245,158,11,0.12);
+  border-color: rgba(245,158,11,0.22);
+}
+.sentiment-actions .sbtn.neg{
+  background: rgba(239,68,68,0.10);
+  border-color: rgba(239,68,68,0.22);
+}
+
+.sentiment-actions .sbtn:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 4px var(--focus);
+}
 
 /* ------------------------------
-   PAGINACIÓN (más aesthetic)
+   PAGINACIÓN
 --------------------------------*/
 .pagination{
   margin-top: 18px;
@@ -322,25 +379,22 @@ button.filter-btn:focus-visible{
   border-top: 1px solid var(--line);
 }
 
-/* indicador centrado bonito */
 .pagination .page-indicator{
   background: rgba(255,255,255,0.85);
   border: 1px solid rgba(148,163,184,0.35);
   padding: 6px 12px;
   border-radius: 999px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
-/* botones paginación pro, sin “azul chillón” */
 .pagination-btn{
   border-radius: 999px !important;
   padding: 10px 14px !important;
-  font-weight: 800 !important;
+  font-weight: 900 !important;
   letter-spacing: 0.2px;
   box-shadow: none !important;
 }
 
-/* Forzamos un look sobrio al mat-flat-button */
 button[mat-flat-button].pagination-btn{
   background: rgba(15,23,42,0.92) !important;
   color: var(--btnText) !important;
@@ -349,7 +403,6 @@ button[mat-flat-button].pagination-btn:hover{
   filter: brightness(1.06);
 }
 
-/* disabled elegante */
 button[mat-flat-button].pagination-btn[disabled]{
   background: rgba(15,23,42,0.25) !important;
   color: rgba(248,250,252,0.85) !important;
@@ -362,4 +415,5 @@ button[mat-flat-button].pagination-btn[disabled]{
   .filter-item{ min-width: 100%; }
   .filter-buttons{ width: 100%; justify-content: flex-start; }
   .pagination{ justify-content: space-between; }
+  .chips-right{ justify-content: flex-start; }
 }

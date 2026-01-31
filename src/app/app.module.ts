@@ -51,6 +51,7 @@ import { CatSelectComponent } from './cat-select/cat-select.component';
 import { RoleGuard } from './core/guards/role.guard';
 import { EstadisticasEntiPersonasComponent } from './data/estadisticas-enti-personas/estadisticas-enti-personas.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { AmbienteComponent } from './ambiente/ambiente.component';
 
 // Initialize Firebase
 
@@ -64,6 +65,7 @@ const routes: Routes = [
   { path: 'estadisticas', component:EstadisticasComponent },
   { path: 'deportes', component:DeportesComponent },
   { path: 'social', component:SocialComponent},
+  { path: 'ambiente', component:AmbienteComponent},
   { path: 'administrador', component:AdministradorComponent, canActivate: [AuthGuard, RoleGuard], data: { roles: ['admin']},},
   { path: 'personas', component:PersonasComponent},
   { path: 'salud', component:SaludComponent},
@@ -101,6 +103,7 @@ const routes: Routes = [
     EntidadesComponent,
     CatSelectComponent,
     EstadisticasEntiPersonasComponent,
+    AmbienteComponent,
   ],
   imports: [
     BrowserModule,

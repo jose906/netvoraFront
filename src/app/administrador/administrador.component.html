@@ -2,16 +2,23 @@
 
   <!-- Header del módulo -->
   <header class="page-head">
-    <div>
-      <h1 class="page-title">Usuarios</h1>
-      <p class="page-subtitle">Registra, busca y gestiona usuarios del sistema.</p>
+    <div class="page-head-inner">
+      <div class="page-head-text">
+        <h1 class="page-title">Usuarios</h1>
+        <p class="page-subtitle">Registra, busca y gestiona usuarios del sistema.</p>
+      </div>
+
+      <div class="page-head-badges">
+        <span class="badge subtle">Administración</span>
+        <span class="badge">Usuarios</span>
+      </div>
     </div>
   </header>
 
   <!-- Layout principal -->
   <div class="layout">
 
-    <!-- Columna izquierda: Registrar -->
+    <!-- Columna izquierda -->
     <section class="card">
       <div class="card-head">
         <h2 class="card-title">Registrar usuario</h2>
@@ -54,27 +61,19 @@
       </div>
 
       <div class="actions">
-        <button class="btn btn-dark" (click)="registrarUsuario()">
-          Registrar
-        </button>
-        <button class="btn btn-ghost" type="button" (click)="cancelar()">
-          Limpiar
-        </button>
+        <button class="btn btn-dark" (click)="registrarUsuario()">Registrar</button>
+        <button class="btn btn-ghost" type="button" (click)="cancelar()">Limpiar</button>
       </div>
 
       <div class="hint">
         Consejo: usa un email válido y una contraseña segura.
       </div>
-
-      <ng-template #sinTop>
-        <div class="state">No hay resultados aún.</div>
-      </ng-template>
     </section>
 
-    <!-- Columna derecha: Buscar + Lista -->
+    <!-- Columna derecha -->
     <section class="stack">
 
-      <!-- Buscar / Agregar -->
+      <!-- Buscar -->
       <div class="card">
         <div class="card-head">
           <h2 class="card-title">Administrar usuarios</h2>
@@ -83,25 +82,13 @@
 
         <div class="form-grid-2">
           <div class="form-group">
-            <label for="nombre">Buscar por nombre</label>
-            <input
-              #inputNombre
-              id="nombre"
-              type="text"
-              placeholder="Ej: juan_perez"
-              class="input"
-            />
+            <label>Buscar por nombre</label>
+            <input #inputNombre class="input" type="text" placeholder="Ej: juan_perez"/>
           </div>
 
           <div class="form-group">
-            <label for="idUser">Buscar por ID</label>
-            <input
-              #inputId
-              id="idUser"
-              type="text"
-              placeholder="Ej: 123"
-              class="input"
-            />
+            <label>Buscar por ID</label>
+            <input #inputId class="input" type="text" placeholder="Ej: 123"/>
           </div>
         </div>
 
@@ -109,14 +96,12 @@
           <button class="btn btn-dark" (click)="buscar(inputNombre.value, inputId.value)">
             Buscar
           </button>
-          <button class="btn btn-ghost" type="button" (click)="cancelar()">
-            Limpiar
-          </button>
+          <button class="btn btn-ghost" type="button" (click)="cancelar()">Limpiar</button>
         </div>
 
         <div class="form-group">
-          <label for="opciones">Clasificación</label>
-          <select #selectOpciones id="opciones" class="select">
+          <label>Clasificación</label>
+          <select #selectOpciones class="select">
             <option value="">Seleccione una opción</option>
             <option value="Medio">Medio</option>
             <option value="Persona">Persona</option>
@@ -140,8 +125,7 @@
         <button
           [disabled]="!user"
           class="btn btn-success full"
-          (click)="agregar(user!.username, user!.id, user!.name, selectOpciones.value)"
-        >
+          (click)="agregar(user!.username, user!.id, user!.name, selectOpciones.value)">
           Agregar usuario
         </button>
       </div>
@@ -153,20 +137,24 @@
             <h2 class="card-title">Lista de usuarios</h2>
             <p class="card-subtitle">Usuarios ya registrados</p>
           </div>
-
-          <span class="badge subtle">{{ users || 0 }} total</span>
+          <span class="badge subtle">{{ users.length || 0 }} total</span>
         </div>
 
-        <div *ngIf="cargando" class="state">Cargando usuarios...</div>
+        <div *ngIf="cargando" class="state">Cargando usuarios…</div>
 
         <div *ngIf="!cargando && users.length" class="lista-users">
           <div *ngFor="let item of users" class="user-row">
             <div class="user-main">
-              <span class="user-name">{{ item.TweetUser }}</span>
+              <div class="user-left">
+                <div class="user-avatar">
+                  {{ (item.TweetUser || 'U').slice(0,1) }}
+                </div>
+                <div class="user-meta">
+                  <span class="user-name">{{ item.TweetUser }}</span>
+                  <span class="user-id">ID: {{ item.idTweetUser }}</span>
+                </div>
+              </div>
               <span class="chip">{{ item.tipeUser }}</span>
-            </div>
-            <div class="user-sub">
-              <span class="user-id">ID: {{ item.idTweetUser }}</span>
             </div>
           </div>
         </div>

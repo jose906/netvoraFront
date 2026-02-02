@@ -190,6 +190,19 @@ export class CatSelectComponent implements OnInit{
       });
   }
 
+  accionsentiment(tweetId: string, newSentimiento: string, oldSentimiento: string): void {
+    this.apiService
+      .updateSentiment({ idTweet: tweetId, newSentiment: newSentimiento, oldSentiment: oldSentimiento })
+      .subscribe({
+        next: (resp) => {
+          console.log('✅ Sentimiento actualizado:', resp);
+          // opcional: refrescar lista sin resetear página
+          this.loadByCategory(this.activeCategory, { page: this.currentPage });
+        },
+        error: (err) => console.error('❌ Error al actualizar sentimiento:', err),
+      });
+    }
+
   
 
 }

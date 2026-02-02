@@ -145,6 +145,12 @@ export class ApiService {
     return this.http.post<any>(this.apiUrl+'update_category',body, {headers});
     
   }
+ 
+  updateSentiment(body: { idTweet: string; oldSentiment?: string, newSentiment?: string}): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post<any>(this.apiUrl+'update_sentiment',body, {headers});
+    
+  }
 
   createNewUser(body: { name?: string; mail?: string; estado?: string, tipo: string}): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });

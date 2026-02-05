@@ -162,27 +162,39 @@
   </div>
 
   <!-- 🔹 Footer -->
-  <div class="sidebar-footer">
-    <div class="user-card">
-      <div class="user-row">
-        <div class="avatar" [matTooltip]="(userEmail$ | async) || ''">
-          {{ (userInitial$ | async) || 'U' }}
-        </div>
-
-        <div class="user-meta">
-          <span class="user-name">{{ (userDisplayName$ | async) || 'Usuario' }}</span>
-        </div>
-
-        <span class="role-badge">
-          {{ (authz.role$ | async) || 'rol' }}
-        </span>
+ 
+<div class="sidebar-footer">
+  <div class="user-card">
+    <div class="user-row">
+      <div class="avatar" [matTooltip]="(userEmail$ | async) || ''">
+        {{ (userInitial$ | async) || 'U' }}
       </div>
-    </div>
 
+      <div class="user-meta">
+        <span class="user-name">{{ (userDisplayName$ | async) || 'Usuario' }}</span>
+        <span class="user-email">{{ (userEmail$ | async) || '' }}</span>
+      </div>
+
+      <span class="role-badge">
+        {{ (authz.role$ | async) || 'rol' }}
+      </span>
+    </div>
+  </div>
+
+  <div class="footer-actions">
+
+    <button class="nv-modal-btn account-btn" routerLink="/account" matTooltip="Mi cuenta">
+      <i class="fas fa-user-circle"></i>
+      <span>Cuenta</span>
+    </button>
     <button mat-flat-button class="logout-btn" (click)="logout()">
       <i class="fas fa-right-from-bracket"></i>
       <span>Cerrar sesión</span>
     </button>
+
+    
   </div>
+</div>
+
 
 </nav>

@@ -1,0 +1,220 @@
+<section class="account-page">
+
+  <!-- Header -->
+  <header class="head">
+    <div class="title">
+      <h2>Mi cuenta</h2>
+      <p>Gestiona tu perfil, tu plan y cambia tu contraseña.</p>
+    </div>
+
+    <div class="badges">
+      <span class="pill" [class.ok]="sub.status==='activa'" [class.warn]="sub.status!=='activa'">
+        <i class="fas fa-bolt"></i>
+        {{ sub.status | titlecase }}
+      </span>
+
+      <span class="pill soft">
+        <i class="fas fa-id-badge"></i>
+        {{ role | uppercase }}
+      </span>
+    </div>
+  </header>
+
+  <!-- Alerts -->
+  <div *ngIf="msg.text" class="alert" [class.ok]="msg.type==='ok'" [class.err]="msg.type==='err'">
+    <i class="fas" [class.fa-circle-check]="msg.type==='ok'" [class.fa-triangle-exclamation]="msg.type==='err'"></i>
+    <span>{{ msg.text }}</span>
+  </div>
+
+  <div class="grid">
+
+    <!-- ========= Perfil ========= -->
+    <article class="card">
+      <div class="card-head">
+        <h3>Perfil</h3>
+        <span class="muted">Datos básicos</span>
+      </div>
+
+      <form (ngSubmit)="saveProfile()" #profileForm="ngForm" class="form">
+
+        <div class="row">
+          <div class="field">
+            <label>Nombre</label>
+            <div class="control">
+              <i class="fas fa-user"></i>
+              <input
+                name="displayName"
+                [(ngModel)]="profile.displayName"
+                placeholder="Tu nombre"
+                required
+                minlength="2"
+              />
+            </div>
+            <small class="hint">Esto se mostrará en tu panel.</small>
+          </div>
+
+          <div class="field">
+            <label>Email</label>
+            <div class="control readonly">
+              <i class="fas fa-envelope"></i>
+              <input
+                name="email"
+                [ngModel]="profile.email"
+                readonly
+              />
+            </div>
+            <small class="hint">El email no se puede cambiar aquí.</small>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Organización (opcional)</label>
+            <div class="control">
+              <i class="fas fa-building"></i>
+              <input
+                name="org"
+                [(ngModel)]="profile.org"
+                placeholder="NetVora / Empresa / ONG"
+              />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Zona horaria</label>
+            <div class="control">
+              <i class="fas fa-clock"></i>
+              <select name="tz" [(ngModel)]="profile.timezone">
+                <option *ngFor="let t of timezones" [value]="t">{{ t }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" type="submit" [disabled]="loading.profile || !profileForm.valid">
+            <span *ngIf="!loading.profile"><i class="fas fa-floppy-disk"></i> Guardar cambios</span>
+            <span *ngIf="loading.profile"><i class="fas fa-spinner fa-spin"></i> Guardando…</span>
+          </button>
+        </div>
+
+      </form>
+    </article>
+
+    <!-- ========= Suscripción ========= -->
+    <article class="card">
+      <div class="card-head">
+        <h3>Suscripción</h3>
+        <span class="muted">Plan y vencimiento</span>
+      </div>
+
+      <div class="sub-grid">
+        <div class="kv">
+          <span class="k">Plan</span>
+          <span class="v">{{ sub.plan }}</span>
+        </div>
+
+        <div class="kv">
+          <span class="k">Estado</span>
+          <span class="v">
+            <span class="status" [class.ok]="sub.status==='activa'" [class.warn]="sub.status!=='activa'">
+              {{ sub.status | titlecase }}
+            </span>
+          </span>
+        </div>
+
+        <div class="kv">
+          <span class="k">Fecha de vencimiento</span>
+          <span class="v">{{ sub.expiresAt ? (sub.expiresAt | date:'mediumDate') : '—' }}</span>
+        </div>
+
+        <div class="kv">
+          <span class="k">Renovación</span>
+          <span class="v">{{ sub.renewal }}</span>
+        </div>
+
+        <div class="kv">
+          <span class="k">Límites</span>
+          <span class="v">{{ sub.limits }}</span>
+        </div>
+
+        <div class="kv">
+          <span class="k">Último pago</span>
+          <span class="v">{{ sub.lastPayment ? (sub.lastPayment | date:'mediumDate') : '—' }}</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <i class="fas fa-circle-info"></i>
+        <span>Si necesitas cambiar de plan o facturación, contáctanos desde Soporte.</span>
+      </div>
+    </article>
+
+    <!-- ========= Seguridad ========= -->
+    <article class="card">
+      <div class="card-head">
+        <h3>Seguridad</h3>
+        <span class="muted">Cambiar contraseña</span>
+      </div>
+
+      <form (ngSubmit)="changePassword()" #passForm="ngForm" class="form">
+
+        <div class="field">
+          <label>Nueva contraseña</label>
+          <div class="control">
+            <i class="fas fa-lock"></i>
+            <input
+              [type]="ui.showPass ? 'text' : 'password'"
+              name="newPassword"
+              [(ngModel)]="pass.newPassword"
+              placeholder="Mínimo 8 caracteres"
+              required
+              minlength="8"
+            />
+            <button class="icon-btn" type="button" (click)="ui.showPass = !ui.showPass"
+              [attr.aria-label]="ui.showPass ? 'Ocultar' : 'Mostrar'">
+              <i class="fas" [class.fa-eye]="!ui.showPass" [class.fa-eye-slash]="ui.showPass"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Repetir contraseña</label>
+          <div class="control">
+            <i class="fas fa-shield-halved"></i>
+            <input
+              [type]="ui.showPass2 ? 'text' : 'password'"
+              name="repeatPassword"
+              [(ngModel)]="pass.repeatPassword"
+              placeholder="Repite la contraseña"
+              required
+              minlength="8"
+            />
+            <button class="icon-btn" type="button" (click)="ui.showPass2 = !ui.showPass2"
+              [attr.aria-label]="ui.showPass2 ? 'Ocultar' : 'Mostrar'">
+              <i class="fas" [class.fa-eye]="!ui.showPass2" [class.fa-eye-slash]="ui.showPass2"></i>
+            </button>
+          </div>
+          <small class="hint err" *ngIf="pass.repeatPassword && !passwordsMatch()">
+            Las contraseñas no coinciden.
+          </small>
+        </div>
+
+        <div class="actions">
+          <button class="btn danger" type="submit"
+            [disabled]="loading.pass || !passForm.valid || !passwordsMatch()">
+            <span *ngIf="!loading.pass"><i class="fas fa-key"></i> Cambiar contraseña</span>
+            <span *ngIf="loading.pass"><i class="fas fa-spinner fa-spin"></i> Cambiando…</span>
+          </button>
+        </div>
+
+      </form>
+
+      <div class="note soft">
+        <i class="fas fa-shield"></i>
+        <span>Consejo: usa una contraseña larga y única.</span>
+      </div>
+    </article>
+
+  </div>
+</section>

@@ -3,6 +3,7 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { firstValueFrom, Observable } from 'rxjs';
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import User = firebase.User;
 
 @Injectable({
@@ -48,5 +49,12 @@ export class AuthService {
   async getToken(): Promise<string | null> {
     const user = await this.afAuth.currentUser;
     return user ? user.getIdToken() : null;
+  }
+  async forgotPassword(email: string): Promise<void> {
+    const auth = getAuth();
+
+    // Opcional: a dónde vuelve el usuario (por ejemplo tu login)
+    // (ActionCodeSettings también se puede usar aquí, si lo necesitas)
+    await sendPasswordResetEmail(auth, email);
   }
 }

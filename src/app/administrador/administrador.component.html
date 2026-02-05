@@ -129,6 +129,58 @@
           Agregar usuario
         </button>
       </div>
+      <!-- ===== NUEVA SECCIÓN: Asignar plan ===== -->
+<div class="card">
+  <div class="card-head">
+    <h2 class="card-title">Nuevo plan</h2>
+    <p class="card-subtitle">Asigna un plan a un usuario y calcula inicio/fin automáticamente.</p>
+  </div>
+
+  <div class="form-grid-2">
+    <div class="form-group">
+      <label>Usuario</label>
+      <select class="select" [(ngModel)]="selectedUserId" name="selectedUserId">
+        <option [ngValue]="null">Seleccione usuario…</option>
+        <option *ngFor="let u of appUsers" [ngValue]="u.id">
+          {{ u.display_name }} — {{ u.email }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Plan</label>
+      <select class="select" [(ngModel)]="selectedPlanId" name="selectedPlanId" (change)="onPlanChange()">
+        <option [ngValue]="null">Seleccione plan…</option>
+        <option *ngFor="let p of plans" [ngValue]="p.id">
+          {{ p.name }} ({{ p.duration_days }} días) — Bs {{ p.cost }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Inicio</label>
+      <input class="input" type="date" [(ngModel)]="startDate" name="startDate" (change)="recalcEndDate()" />
+    </div>
+
+    <div class="form-group">
+      <label>Fin</label>
+      <input class="input" type="date" [(ngModel)]="endDate" name="endDate" readonly />
+      <div class="hint small" *ngIf="selectedPlan">
+        Se calcula con {{ selectedPlan.duration_days }} días.
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-dark" (click)="crearSuscripcion()" [disabled]="!canCreateSubscription() || creatingSub">
+      {{ creatingSub ? 'Creando…' : 'Crear suscripción' }}
+    </button>
+    <button class="btn btn-ghost" type="button" (click)="resetPlanForm()">Limpiar</button>
+  </div>
+
+  <div class="hint" *ngIf="subMsg">{{ subMsg }}</div>
+</div>
+
 
       <!-- Lista -->
       <div class="card card-lista">

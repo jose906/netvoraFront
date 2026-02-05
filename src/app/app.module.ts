@@ -52,6 +52,9 @@ import { RoleGuard } from './core/guards/role.guard';
 import { EstadisticasEntiPersonasComponent } from './data/estadisticas-enti-personas/estadisticas-enti-personas.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AmbienteComponent } from './ambiente/ambiente.component';
+import { PerfilComponent } from './perfil/perfil.component';
+import { SubscriptionInterceptor } from './core/interceptor/subscription.interceptor';
+import { SubscriptionGuard } from './core/guards/subscription.guard';
 
 // Initialize Firebase
 
@@ -74,7 +77,9 @@ const routes: Routes = [
   { path: 'gestiones', component:GestionesComponent},
   { path: 'login', component:LoginComponent},
   { path: 'entidades', component:EntidadesComponent },
-  { path: 'catSelect',component:CatSelectComponent}
+  { path: 'catSelect',component:CatSelectComponent},
+  { path: 'account', component:PerfilComponent},
+  {path:'perfil', component:PerfilComponent, canActivate:[AuthGuard]},
 
   
 ];
@@ -104,6 +109,7 @@ const routes: Routes = [
     CatSelectComponent,
     EstadisticasEntiPersonasComponent,
     AmbienteComponent,
+    PerfilComponent,
   ],
   imports: [
     BrowserModule,
@@ -132,7 +138,8 @@ const routes: Routes = [
   providers: [
     provideClientHydration(),
     provideAnimationsAsync(),
-    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: SubscriptionInterceptor, multi: true },
 
   ],
   bootstrap: [AppComponent]

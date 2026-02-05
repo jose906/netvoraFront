@@ -338,6 +338,138 @@
   background: rgba(109,40,217,0.85);
   box-shadow: 0 0 0 4px rgba(109,40,217,0.10);
 }
+/* ===================== MODAL FORGOT ===================== */
+.nv-modal{
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+
+  background: rgba(2, 6, 23, 0.52); /* slate-950 con alpha */
+  backdrop-filter: blur(8px);
+}
+
+.nv-modal-card{
+  width: min(420px, 92vw);
+  border-radius: 18px;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(15,23,42,0.10);
+  box-shadow: 0 24px 70px rgba(2,6,23,0.35);
+  padding: 18px 18px 16px;
+  position: relative;
+
+  transform: translateY(6px);
+  animation: nvPop .18s ease-out forwards;
+}
+
+@keyframes nvPop{
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+.nv-modal-close{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.85);
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 900;
+  color: rgba(15,23,42,0.75);
+  transition: transform .12s ease, filter .12s ease;
+}
+
+.nv-modal-close:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.02);
+}
+
+.nv-modal-title{
+  margin: 4px 0 4px;
+  font-size: 16px;
+  font-weight: 950;
+  color: var(--text);
+}
+
+.nv-modal-sub{
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: rgba(71,85,105,0.95);
+  line-height: 1.45;
+}
+
+.nv-modal-field{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.nv-modal-field label{
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(100,116,139,0.95);
+}
+
+.nv-modal-field input{
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(148,163,184,0.35);
+  padding: 0.8rem 0.95rem;
+  outline: none;
+  background: rgba(248,250,252,0.95);
+  transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
+  font-size: 0.95rem;
+}
+
+.nv-modal-field input:focus{
+  border-color: rgba(109,40,217,0.55);
+  box-shadow: 0 0 0 4px var(--focus);
+  background: rgba(255,255,255,0.98);
+}
+
+.nv-modal-btn{
+  width: 100%;
+  border: none;
+  border-radius: 999px;
+  padding: 0.9rem 1.05rem;
+  cursor: pointer;
+  font-size: 0.92rem;
+  font-weight: 950;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+
+  background: linear-gradient(135deg, var(--accent), #7c3aed);
+  color: #fff;
+  box-shadow: 0 14px 34px rgba(109,40,217,0.28);
+  transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+}
+
+.nv-modal-btn:hover:not(:disabled){
+  transform: translateY(-1px);
+  filter: brightness(1.02);
+  box-shadow: 0 18px 42px rgba(109,40,217,0.34);
+}
+
+.nv-modal-btn:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.nv-modal-msg{
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: rgba(71,85,105,0.95);
+}
+
 
 /* Accesibilidad */
 .login-split :focus-visible{

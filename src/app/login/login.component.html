@@ -50,9 +50,12 @@
             <span>Recordarme</span>
           </label>
 
-          <button type="button" class="link">
+          <button type="button" class="link" (click)="openForgot()">
             ¿Olvidaste tu contraseña?
           </button>
+         
+     
+
         </div>
 
         <button class="btn" type="submit" [disabled]="loginForm.invalid">
@@ -91,4 +94,48 @@
       </ul>
     </div>
   </aside>
+<!-- Modal Forgot Password -->
+<div
+  class="nv-modal"
+  *ngIf="showForgot"
+  (click)="closeForgot()"
+>
+  <div
+    class="nv-modal-card"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="forgotTitle"
+    (click)="$event.stopPropagation()"
+  >
+    <button class="nv-modal-close" type="button" (click)="closeForgot()" aria-label="Cerrar">
+      ✕
+    </button>
+
+    <h3 id="forgotTitle" class="nv-modal-title">Recuperar contraseña</h3>
+    <p class="nv-modal-sub">
+      Ingresa tu correo y te enviaremos un enlace para restablecerla.
+    </p>
+
+    <div class="nv-modal-field">
+      <label for="forgotEmail">Correo</label>
+      <input
+        id="forgotEmail"
+        type="email"
+        name="forgotEmail"
+        [(ngModel)]="forgotEmail"
+        [ngModelOptions]="{ standalone: true }"
+        placeholder="tucorreo@ejemplo.com"
+        autocomplete="email"
+      />
+    </div>
+
+    <button class="nv-modal-btn" type="button" (click)="sendReset()" [disabled]="loading">
+      {{ loading ? 'Enviando…' : 'Enviar enlace' }}
+    </button>
+
+    <p class="nv-modal-msg" *ngIf="msg">{{ msg }}</p>
+  </div>
+</div>
+
+
 </div>

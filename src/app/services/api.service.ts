@@ -171,6 +171,20 @@ export class ApiService {
     observe: 'response'
   });
 }
+getPlans() {
+  return this.http.get<any[]>(`${this.apiUrl}get_plans`);
+}
+
+getAppUsers() {
+  return this.http.get<any[]>(`${this.apiUrl}get_users`);
+}
+
+createUserPlan(body: any, token: string) {
+  return this.http.post(this.apiUrl + 'create_plan', body, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
 
   
 

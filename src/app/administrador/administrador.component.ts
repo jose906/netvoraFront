@@ -6,6 +6,29 @@ import { users } from '../interfaces/users';
 import { AuthService } from '../services/auth.service';
 // ajusta la ruta a tu interfaz
 
+type Plan = {
+  id: number;
+  name: string;
+  duration_days: number;
+  cost: string;
+  is_active: number;
+  description?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+type AppUser = {
+  id: number;
+  firebase_uid: string;
+  email: string;
+  display_name: string;
+  role: string;
+  estadoUser: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+
 @Component({
   selector: 'app-administrador',
   templateUrl: './administrador.component.html',
@@ -20,6 +43,17 @@ export class AdministradorComponent implements OnInit {
   nombre2: string = '';
   estado: string = '';
   tipo: string = '';
+  plans: Plan[] = [];
+  appUsers: AppUser[] = [];
+
+  selectedUserId: number | null = null;
+  selectedPlanId: number | null = null;
+
+  startDate: string = ''; // "YYYY-MM-DD"
+  endDate: string = '';   // "YYYY-MM-DD"
+
+  creatingSub = false;
+  subMsg = '';
 
   // Usuario encontrado por búsqueda
   user: user | null = null;
@@ -31,9 +65,14 @@ export class AdministradorComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadUsers();
-  }
+  this.loadUsers();      // tu lista actual (TweetUsers)
+  this.loadPlans();      // NUEVO
+  this.loadAppUsers();   // NUEVO
 
+  // default fechas hoy
+  const today = new Date();
+  this.startDate = this.toDateInputValue(today);
+}
   loadUsers(): void {
     this.cargando = true;
     this.apiService.getUsers("Todos").subscribe({
@@ -47,6 +86,64 @@ export class AdministradorComponent implements OnInit {
       }
     });
   }
+  loadPlans(): void {
+  this.apiService.getPlans().subscribe({
+    next: (data: Plan[]) => {
+      // si quieres filtrar activos:
+      this.plans = (data || []).filter(p => Number(p.is_active) === 1);
+    },
+    error: (err) => console.error('❌ Error al cargar planes:', err)
+  });
+}
+
+loadAppUsers(): void {
+  this.apiService.getAppUsers().subscribe({
+    next: (data: AppUser[]) => {
+      // opcional: solo activos
+      this.appUsers = (data || []).filter(u => (u.estadoUser || '').toLowerCase() === 'activo');
+    },
+    error: (err) => console.error('❌ Error al cargar usuarios del sistema:', err)
+  });
+}
+async crearSuscripcion(): Promise<void> {
+  if (!this.canCreateSubscription()) return;
+
+  try {
+    this.creatingSub = true;
+    this.subMsg = '';
+
+    const token = await this.AuthService.getIdToken();
+
+    const body = {
+      user_id: this.selectedUserId,
+      plan_id: this.selectedPlanId,
+      start_date: this.startDate,
+      end_date: this.endDate
+    };
+
+    this.apiService.createUserPlan(body, token).subscribe({
+      next: (resp) => {
+        console.log('✅ Suscripción creada:', resp);
+        this.subMsg = '✅ Suscripción creada correctamente.';
+        this.creatingSub = false;
+
+        // si luego muestras el estado de suscripción en UI, aquí recargas
+        this.loadAppUsers();
+      },
+      error: (err) => {
+        console.error('❌ Error creando suscripción:', err);
+        this.subMsg = '❌ No se pudo crear la suscripción.';
+        this.creatingSub = false;
+      }
+    });
+  } catch (e) {
+    console.error('❌ Error token/flow:', e);
+    this.subMsg = '❌ Error de autenticación.';
+    this.creatingSub = false;
+  }
+}
+
+
   agregarUsuario(name: string,mail:string,tipo:string, estado: string): void {
 
     this.apiService.createNewUser({ name, mail, tipo, estado }).subscribe({
@@ -150,5 +247,50 @@ export class AdministradorComponent implements OnInit {
 
     // this.router.navigate(['/nuevo-usuario']);
   }
+
+  get selectedPlan(): Plan | null {
+  if (!this.selectedPlanId) return null;
+  return this.plans.find(p => p.id === this.selectedPlanId) || null;
+}
+
+onPlanChange(): void {
+  this.recalcEndDate();
+}
+
+recalcEndDate(): void {
+  const plan = this.selectedPlan;
+  if (!plan || !this.startDate) {
+    this.endDate = '';
+    return;
+  }
+
+  const start = new Date(this.startDate + 'T00:00:00');
+  const end = new Date(start);
+  end.setDate(end.getDate() + Number(plan.duration_days));
+
+  this.endDate = this.toDateInputValue(end);
+}
+
+toDateInputValue(d: Date): string {
+  // YYYY-MM-DD
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+canCreateSubscription(): boolean {
+  return !!(this.selectedUserId && this.selectedPlanId && this.startDate && this.endDate);
+}
+
+resetPlanForm(): void {
+  this.selectedUserId = null;
+  this.selectedPlanId = null;
+  const today = new Date();
+  this.startDate = this.toDateInputValue(today);
+  this.endDate = '';
+  this.subMsg = '';
+}
+
 
 }

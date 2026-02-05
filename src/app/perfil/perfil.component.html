@@ -27,6 +27,21 @@
   </div>
 
   <div class="grid">
+    <div class="kv">
+  <span class="k">Costo</span>
+  <span class="v">{{ sub.cost === null ? '—' : ('$' + sub.cost) }}</span>
+</div>
+
+<div class="kv">
+  <span class="k">Duración</span>
+  <span class="v">{{ sub.durationDays === null ? '—' : (sub.durationDays + ' días') }}</span>
+</div>
+
+<div class="kv" *ngIf="sub.description">
+  <span class="k">Descripción</span>
+  <span class="v">{{ sub.description }}</span>
+</div>
+
 
     <!-- ========= Perfil ========= -->
     <article class="card">
@@ -34,7 +49,7 @@
         <h3>Perfil</h3>
         <span class="muted">Datos básicos</span>
       </div>
-
+ 
       <form (ngSubmit)="saveProfile()" #profileForm="ngForm" class="form">
 
         <div class="row">

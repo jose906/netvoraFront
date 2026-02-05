@@ -1,19 +1,19 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-// Si usas Firebase:
 import { getAuth, updateProfile, updatePassword, User } from 'firebase/auth';
+import { Subscription } from 'rxjs';
 
-// Si ya tienes servicios propios, reemplaza estas lecturas por tus Observables.
-import { AuthzService } from '../services/authz.service'; // ajusta ruta si aplica
+import { AuthzService } from '../services/authz.service';
+import { AccountService } from '../services/account.service';
+import { AccountMeResponse, SubscriptionStatus } from '../interfaces/me';
 
 type Msg = { type: 'ok' | 'err'; text: string };
-import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-perfil',
   templateUrl: './perfil.component.html',
   styleUrl: './perfil.component.css'
 })
-export class PerfilComponent {
+export class PerfilComponent implements OnInit, OnDestroy {
   private subx = new Subscription();
 
   loading = {
@@ -25,6 +25,7 @@ export class PerfilComponent {
   msg: Msg = { type: 'ok', text: '' };
 
   role = 'usuario';
+  estadoUser: string | null = null;
 
   profile = {
     displayName: '',
@@ -33,12 +34,18 @@ export class PerfilComponent {
     timezone: 'America/La_Paz'
   };
 
-  // info de suscripción (ejemplo). Conecta con tu API si ya tienes.
+  // Ahora será real
   sub = {
-    plan: 'Free',
-    status: 'activa', // activa | vencida | suspendida
+    plan: '—',
+    status: 'sin_plan' as SubscriptionStatus,
     expiresAt: null as Date | null,
-    renewal: 'Manual',
+    startDate: null as Date | null,
+
+    // extras pro
+    cost: null as number | null,
+    durationDays: null as number | null,
+    description: '' as string,
+    renewal: '—',
     limits: '—',
     lastPayment: null as Date | null,
   };
@@ -64,12 +71,15 @@ export class PerfilComponent {
     'Europe/Madrid'
   ];
 
-  constructor(public authz: AuthzService) {}
+  constructor(
+    public authz: AuthzService,
+    private account: AccountService
+  ) {}
 
   ngOnInit(): void {
-    this.loadUser();
+    this.loadUserFromFirebase();
     this.loadRole();
-    this.loadSubscription();
+    this.loadSubscriptionFromApi();
   }
 
   ngOnDestroy(): void {
@@ -78,59 +88,76 @@ export class PerfilComponent {
 
   private setMsg(type: Msg['type'], text: string) {
     this.msg = { type, text };
-    // auto-hide suave
     window.clearTimeout((this as any)._msgTimer);
-    (this as any)._msgTimer = window.setTimeout(() => this.msg.text = '', 4500);
+    (this as any)._msgTimer = window.setTimeout(() => (this.msg.text = ''), 4500);
   }
 
-  private loadUser() {
-    const auth = getAuth();
-    const u = auth.currentUser;
-    if (!u) {
-      this.setMsg('err', 'No hay sesión activa.');
-      return;
-    }
-
+  private loadUserFromFirebase() {
+    const u = getAuth().currentUser;
+    if (!u) return this.setMsg('err', 'No hay sesión activa.');
     this.profile.displayName = u.displayName || '';
     this.profile.email = u.email || '';
-    // org / timezone puedes cargarlo desde tu DB si lo guardas (Firestore / SQL)
   }
 
   private loadRole() {
-    // Tu servicio ya tiene role$ (como en sidebar)
-    const s = this.authz.role$.subscribe(r => this.role = (r || 'usuario'));
+    // Si tu AuthzService ya carga role desde /api/auth/me, se queda.
+    const s = this.authz.role$.subscribe(r => (this.role = (r || 'usuario')));
     this.subx.add(s);
   }
 
-  private loadSubscription() {
-    // ✅ Reemplaza esta sección por tu API real
-    // Ejemplo dummy:
+  private loadSubscriptionFromApi() {
     this.loading.subscription = true;
 
-    setTimeout(() => {
-      this.sub = {
-        plan: (this.role === 'admin') ? 'Enterprise' : 'Pro',
-        status: 'activa',
-        expiresAt: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 15),
-        renewal: 'Auto',
-        limits: '100k posts/mes • 10 dashboards',
-        lastPayment: new Date(new Date().getFullYear(), new Date().getMonth(), 15)
-      };
-      this.loading.subscription = false;
-    }, 350);
+    const s = this.account.me().subscribe({
+      next: (res: AccountMeResponse) => {
+        // --- user ---
+        this.estadoUser = res.user.estadoUser;
+
+        // si DB trae valores, úsalo (si no, mantén Firebase)
+        if (res.user.display_name) this.profile.displayName = res.user.display_name;
+        if (res.user.email) this.profile.email = res.user.email;
+
+        // rol (puede venir más confiable que sidebar)
+        if (res.user.role) this.role = res.user.role;
+
+        // --- subscription ---
+        const plan = res.subscription?.plan;
+
+        this.sub.status = res.subscription?.status || 'sin_plan';
+        this.sub.plan = plan?.name || '—';
+
+        this.sub.startDate = res.subscription?.start_date ? new Date(res.subscription.start_date) : null;
+        this.sub.expiresAt = res.subscription?.end_date ? new Date(res.subscription.end_date) : null;
+
+        this.sub.cost = plan?.cost ?? null;
+        this.sub.durationDays = plan?.duration_days ?? null;
+        this.sub.description = plan?.description ?? '';
+
+        // Si aún no manejas pagos/limits reales, déjalo en "—"
+        this.sub.renewal = this.sub.status === 'activa' ? '—' : '—';
+        this.sub.limits = '—';
+        this.sub.lastPayment = null;
+      },
+      error: (err) => {
+        console.error('account/me error:', err);
+        this.setMsg('err', 'No se pudo cargar tu cuenta. Revisa tu sesión o tu API.');
+      },
+      complete: () => (this.loading.subscription = false)
+    });
+
+    this.subx.add(s);
   }
 
   async saveProfile() {
-    const auth = getAuth();
-    const u = auth.currentUser;
-
+    const u = getAuth().currentUser;
     if (!u) return this.setMsg('err', 'No hay sesión activa.');
     if (!this.profile.displayName?.trim()) return this.setMsg('err', 'Nombre inválido.');
 
     try {
       this.loading.profile = true;
       await updateProfile(u, { displayName: this.profile.displayName.trim() });
-      // Si guardas org/timezone en DB, aquí llamas a tu API/Firestore.
+
+      // opcional: cuando crees PATCH /api/account/me, aquí guardas org/timezone
       this.setMsg('ok', 'Perfil actualizado correctamente.');
     } catch (e: any) {
       this.setMsg('err', this.humanFirebaseError(e));
@@ -144,8 +171,7 @@ export class PerfilComponent {
   }
 
   async changePassword() {
-    const auth = getAuth();
-    const u: User | null = auth.currentUser;
+    const u: User | null = getAuth().currentUser;
 
     if (!u) return this.setMsg('err', 'No hay sesión activa.');
     if (!this.passwordsMatch()) return this.setMsg('err', 'Las contraseñas no coinciden.');
@@ -159,7 +185,6 @@ export class PerfilComponent {
       this.pass.repeatPassword = '';
       this.setMsg('ok', 'Contraseña cambiada. ✅');
     } catch (e: any) {
-      // Firebase puede pedir "recent login"
       this.setMsg('err', this.humanFirebaseError(e));
     } finally {
       this.loading.pass = false;
@@ -173,5 +198,4 @@ export class PerfilComponent {
     if (code.includes('auth/network-request-failed')) return 'Error de red. Revisa tu conexión.';
     return 'Ocurrió un error. Intenta nuevamente.';
   }
-
 }

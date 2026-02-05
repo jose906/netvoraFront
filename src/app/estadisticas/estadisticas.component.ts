@@ -105,6 +105,38 @@ export class EstadisticasComponent implements OnInit, AfterViewInit {
   private getEntiPersonaCompByCategoria(categoria: string) {
     return this.entiPersonasComponents?.toArray().find(c => (c as any)?.categoria === categoria);
   }
+  navQuery = '';
+
+navItems = [
+  { key: 'politica',   label: 'Política',         icon: 'account_balance' },
+  { key: 'economia',   label: 'Economía',         icon: 'payments' },
+  { key: 'deportes',   label: 'Deportes',         icon: 'sports_soccer' },
+  { key: 'seguridad',  label: 'Seguridad',        icon: 'shield' },
+  { key: 'social',     label: 'Sociedad',         icon: 'groups' },
+  { key: 'salud',      label: 'Salud',            icon: 'favorite' },
+  { key: 'educacion',  label: 'Educación',        icon: 'school' },
+  { key: 'ambiente',   label: 'Medio Ambiente',   icon: 'eco' },
+  { key: 'gestiones',  label: 'Gestiones',        icon: 'apartment' },
+  { key: 'otros',      label: 'Otros',            icon: 'layers' },
+  { key: 'entidades',  label: 'Entidades',        icon: 'domain' },
+  { key: 'personas',   label: 'Personas',         icon: 'badge' },
+];
+
+get navItemsFiltered() {
+  const q = (this.navQuery || '').trim().toLowerCase();
+  if (!q) return this.navItems;
+  return this.navItems.filter(x =>
+    (x.label || '').toLowerCase().includes(q) ||
+    (x.key || '').toLowerCase().includes(q)
+  );
+}
+
+resetFiltros(){
+  this.startDate = null as any;
+  this.endDate = null as any;
+  this.selectedUsers = [];
+}
+
 }
 
 

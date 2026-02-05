@@ -313,41 +313,6 @@ button.filter-btn:focus-visible{
   font-size: 14px;
   color: var(--muted);
 }
-.loading{
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-
-  padding: 10px 14px;
-  border-radius: 999px;
-
-  background: radial-gradient(500px 120px at 10% 0%, var(--accent-softer), transparent 55%),
-              rgba(255,255,255,0.75);
-
-  border: 1px solid rgba(15,23,42,0.08);
-  box-shadow: 0 10px 24px rgba(2,6,23,0.06);
-
-  color: rgba(15,23,42,0.86);
-  font-weight: 900;
-  letter-spacing: 0.2px;
-}
-
-/* Si agregas el <span class="spinner"> */
-.spinner{
-  width: 16px;
-  height: 16px;
-  border-radius: 999px;
-
-  border: 2px solid rgba(109,40,217,0.18);
-  border-top-color: rgba(109,40,217,0.85);
-
-  animation: spin .7s linear infinite;
-}
-
-@keyframes spin{
-  to { transform: rotate(360deg); }
-}
-
 
 .error{ color: #b91c1c; }
 
@@ -380,87 +345,6 @@ button.filter-btn:focus-visible{
   letter-spacing: 0.2px;
   color: var(--text);
 }
-.sentiment-icons{
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-/* Pill base mejorado */
-.icon{
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-
-  padding: 6px 10px;
-  border-radius: 999px;
-
-  font-size: 12px;
-  font-weight: 900;
-
-  border: 1px solid rgba(148,163,184,0.35);
-  background: rgba(255,255,255,0.78);
-  color: rgba(15,23,42,0.86);
-
-  box-shadow: 0 10px 22px rgba(2,6,23,0.06);
-  transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
-}
-
-.icon:hover{
-  transform: translateY(-1px);
-  filter: brightness(1.02);
-  box-shadow: 0 14px 28px rgba(2,6,23,0.08);
-}
-
-/* Emoji un pelín más pro */
-.icon .emoji{
-  font-size: 15px;
-  line-height: 1;
-}
-
-/* ✅ Contador como “mini badge” */
-.icon .count{
-  margin-left: 2px;
-  padding: 2px 8px;
-  border-radius: 999px;
-
-  font-size: 12px;
-  font-weight: 950;
-
-  background: rgba(15,23,42,0.06);
-  border: 1px solid rgba(15,23,42,0.08);
-}
-
-/* Variantes (manteniendo tus colores suaves) */
-.icon.red{
-  background: linear-gradient(180deg, rgba(239,68,68,0.10), rgba(239,68,68,0.06));
-  border-color: rgba(239,68,68,0.18);
-}
-.icon.yellow{
-  background: linear-gradient(180deg, rgba(245,158,11,0.12), rgba(245,158,11,0.06));
-  border-color: rgba(245,158,11,0.20);
-}
-.icon.green{
-  background: linear-gradient(180deg, rgba(34,197,94,0.12), rgba(34,197,94,0.06));
-  border-color: rgba(34,197,94,0.20);
-}
-
-/* Que el badge siga consistente con cada color */
-.icon.red .count{
-  background: rgba(239,68,68,0.10);
-  border-color: rgba(239,68,68,0.18);
-}
-.icon.yellow .count{
-  background: rgba(245,158,11,0.12);
-  border-color: rgba(245,158,11,0.20);
-}
-.icon.green .count{
-  background: rgba(34,197,94,0.12);
-  border-color: rgba(34,197,94,0.20);
-}
-
 
 .status-chip{
   font-size: 12px;

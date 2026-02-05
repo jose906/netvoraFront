@@ -1,117 +1,57 @@
-<div class="estadisticas-container">
+<div class="nav-shell">
 
-  <!-- Panel izquierdo -->
-  <div class="left-panel">
+  <!-- Left: navegación -->
+  <section class="nav-left">
+    <header class="nav-head">
+      <div class="nav-head-text">
+        <h3>Gráficos</h3>
+        <p>Selecciona una vista para explorar métricas</p>
+      </div>
 
-    <div class="panel-title">
-      <h3>Gráficos</h3>
-      <span class="panel-subtitle">Selecciona una vista</span>
-    </div>
+      <div class="nav-head-pill">Vistas</div>
+    </header>
 
-    <!-- Botón principal -->
+  
+
+    <!-- principal -->
     <button
       mat-raised-button
-      class="nav-btn nav-btn--main"
+      class="nv-btn nv-btn--main"
       [class.is-active]="selectedComponent === 'todos'"
-      (click)="cambiarGrafico('todos')">
+      (click)="cambiarGrafico('todos')"
+    >
       <mat-icon>dashboard</mat-icon>
       <span>Panel principal</span>
+      <span class="nv-kbd">⌘1</span>
     </button>
 
-    <!-- Grid de categorías -->
-    <div class="nav-grid">
-      <button mat-raised-button class="nav-btn"
-        [class.is-active]="selectedComponent === 'politica'"
-        (click)="cambiarGrafico('politica')">
-        <mat-icon>account_balance</mat-icon>
-        <span>Política</span>
-      </button>
+    <div class="nav-divider"></div>
 
-      <button mat-raised-button class="nav-btn"
-        [class.is-active]="selectedComponent === 'economia'"
-        (click)="cambiarGrafico('economia')">
-        <mat-icon>payments</mat-icon>
-        <span>Economía</span>
-      </button>
-
-      <button mat-raised-button class="nav-btn"
-        [class.is-active]="selectedComponent === 'deportes'"
-        (click)="cambiarGrafico('deportes')">
-        <mat-icon>sports_soccer</mat-icon>
-        <span>Deportes</span>
-      </button>
-
-      <button mat-raised-button class="nav-btn"
-        [class.is-active]="selectedComponent === 'seguridad'"
-        (click)="cambiarGrafico('seguridad')">
-        <mat-icon>shield</mat-icon>
-        <span>Seguridad</span>
-      </button>
-
-      <button mat-raised-button class="nav-btn"
-        [class.is-active]="selectedComponent === 'social'"
-        (click)="cambiarGrafico('social')">
-        <mat-icon>groups</mat-icon>
-        <span>Sociedad</span>
-      </button>
-
-      <button mat-raised-button class="nav-btn"
-        [class.is-active]="selectedComponent === 'salud'"
-        (click)="cambiarGrafico('salud')">
-        <mat-icon>favorite</mat-icon>
-        <span>Salud</span>
-      </button>
-
-      <button mat-raised-button class="nav-btn"
-        [class.is-active]="selectedComponent === 'educacion'"
-        (click)="cambiarGrafico('educacion')">
-        <mat-icon>school</mat-icon>
-        <span>Educación</span>
-      </button>
-      
-      <button mat-raised-button class="nav-btn"
-        [class.is-active]="selectedComponent === 'ambiente'"
-        (click)="cambiarGrafico('ambiente')">
-        <mat-icon>eco</mat-icon>
-        <span>Medio Ambiente</span>
-      </button>
-
-      <button mat-raised-button class="nav-btn"
-        [class.is-active]="selectedComponent === 'gestiones'"
-        (click)="cambiarGrafico('gestiones')">
-        <mat-icon>apartment</mat-icon>
-        <span>Gestiones</span>
-      </button>
-
-      <button mat-raised-button class="nav-btn"
-        [class.is-active]="selectedComponent === 'otros'"
-        (click)="cambiarGrafico('otros')">
-        <mat-icon>layers</mat-icon>
-        <span>Otros</span>
-      </button>
-
-      <button mat-raised-button class="nav-btn"
-        [class.is-active]="selectedComponent === 'entidades'"
-        (click)="cambiarGrafico('entidades')">
-        <mat-icon>domain</mat-icon>
-        <span>Entidades</span>
-      </button>
-
-      <button mat-raised-button class="nav-btn"
-        [class.is-active]="selectedComponent === 'personas'"
-        (click)="cambiarGrafico('personas')">
-        <mat-icon>badge</mat-icon>
-        <span>Personas</span>
+    <!-- grid categorías (filtradas) -->
+    <div class="nv-grid">
+      <button
+        *ngFor="let item of navItemsFiltered"
+        mat-raised-button
+        class="nv-btn"
+        [class.is-active]="selectedComponent === item.key"
+        (click)="cambiarGrafico(item.key)"
+      >
+        <mat-icon>{{ item.icon }}</mat-icon>
+        <span>{{ item.label }}</span>
       </button>
     </div>
-  </div>
+  </section>
 
-  <!-- Panel derecho -->
-  <div class="right-panel">
-    <div class="panel-title">
-      <h3>Filtros</h3>
-      <span class="panel-subtitle">Rango + usuarios</span>
-    </div>
+  <!-- Right: filtros -->
+  <aside class="nav-right">
+    <header class="nav-head">
+      <div class="nav-head-text">
+        <h3>Filtros</h3>
+        <p>Rango de fechas + cuentas</p>
+      </div>
+
+      <div class="nav-head-pill subtle">Aplicar</div>
+    </header>
 
     <mat-form-field appearance="outline" class="field">
       <mat-label>Rango de fechas</mat-label>
@@ -130,15 +70,43 @@
           {{ user.TweetUser }}
         </mat-option>
       </mat-select>
+      <mat-hint>Opcional: filtra por cuentas</mat-hint>
     </mat-form-field>
 
-    <div class="actions-row">
-      <button mat-raised-button class="action-btn action-btn--primary" (click)="aplicarFechas()">
+    <div class="actions">
+      <button
+        mat-raised-button
+        class="nv-action nv-action--primary"
+        (click)="aplicarFechas()"
+      >
         <mat-icon>check</mat-icon>
-        <span>Aplicar</span>
+        <span>Aplicar filtros</span>
+      </button>
+
+      <button
+        mat-button
+        class="nv-action nv-action--ghost"
+        type="button"
+        (click)="resetFiltros()"
+      >
+        <mat-icon>restart_alt</mat-icon>
+        <span>Limpiar</span>
       </button>
     </div>
-  </div>
+
+    <!-- mini resumen -->
+    <div class="filters-summary">
+      <div class="fs-row">
+        <span class="fs-k">Vista</span>
+        <span class="fs-v mono">{{ selectedComponent }}</span>
+      </div>
+      <div class="fs-row">
+        <span class="fs-k">Usuarios</span>
+        <span class="fs-v mono">{{ selectedUsers.length || 0 }}</span>
+      </div>
+    </div>
+  </aside>
+
 </div>
 
 <!-- Contenido inferior (gráficos) -->

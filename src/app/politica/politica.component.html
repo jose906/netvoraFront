@@ -22,7 +22,7 @@
 
   <div class="hero-aside" aria-hidden="true">
     <div class="hero-media">
-      <img src="logo2.png" alt="" />
+      <img src="logo.jpg" alt="" />
     </div>
   </div>
 </header>
@@ -92,10 +92,7 @@
 </div>
 
   <!-- 🔹 Estado de carga -->
-  <div *ngIf="cargando" class="loading">
-  <span class="spinner" aria-hidden="true"></span>
-  <span>Cargando noticias…</span>
-  </div>
+  <div *ngIf="cargando" class="loading">⏳ Cargando noticias...</div>
 
   <!-- 🔹 Error -->
   <div *ngIf="error" class="error">{{ error }}</div>

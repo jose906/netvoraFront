@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Observable, map, of } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { AuthzService } from '../services/authz.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-menu',
@@ -17,7 +18,8 @@ export class MenuComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    public authz: AuthzService
+    public authz: AuthzService,
+    private router: Router
   ) {
     // 🔹 Ajusta esto según tu AuthService:
     // Idea: que authService exponga algo como `user$` (Firebase user) o `currentUser$`.
@@ -47,6 +49,7 @@ export class MenuComponent implements OnInit {
   logout() {
     this.authService.logout();
     window.location.reload();
+    this.router.navigate(['/login']);
   }
 
   canAdmin(): boolean {

@@ -26,7 +26,7 @@ export class PersonasComponent implements OnInit {
     currentPage: number = 1;
     pageSize: number = 10;  // cantidad de resultados por página
     hasMore: boolean = false;
-  
+    searchText: string = ''; 
   
     users: users[] = [];
     selectedUsers: number[] = []; // 🔹 lista de IDs seleccionados
@@ -63,7 +63,7 @@ export class PersonasComponent implements OnInit {
     
       if (this.startDate) dateFormatted = this.startDate.toISOString().split('T')[0];
       if (this.endDate) dateFormattedEnd = this.endDate.toISOString().split('T')[0];
-      this.load(dateFormatted, dateFormattedEnd, this.selectedUsers);
+      this.load(dateFormatted, dateFormattedEnd, this.selectedUsers, this.currentPage,this.searchText);
     }
     getFormattedDate(): string | undefined {
     if (this.startDate) {
@@ -74,7 +74,7 @@ export class PersonasComponent implements OnInit {
   
   
     /** Cargar noticias — puede recibir o no filtros */
-    load(startDate?: string, endDate?: string, users?: number[], page: number = 1): void {
+    load(startDate?: string, endDate?: string, users?: number[], page: number = 1, searchText?: string): void {
         this.cargando = true;
         this.error = '';
         this.datos = [];
@@ -88,6 +88,7 @@ export class PersonasComponent implements OnInit {
         if (startDate) body.startDate = startDate;
         if (endDate) body.endDate = endDate;
         if (users && users.length > 0) body.users = users;
+        if (searchText) body.searchText = searchText;
   
         this.apiService.getPostPer(body).subscribe({
           next: (data: any) => {

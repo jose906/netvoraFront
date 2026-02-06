@@ -26,7 +26,7 @@ export class EntidadesComponent  implements OnInit {
       searchText: string = ''; // 🔹 texto de búsqueda
       users: users[] = [];
       selectedUsers: number[] = []; // 🔹 lista de IDs seleccionados
-    
+     
       constructor(
         private apiService: ApiService,
         private router: Router

@@ -1,45 +1,52 @@
 <div class="container">
 
   <!-- 🔹 Encabezado principal mejorado -->
-  <div class="header">
-    <div class="header-content">
-      <h1>Noticias Políticas</h1>
-      <p class="subtitle">
-        Explora las últimas noticias clasificadas por fecha y usuarios.
-        Filtra los resultados fácilmente y mantente al tanto de los temas más relevantes.
-      </p>
+ <header class="hero">
+  <div class="hero-main">
+    <div class="hero-kicker">Personas publicas</div>
 
-      <!-- Lista opcional -->
-      <ul class="info-list">
-        <li>⚡ Resultados en tiempo real</li>
-        <li>📊 Visualiza tendencias por usuario</li>
-        <li>🔍 Filtrado inteligente por fecha</li>
-        <li>📚 Compatible con múltiples formatos</li>
-        <li>📉 Análisis de sentimientos incluido</li>
-      </ul>
-    </div>
+   
+    <p class="hero-subtitle">
+      Clasificación de noticias por fecha y usuarios. Filtra rápido y detecta tendencias con sentimiento incluido.
+    </p>
 
-    <!-- Logo o imagen -->
-    <div class="header-image">
-      <img src="https://via.placeholder.com/180x120" alt="Logo o imagen">
+    <!-- ✅ en vez de lista larga -->
+    <div class="hero-chips">
+      <span class="chip">⚡ Tiempo real</span>
+      <span class="chip">📊 Tendencias por usuario</span>
+      <span class="chip">🗓️ Filtro por fecha</span>
+      <span class="chip">📉 Sentimiento</span>
     </div>
   </div>
 
+  <div class="hero-aside" aria-hidden="true">
+    <div class="hero-media">
+      <img src="logo2.png" alt="" />
+    </div>
+  </div>
+</header>
+
   <!-- 🔹 Filtros sin estilo de card -->
-  <div class="filters-section">
+   <div class="filters-section">
+
+    <div class="filters-header">
+      <h3>
+        <mat-icon>tune</mat-icon>
+        Filtros
+      </h3>
+    </div>
+
     <div class="filters-row">
-      
       <!-- Fecha -->
-    
-      <mat-form-field appearance="outline">
-      <mat-label>Rango de fechas</mat-label>
-      <mat-date-range-input [rangePicker]="picker">
-        <input matStartDate placeholder="Inicio" [(ngModel)]="startDate">
-        <input matEndDate placeholder="Fin" [(ngModel)]="endDate">
-      </mat-date-range-input>
-      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-      <mat-date-range-picker #picker></mat-date-range-picker>
-    </mat-form-field>
+      <mat-form-field appearance="outline" class="filter-item">
+        <mat-label>Rango de fechas</mat-label>
+        <mat-date-range-input [rangePicker]="picker">
+          <input matStartDate placeholder="Inicio" [(ngModel)]="startDate">
+          <input matEndDate placeholder="Fin" [(ngModel)]="endDate">
+        </mat-date-range-input>
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-date-range-picker #picker></mat-date-range-picker>
+      </mat-form-field>
 
       <!-- Usuarios -->
       <mat-form-field appearance="fill" class="filter-item">
@@ -51,14 +58,24 @@
         </mat-select>
       </mat-form-field>
 
+      <!-- Búsqueda por texto -->
+      <mat-form-field appearance="outline" class="filter-item">
+        <mat-label>Buscar</mat-label>
+        <input matInput [(ngModel)]="searchText" placeholder="Texto de búsqueda">
+      </mat-form-field>
+
       <!-- Botones -->
       <div class="filter-buttons">
-        <button mat-flat-button color="primary" class="filter-btn" (click)="filtrar()">
-          <mat-icon>search</mat-icon> Filtrar
+        <button mat-flat-button color="primary" class="filter-btn"
+                (click)="filtrar()">
+          <mat-icon>search</mat-icon>
+          Filtrar
         </button>
 
-        <button mat-flat-button color="accent" class="filter-btn" >
-          <mat-icon>refresh</mat-icon> Limpiar
+        <button mat-flat-button color="accent" class="filter-btn"
+                >
+          <mat-icon>refresh</mat-icon>
+          Limpiar
         </button>
       </div>
     </div>

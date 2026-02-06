@@ -2,7 +2,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root{
-  --bg: #f6f7f9;
+  --bg: #ffffff;
   --surface: #ffffff;
   --text: #0f172a;       /* slate-900 */
   --muted: #64748b;      /* slate-500 */
@@ -11,7 +11,14 @@
 
   --soft: #f1f5f9;       /* slate-100 */
   --soft2:#f8fafc;       /* slate-50 */
-  --focus: rgba(15, 23, 42, 0.18);
+
+  --accent: #6d28d9;
+  --accent-soft: rgba(109, 40, 217, 0.10);
+  --accent-softer: rgba(109, 40, 217, 0.06);
+  --accent-border: rgba(109, 40, 217, 0.18);
+
+  /* focus morado */
+  --focus: rgba(109, 40, 217, 0.22);
 }
 
 /* ---------------------- */
@@ -33,26 +40,142 @@
   margin-right: auto;
 }
 
-/* ---------------------- */
-/* Header (más sobrio, pro) */
-/* ---------------------- */
-.header{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* =======================
+   HERO HEADER (NetVora)
+   (si usas <header class="hero">)
+======================= */
+.hero{
+  display: grid;
+  grid-template-columns: 1fr 220px;
   gap: 18px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--line);
+
+  padding: 18px 18px;
+  border-radius: 18px;
+
+  background:
+    radial-gradient(900px 240px at 10% 0%, var(--accent-softer), transparent 55%),
+    rgba(255,255,255,0.70);
+
+  box-shadow: 0 12px 30px rgba(255,255,255,0.06);
+  margin-bottom: 16px;
+}
+
+.hero-kicker{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+
+  color: rgba(109,40,217,0.95);
+  background: rgba(109,40,217,0.10);
+  border: 1px solid rgba(109,40,217,0.18);
+  padding: 6px 10px;
+  border-radius: 999px;
+
+  width: fit-content;
+  margin-bottom: 10px;
+}
+
+.hero-title{
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.12;
+  font-weight: 950;
+  letter-spacing: 0.2px;
+  color: var(--text);
+}
+
+.hero-title span{ color: var(--accent); }
+
+.hero-subtitle{
+  margin: 10px 0 12px;
+  max-width: 720px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+/* chips */
+.hero-chips{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 6px 10px;
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 850;
+
+  background: rgba(255,255,255,0.70);
+  border: 1px solid rgba(148,163,184,0.35);
+  color: rgba(15,23,42,0.86);
+}
+
+/* aside image */
+.hero-aside{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.hero-media{
+  width: 220px;
+  height: 130px;
+  border-radius: 16px;
+  overflow: hidden;
+
+  background: rgba(255,255,255,0.60);
+  
+
+  display: grid;
+  place-items: center;
+}
+
+.hero-media img{
+  width: 76%;
+  height: auto;
+  object-fit: contain;
+  opacity: 0.95;
+}
+
+/* =======================
+   HEADER CLÁSICO (si usas <div class="header">)
+   -> lo hacemos IGUAL a hero
+======================= */
+.header{
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 18px;
+
+  padding: 18px 18px;
+  border-radius: 18px;
+
+  background:
+    radial-gradient(900px 240px at 10% 0%, var(--accent-softer), transparent 55%),
+    rgba(255,255,255,0.70);
+
+  box-shadow: 0 12px 30px rgba(255,255,255,0.06);
   margin-bottom: 16px;
 }
 
 .header-content h1{
-  font-size: 28px;
-  line-height: 1.15;
-  font-weight: 900;
+  margin: 0 0 8px;
+  font-size: 30px;
+  line-height: 1.12;
+  font-weight: 950;
   letter-spacing: 0.2px;
   color: var(--text);
-  margin-bottom: 8px;
 }
 
 .subtitle{
@@ -60,71 +183,104 @@
   font-size: 14px;
   line-height: 1.65;
   color: var(--muted);
-  margin-bottom: 10px;
+  margin: 10px 0 12px;
 }
 
-/* lista más limpia */
+/* lista -> chips (sin cambiar HTML) */
 .info-list{
+  list-style: none;
+  padding: 0;
   margin: 0;
-  padding-left: 18px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.6;
-}
-.info-list li{ margin-bottom: 4px; }
 
-.header-image img{
-  width: 160px;
-  height: auto;
-  border-radius: 14px;
-  border: 1px solid rgba(229,231,235,0.9);
-  box-shadow: 0 6px 18px rgba(2,6,23,0.06);
-}
-
-/* ---------------------- */
-/* Filtros (mismo estilo que antes) */
-/* ---------------------- */
-.filters-section{
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 16px;
-}
-
-.filters-header h3{
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.info-list li{
+  margin: 0;
+
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 16px;
-  font-weight: 900;
-  margin: 0 0 10px;
-  color: var(--text);
+
+  padding: 6px 10px;
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 850;
+
+  background: rgba(255,255,255,0.70);
+  border: 1px solid rgba(148,163,184,0.35);
+  color: rgba(15,23,42,0.86);
 }
 
-/* barra sutil (no card pesado) */
+.header-image{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.header-image img{
+  width: 220px;
+  height: 130px;
+  object-fit: contain;
+
+  border-radius: 16px;
+  background: rgba(255,255,255,0.60);
+  border: 1px solid rgba(109,40,217,0.18);
+  box-shadow: 0 10px 24px rgba(2,6,23,0.08), 0 0 0 4px var(--accent-softer);
+
+  padding: 10px;
+}
+
+/* ---------------------- */
+/* Filtros */
+/* ---------------------- */
+.filters-section{
+  padding: 0;
+  border: 0;
+  margin: 0 0 16px;
+}
+
+/* si quieres que quede idéntico al otro, ocultamos el título */
+.filters-header{ display: none; }
+
 .filters-row{
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  align-items: end;
+  align-items: flex-end;
 
   padding: 12px 12px;
-  background: rgba(255,255,255,0.55);
-  border: 1px solid rgba(229,231,235,0.9);
   border-radius: 14px;
+
+  background:
+    radial-gradient(700px 220px at 10% 0%, var(--accent-softer), transparent 60%),
+    rgba(255,255,255,0.55);
+
+  border: 1px solid var(--accent-border);
 }
 
 .filter-item{
+  width: 100%;
   flex: 1 1 280px;
   min-width: 260px;
 }
 
+/* opcional: que los mat-form-field se vean iguales */
+:host ::ng-deep .filters-row .mat-mdc-form-field{
+  width: 100%;
+}
+
+/* Botones */
 .filter-buttons{
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
-/* Botones filtro: sobrios */
 .filter-btn{
   border-radius: 999px !important;
   font-weight: 800 !important;
@@ -133,21 +289,31 @@
   box-shadow: none !important;
 }
 
-/* "Filtrar" oscuro pro */
 button[mat-flat-button].filter-btn{
   background: rgba(15,23,42,0.92) !important;
   color: #f8fafc !important;
 }
 button[mat-flat-button].filter-btn:hover{ filter: brightness(1.06); }
 
-/* si mantienes el color="accent", lo apagamos igual */
+/* estilo ghost (si usas class="ghost") */
+.filter-btn.ghost{
+  background: rgba(255,255,255,0.65) !important;
+  color: rgba(15,23,42,0.86) !important;
+  border: 1px solid rgba(148,163,184,0.35) !important;
+}
+.filter-btn.ghost:hover{
+  background: rgba(241,245,249,0.9) !important;
+  border-color: rgba(148,163,184,0.45) !important;
+}
+
+/* si usas color="accent" */
 button[mat-flat-button][color="accent"].filter-btn{
-  background: rgba(248,250,252,0.85) !important;
-  color: var(--ink) !important;
-  border: 1px solid rgba(148,163,184,0.55) !important;
+  background: var(--accent-softer) !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--accent-border) !important;
 }
 button[mat-flat-button][color="accent"].filter-btn:hover{
-  background: rgba(241,245,249,0.95) !important;
+  background: rgba(109,40,217,0.10) !important;
 }
 
 button.filter-btn:focus-visible{
@@ -177,9 +343,57 @@ button.filter-btn:focus-visible{
 }
 
 .news-item{
+  position: relative;
   padding: 14px 0;
-  border-bottom: 1px solid var(--line);
   background: transparent;
+  transition: background .2s ease, padding-left .2s ease;
+}
+
+/* línea morada inferior sutil SIEMPRE */
+.news-item::after{
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+
+  background: linear-gradient(
+    to right,
+    rgba(109,40,217,0.35),
+    rgba(109,40,217,0.10),
+    transparent
+  );
+}
+
+/* línea lateral en hover */
+.news-item::before{
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+
+  background: linear-gradient(
+    to bottom,
+    rgba(109,40,217,0.85),
+    rgba(109,40,217,0.25)
+  );
+
+  border-radius: 999px;
+  opacity: 0;
+  transform: scaleY(0.6);
+  transition: opacity .25s ease, transform .25s ease;
+}
+
+.news-item:hover{
+  background: rgba(109,40,217,0.02);
+  padding-left: 4px;
+}
+.news-item:hover::before{
+  opacity: 1;
+  transform: scaleY(1);
 }
 
 .news-header{
@@ -197,17 +411,87 @@ button.filter-btn:focus-visible{
   color: var(--text);
 }
 
-/* ✅ Agrupador de chips (categoría + sentimiento) */
+/* chips (categoría + sentimiento) */
 .news-chips{
   display: inline-flex;
   align-items: center;
-  gap: 10px;            /* ✅ más separación */
+  gap: 8px;
   flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
-/* ---------------------- */
-/* Chip sentimiento (igual) */
-/* ---------------------- */
+/* category chip */
+.category-chip{
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  padding: 5px 10px;
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: capitalize;
+
+  background: rgba(109,40,217,0.06);
+  border: 1px solid rgba(109,40,217,0.18);
+  color: rgba(15,23,42,0.86);
+
+  box-shadow: 0 10px 24px rgba(109,40,217,0.04);
+}
+
+.category-chip .cat-dot{
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(109,40,217,0.75);
+  box-shadow: 0 0 0 3px rgba(109,40,217,0.10);
+}
+.category-chip .cat-icon{
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0.95;
+}
+.category-chip .cat-text{ line-height: 1; }
+
+/* variantes */
+.category-chip.politica{
+  background: rgba(109,40,217,0.06);
+  border-color: rgba(109,40,217,0.18);
+}
+.category-chip.politica .cat-dot{ background: rgba(109,40,217,0.80); }
+
+.category-chip.economia{
+  background: rgba(34,197,94,0.08);
+  border-color: rgba(34,197,94,0.22);
+}
+.category-chip.economia .cat-dot{ background: rgba(34,197,94,0.85); }
+
+.category-chip.seguridad{
+  background: rgba(239,68,68,0.07);
+  border-color: rgba(239,68,68,0.20);
+}
+.category-chip.seguridad .cat-dot{ background: rgba(239,68,68,0.85); }
+
+.category-chip.social{
+  background: rgba(245,158,11,0.10);
+  border-color: rgba(245,158,11,0.24);
+}
+.category-chip.social .cat-dot{ background: rgba(245,158,11,0.90); }
+
+.category-chip.internacional{
+  background: rgba(59,130,246,0.10);
+  border-color: rgba(59,130,246,0.22);
+}
+.category-chip.internacional .cat-dot{ background: rgba(59,130,246,0.90); }
+
+.category-chip.otros{
+  background: rgba(148,163,184,0.18);
+  border-color: rgba(148,163,184,0.35);
+}
+.category-chip.otros .cat-dot{ background: rgba(100,116,139,0.85); }
+
+/* sentimiento chip */
 .status-chip{
   font-size: 12px;
   padding: 5px 10px;
@@ -216,9 +500,10 @@ button.filter-btn:focus-visible{
   color: var(--ink);
   background: rgba(248,250,252,0.9);
   text-transform: capitalize;
+  border-color: rgba(109,40,217,0.14);
+  box-shadow: 0 10px 24px rgba(109,40,217,0.04);
 }
 
-/* colores sobrios (suaves) */
 .status-chip.negativo{
   background: rgba(239,68,68,0.08);
   border-color: rgba(239,68,68,0.18);
@@ -230,123 +515,6 @@ button.filter-btn:focus-visible{
 .status-chip.positivo{
   background: rgba(34,197,94,0.10);
   border-color: rgba(34,197,94,0.20);
-}
-
-/* ---------------------- */
-/* ✅ Chip categoría PRO (mismo vibe que status-chip) */
-/* ---------------------- */
-.category-chip{
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;                 /* ✅ separa dot del texto */
-  font-size: 12px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(148,163,184,0.35);
-  color: var(--ink);
-  background: rgba(248,250,252,0.9);
-  text-transform: uppercase;
-  font-weight: 900;
-  letter-spacing: 0.25px;
-}
-
-/* ✅ circulito tipo sentimiento */
-.category-chip .cat-dot{
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(100,116,139,0.80);
-  box-shadow: 0 0 0 3px rgba(100,116,139,0.12); /* aro suave */
-  flex: 0 0 8px;
-}
-
-/* hover sutil (sin exagerar) */
-.category-chip:hover{
-  background: rgba(241,245,249,0.95);
-}
-
-/* ---------------------- */
-/* ✅ Colores suaves por categoría */
-/* ---------------------- */
-
-/* Política */
-.category-chip.cat-politica{
-  background: rgba(59,130,246,0.10);
-  border-color: rgba(59,130,246,0.22);
-}
-.category-chip.cat-politica .cat-dot{
-  background: rgba(59,130,246,0.92);
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.16);
-}
-
-/* Economía */
-.category-chip.cat-economia{
-  background: rgba(34,197,94,0.10);
-  border-color: rgba(34,197,94,0.22);
-}
-.category-chip.cat-economia .cat-dot{
-  background: rgba(34,197,94,0.92);
-  box-shadow: 0 0 0 3px rgba(34,197,94,0.16);
-}
-
-/* Seguridad */
-.category-chip.cat-seguridad{
-  background: rgba(239,68,68,0.10);
-  border-color: rgba(239,68,68,0.22);
-}
-.category-chip.cat-seguridad .cat-dot{
-  background: rgba(239,68,68,0.92);
-  box-shadow: 0 0 0 3px rgba(239,68,68,0.16);
-}
-
-/* Deportes */
-.category-chip.cat-deportes{
-  background: rgba(245,158,11,0.10);
-  border-color: rgba(245,158,11,0.22);
-}
-.category-chip.cat-deportes .cat-dot{
-  background: rgba(245,158,11,0.92);
-  box-shadow: 0 0 0 3px rgba(245,158,11,0.16);
-}
-
-/* Educación */
-.category-chip.cat-educacion{
-  background: rgba(168,85,247,0.10);
-  border-color: rgba(168,85,247,0.22);
-}
-.category-chip.cat-educacion .cat-dot{
-  background: rgba(168,85,247,0.92);
-  box-shadow: 0 0 0 3px rgba(168,85,247,0.16);
-}
-
-/* Salud */
-.category-chip.cat-salud{
-  background: rgba(20,184,166,0.10);
-  border-color: rgba(20,184,166,0.22);
-}
-.category-chip.cat-salud .cat-dot{
-  background: rgba(20,184,166,0.92);
-  box-shadow: 0 0 0 3px rgba(20,184,166,0.16);
-}
-
-/* Sociedad */
-.category-chip.cat-sociedad{
-  background: rgba(99,102,241,0.10);
-  border-color: rgba(99,102,241,0.22);
-}
-.category-chip.cat-sociedad .cat-dot{
-  background: rgba(99,102,241,0.92);
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.16);
-}
-
-/* Otros */
-.category-chip.cat-otros{
-  background: rgba(100,116,139,0.10);
-  border-color: rgba(100,116,139,0.22);
-}
-.category-chip.cat-otros .cat-dot{
-  background: rgba(100,116,139,0.86);
-  box-shadow: 0 0 0 3px rgba(100,116,139,0.16);
 }
 
 .news-text{
@@ -362,7 +530,7 @@ button.filter-btn:focus-visible{
   margin-top: 0;
 }
 
-/* Sentiment chips más finos */
+/* Sentiment chips */
 .sentiment-icons{
   display: flex;
   gap: 10px;
@@ -386,7 +554,6 @@ button.filter-btn:focus-visible{
 
 .icon .emoji{ font-size: 14px; }
 
-/* estados suaves, nada chillón */
 .icon.red{
   background: rgba(239,68,68,0.08);
   border-color: rgba(239,68,68,0.18);
@@ -401,7 +568,7 @@ button.filter-btn:focus-visible{
 }
 
 /* ---------------------- */
-/* Paginación (misma estética) */
+/* Paginación */
 /* ---------------------- */
 .pagination{
   margin-top: 18px;
@@ -415,13 +582,13 @@ button.filter-btn:focus-visible{
 }
 
 .pagination .page-indicator{
-  background: rgba(255,255,255,0.85);
-  border: 1px solid rgba(148,163,184,0.35);
   padding: 6px 12px;
   border-radius: 999px;
   font-weight: 900;
   font-size: 13px;
-  color: var(--ink);
+  background: var(--accent-softer);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
 }
 
 .pagination-btn{
@@ -449,12 +616,15 @@ button[mat-flat-button].pagination-btn[disabled]{
 @media (max-width: 768px){
   .container{ padding: 14px 14px 34px; }
 
-  .header{
-    flex-direction: column;
-    align-items: flex-start;
-  }
+  /* hero */
+  .hero{ grid-template-columns: 1fr; }
+  .hero-aside{ justify-content: flex-start; }
+  .hero-media{ width: 180px; height: 110px; }
 
-  .header-image img{ width: 140px; }
+  /* header viejo */
+  .header{ grid-template-columns: 1fr; }
+  .header-image{ justify-content: flex-start; }
+  .header-image img{ width: 180px; height: 110px; }
 
   .filters-row{ gap: 12px; }
   .filter-item{ min-width: 100%; }
@@ -465,7 +635,13 @@ button[mat-flat-button].pagination-btn[disabled]{
     flex-wrap: wrap;
   }
 
-  .pagination{
-    justify-content: space-between;
+  .pagination{ justify-content: space-between; }
+
+  .news-header{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .news-chips{
+    justify-content: flex-start;
   }
 }

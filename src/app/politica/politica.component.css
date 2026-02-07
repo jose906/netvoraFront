@@ -1,8 +1,10 @@
 /* Base */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-:root{
-  --bg: #ffffff;
+:host{
+  display: block;
+
+  --bg:#f6f7f9;
   --surface: #ffffff;
   --text: #0f172a;       /* slate-900 */
   --muted: #64748b;      /* slate-500 */
@@ -31,13 +33,15 @@
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   color: var(--text);
   min-height: 100vh;
+  background: var(--bg);
 }
 
 /* Para que no se vea "muy ancho" en pantallas grandes */
 .container > *{
-  max-width: 1120px;
+  
   margin-left: auto;
   margin-right: auto;
+  background-color: var(--bg);
 }
 :root{
   /* ...tus variables... */
@@ -55,9 +59,7 @@
   padding: 18px 18px;
   border-radius: 18px;
 
-  background:
-    radial-gradient(900px 240px at 10% 0%, var(--accent-softer), transparent 55%),
-    rgba(255,255,255,0.70);
+ 
 
   
   box-shadow: 0 12px 30px rgba(255,255,255,0.06);
@@ -142,7 +144,7 @@
   border-radius: 16px;
   overflow: hidden;
 
-  background: rgba(255,255,255,0.60);
+  
  
 
   display: grid;
@@ -221,9 +223,8 @@
 
   padding: 12px 12px;
   
-  border-radius: 14px;
-   background: radial-gradient(700px 220px at 10% 0%, var(--accent-softer), transparent 60%), rgba(255,255,255,0.55);
-  border: 1px solid var(--accent-border);
+ 
+  
 }
 /* ✅ arregla 'end' -> flex-end */
 .filters-row{

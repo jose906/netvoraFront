@@ -2,7 +2,7 @@
   display: block;
 
   /* 🔁 Misma base del sidebar */
-  --bg:#ffffff;
+  --bg:#f6f7f9;
   --text:#0f172a;
   --muted:#64748b;
   --line: rgba(15, 23, 42, 0.10);

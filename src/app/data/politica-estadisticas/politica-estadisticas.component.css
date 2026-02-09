@@ -624,8 +624,7 @@
   border-top:1px solid #f1f5f9;
   padding-top:10px;
 
-  /* ✅ que scrollee hacia abajo, no lateral */
-  max-height:260px;
+  
   overflow:auto;
   overscroll-behavior: contain;
 }

@@ -2,7 +2,7 @@
   display:block;
 
   /* NetVora look */
-  --bg:#ffffff;
+  --bg:#f6f7f9;
   --text:#0f172a;
   --muted:#64748b;
   --line: rgba(15, 23, 42, 0.10);
@@ -20,7 +20,7 @@
 }
 
 .nav-shell{
-  width: 100%;
+  
   display:grid;
   grid-template-columns: 1.15fr 0.85fr;
   gap: 14px;
@@ -28,17 +28,16 @@
   padding: 14px;
   border-radius: calc(var(--radius) + 2px);
 
-  background: rgba(255,255,255,0.72);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
+  background:var(--bg);
+  
+  
   backdrop-filter: blur(10px);
 }
 
 .nav-left,
 .nav-right{
   border-radius: var(--radius);
-  border: 1px solid var(--line);
-  background: rgba(255,255,255,0.88);
+  
   backdrop-filter: blur(10px);
   padding: 14px;
 }

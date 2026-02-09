@@ -57,12 +57,7 @@ export const NETVORA_PALETTE = {
 
   // Bars (categorías o comparaciones)
   categories: [
-    '#6d28d9',
-    '#7c3aed',
-    '#8b5cf6',
-    '#a78bfa',
-    '#c4b5fd',
-    '#ede9fe'
+    '#6d28d9'
   ],
 
   // SentVsUser (stacked)

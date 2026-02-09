@@ -361,15 +361,13 @@
 }
 
 .week-line-chart{
-  border: 1px solid rgba(109,40,217,0.14);
+  
   border-radius: 14px;
   padding: 12px;
 
-  background:
-    radial-gradient(700px 220px at 10% 0%, var(--accentSofter), transparent 60%),
-    rgba(255,255,255,0.92);
+  
 
-  box-shadow: 0 10px 24px rgba(2,6,23,0.06);
+  
 }
 
 .week-line-chart svg{
@@ -407,11 +405,11 @@
 
 .wm{
   flex: 1 1 120px;
-  border: 1px solid rgba(15,23,42,0.08);
+  
   border-radius: 14px;
   padding: 10px 12px;
 
-  background: rgba(248,250,252,0.92);
+ 
 }
 
 .wm-label{

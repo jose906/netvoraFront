@@ -57,8 +57,20 @@ export const NETVORA_PALETTE = {
 
   // Bars (categorías o comparaciones)
   categories: [
-    '#6d28d9'
-  ],
+  '#6d28d9', // morado principal (base)
+  '#0f172a', // azul gris oscuro (neutral fuerte)
+  '#334155', // slate medio
+  '#64748b', // slate claro
+  '#22c55e', // verde positivo
+  '#16a34a', // verde oscuro
+  '#f59e0b', // ámbar
+  '#ea580c', // naranja intenso
+  '#ef4444', // rojo
+  '#06b6d4', // cian
+  '#14b8a6', // teal
+  '#a78bfa', // lavanda suave (secundario)
+]
+,
 
   // SentVsUser (stacked)
   sentVsUser: {
@@ -95,4 +107,22 @@ export function buildLineDataset(label: string, data: number[], i: number) {
     borderWidth: 2
   };
 }
+export function exportCanvasWithWhiteBg(canvas: HTMLCanvasElement): string {
+  const tmpCanvas = document.createElement('canvas');
+  tmpCanvas.width = canvas.width;
+  tmpCanvas.height = canvas.height;
+
+  const ctx = tmpCanvas.getContext('2d');
+  if (!ctx) return canvas.toDataURL('image/png');
+
+  // Fondo blanco
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, tmpCanvas.width, tmpCanvas.height);
+
+  // Dibuja el gráfico encima
+  ctx.drawImage(canvas, 0, 0);
+
+  return tmpCanvas.toDataURL('image/png');
+}
+
 

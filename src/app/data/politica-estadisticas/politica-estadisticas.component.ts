@@ -10,7 +10,8 @@ import { ChartData, ChartOptions, ChartType } from 'chart.js';
 import { finalize } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { BaseChartDirective } from 'ng2-charts';
-import { NETVORA_PALETTE } from '../../utils/helpers';
+import { NETVORA_PALETTE,exportCanvasWithWhiteBg } from '../../utils/helpers';
+import e from 'express';
 
 type EntItem = { entidad: string; total: number };
 type TopUserItem = { usuario: string; total: number };
@@ -387,7 +388,7 @@ this.indiceSent = [...filtered].sort((a, b) => b.total - a.total);
     if (!canvas) return;
 
     const link = document.createElement('a');
-    link.href = canvas.toDataURL('image/png');
+    link.href = exportCanvasWithWhiteBg(canvas);
     link.download = `grafico-${Date.now()}.png`;
     link.click();
   }
@@ -398,7 +399,7 @@ this.indiceSent = [...filtered].sort((a, b) => b.total - a.total);
 
     canvases.forEach((canvas, index) => {
       const link = document.createElement('a');
-      link.href = canvas.toDataURL('image/png');
+      link.href = exportCanvasWithWhiteBg(canvas);
       link.download = `grafico-${index + 1}-${Date.now()}.png`;
       link.click();
     });

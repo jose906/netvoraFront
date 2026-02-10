@@ -102,7 +102,7 @@ export class EducacionComponent implements OnInit {
         };
   
   
-        if (startDate) body.startDate = startDate;
+        if (startDate) body.startDate = this.toLocalYMD(new Date(startDate));
         if (endDate) body.endDate = endDate;
         if (users && users.length > 0) body.users = users;
         if (searchText) body.searchText = searchText;
@@ -131,6 +131,15 @@ export class EducacionComponent implements OnInit {
     irADetalle(datos: NewsItem): void {
       this.router.navigate(['/resumen'], { state: { datos } });
     }
+    toLocalYMD(date: Date): string {
+  // reconstruye la fecha usando componentes locales (evita desfase)
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
     
 
 

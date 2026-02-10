@@ -4,7 +4,7 @@ import { ChartData, ChartOptions, ChartType } from 'chart.js';
 import { ChartConfiguration } from 'chart.js';
 import { ApiService } from '../../services/api.service';
 import { StatsResponse } from '../../interfaces/data/mainDashboard';
-import { NETVORA_PALETTE } from '../../utils/helpers';
+import { NETVORA_PALETTE,exportCanvasWithWhiteBg } from '../../utils/helpers';
 
 type TopItem = { nombre: string; total: number };
 type EntItem = { entidad: string; total: number };
@@ -238,7 +238,7 @@ export class TodosComponent {
     if (!canvas) return;
 
     const link = document.createElement('a');
-    link.href = canvas.toDataURL('image/png');
+    link.href = exportCanvasWithWhiteBg(canvas);
     link.download = `grafico-${Date.now()}.png`;
     link.click();
   }
@@ -249,7 +249,7 @@ export class TodosComponent {
 
     canvases.forEach((canvas, index) => {
       const link = document.createElement('a');
-      link.href = canvas.toDataURL('image/png');
+      link.href = exportCanvasWithWhiteBg(canvas);
       link.download = `grafico-${index + 1}-${Date.now()}.png`;
       link.click();
     });

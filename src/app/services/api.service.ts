@@ -46,6 +46,11 @@ export class ApiService {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<NewsData[]>(this.apiUrl+'economia',body,{headers});
   }
+  
+getRepliesSummaryMany(tweetIds: any[]) {
+  return this.http.post<any[]>(`${this.apiUrl}get_sentimient`,{ idTweet: tweetIds } // ✅ lista
+  );
+}
 
   
   getPostsSegu(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {

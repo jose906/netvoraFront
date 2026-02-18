@@ -26,7 +26,12 @@ export class GestionesComponent {
     searchText: string = ''; // 🔹 texto de búsqueda
     users: users[] = [];
     selectedUsers: number[] = []; // 🔹 lista de IDs seleccionados
-  
+
+    repliesByTweet: Record<string, { negativo: number; neutro: number; positivo: number }> = {};
+  loadingReplies: Record<string, boolean> = {};
+
+
+
     constructor(
       private apiService: ApiService,
       private router: Router
@@ -115,6 +120,32 @@ export class GestionesComponent {
             console.log(data);
             this.datos = data.resultado || [];
             this.currentPage = data.page;
+
+
+            const tweetIds = this.datos.map(x => x.tweetid);
+           
+        
+          this.apiService.getRepliesSummaryMany(tweetIds).subscribe({
+          next: (rows: any[]) => {
+            // Construir mapa tweetid -> counts
+            const map: Record<string, { negativo: number; neutro: number; positivo: number }> = {};
+            
+            for (const r of rows || []) {
+              const key = String(r.tweetid);
+              
+              if (!map[key]) map[key] = { negativo: 0, neutro: 0, positivo: 0 };
+
+              if (r.sentimiento === 'negativo') map[key].negativo = r.total;
+              if (r.sentimiento === 'neutro') map[key].neutro = r.total;
+              if (r.sentimiento === 'positivo') map[key].positivo = r.total;
+              
+            }
+            
+
+            this.repliesByTweet = map;
+          },
+          error: (e) => console.error('❌ Error summary many:', e)
+        });
             
             
             this.hasMore = this.datos.length === this.pageSize;
@@ -145,6 +176,12 @@ export class GestionesComponent {
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
+}
+
+getRepliesCounts(tweetid: string) {
+
+  
+  return this.repliesByTweet[tweetid] ?? { negativo: 0, neutro: 0, positivo: 0 };
 }
 
 }

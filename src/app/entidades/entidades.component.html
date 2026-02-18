@@ -128,17 +128,17 @@
     <div class="sentiment-icons">
       <div class="icon red">
         <span class="emoji">😡</span>
-        <span class="count">0</span>
+        <span class="count">{{ getRepliesCounts(item.tweetid).negativo }}</span>
       </div>
 
       <div class="icon yellow">
         <span class="emoji">😐</span>
-        <span class="count">0</span>
+        <span class="count">{{ getRepliesCounts(item.tweetid).neutro }}</span>
       </div>
 
       <div class="icon green">
         <span class="emoji">😊</span>
-        <span class="count">0</span>
+        <span class="count">{{ getRepliesCounts(item.tweetid).positivo }}</span>
       </div>
     </div>
 

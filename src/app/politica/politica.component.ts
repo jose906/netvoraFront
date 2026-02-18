@@ -30,6 +30,8 @@ export class PoliticaComponent implements OnInit {
   repliesByTweet: Record<string, { negativo: number; neutro: number; positivo: number }> = {};
   loadingReplies: Record<string, boolean> = {};
 
+  
+
   constructor(
     private apiService: ApiService,
     private router: Router

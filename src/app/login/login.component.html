@@ -1,9 +1,11 @@
+<!-- login.component.html -->
 <div class="login-split">
-  <!-- Izquierda: formulario -->
+
+  <!-- ===================== LEFT ===================== -->
   <section class="left">
     <div class="left-inner">
 
-      <!-- ✅ Header arriba -->
+      <!-- Header -->
       <header class="brand" aria-label="NetVora">
         <img class="brand-logo" src="logo.jpg" alt="NetVora" />
         <h1 class="title">Iniciar sesión en <span>NetVora</span></h1>
@@ -53,26 +55,24 @@
           <button type="button" class="link" (click)="openForgot()">
             ¿Olvidaste tu contraseña?
           </button>
-         
-     
-
         </div>
 
         <button class="btn" type="submit" [disabled]="loginForm.invalid">
           <span>Iniciar sesión</span>
           <span class="arrow">→</span>
         </button>
+        <p class="login-msg" *ngIf="loginMsg">{{ loginMsg }}</p>
 
         <div class="footer">
           <span>¿No tienes cuenta?</span>
-          <button type="button" class="link">Crear cuenta</button>
+          <button type="button" class="link" (click)="openSignup()">Crear cuenta</button>
         </div>
       </form>
 
     </div>
   </section>
 
-  <!-- Derecha: panel info -->
+  <!-- ===================== RIGHT ===================== -->
   <aside class="right">
     <div class="right-inner">
       <div class="badge">NetVora</div>
@@ -94,48 +94,190 @@
       </ul>
     </div>
   </aside>
-<!-- Modal Forgot Password -->
-<div
-  class="nv-modal"
-  *ngIf="showForgot"
-  (click)="closeForgot()"
->
-  <div
-    class="nv-modal-card"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="forgotTitle"
-    (click)="$event.stopPropagation()"
-  >
-    <button class="nv-modal-close" type="button" (click)="closeForgot()" aria-label="Cerrar">
-      ✕
-    </button>
 
-    <h3 id="forgotTitle" class="nv-modal-title">Recuperar contraseña</h3>
-    <p class="nv-modal-sub">
-      Ingresa tu correo y te enviaremos un enlace para restablecerla.
-    </p>
+  <!-- ===================== MODAL: FORGOT PASSWORD ===================== -->
+  <div class="nv-modal" *ngIf="showForgot" (click)="closeForgot()">
+    <div
+      class="nv-modal-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="forgotTitle"
+      (click)="$event.stopPropagation()"
+    >
+      <button class="nv-modal-close" type="button" (click)="closeForgot()" aria-label="Cerrar">
+        ✕
+      </button>
 
-    <div class="nv-modal-field">
-      <label for="forgotEmail">Correo</label>
-      <input
-        id="forgotEmail"
-        type="email"
-        name="forgotEmail"
-        [(ngModel)]="forgotEmail"
-        [ngModelOptions]="{ standalone: true }"
-        placeholder="tucorreo@ejemplo.com"
-        autocomplete="email"
-      />
+      <h3 id="forgotTitle" class="nv-modal-title">Recuperar contraseña</h3>
+      <p class="nv-modal-sub">
+        Ingresa tu correo y te enviaremos un enlace para restablecerla.
+      </p>
+
+      <div class="nv-modal-field">
+        <label for="forgotEmail">Correo</label>
+        <input
+          id="forgotEmail"
+          type="email"
+          name="forgotEmail"
+          [(ngModel)]="forgotEmail"
+          [ngModelOptions]="{ standalone: true }"
+          placeholder="tucorreo@ejemplo.com"
+          autocomplete="email"
+        />
+      </div>
+
+      <button class="nv-modal-btn" type="button" (click)="sendReset()" [disabled]="loading">
+        {{ loading ? 'Enviando…' : 'Enviar enlace' }}
+      </button>
+
+      <p class="nv-modal-msg" *ngIf="msg">{{ msg }}</p>
     </div>
-
-    <button class="nv-modal-btn" type="button" (click)="sendReset()" [disabled]="loading">
-      {{ loading ? 'Enviando…' : 'Enviar enlace' }}
-    </button>
-
-    <p class="nv-modal-msg" *ngIf="msg">{{ msg }}</p>
   </div>
-</div>
 
+  <!-- ===================== MODAL: CREAR CUENTA ===================== -->
+  <div class="nv-modal" *ngIf="showSignup" (click)="closesignup()">
+
+    <div
+      class="nv-modal-card nv-signup"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="signupTitle"
+      (click)="$event.stopPropagation()"
+    >
+      <button class="nv-modal-close" type="button" (click)="closesignup()" aria-label="Cerrar">
+        ✕
+      </button>
+
+      <header class="nv-modal-head">
+        <div class="nv-modal-chip">NetVora</div>
+        <div>
+          <h3 id="signupTitle" class="nv-modal-title">Crear cuenta</h3>
+          <p class="nv-modal-sub">Registra un usuario con rol, organización y contraseña segura.</p>
+        </div>
+      </header>
+
+      <form class="nv-signup-form" #signupForm="ngForm" (ngSubmit)="registrarUsuario()">
+        <div class="nv-grid">
+
+          <!-- Nombre -->
+          <div class="field">
+            <label for="nombre2">Nombre</label>
+            <div class="control">
+              <span class="icon" aria-hidden="true"><i class="fas fa-id-card"></i></span>
+              <input
+                id="nombre2"
+                name="nombre2"
+                type="text"
+                required
+                [(ngModel)]="nombre2"
+                placeholder="Ej: Juan"
+                autocomplete="name"
+              />
+            </div>
+          </div>
+
+          <!-- Organización -->
+          <div class="field">
+            <label for="organizacion2">Organización</label>
+            <div class="control">
+              <span class="icon" aria-hidden="true"><i class="fas fa-building"></i></span>
+              <input
+                id="organizacion2"
+                name="organizacion2"
+                type="text"
+                required
+                [(ngModel)]="organizacion2"
+                placeholder="Ej: NetVora"
+                autocomplete="organization"
+              />
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="field nv-span-2">
+            <label for="email2">Email</label>
+            <div class="control">
+              <span class="icon" aria-hidden="true"><i class="fas fa-envelope"></i></span>
+              <input
+                id="email2"
+                name="email2"
+                type="email"
+                required
+                [(ngModel)]="email2"
+                placeholder="tucorreo@ejemplo.com"
+                autocomplete="email"
+              />
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="field">
+            <label for="password2">Contraseña</label>
+            <div class="control">
+              <span class="icon" aria-hidden="true"><i class="fas fa-lock"></i></span>
+              <input
+                id="password2"
+                name="password2"
+                type="password"
+                required
+                minlength="8"
+                [(ngModel)]="password2"
+                placeholder="••••••••"
+                autocomplete="new-password"
+              />
+            </div>
+            <small class="nv-hint">Mínimo 8 caracteres.</small>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="field">
+            <label for="passwordConfirm">Repetir contraseña</label>
+            <div class="control" [class.nv-error]="passwordConfirm2 && password2 && passwordConfirm2 !== password2">
+              <span class="icon" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
+              <input
+                id="passwordConfirm"
+                name="passwordConfirm"
+                type="password"
+                required
+                [(ngModel)]="passwordConfirm2"
+                placeholder="••••••••"
+                autocomplete="new-password"
+              />
+            </div>
+            <small class="nv-hint" *ngIf="passwordConfirm2 && password2 && passwordConfirm2 !== password2">
+              Las contraseñas no coinciden.
+            </small>
+          </div>
+
+          
+
+          
+
+        </div>
+
+        <div class="actions nv-actions">
+          <button
+            class="nv-modal-btn"
+            type="submit"
+            [disabled]="loadingSignup || signupForm.invalid || (passwordConfirm2 && password2 && passwordConfirm2 !== password2)"
+          >
+            {{ loadingSignup ? 'Registrando…' : 'Registrar' }}
+          </button>
+
+          <button class="btn btn-ghost" type="button" (click)="clearSignup()">
+            Limpiar
+          </button>
+        </div>
+
+        <p class="nv-modal-msg" *ngIf="signupMsg">{{ signupMsg }}</p>
+
+        <div class="nv-switch">
+          <span>¿Ya tienes cuenta?</span>
+          <button type="button" class="link" (click)="closesignup()">Iniciar sesión</button>
+        </div>
+      </form>
+      <p class="signup-msg" *ngIf="signupMsg">{{ signupMsg }}</p>
+    </div>
+  </div>
 
 </div>

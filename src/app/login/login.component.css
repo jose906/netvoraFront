@@ -1,3 +1,4 @@
+/* login.component.css */
 :host{
   display: block;
   height: 100vh;
@@ -35,34 +36,20 @@
   padding-left: clamp(32px, 5vw, 90px);
   padding-right: clamp(28px, 4vw, 64px);
 
-  /* 🔥 CENTRO PERFECTO */
-  display: flex;
-  justify-content: center; /* centro X */
-  align-items: center;     /* centro Y */
-}
-
-
-.left-inner{
-  max-width: 520px;
-  width: 100%;
-    transform: translateY(-10%);
-}
-.left-inner{
-  max-width: 520px;
-  width: 100%;
-  transform: none;        /* antes: translateY(-10%) */
-}
-
-/* ✅ como ahora hay header arriba, centrado más natural */
-.left{
   display: flex;
   justify-content: center;
-  align-items: stretch;   /* mejor que center cuando hay header sticky */
+  align-items: stretch; /* mejor cuando hay header sticky */
 }
 
+.left-inner{
+  max-width: 520px;
+  width: 100%;
+  transform: none;
+}
 
+/* Header sticky */
 .brand{
-  position: sticky;     /* se queda arriba si haces scroll */
+  position: sticky;
   top: 0;
   z-index: 10;
 
@@ -71,7 +58,7 @@
   gap: 12px;
 
   padding: 18px 0 14px;
-  background: var(--bg);              /* evita transparencia rara al hacer scroll */
+  background: var(--bg);
   border-bottom: 1px solid var(--line);
 }
 
@@ -82,7 +69,6 @@
   max-height: 44px;
   object-fit: contain;
 }
-
 
 .title{
   margin: 0;
@@ -250,13 +236,27 @@
   color: var(--muted);
 }
 
+/* btn ghost (para modal) */
+.btn.btn-ghost{
+  background: rgba(255,255,255,0.75);
+  color: rgba(15,23,42,0.85);
+  border: 1px solid rgba(15,23,42,0.10);
+  box-shadow: none;
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.btn.btn-ghost:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.10);
+}
+
 /* ===================== RIGHT ===================== */
 .right{
   height: 100%;
   padding: 22px;
   overflow: hidden;
 
-  /* panel de otro color, mismos tonos */
   background: linear-gradient(
     180deg,
     rgba(109,40,217,0.10),
@@ -338,7 +338,8 @@
   background: rgba(109,40,217,0.85);
   box-shadow: 0 0 0 4px rgba(109,40,217,0.10);
 }
-/* ===================== MODAL FORGOT ===================== */
+
+/* ===================== MODAL (BASE) ===================== */
 .nv-modal{
   position: fixed;
   inset: 0;
@@ -347,7 +348,7 @@
   place-items: center;
   padding: 18px;
 
-  background: rgba(2, 6, 23, 0.52); /* slate-950 con alpha */
+  background: rgba(2, 6, 23, 0.52);
   backdrop-filter: blur(8px);
 }
 
@@ -470,19 +471,114 @@
   color: rgba(71,85,105,0.95);
 }
 
-
 /* Accesibilidad */
 .login-split :focus-visible{
   outline: none;
 }
 
+/* ===================== SIGNUP (MODAL) ===================== */
+.nv-signup{
+  width: min(560px, 94vw);
+}
+
+.nv-modal-head{
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.nv-modal-chip{
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(109,40,217,0.95);
+  background: rgba(109,40,217,0.10);
+  border: 1px solid rgba(109,40,217,0.18);
+}
+
+.nv-signup-form{
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nv-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.nv-span-2{
+  grid-column: span 2;
+}
+
+.nv-hint{
+  margin-top: 6px;
+  display: block;
+  font-size: 12px;
+  color: rgba(71,85,105,0.9);
+}
+
+.nv-switch{
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+/* Select con mismo estilo que input */
+.control select{
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.95rem;
+  appearance: none;
+}
+
+/* Error suave (password mismatch) */
+.control.nv-error{
+  border-color: rgba(239,68,68,0.55);
+  box-shadow: 0 0 0 4px rgba(239,68,68,0.12);
+}
+
+/* Acciones del modal */
+.nv-actions{
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Responsive grid dentro del modal */
+@media (max-width: 520px){
+  .nv-grid{
+    grid-template-columns: 1fr;
+  }
+  .nv-span-2{
+    grid-column: auto;
+  }
+  .nv-actions{
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ===================== Responsive ===================== */
 @media (max-width: 900px){
   .login-split{
-    grid-template-columns: 1fr; /* se apila */
+    grid-template-columns: 1fr;
   }
   .right{
-    display: none; /* en mobile oculto para que sea limpio */
+    display: none;
   }
   .left{
     padding: 22px;

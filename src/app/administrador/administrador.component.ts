@@ -157,7 +157,7 @@ async crearSuscripcion(): Promise<void> {
       }
     }); 
 
-  }
+  } 
   async registrarUsuario() {
 
     try {

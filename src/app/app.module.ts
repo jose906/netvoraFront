@@ -56,30 +56,33 @@ import { PerfilComponent } from './perfil/perfil.component';
 import { SubscriptionInterceptor } from './core/interceptor/subscription.interceptor';
 import { SubscriptionGuard } from './core/guards/subscription.guard';
 
+
 // Initialize Firebase
 
 
 const routes: Routes = [
   { path: '', component: PrincipalComponent, canActivate: [AuthGuard] },
-  { path: 'politica', component: PoliticaComponent },
-  { path: 'economia', component: EconomiaComponent },
+  { path: 'politica', component: PoliticaComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
+  { path: 'economia', component: EconomiaComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
   { path: 'resumen',  component: ResumenComponent},
-  { path: 'seguridad',  component: SeguridadComponent },
-  { path: 'estadisticas', component:EstadisticasComponent },
-  { path: 'deportes', component:DeportesComponent },
-  { path: 'social', component:SocialComponent},
-  { path: 'ambiente', component:AmbienteComponent},
+  { path: 'seguridad',  component: SeguridadComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
+  { path: 'estadisticas', component:EstadisticasComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
+  { path: 'deportes', component:DeportesComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
+  { path: 'social', component:SocialComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
+  { path: 'ambiente', component:AmbienteComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
   { path: 'administrador', component:AdministradorComponent, canActivate: [AuthGuard, RoleGuard], data: { roles: ['admin']},},
-  { path: 'personas', component:PersonasComponent},
-  { path: 'salud', component:SaludComponent},
-  { path: 'educacion', component:EducacionComponent},
-  { path: 'otros', component:OtrosComponent},
-  { path: 'gestiones', component:GestionesComponent},
+  { path: 'personas', component:PersonasComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
+  { path: 'salud', component:SaludComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
+  { path: 'educacion', component:EducacionComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
+  { path: 'otros', component:OtrosComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
+  { path: 'gestiones', component:GestionesComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
   { path: 'login', component:LoginComponent},
-  { path: 'entidades', component:EntidadesComponent },
-  { path: 'catSelect',component:CatSelectComponent},
+  { path: 'entidades', component:EntidadesComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
+  { path: 'catSelect',component:CatSelectComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { roles:["admin"] } },
   { path: 'account', component:PerfilComponent},
-  {path:'perfil', component:PerfilComponent, canActivate:[AuthGuard]},
+  { path:'perfil', component:PerfilComponent, canActivate:[AuthGuard]},
+  
+
 
   
 ];
@@ -110,6 +113,7 @@ const routes: Routes = [
     EstadisticasEntiPersonasComponent,
     AmbienteComponent,
     PerfilComponent,
+    
   ],
   imports: [
     BrowserModule,

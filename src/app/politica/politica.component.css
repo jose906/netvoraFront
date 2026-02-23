@@ -459,6 +459,30 @@ button.filter-btn:focus-visible{
   background: rgba(255,255,255,0.85);
   color: var(--ink);
 }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-save {
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: #e0e0e0;
+  font-size: 12px;
+  transition: 0.2s ease;
+}
+
+.btn-save:hover {
+  background: #cfcfcf;
+}
+
+.btn-save.saved {
+  background: #4caf50;
+  color: white;
+}
 
 .icon .emoji{ font-size: 14px; }
 

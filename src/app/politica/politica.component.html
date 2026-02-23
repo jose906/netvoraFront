@@ -113,6 +113,13 @@
         }">
         {{ item.sentimiento }}
       </span>
+      <button 
+        class="btn-save"
+        (click)="toggleGuardar(item)"
+        [disabled]="savingIds.has(item.tweetid.toString())"
+        [class.saved]="isGuardado(item.tweetid)">
+        {{ isGuardado(item.tweetid) ? 'Guardado' : 'Guardar' }}
+    </button>
     </div>
 
     <p class="news-text">{{ item.text }}</p>
@@ -123,7 +130,7 @@
 
     <div class="sentiment-icons">
       <div class="icon red">
-        <span class="emoji">Negativo</span>
+        <span>Negativo</span>
         <span class="count">{{ getRepliesCounts(item.tweetid).negativo }}</span>
         
       </div>

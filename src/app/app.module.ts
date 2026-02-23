@@ -55,6 +55,7 @@ import { AmbienteComponent } from './ambiente/ambiente.component';
 import { PerfilComponent } from './perfil/perfil.component';
 import { SubscriptionInterceptor } from './core/interceptor/subscription.interceptor';
 import { SubscriptionGuard } from './core/guards/subscription.guard';
+import { GuardarComponent } from './guardar/guardar.component';
 
 
 // Initialize Firebase
@@ -81,6 +82,7 @@ const routes: Routes = [
   { path: 'catSelect',component:CatSelectComponent, canActivate: [AuthGuard], data: { roles:["admin"] } },
   { path: 'account', component:PerfilComponent},
   { path:'perfil', component:PerfilComponent, canActivate:[AuthGuard]},
+  { path: 'guardar', component: GuardarComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
   
 
 
@@ -113,6 +115,7 @@ const routes: Routes = [
     EstadisticasEntiPersonasComponent,
     AmbienteComponent,
     PerfilComponent,
+    GuardarComponent,
     
   ],
   imports: [

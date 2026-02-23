@@ -1,0 +1,227 @@
+<header class="top-menu">
+  <nav class="menu-items" aria-label="Categorías">
+    <button
+      type="button"
+      (click)="onSelect('inicio')"
+      [class.is-active]="activeCategory === 'inicio'">
+      Inicio
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('politica')"
+      [class.is-active]="activeCategory === 'politica'">
+      Política
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('economia')"
+      [class.is-active]="activeCategory === 'economia'">
+      Economía
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('seguridad')"
+      [class.is-active]="activeCategory === 'seguridad'">
+      Seguridad
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('deportes')"
+      [class.is-active]="activeCategory === 'deportes'">
+      Deportes
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('salud')"
+      [class.is-active]="activeCategory === 'salud'">
+      Salud
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('sociedad')"
+      [class.is-active]="activeCategory === 'sociedad'">
+      Sociedad
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('educacion')"
+      [class.is-active]="activeCategory === 'educacion'">
+      Educación
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('gestion')"
+      [class.is-active]="activeCategory === 'gestion'">
+      Gestiones Públicas
+    </button>
+    <button
+      type="button"
+      (click)="onSelect('ambiente')"
+      [class.is-active]="activeCategory === 'ambiente'">
+      Medio Ambiente
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('otros')"
+      [class.is-active]="activeCategory === 'otros'">
+      Otros
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('entidades')"
+      [class.is-active]="activeCategory === 'entidades'">
+      Entidades Públicas
+    </button>
+
+    <button
+      type="button"
+      (click)="onSelect('personas')"
+      [class.is-active]="activeCategory === 'personas'">
+      Personas Públicas
+    </button>
+  </nav>
+</header>
+
+<div class="page">
+  <!-- Filtros -->
+  <section class="filters-section">
+    <div class="filters-header">
+      <h3>
+        <mat-icon>tune</mat-icon>
+        Filtros
+      </h3>
+
+      <span class="page-indicator">Categoría: {{ activeCategory }}</span>
+    </div>
+
+    <div class="filters-row">
+      <mat-form-field appearance="outline" class="filter-item">
+        <mat-label>Rango de fechas</mat-label>
+        <mat-date-range-input [rangePicker]="picker">
+          <input matStartDate placeholder="Inicio" [(ngModel)]="startDate" />
+          <input matEndDate placeholder="Fin" [(ngModel)]="endDate" />
+        </mat-date-range-input>
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-date-range-picker #picker></mat-date-range-picker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-item">
+        <mat-label>Seleccionar usuarios</mat-label>
+        <mat-select [(ngModel)]="selectedUsers" multiple>
+          <mat-option *ngFor="let user of users" [value]="user.idTweetUser">
+            {{ user.TweetUser }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-item">
+        <mat-label>Buscar</mat-label>
+        <input matInput [(ngModel)]="searchText" placeholder="Texto de búsqueda" />
+      </mat-form-field>
+
+      <div class="filter-buttons">
+        <button mat-flat-button color="primary" class="filter-btn" (click)="filtrar()">
+          <mat-icon>search</mat-icon>
+          Filtrar
+        </button>
+
+        <button mat-stroked-button class="filter-btn" (click)="limpiar()">
+          <mat-icon>refresh</mat-icon>
+          Limpiar
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Estado -->
+  <div *ngIf="cargando" class="state">⏳ Cargando noticias...</div>
+  <div *ngIf="error" class="state state-error">{{ error }}</div>
+
+  <!-- Lista -->
+  <section *ngIf="!cargando && datos.length" class="news-container">
+    <article *ngFor="let item of datos" class="news-item">
+
+      <div class="news-header">
+        <div class="news-title">{{ item.TweetUser }}</div>
+
+        <!-- ✅ Pills derecha: sentimiento + categoría -->
+        <div class="chips-right">
+          <span
+            class="status-chip"
+            [ngClass]="{
+              negativo: item.sentimiento === 'negativo',
+              neutral: item.sentimiento === 'neutro',
+              positivo: item.sentimiento === 'positivo'
+            }"
+          >
+            {{ item.sentimiento }}
+          </span>
+
+          <!-- ✅ NUEVO: pill de categoría -->
+          <span class="category-chip">
+            {{ item.categoria }}
+          </span>
+        </div>
+      </div>
+
+      <p class="news-text">{{ item.text }}</p>
+
+      <div class="news-meta">
+        <span class="news-date">{{ item.created | date: 'mediumDate' }}</span>
+
+        <div class="sentiment-icons">
+          <span class="icon">😡 <b>0</b></span>
+          <span class="icon">😐 <b>0</b></span>
+          <span class="icon">😊 <b>0</b></span>
+        </div>
+      </div>
+
+      <!-- Acciones por categoría -->
+     
+
+    </article>
+  </section>
+
+  <!-- Paginación -->
+  <div class="pagination" *ngIf="!cargando && datos.length">
+    <button
+      mat-flat-button
+      color="primary"
+      class="pagination-btn prev"
+      (click)="loadPreviousPage()"
+      [disabled]="currentPage === 1"
+    >
+      <mat-icon>arrow_back_ios_new</mat-icon>
+      Anterior
+    </button>
+
+    <span class="page-indicator">Página {{ currentPage }}</span>
+
+    <button
+      mat-flat-button
+      color="primary"
+      class="pagination-btn next"
+      (click)="loadNextPage()"
+      [disabled]="!hasMore"
+    >
+      Siguiente
+      <mat-icon>arrow_forward_ios</mat-icon>
+    </button>
+  </div>
+
+  <!-- Sin resultados -->
+  <div *ngIf="!cargando && !datos.length && !error" class="state">
+    No hay noticias disponibles para los filtros seleccionados.
+  </div>
+</div>
+

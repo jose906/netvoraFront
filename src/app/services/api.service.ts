@@ -14,6 +14,7 @@ import { NumberSymbol } from '@angular/common';
 import { HomePageResponse } from '../interfaces/homePage';
 import { StatsResponse } from '../interfaces/data/mainDashboard';
 import { DashboardStatsResponse } from '../interfaces/data/MediaDashboard';
+import { NewsItem } from '../interfaces/NewsItem';
 
 
 
@@ -190,6 +191,22 @@ createUserPlan(body: any, token: string) {
     headers: { Authorization: `Bearer ${token}` }
   });
 }
+
+getGuardados(limit = 10, offset = 0, category?: string) {
+  let url = `${this.apiUrl}saved_posts?limit=${limit}&offset=${offset}`;
+  if (category && category !== 'inicio') url += `&category=${encodeURIComponent(category)}`;
+  return this.http.get<{ ok: boolean; items: NewsItem[]; limit: number; offset: number }>(url);
+}
+       
+  // POST: guarda tweet
+  guardarTweet(tweetid: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}save_post`, { tweetid });
+  }
+
+  // DELETE: elimina guardado
+  borrarGuardado(tweetid: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}unsave_post/${tweetid}`);
+  }
 
 
   

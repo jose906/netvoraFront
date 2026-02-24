@@ -6,7 +6,7 @@
 :host{
   display:block;
 
-  /* Sistema visual unificado (sidebar + páginas) */
+  /* Sistema visual */
   --bg:#f6f7f9;
   --surface: rgba(255,255,255,0.92);
   --text:#0f172a;
@@ -23,7 +23,7 @@
   color: var(--text);
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
- 
+
 /* =====================================================
    PAGE
 ===================================================== */
@@ -111,6 +111,7 @@
   font-weight: 950;
 }
 
+/* ✅ solo una definición de page-indicator */
 .page-indicator{
   font-size: 12px;
   font-weight: 900;
@@ -150,12 +151,14 @@
   padding: 10px 14px !important;
 }
 
+/* primario */
 button[mat-flat-button].filter-btn{
   background: rgba(15,23,42,0.92) !important;
   color: #fff !important;
 }
 button[mat-flat-button].filter-btn:hover{ filter: brightness(1.06); }
 
+/* secundario */
 button[mat-stroked-button].filter-btn{
   background: rgba(255,255,255,0.92) !important;
   border-color: rgba(15,23,42,0.12) !important;
@@ -196,7 +199,7 @@ button[mat-stroked-button].filter-btn:hover{
 .state-error{ color:#b91c1c; }
 
 /* =====================================================
-   NOTICIAS (LISTA PLANA + DETALLE MORADO)
+   NOTICIAS
 ===================================================== */
 .news-container{
   margin-top: 16px;
@@ -204,7 +207,6 @@ button[mat-stroked-button].filter-btn:hover{
   flex-direction: column;
 }
 
-/* item plano */
 .news-item{
   position: relative;
   padding: 14px 0 14px 14px;
@@ -225,14 +227,12 @@ button[mat-stroked-button].filter-btn:hover{
   transform: scaleY(0.6);
   transition: opacity .12s ease, transform .12s ease;
 }
-
 .news-item:hover::before,
 .news-item:focus-within::before{
   opacity: 0.85;
   transform: scaleY(1);
 }
 
-/* header */
 .news-header{
   display:flex;
   justify-content: space-between;
@@ -247,7 +247,6 @@ button[mat-stroked-button].filter-btn:hover{
   color: rgba(15,23,42,0.92);
 }
 
-/* chips */
 .chips-right{
   display:inline-flex;
   gap: 8px;
@@ -277,7 +276,6 @@ button[mat-stroked-button].filter-btn:hover{
   color: rgba(59,26,143,0.95);
 }
 
-/* texto */
 .news-text{
   font-size: 14px;
   line-height: 1.65;
@@ -285,7 +283,6 @@ button[mat-stroked-button].filter-btn:hover{
   margin: 8px 0 10px;
 }
 
-/* meta */
 .news-meta{
   display:flex;
   justify-content: space-between;
@@ -299,6 +296,7 @@ button[mat-stroked-button].filter-btn:hover{
 .sentiment-icons{
   display:flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .sentiment-icons .icon{
@@ -309,49 +307,80 @@ button[mat-stroked-button].filter-btn:hover{
 }
 .sentiment-icons b{ font-weight: 950; }
 
-/* acciones */
-.news-actions{
-  margin-top: 10px;
-  display:flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
+/* =====================================================
+   BOTÓN GUARDAR (pro) - integrado con el sistema
+===================================================== */
+.btn-save{
+  --btn-bg: rgba(255,255,255,0.85);
+  --btn-border: rgba(148,163,184,0.40);
+  --btn-text: rgba(15,23,42,0.90);
 
-.news-actions button{
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(248,250,252,0.80);
-  padding: 7px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 7px 12px;
   border-radius: 999px;
-  font-size: 13px;
+  border: 1px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--btn-text);
+
+  font-size: 12px;
   font-weight: 900;
-  cursor:pointer;
-}
-.news-actions button:hover{
-  background: rgba(255,255,255,0.92);
-  border-color: rgba(109,40,217,0.18);
+  letter-spacing: .2px;
+
+  cursor: pointer;
+  user-select: none;
+
+  transition: transform .15s ease, filter .15s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+  box-shadow: 0 8px 20px rgba(15,23,42,0.06);
 }
 
-/* sentimiento */
-.sentiment-actions{
-  margin-top: 8px;
-  display:flex;
-  gap: 8px;
-  flex-wrap: wrap;
+.btn-save:hover{
+  filter: brightness(1.03);
+  border-color: rgba(109,40,217,0.35);
+  box-shadow: 0 10px 24px rgba(109,40,217,0.10);
 }
 
-.sentiment-actions .sbtn{
-  padding: 7px 10px;
-  border-radius: 999px;
-  font-size: 13px;
+.btn-save:active{ transform: translateY(1px) scale(0.99); }
+
+.btn-save:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 4px var(--focus), 0 10px 24px rgba(109,40,217,0.10);
+}
+
+.btn-save.saved{
+  background: rgba(109,40,217,0.10);
+  border-color: rgba(109,40,217,0.28);
+  color: rgba(109,40,217,0.95);
+}
+
+.btn-save.saved::before{
+  content: "✓";
   font-weight: 950;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.80);
-  cursor:pointer;
+  font-size: 12px;
+  line-height: 1;
 }
 
-.sentiment-actions .sbtn.pos{ background: rgba(34,197,94,0.10); border-color: rgba(34,197,94,0.22); color:#166534; }
-.sentiment-actions .sbtn.neu{ background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.22); color:#92400e; }
-.sentiment-actions .sbtn.neg{ background: rgba(239,68,68,0.10); border-color: rgba(239,68,68,0.22); color:#991b1b; }
+.btn-save:disabled{
+  cursor: not-allowed;
+  opacity: .75;
+  filter: grayscale(0.15);
+  box-shadow: none;
+  transform: none;
+}
+
+.btn-save:disabled::after{
+  content: "";
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(109,40,217,0.20);
+  border-top-color: rgba(109,40,217,0.75);
+  animation: spin .8s linear infinite;
+}
+
+@keyframes spin{ to{ transform: rotate(360deg); } }
 
 /* =====================================================
    PAGINACIÓN
@@ -365,14 +394,6 @@ button[mat-stroked-button].filter-btn:hover{
   border-top: 1px solid var(--line);
 }
 
-.pagination .page-indicator{
-  background: rgba(255,255,255,0.90);
-  border: 1px solid var(--line);
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-weight: 950;
-}
-
 .pagination-btn{
   border-radius: 999px !important;
   padding: 10px 14px !important;
@@ -383,6 +404,8 @@ button[mat-flat-button].pagination-btn{
   background: rgba(15,23,42,0.92) !important;
   color:#fff !important;
 }
+button[mat-flat-button].pagination-btn:hover{ filter: brightness(1.06); }
+
 button[mat-flat-button].pagination-btn[disabled]{
   background: rgba(15,23,42,0.25) !important;
 }
@@ -396,4 +419,114 @@ button[mat-flat-button].pagination-btn[disabled]{
   .filter-item{ min-width: 100%; }
   .pagination{ justify-content: space-between; }
   .chips-right{ justify-content:flex-start; }
+  .news-header{ align-items:flex-start; }
+  .news-meta{ gap: 10px; }
+}
+@media (max-width: 520px){
+  .sentiment-icons{ width: 100%; }
+  .btn-save{ margin-left: auto; }
+}
+/* ===============================
+   NOTE WRAPPER
+================================ */
+.note-wrapper{
+  margin-top: 14px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(15,23,42,.08);
+  background: rgba(255,255,255,.75);
+  backdrop-filter: blur(10px);
+  transition: all .25s ease;
+}
+
+/* ===============================
+   TOGGLE HEADER
+================================ */
+.note-toggle{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor:pointer;
+  transition: all .2s ease;
+}
+
+.note-toggle:hover{
+  background: rgba(109,40,217,.05);
+}
+
+.note-toggle.has-note{
+  border-left: 4px solid #6d28d9;
+}
+
+.note-left{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:600;
+  color:#0f172a;
+}
+
+.note-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.note-indicator{
+  font-size:12px;
+  padding:4px 10px;
+  border-radius:999px;
+  background: rgba(109,40,217,.12);
+  border:1px solid rgba(109,40,217,.18);
+  color:#4c1d95;
+  font-weight:500;
+}
+
+/* flecha animada */
+.arrow{
+  transition: transform .2s ease;
+}
+
+.note-toggle.open .arrow{
+  transform: rotate(180deg);
+}
+
+/* ===============================
+   EXPANDIBLE CONTENT
+================================ */
+.note-content{
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  padding: 0 16px;
+  transition: all .3s ease;
+}
+
+.note-content.open{
+  max-height: 400px;
+  opacity: 1;
+  padding: 16px;
+}
+
+/* ===============================
+   TEXTAREA
+================================ */
+.note-field{
+  width: 100%;
+}
+
+.note-field textarea{
+  font-size: 14px;
+}
+
+/* ===============================
+   ACTION BUTTONS
+================================ */
+.note-actions{
+  margin-top: 12px;
+  display:flex;
+  gap: 10px;
+  justify-content:flex-end;
+  flex-wrap: wrap;
 }

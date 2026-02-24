@@ -1,106 +1,25 @@
 <header class="top-menu">
   <nav class="menu-items" aria-label="Categorías">
-    <button
-      type="button"
-      (click)="onSelect('inicio')"
-      [class.is-active]="activeCategory === 'inicio'">
-      Inicio
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('politica')"
-      [class.is-active]="activeCategory === 'politica'">
-      Política
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('economia')"
-      [class.is-active]="activeCategory === 'economia'">
-      Economía
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('seguridad')"
-      [class.is-active]="activeCategory === 'seguridad'">
-      Seguridad
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('deportes')"
-      [class.is-active]="activeCategory === 'deportes'">
-      Deportes
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('salud')"
-      [class.is-active]="activeCategory === 'salud'">
-      Salud
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('sociedad')"
-      [class.is-active]="activeCategory === 'sociedad'">
-      Sociedad
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('educacion')"
-      [class.is-active]="activeCategory === 'educacion'">
-      Educación
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('gestion')"
-      [class.is-active]="activeCategory === 'gestion'">
-      Gestiones Públicas
-    </button>
-    <button
-      type="button"
-      (click)="onSelect('ambiente')"
-      [class.is-active]="activeCategory === 'ambiente'">
-      Medio Ambiente
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('otros')"
-      [class.is-active]="activeCategory === 'otros'">
-      Otros
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('entidades')"
-      [class.is-active]="activeCategory === 'entidades'">
-      Entidades Públicas
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('personas')"
-      [class.is-active]="activeCategory === 'personas'">
-      Personas Públicas
-    </button>
+    <button type="button" (click)="onSelect('inicio')" [class.is-active]="activeCategory === 'inicio'">Inicio</button>
+    <button type="button" (click)="onSelect('politica')" [class.is-active]="activeCategory === 'politica'">Política</button>
+    <button type="button" (click)="onSelect('economia')" [class.is-active]="activeCategory === 'economia'">Economía</button>
+    <button type="button" (click)="onSelect('seguridad')" [class.is-active]="activeCategory === 'seguridad'">Seguridad</button>
+    <button type="button" (click)="onSelect('deportes')" [class.is-active]="activeCategory === 'deportes'">Deportes</button>
+    <button type="button" (click)="onSelect('salud')" [class.is-active]="activeCategory === 'salud'">Salud</button>
+    <button type="button" (click)="onSelect('sociedad')" [class.is-active]="activeCategory === 'sociedad'">Sociedad</button>
+    <button type="button" (click)="onSelect('educacion')" [class.is-active]="activeCategory === 'educacion'">Educación</button>
+    <button type="button" (click)="onSelect('gestion')" [class.is-active]="activeCategory === 'gestion'">Gestiones Públicas</button>
+    <button type="button" (click)="onSelect('ambiente')" [class.is-active]="activeCategory === 'ambiente'">Medio Ambiente</button>
+    <button type="button" (click)="onSelect('otros')" [class.is-active]="activeCategory === 'otros'">Otros</button>
+    <button type="button" (click)="onSelect('entidades')" [class.is-active]="activeCategory === 'entidades'">Entidades Públicas</button>
+    <button type="button" (click)="onSelect('personas')" [class.is-active]="activeCategory === 'personas'">Personas Públicas</button>
   </nav>
 </header>
 
 <div class="page">
-  <!-- Filtros -->
   <section class="filters-section">
     <div class="filters-header">
-      <h3>
-        <mat-icon>tune</mat-icon>
-        Filtros
-      </h3>
-
+      <h3><mat-icon>tune</mat-icon> Filtros</h3>
       <span class="page-indicator">Categoría: {{ activeCategory }}</span>
     </div>
 
@@ -130,7 +49,7 @@
       </mat-form-field>
 
       <div class="filter-buttons">
-        <button mat-flat-button color="primary" class="filter-btn" (click)="filtrar()">
+        <button mat-flat-button class="filter-btn" (click)="filtrar()">
           <mat-icon>search</mat-icon>
           Filtrar
         </button>
@@ -143,85 +62,140 @@
     </div>
   </section>
 
-  <!-- Estado -->
   <div *ngIf="cargando" class="state">⏳ Cargando noticias...</div>
   <div *ngIf="error" class="state state-error">{{ error }}</div>
 
-  <!-- Lista -->
   <section *ngIf="!cargando && datos.length" class="news-container">
     <article *ngFor="let item of datos" class="news-item">
 
       <div class="news-header">
         <div class="news-title">{{ item.TweetUser }}</div>
 
-        <!-- ✅ Pills derecha: sentimiento + categoría -->
         <div class="chips-right">
-          <span
-            class="status-chip"
-            [ngClass]="{
-              negativo: item.sentimiento === 'negativo',
-              neutral: item.sentimiento === 'neutro',
-              positivo: item.sentimiento === 'positivo'
-            }"
-          >
+          <span class="status-chip"
+                [ngClass]="{
+                  negativo: item.sentimiento === 'negativo',
+                  neutral: item.sentimiento === 'neutro',
+                  positivo: item.sentimiento === 'positivo'
+                }">
             {{ item.sentimiento }}
           </span>
 
-          <!-- ✅ NUEVO: pill de categoría -->
-          <span class="category-chip">
-            {{ item.categoria }}
-          </span>
+          <span class="category-chip">{{ item.categoria }}</span>
         </div>
       </div>
 
       <p class="news-text">{{ item.text }}</p>
 
       <div class="news-meta">
-        <span class="news-date">{{ item.created | date: 'mediumDate' }}</span>
+        <span class="news-date">{{ item.created | date:'mediumDate' }}</span>
 
         <div class="sentiment-icons">
-          <span class="icon">😡 <b>0</b></span>
-          <span class="icon">😐 <b>0</b></span>
-          <span class="icon">😊 <b>0</b></span>
+          <span class="icon">Negativo <b>{{ getRepliesCounts(item.tweetid).negativo }}</b></span>
+          <span class="icon">Neutral <b>{{ getRepliesCounts(item.tweetid).neutro }}</b></span>
+          <span class="icon">Positivo <b>{{ getRepliesCounts(item.tweetid).positivo }}</b></span>
         </div>
-      </div>
 
-      <!-- Acciones por categoría -->
-     
+        <button
+          class="btn-save"
+          (click)="toggleGuardar(item)"
+          [disabled]="savingIds.has(item.tweetid.toString())"
+          [class.saved]="isGuardado(item.tweetid)">
+          {{ isGuardado(item.tweetid) ? 'Guardado' : 'Guardar' }}
+        </button>
+      </div>
+      <!-- 🔹 Nota Personal Expandible -->
+<div class="note-wrapper">
+
+  <!-- Header clickeable -->
+  <div class="note-toggle"
+       (click)="toggleNote(item.tweetid)"
+       [class.open]="isNoteOpen(item.tweetid)"
+       [class.has-note]="hasNote(item.tweetid)">
+
+    <div class="note-left">
+      <mat-icon>sticky_note_2</mat-icon>
+      <span>Nota personal</span>
+    </div>
+
+    <div class="note-right">
+      <span *ngIf="hasNote(item.tweetid)" class="note-indicator">
+        ✔ Guardada
+      </span>
+      <mat-icon class="arrow">
+        {{ isNoteOpen(item.tweetid) ? 'expand_less' : 'expand_more' }}
+      </mat-icon>
+    </div>
+  </div>
+
+  <!-- Contenido expandible -->
+  <div class="note-content"
+       [class.open]="isNoteOpen(item.tweetid)">
+
+    <mat-form-field appearance="outline" class="note-field">
+      <mat-label>Escribe tu nota</mat-label>
+      <textarea
+        matInput
+        rows="3"
+        cdkTextareaAutosize
+        cdkAutosizeMinRows="3"
+        cdkAutosizeMaxRows="8"
+        [ngModel]="noteDraft[item.tweetid]"
+        [textContent]="noteDraft[item.tweetid]"
+        (ngModelChange)="noteDraft[item.tweetid] = $event"
+        placeholder="Ej: revisar este post luego, confirmar dato, etc.">
+      </textarea>
+    </mat-form-field>
+
+    <div class="note-actions">
+      <button
+        mat-flat-button
+        type="button"
+        (click)="guardarNota(item.tweetid)"
+        [disabled]="savingNoteIds.has(item.tweetid.toString()) 
+                    || !noteDraft[item.tweetid]?.trim() 
+                    || !noteChanged(item.tweetid)">
+        <mat-icon>{{ hasNote(item.tweetid) ? 'save' : 'add' }}</mat-icon>
+        {{ hasNote(item.tweetid) ? 'Modificar' : 'Agregar' }}
+      </button>
+
+      <button
+        mat-stroked-button
+        color="warn"
+        type="button"
+        (click)="borrarNota(item.tweetid)"
+        [disabled]="!hasNote(item.tweetid)">
+        <mat-icon>delete</mat-icon>
+        Borrar
+      </button>
+    </div>
+  </div>
+
+</div>
+      
 
     </article>
   </section>
 
-  <!-- Paginación -->
   <div class="pagination" *ngIf="!cargando && datos.length">
-    <button
-      mat-flat-button
-      color="primary"
-      class="pagination-btn prev"
-      (click)="loadPreviousPage()"
-      [disabled]="currentPage === 1"
-    >
+    <button mat-flat-button class="pagination-btn prev"
+            (click)="loadPreviousPage()"
+            [disabled]="currentPage === 1">
       <mat-icon>arrow_back_ios_new</mat-icon>
       Anterior
     </button>
 
     <span class="page-indicator">Página {{ currentPage }}</span>
 
-    <button
-      mat-flat-button
-      color="primary"
-      class="pagination-btn next"
-      (click)="loadNextPage()"
-      [disabled]="!hasMore"
-    >
+    <button mat-flat-button class="pagination-btn next"
+            (click)="loadNextPage()"
+            [disabled]="!hasMore">
       Siguiente
       <mat-icon>arrow_forward_ios</mat-icon>
     </button>
   </div>
 
-  <!-- Sin resultados -->
   <div *ngIf="!cargando && !datos.length && !error" class="state">
     No hay noticias disponibles para los filtros seleccionados.
   </div>
 </div>
-

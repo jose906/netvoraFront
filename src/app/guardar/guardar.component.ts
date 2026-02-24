@@ -40,6 +40,25 @@ export class GuardarComponent implements OnInit {
   users: users[] = [];
   selectedUsers: number[] = [];
 
+   guardados = new Set<string>();
+  savingIds = new Set<string>(); // para bloquear doble click
+  errorGuardar = '';
+
+  repliesByTweet: Record<string, { negativo: number; neutro: number; positivo: number }> = {};
+  loadingReplies: Record<string, boolean> = {};
+
+
+// Nota por tweetid
+notesByTweet = new Map<string, string>();
+
+// texto que el usuario escribe (draft)
+noteDraft: Record<string, string> = {};
+
+// estados (para deshabilitar botones mientras guarda)
+savingNoteIds = new Set<string>();
+
+
+
   activeCategory: CategoryKey = 'inicio';
 
   private readonly categoryApiMap: Record<CategoryKey, (limit: number, offset: number) => Observable<SavedPostsResponse>> = {
@@ -63,6 +82,7 @@ export class GuardarComponent implements OnInit {
   ngOnInit(): void {
     this.loadUsers();
     this.loadByCategory(this.activeCategory, { resetPage: true });
+    
   }
 
   loadUsers(): void {
@@ -112,7 +132,8 @@ export class GuardarComponent implements OnInit {
   ): void {
     this.cargando = true;
     this.error = '';
-
+    
+   
     const page = opts?.resetPage ? 1 : (opts?.page ?? this.currentPage);
     const offset = (page - 1) * this.pageSize;
 
@@ -121,7 +142,48 @@ export class GuardarComponent implements OnInit {
     apiCall(this.pageSize, offset).subscribe({
       next: (data) => {
         this.datos = data.items || [];
+        // ✅ inicializar notas (vienen en data.items desde ut.note)
+this.notesByTweet.clear(); // opcional: para no mezclar páginas
+// this.noteDraft = {};     // opcional: si quieres reset total por página
+
+    for (const it of this.datos) {
+      const id = this.tid(it.tweetid);
+      const note = (it.note ?? '').toString();   // 👈 viene del backend
+      this.notesByTweet.set(id, note);
+
+      // solo setea draft si aún no existe (para no pisar lo que el usuario está escribiendo)
+      if (this.noteDraft[id] === undefined) {
+        this.noteDraft[id] = note;
+      }
+    }
+        
         this.currentPage = page;
+         this.guardados = new Set(
+      this.datos.map(d => String(d.tweetid))
+        );
+        const tweetIds = this.datos.map(x => x.tweetid);
+
+        this.apiService.getRepliesSummaryMany(tweetIds).subscribe({
+          next: (rows: any[]) => {
+            // Construir mapa tweetid -> counts
+            const map: Record<string, { negativo: number; neutro: number; positivo: number }> = {};
+            
+            for (const r of rows || []) {
+              const key = String(r.tweetid);
+              
+              if (!map[key]) map[key] = { negativo: 0, neutro: 0, positivo: 0 };
+
+              if (r.sentimiento === 'negativo') map[key].negativo = r.total;
+              if (r.sentimiento === 'neutro') map[key].neutro = r.total;
+              if (r.sentimiento === 'positivo') map[key].positivo = r.total;
+              
+            }
+            
+
+            this.repliesByTweet = map;
+          },
+          error: (e) => console.error('❌ Error summary many:', e)
+        });
         this.hasMore = (this.datos.length === this.pageSize);
         this.cargando = false;
       },
@@ -132,4 +194,151 @@ export class GuardarComponent implements OnInit {
       }
     });
   }
+  toggleGuardar(item: any) {
+
+    const id = item.tweetid.toString();
+    console.log('Toggle guardar para ID:', id);
+    if (this.savingIds.has(id)) return;
+
+    this.errorGuardar = '';
+    this.savingIds.add(id);
+
+    // Si ya está guardado => DELETE
+    if (this.guardados.has(id)) {
+      this.apiService.borrarGuardado(id).subscribe({
+        next: () => {
+          this.guardados.delete(id);
+          this.savingIds.delete(id);
+        },
+        error: (e) => {
+          console.error('Error borrando guardado', e);
+          this.errorGuardar = 'No se pudo quitar de guardados.';
+          this.savingIds.delete(id);
+        }
+      });
+      return;
+    }
+
+    // Si no está guardado => POST
+    this.apiService.guardarTweet(id).subscribe({
+      next: () => {
+        this.guardados.add(id);
+        this.savingIds.delete(id);
+      },
+      error: (e) => {
+        console.error('Error guardando', e);
+        this.errorGuardar = 'No se pudo guardar.';
+        this.savingIds.delete(id);
+      }
+    });
+  }
+
+ cargarGuardados() {
+  this.apiService.getGuardados().subscribe({
+    next: (res) => {
+      const rows = res.items ?? [];
+      this.guardados = new Set(rows.map(r => String(r.tweetid)));
+      
+      console.log('Guardados cargados:', this.guardados);
+    },
+    error: (e) => console.error('Error cargando guardados', e)
+  });
+}
+
+  isGuardado(tweetid: any): boolean {
+    return this.guardados.has(tweetid.toString());
+  }
+
+  getRepliesCounts(tweetid: string) {
+
+  
+  return this.repliesByTweet[tweetid] ?? { negativo: 0, neutro: 0, positivo: 0 };
+}
+
+private tid(tweetid: any): string {
+  return tweetid?.toString?.() ?? String(tweetid);
+}
+
+hasNote(tweetid: any): boolean {
+  const id = this.tid(tweetid);
+  const saved = (this.notesByTweet.get(id) ?? '').trim();
+  return saved.length > 0;
+}
+
+getNote(tweetid: any): string {
+  return this.notesByTweet.get(this.tid(tweetid)) ?? '';
+}
+
+// ✅ Llamar esto después de cargar `datos`
+cargarNotasDePagina() {
+  const tweetids = this.datos.map(d => this.tid(d.tweetid));
+  if (!tweetids.length) return;
+
+  
+}
+
+// POST/PUT (upsert)
+guardarNota(tweetid: any) {
+  const id = this.tid(tweetid);
+  const note = (this.noteDraft[id] ?? '').trim();
+  if (!note) return;
+
+  this.savingNoteIds.add(id);
+
+  this.apiService.upsertNote(id, note).subscribe({
+    next: (res) => {
+      if (res?.ok) {
+        this.notesByTweet.set(id, note);
+        this.noteDraft[id] = note;
+      }
+      this.savingNoteIds.delete(id);
+    },
+    error: (e) => {
+      console.error('Error guardando nota', e);
+      this.savingNoteIds.delete(id);
+    }
+  });
+}
+
+borrarNota(tweetid: any) {
+  const id = this.tid(tweetid);
+
+  this.savingNoteIds.add(id);
+  this.apiService.deleteNote(id).subscribe({
+    next: (res) => {
+      if (res?.ok) {
+        this.notesByTweet.set(id, '');
+        this.noteDraft[id] = '';
+      }
+      this.savingNoteIds.delete(id);
+    },
+    error: (e) => {
+      console.error('Error borrando nota', e);
+      this.savingNoteIds.delete(id);
+    }
+  });
+}
+
+// útil para deshabilitar el botón "Modificar" si no cambió nada
+noteChanged(tweetid: any): boolean {
+  const id = this.tid(tweetid);
+  return (this.noteDraft[id] ?? '').trim() !== (this.notesByTweet.get(id) ?? '').trim();
+}
+// Control de apertura por tweet
+openNotes = new Set<string>();
+
+toggleNote(tweetid: any) {
+  const id = tweetid.toString();
+  if (this.openNotes.has(id)) {
+    this.openNotes.delete(id);
+  } else {
+    this.openNotes.add(id);
+  }
+}
+
+isNoteOpen(tweetid: any): boolean {
+  return this.openNotes.has(tweetid.toString());
+}
+
+
 }

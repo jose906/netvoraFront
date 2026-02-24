@@ -10,5 +10,6 @@ export interface NewsItem{
     persona:string;
     organizacion:string;
     categoria:string;
+    note:string;
     
     }

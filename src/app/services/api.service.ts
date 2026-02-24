@@ -208,6 +208,20 @@ getGuardados(limit = 10, offset = 0, category?: string) {
     return this.http.delete(`${this.apiUrl}unsave_post/${tweetid}`);
   }
 
+  // api.service.ts
+getUserTweetsByTweetIds(tweetids: string[]) {
+  const params = { tweetids: tweetids.join(',') };
+  return this.http.get<{ ok: boolean; rows: any[] }>(`${this.apiUrl}user_tweets`, { params });
+}
+
+upsertNote(tweetid: string, note: string) {
+  return this.http.post<{ ok: boolean }>(`${this.apiUrl}user_tweets/note`, { tweetid, note });
+}
+
+deleteNote(tweetid: string) {
+  return this.http.delete<{ ok: boolean }>(`${this.apiUrl}user_tweets/note/${tweetid}`);
+}
+
 
   
 

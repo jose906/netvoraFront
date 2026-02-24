@@ -102,25 +102,26 @@
   <div *ngFor="let item of datos" class="news-item">
 
     <div class="news-header">
-      <span class="news-title">{{ item.TweetUser }}</span>
+  <span class="news-title">{{ item.TweetUser }}</span>
 
-      <span
-        class="status-chip"
-        [ngClass]="{
-          'negativo': item.sentimiento === 'negativo',
-          'neutral': item.sentimiento === 'neutro',
-          'positivo': item.sentimiento === 'positivo'
-        }">
-        {{ item.sentimiento }}
-      </span>
-      <button 
-        class="btn-save"
-        (click)="toggleGuardar(item)"
-        [disabled]="savingIds.has(item.tweetid.toString())"
-        [class.saved]="isGuardado(item.tweetid)">
-        {{ isGuardado(item.tweetid) ? 'Guardado' : 'Guardar' }}
+  <div class="header-actions">
+    <span class="status-chip" [ngClass]="{
+      'negativo': item.sentimiento === 'negativo',
+      'neutral': item.sentimiento === 'neutro',
+      'positivo': item.sentimiento === 'positivo'
+    }">
+      {{ item.sentimiento }}
+    </span>
+
+    <button
+      class="btn-save"
+      (click)="toggleGuardar(item)"
+      [disabled]="savingIds.has(item.tweetid.toString())"
+      [class.saved]="isGuardado(item.tweetid)">
+      {{ isGuardado(item.tweetid) ? 'Guardado' : 'Guardar' }}
     </button>
-    </div>
+  </div>
+</div>
 
     <p class="news-text">{{ item.text }}</p>
 

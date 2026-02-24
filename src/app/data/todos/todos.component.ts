@@ -19,6 +19,7 @@ export class TodosComponent {
   @Input() startDate!: Date | null;
   @Input() endDate!: Date | null;
   @Input() selectedUsers: number[] = [];
+  @Input() searchText: string = '';
 
   loading = false;
   errorMsg = '';
@@ -117,6 +118,9 @@ export class TodosComponent {
   // ✅ SOLO si el usuario eligió endDate, lo mandas
   if (this.endDate) {
     body.end = this.toYMD(this.endDate);
+  }
+  if (this.searchText) {
+    body.search = this.searchText;
   }
 
   this.loading = true;

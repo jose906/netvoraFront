@@ -173,7 +173,7 @@ getRepliesSummaryMany(tweetIds: any[]) {
     return this.http.get<HomePageResponse>(this.apiUrl+'main_dashboard');
   }
  getWordcloud(body: any) {
-  return this.http.post(`${this.apiUrl}/wordcloud`, body, {
+  return this.http.post(`${this.apiUrl}wordcloud`, body, {
     responseType: 'blob',
     observe: 'response'
   });

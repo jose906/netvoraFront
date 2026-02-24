@@ -48,6 +48,7 @@ export class EstadisticasEntiPersonasComponent implements OnInit {
 
   // ✅ fijo para este dashboard
   @Input() type_user: string = 'Persona';
+  @Input() searchText: string = '';
 
   // (opcional) si en algún momento quieres filtrar por entidad, aquí lo dejas
   @Input() entidad: string = 'none';
@@ -64,6 +65,8 @@ export class EstadisticasEntiPersonasComponent implements OnInit {
 
   // ===== Top users list =====
   topUsers: TopUserItem[] = [];
+
+  
 
   // ===== Chart selectors =====
   sentimentChartType: ChartType = 'doughnut';
@@ -203,6 +206,8 @@ export class EstadisticasEntiPersonasComponent implements OnInit {
     };
 
     if (this.endDate) body.end = this.toYMD(this.endDate);
+
+    if (this.searchText) body.search = this.searchText.trim();
 
     // ✅ NO enviar categoria si es none/empty
     const cat = (this.categoria || '').trim().toLowerCase();

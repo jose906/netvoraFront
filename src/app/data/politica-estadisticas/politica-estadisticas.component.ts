@@ -43,6 +43,7 @@ export class PoliticaEstadisticasComponent implements OnInit {
   @Input() endDate!: Date | null;
   @Input() selectedUsers: number[] = [];
   @Input() categoria!: string;
+  @Input() searchText: string = '';
 
   loading = false;
   errorMsg = '';
@@ -204,6 +205,9 @@ userIndiceChartOptions: ChartOptions<'bar'> = {
     if (this.endDate) {
       body.end = this.toYMD(this.endDate);
     }
+    if (this.searchText) {
+      body.search = this.searchText;
+    } 
 
     this.loading = true;
     this.errorMsg = '';

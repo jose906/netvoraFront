@@ -29,6 +29,7 @@ export class EstadisticasComponent implements OnInit, AfterViewInit {
 
   users: users[] = [];
   selectedUsers: number[] = [];
+  searchText: string = ''; 
 
   private didInitialLoad = false;
 

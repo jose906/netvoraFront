@@ -83,13 +83,14 @@
     <button type="button"
             mat-flat-button
             class="filter-btn ghost"
+            (click)="resetFiltros()"
             >
       <mat-icon>refresh</mat-icon>
       Limpiar
     </button>
   </div>
 
-</div>
+</div>. 
 
   <!-- 🔹 Estado de carga -->
   <div *ngIf="cargando" class="loading">⏳ Cargando noticias...</div>
@@ -137,12 +138,12 @@
       </div>
 
       <div class="icon yellow">
-        <span class="emoji">Neutral</span>
+        <span class="">Neutral</span>
         <span class="count">{{ getRepliesCounts(item.tweetid).neutro }}</span>
       </div>
 
       <div class="icon green">
-        <span class="emoji">Positivo</span>
+        <span class="">Positivo</span>
         <span class="count">{{ getRepliesCounts(item.tweetid).positivo }}</span>
       </div>
     </div>

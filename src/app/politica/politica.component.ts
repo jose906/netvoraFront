@@ -184,7 +184,7 @@ getRepliesCounts(tweetid: string) {
   
   return this.repliesByTweet[tweetid] ?? { negativo: 0, neutro: 0, positivo: 0 };
 }
-
+ 
 toggleGuardar(item: any) {
 
     const id = item.tweetid.toString();
@@ -238,6 +238,13 @@ toggleGuardar(item: any) {
   isGuardado(tweetid: any): boolean {
     return this.guardados.has(tweetid.toString());
   }
+
+
+  resetFiltros(){
+  this.startDate = null as any;
+  this.endDate = null as any;
+  this.selectedUsers = [];
+}
 
 
 

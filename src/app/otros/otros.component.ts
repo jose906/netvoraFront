@@ -29,6 +29,11 @@ export class OtrosComponent implements OnInit {
 
     repliesByTweet: Record<string, { negativo: number; neutro: number; positivo: number }> = {};
   loadingReplies: Record<string, boolean> = {};
+
+   guardados = new Set<string>();
+  savingIds = new Set<string>(); // para bloquear doble click
+  errorGuardar = '';
+
   
     constructor(
       private apiService: ApiService,
@@ -175,6 +180,69 @@ getRepliesCounts(tweetid: string) {
   
   return this.repliesByTweet[tweetid] ?? { negativo: 0, neutro: 0, positivo: 0 };
 }
+
+toggleGuardar(item: any) {
+
+    const id = item.tweetid.toString();
+    console.log('Toggle guardar para ID:', id);
+    if (this.savingIds.has(id)) return;
+
+    this.errorGuardar = '';
+    this.savingIds.add(id);
+
+    // Si ya está guardado => DELETE
+    if (this.guardados.has(id)) {
+      this.apiService.borrarGuardado(id).subscribe({
+        next: () => {
+          this.guardados.delete(id);
+          this.savingIds.delete(id);
+        },
+        error: (e) => {
+          console.error('Error borrando guardado', e);
+          this.errorGuardar = 'No se pudo quitar de guardados.';
+          this.savingIds.delete(id);
+        }
+      });
+      return;
+    }
+
+    // Si no está guardado => POST
+    this.apiService.guardarTweet(id).subscribe({
+      next: () => {
+        this.guardados.add(id);
+        this.savingIds.delete(id);
+      },
+      error: (e) => {
+        console.error('Error guardando', e);
+        this.errorGuardar = 'No se pudo guardar.';
+        this.savingIds.delete(id);
+      }
+    });
+  }
+
+ cargarGuardados() {
+  this.apiService.getGuardados().subscribe({
+    next: (res) => {
+      const rows = res.items ?? [];
+      this.guardados = new Set(rows.map(r => String(r.tweetid)));
+      console.log('Guardados cargados:', this.guardados);
+    },
+    error: (e) => console.error('Error cargando guardados', e)
+  });
+}
+
+  isGuardado(tweetid: any): boolean {
+    return this.guardados.has(tweetid.toString());
+  }
+
+  resetFiltros(){
+  this.startDate = null as any;
+  this.endDate = null as any;
+  this.selectedUsers = [];
+  this.searchText = '';
+}
+
+
 
     
 

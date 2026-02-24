@@ -72,11 +72,14 @@
           Filtrar
         </button>
 
-        <button mat-flat-button color="accent" class="filter-btn"
-                >
-          <mat-icon>refresh</mat-icon>
-          Limpiar
-        </button>
+        <button type="button"
+            mat-flat-button
+            class="filter-btn ghost"
+            (click)="resetFiltros()"
+            >
+      <mat-icon>refresh</mat-icon>
+      Limpiar
+    </button>
       </div>
     </div>
   </div>
@@ -116,6 +119,13 @@
       }">
       {{ item.sentimiento }}
     </span>
+       <button
+      class="btn-save"
+      (click)="toggleGuardar(item)"
+      [disabled]="savingIds.has(item.tweetid.toString())"
+      [class.saved]="isGuardado(item.tweetid)">
+      {{ isGuardado(item.tweetid) ? 'Guardado' : 'Guardar' }}
+    </button>
   </div>
 </div>
 
@@ -126,17 +136,17 @@
     <div class="news-date">{{ item.created | date:'mediumDate' }}</div>
      <div class="sentiment-icons">
       <div class="icon red">
-        <span class="emoji">😡</span>
+        <span class="">Negativo</span>
         <span class="count">{{ getRepliesCounts(item.tweetid).negativo }}</span>
       </div>
 
       <div class="icon yellow">
-        <span class="emoji">😐</span>
+        <span class="">Neutral</span>
         <span class="count">{{ getRepliesCounts(item.tweetid).neutro }} </span>
       </div>
 
       <div class="icon green">
-        <span class="emoji">😊</span>
+        <span class="">Positivo</span>
         <span class="count">{{ getRepliesCounts(item.tweetid).positivo }}</span>
       </div>
     </div>

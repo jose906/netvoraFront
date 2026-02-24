@@ -14,6 +14,6 @@ export class AccountService {
   constructor(private http: HttpClient) {}
 
   me(): Observable<AccountMeResponse> {
-    return this.http.get<AccountMeResponse>(`${this.baseUrl}/api/account/me`);
+    return this.http.get<AccountMeResponse>(`${this.baseUrl}api/account/me`);
   }
 }

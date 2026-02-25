@@ -161,7 +161,7 @@
       mat-flat-button
       color="primary"
       class="pagination-btn prev"
-      (click)="load(this.startDate!.toISOString().split('T')[0], this.endDate!.toISOString().split('T')[0], selectedUsers, currentPage - 1)"
+      (click)="loadPreviousPage()"
       [disabled]="currentPage === 1">
       <mat-icon>arrow_back_ios_new</mat-icon>
       Anterior
@@ -173,7 +173,7 @@
       mat-flat-button
       color="primary"
       class="pagination-btn next"
-      (click)="load(this.startDate!.toISOString().split('T')[0], this.endDate!.toISOString().split('T')[0], selectedUsers, currentPage + 1)"
+      (click)="loadNextPage()"
       [disabled]="!hasMore">
       Siguiente
       <mat-icon>arrow_forward_ios</mat-icon>

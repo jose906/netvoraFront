@@ -47,6 +47,27 @@ export class PersonasComponent implements OnInit {
        // 🔹 Cargar todas las noticias sin filtros al inicio
        
     }
+    loadNextPage(): void {
+    let dateFormatted: string | undefined = undefined;
+    let dateFormattedEnd: string | undefined = undefined;
+    console.log('Cargando página:', this.currentPage);
+    if (this.startDate) dateFormatted = this.startDate.toISOString().split('T')[0];
+    if (this.endDate) dateFormattedEnd = this.endDate.toISOString().split('T')[0];
+    this.currentPage += 1;
+    console.log('Página actualizada a:', this.currentPage);
+    this.load(dateFormatted, dateFormattedEnd, this.selectedUsers, this.currentPage, this.searchText);
+  }
+  loadPreviousPage(): void {
+    let dateFormatted: string | undefined = undefined;
+    let dateFormattedEnd: string | undefined = undefined;
+    
+    if (this.startDate) dateFormatted = this.startDate.toISOString().split('T')[0];
+    if (this.endDate) dateFormattedEnd = this.endDate.toISOString().split('T')[0]; 
+    if (this.currentPage > 1) {
+      this.currentPage -= 1;
+      this.load(dateFormatted, dateFormattedEnd, this.selectedUsers, this.currentPage, this.searchText);
+    }
+  }
   
     /** Cargar usuarios */
     loadUsers(): void {

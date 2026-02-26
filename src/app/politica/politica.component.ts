@@ -116,11 +116,11 @@ loadNextPage(): void {
       };
 
  
-      if (startDate) body.startDate = this.toLocalYMD(startDate);
+      if (startDate) body.startDate = startDate;
       if (endDate) body.endDate = endDate;
       if (users && users.length > 0) body.users = users;
       if (searchText) body.searchText = searchText;
-
+      console.log('Cargando con filtros:', body);
       this.apiService.getNews(body).subscribe({
         next: (data: any) => {
           console.log(data);

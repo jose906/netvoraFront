@@ -50,7 +50,7 @@ export class EntidadesComponent  implements OnInit {
         this.apiService.getUsers("Entidad").subscribe({
           next: (data) => {
             this.users = data;
-            this.load(this.startDate?.toISOString().split('T')[0]); // Cargar noticias después de obtener los usuarios
+            this.load(this.startDate); // Cargar noticias después de obtener los usuarios
           },
           error: (error) => {
             console.error('❌ Error al cargar usuarios:', error);
@@ -62,12 +62,12 @@ export class EntidadesComponent  implements OnInit {
     
       /** Filtrar solo cuando se presiona el botón */
       filtrar(): void {
-        let dateFormatted: string | undefined = undefined;
-        let dateFormattedEnd: string | undefined = undefined;
+        let dateFormatted: Date | undefined = undefined;
+        let dateFormattedEnd: Date | undefined = undefined;
     
       
-        if (this.startDate) dateFormatted = this.startDate.toISOString().split('T')[0];
-        if (this.endDate) dateFormattedEnd = this.endDate.toISOString().split('T')[0];
+        if (this.startDate) dateFormatted = this.startDate;
+        if (this.endDate) dateFormattedEnd = this.endDate;
         this.load(dateFormatted, dateFormattedEnd, this.selectedUsers, 1, this.searchText);
       }
       getFormattedDate(): string | undefined {
@@ -77,21 +77,21 @@ export class EntidadesComponent  implements OnInit {
       return undefined;
     }
     loadNextPage(): void {
-        let dateFormatted: string | undefined = undefined;
-        let dateFormattedEnd: string | undefined = undefined;
+        let dateFormatted: Date | undefined = undefined;
+        let dateFormattedEnd: Date | undefined = undefined;
         console.log('Cargando página:', this.currentPage);
-        if (this.startDate) dateFormatted = this.startDate.toISOString().split('T')[0];
-        if (this.endDate) dateFormattedEnd = this.endDate.toISOString().split('T')[0];
+        if (this.startDate) dateFormatted = this.startDate;
+        if (this.endDate) dateFormattedEnd = this.endDate;
         this.currentPage += 1;
         console.log('Página actualizada a:', this.currentPage);
         this.load(dateFormatted, dateFormattedEnd, this.selectedUsers, this.currentPage, this.searchText);
       }
       loadPreviousPage(): void {
-        let dateFormatted: string | undefined = undefined;
-        let dateFormattedEnd: string | undefined = undefined;
+        let dateFormatted: Date | undefined = undefined;
+        let dateFormattedEnd: Date | undefined = undefined;
         
-        if (this.startDate) dateFormatted = this.startDate.toISOString().split('T')[0];
-        if (this.endDate) dateFormattedEnd = this.endDate.toISOString().split('T')[0]; 
+        if (this.startDate) dateFormatted = this.startDate;
+        if (this.endDate) dateFormattedEnd = this.endDate; 
         if (this.currentPage > 1) {
           this.currentPage -= 1;
           this.load(dateFormatted, dateFormattedEnd, this.selectedUsers, this.currentPage, this.searchText);
@@ -99,7 +99,7 @@ export class EntidadesComponent  implements OnInit {
       }
     
       /** Cargar noticias — puede recibir o no filtros */
-      load(startDate?: string, endDate?: string, users?: number[], page?:number, searchText?: string): void {
+      load(startDate?: Date, endDate?: Date, users?: number[], page?:number, searchText?: string): void {
           this.cargando = true;
           this.error = '';
           this.datos = [];

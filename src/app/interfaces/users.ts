@@ -1,12 +1,12 @@
 export interface users {
-    idTweetUser: number
+    idTweetUser: string
     TweetUser: string
     nameUser: string
     tipeUser: string
 }
 export interface user {
 
-id: number
+id: string
 username: string
 name: string
 

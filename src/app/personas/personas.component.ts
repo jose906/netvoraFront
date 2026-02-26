@@ -112,7 +112,7 @@ export class PersonasComponent implements OnInit {
         };
   
   
-        if (startDate) body.startDate = this.toLocalYMD(new Date(startDate));
+        if (startDate) body.startDate = startDate;
         if (endDate) body.endDate = endDate;
         if (users && users.length > 0) body.users = users;
         if (searchText) body.searchText = searchText;

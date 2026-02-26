@@ -224,7 +224,7 @@ async crearSuscripcion(): Promise<void> {
   cancelar(): void {
     this.user = null;
   }
-  agregar(userName:string,id:number,name:string,tipo:string): void {
+  agregar(userName:string,id:string,name:string,tipo:string): void {
     // Aquí puedes navegar a una pantalla de "nuevo usuario"
     // o abrir un modal. Por ahora solo log:
     console.log('🟢 Click en Agregar');

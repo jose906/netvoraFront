@@ -19,14 +19,13 @@ export class PoliticaComponent implements OnInit {
   error: string = '';
   startDate: Date | undefined = new Date(); // 🔹 Puede no tener fecha
   endDate: Date | undefined ; // 🔹 Puede no tener fecha
-  hoy: Date = new Date();
   currentPage: number = 1;
   pageSize: number = 10;  // cantidad de resultados por página
   hasMore: boolean = false;
 
   searchText: string = ''; // 🔹 texto de búsqueda
   users: users[] = [];
-  selectedUsers: number[] = []; // 🔹 lista de IDs seleccionados
+  selectedUsers: string[] = []; // 🔹 lista de IDs seleccionados
   repliesByTweet: Record<string, { negativo: number; neutro: number; positivo: number }> = {};
   loadingReplies: Record<string, boolean> = {};
 
@@ -54,7 +53,8 @@ export class PoliticaComponent implements OnInit {
     this.apiService.getUsers("Medio").subscribe({
       next: (data) => {
         this.users = data;
-        this.load(this.startDate?.toISOString().split('T')[0]); // Cargar noticias después de obtener los usuarios
+        this.load(this.startDate);
+         // Cargar noticias después de obtener los usuarios
       },
       error: (error) => {
         console.error('❌ Error al cargar usuarios:', error);
@@ -66,11 +66,11 @@ export class PoliticaComponent implements OnInit {
 
   /** Filtrar solo cuando se presiona el botón */
   filtrar(): void {
-    let dateFormatted: string | undefined = undefined;
+    let dateFormatted: Date | undefined = undefined;
     let dateFormattedEnd: string | undefined = undefined;
 
-  
-    if (this.startDate) dateFormatted = this.startDate.toISOString().split('T')[0];
+    console.log(this.selectedUsers)
+    if (this.startDate) dateFormatted = this.startDate;
     if (this.endDate) dateFormattedEnd = this.endDate.toISOString().split('T')[0];
     this.load(dateFormatted, dateFormattedEnd, this.selectedUsers, 1, this.searchText);
   }
@@ -81,20 +81,20 @@ export class PoliticaComponent implements OnInit {
   return undefined;
 }
 loadNextPage(): void {
-    let dateFormatted: string | undefined = undefined;
+    let dateFormatted: Date | undefined = undefined;
     let dateFormattedEnd: string | undefined = undefined;
     console.log('Cargando página:', this.currentPage);
-    if (this.startDate) dateFormatted = this.startDate.toISOString().split('T')[0];
+    if (this.startDate) dateFormatted = this.startDate;
     if (this.endDate) dateFormattedEnd = this.endDate.toISOString().split('T')[0];
     this.currentPage += 1;
     console.log('Página actualizada a:', this.currentPage);
     this.load(dateFormatted, dateFormattedEnd, this.selectedUsers, this.currentPage, this.searchText);
   }
   loadPreviousPage(): void {
-    let dateFormatted: string | undefined = undefined;
+    let dateFormatted: Date | undefined = undefined;
     let dateFormattedEnd: string | undefined = undefined;
     
-    if (this.startDate) dateFormatted = this.startDate.toISOString().split('T')[0];
+    if (this.startDate) dateFormatted = this.startDate;
     if (this.endDate) dateFormattedEnd = this.endDate.toISOString().split('T')[0]; 
     if (this.currentPage > 1) {
       this.currentPage -= 1;
@@ -103,7 +103,7 @@ loadNextPage(): void {
   }
 
   /** Cargar noticias — puede recibir o no filtros */
-  load(startDate?: string, endDate?: string, users?: number[], page?:number, searchText?: string): void {
+  load(startDate?: Date, endDate?: string, users?: string[], page?:number, searchText?: string): void {
       this.cargando = true;
       this.error = '';
       this.datos = [];
@@ -116,7 +116,7 @@ loadNextPage(): void {
       };
 
  
-      if (startDate) body.startDate = this.toLocalYMD(new Date(startDate));
+      if (startDate) body.startDate = this.toLocalYMD(startDate);
       if (endDate) body.endDate = endDate;
       if (users && users.length > 0) body.users = users;
       if (searchText) body.searchText = searchText;
@@ -170,7 +170,7 @@ loadNextPage(): void {
   toLocalYMD(date: Date): string {
   // reconstruye la fecha usando componentes locales (evita desfase)
   const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
+  console.log('toLocalYMD - entrada:', date, '-> reconstruida:', d);
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');

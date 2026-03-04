@@ -13,15 +13,20 @@ interface PrincipalStatsVM {
   categoriaTop: string;
   topEntidades: TopEntidadVM[];
 }
+
 export interface TopEntidadVM {
   entidad: string;
   total: number;
 }
 
-interface CirclePoint {
-  x: number;
-  y: number;
-  v: number;
+interface WeekBar {
+  x: number;      // x en SVG (0..100)
+  w: number;      // ancho
+  y: number;      // y superior del rect
+  h: number;      // alto del rect
+  v: number;      // valor real
+  fecha: string;  // label
+  cls: 'pos' | 'neg' | 'zero';
 }
 
 @Component({
@@ -32,21 +37,19 @@ interface CirclePoint {
 export class PrincipalComponent implements OnInit {
   todayLabel = '';
 
-  // Cards (daily)
   stats: PrincipalStatsVM = this.emptyStats();
-
-  // 7 días
   last7Days: HomePageResponse['last_7_days'] = [];
-
-  // SVG
-  weekPoints = '0,30 100,30';
-  weekCircles: CirclePoint[] = [];
-  weekLabels: string[] = [];
-  weekLineClass: 'pos' | 'neg' | 'zero' = 'zero';
 
   users: users[] = [];
 
-  // Métricas (índice)
+  // Chart bars
+  weekBars: WeekBar[] = [];
+  weekLabels: string[] = [];
+  weekZeroY = 20; // línea 0 en SVG (y)
+  weekDomainMin = 0;
+  weekDomainMax = 0;
+
+  // Métricas
   weekMax = 0;
   weekMin = 0;
   weekAvg = 0;
@@ -64,35 +67,32 @@ export class PrincipalComponent implements OnInit {
   }
 
   loadUsers(): void {
-  this.apiService.getUsers2("Medio").subscribe({
-    next: (data) => {
-      this.users = Array.isArray(data) ? data : [];
+    this.apiService.getUsers2("Medio").subscribe({
+      next: (data) => {
+        this.users = Array.isArray(data) ? data : [];
 
-      if (this.users.length === 0) {
-        // 🔴 Mostrar popup
-        this.showNoUsersModal = true;
-        return;
+        if (this.users.length === 0) {
+          this.showNoUsersModal = true;
+          return;
+        }
+
+        this.loadMainStats(this.users.map(u => String(u.idTweetUser)));
+      },
+      error: (error) => {
+        console.error('❌ Error al cargar usuarios:', error);
+        this.error = 'No se pudieron cargar los usuarios.';
       }
+    });
+  }
 
-      console.log('Usuarios cargados:', this.users);
-      this.loadMainStats(this.users.map(u => String(u.idTweetUser)));
-    },
-    error: (error) => {
-      console.error('❌ Error al cargar usuarios:', error);
-      this.error = 'No se pudieron cargar los usuarios.';
-    }
-  });
-}
-  // Top 3 fijo para el template (si no hay datos, rellena con "—")
   get top3Entidades(): TopEntidadVM[] {
-  const src: TopEntidadVM[] = Array.isArray(this.stats?.topEntidades) ? this.stats.topEntidades : [];
-  const fallback: TopEntidadVM = { entidad: '—', total: 0 };
-  return [src[0] ?? fallback, src[1] ?? fallback, src[2] ?? fallback];
-}
+    const src: TopEntidadVM[] = Array.isArray(this.stats?.topEntidades) ? this.stats.topEntidades : [];
+    const fallback: TopEntidadVM = { entidad: '—', total: 0 };
+    return [src[0] ?? fallback, src[1] ?? fallback, src[2] ?? fallback];
+  }
 
   trackByIndex = (i: number) => i;
-
-  trackByCircle = (_: number, p: CirclePoint) => `${p.x}-${p.y}-${p.v}`;
+  trackByBar = (_: number, b: WeekBar) => `${b.x}-${b.v}-${b.fecha}`;
 
   private loadMainStats(users?: string[]): void {
     this.cargando = true;
@@ -104,27 +104,24 @@ export class PrincipalComponent implements OnInit {
         next: (res: HomePageResponse) => {
           const daily = res?.daily;
 
-          // Header
           this.todayLabel = daily?.fecha ?? '';
 
-          
-          console.log(daily.top_3_entidades)
-          // Cards
           this.stats = {
             totalHoy: this.toNumber(daily?.total_noticias),
             positivas: this.toNumber(daily?.sentimientos?.positivo),
             neutras: this.toNumber(daily?.sentimientos?.neutro),
             negativas: this.toNumber(daily?.sentimientos?.negativo),
             categoriaTop: (daily?.top_categoria ?? '—').trim() || '—',
-            topEntidades: Array.isArray(daily?.top_3_entidades)? daily.top_3_entidades.map((e: any) => ({entidad: e?.entidad ?? '—',total: Number(e?.total ?? 0)})): []
+            topEntidades: Array.isArray(daily?.top_3_entidades)
+              ? daily.top_3_entidades.map((e: any) => ({
+                  entidad: e?.entidad ?? '—',
+                  total: Number(e?.total ?? 0)
+                }))
+              : []
           };
-          
 
-          // 7 días
           this.last7Days = Array.isArray(res?.last_7_days) ? res.last_7_days : [];
-
-          // Gráfica
-          this.buildWeekIndexLineChart(this.last7Days);
+          this.buildWeekBarChart(this.last7Days);
         },
         error: (err) => {
           console.error('❌ Error getMainPageStats:', err);
@@ -155,67 +152,97 @@ export class PrincipalComponent implements OnInit {
   }
 
   private resetWeekChart(): void {
-    this.weekPoints = '0,30 100,30';
-    this.weekCircles = [];
+    this.weekBars = [];
     this.weekLabels = [];
-    this.weekLineClass = 'zero';
+    this.weekZeroY = 20;
+    this.weekDomainMin = 0;
+    this.weekDomainMax = 0;
     this.weekMax = 0;
     this.weekMin = 0;
     this.weekAvg = 0;
   }
-   limpiar() {
-   
-  }
 
-  private buildWeekIndexLineChart(days: HomePageResponse['last_7_days']): void {
+  /**
+   * ✅ Gráfica de barras con baseline 0
+   * - Siempre incluye 0 en el dominio para que la referencia neutral exista
+   * - No “falla” cuando hay valores todos positivos o todos negativos
+   * - Se entiende mejor que una línea para índices +/-.
+   */
+  private buildWeekBarChart(days: HomePageResponse['last_7_days']): void {
     const safeDays = Array.isArray(days) ? days : [];
-
-    this.weekLabels = safeDays.map(d => d.fecha ?? '—');
-    const values = safeDays.map(d => this.toNumber(d.indice));
-
-    if (!values.length) {
+    if (!safeDays.length) {
       this.resetWeekChart();
       return;
     }
 
-    const last = values[values.length - 1];
-    this.weekLineClass = last > 0 ? 'pos' : last < 0 ? 'neg' : 'zero';
+    this.weekLabels = safeDays.map(d => d.fecha ?? '—');
+    const values = safeDays.map(d => this.toNumber(d.indice));
 
-    const max = Math.max(...values);
-    const min = Math.min(...values);
-    const avg = values.reduce((a, b) => a + b, 0) / values.length;
+    // métricas
+    const maxV = Math.max(...values);
+    const minV = Math.min(...values);
+    const avgV = values.reduce((a, b) => a + b, 0) / values.length;
 
-    this.weekMax = max;
-    this.weekMin = min;
-    this.weekAvg = avg;
+    this.weekMax = maxV;
+    this.weekMin = minV;
+    this.weekAvg = avgV;
 
-    // Escala SVG: x [0..100], y [6..34] (invertido)
-    const n = values.length;
-    const xStep = n === 1 ? 0 : 100 / (n - 1);
+    // 🔥 Dominio INCLUYENDO 0 siempre
+    const domainMin = Math.min(minV, 0);
+    const domainMax = Math.max(maxV, 0);
+    this.weekDomainMin = domainMin;
+    this.weekDomainMax = domainMax;
 
+    // SVG scale: y [6..34] invertido
     const yTop = 6;
     const yBot = 34;
     const yRange = yBot - yTop;
 
-    const denom = (max - min) === 0 ? 1 : (max - min);
+    const denom = (domainMax - domainMin) === 0 ? 1 : (domainMax - domainMin);
 
-    const points: string[] = [];
-    const circles: CirclePoint[] = [];
+    const mapY = (v: number) => {
+      const t = (v - domainMin) / denom;           // 0..1
+      return +(yBot - (t * yRange)).toFixed(2);    // invertido
+    };
 
-    values.forEach((v, i) => {
-      const x = +(i * xStep).toFixed(2);
-      const t = (v - min) / denom;              // 0..1
-      const y = +(yBot - (t * yRange)).toFixed(2); // invertido
+    // baseline de 0
+    const zeroY = mapY(0);
+    this.weekZeroY = zeroY;
 
-      points.push(`${x},${y}`);
-      circles.push({ x, y, v });
-    });
+    // barras: ancho dinámico
+    const n = values.length;
+    const gap = 1.4; // en unidades SVG (0..100)
+    const totalGap = gap * (n + 1);
+    const w = Math.max(6, (100 - totalGap) / n); // no muy flacas
+    const bars: WeekBar[] = [];
 
-    this.weekPoints = points.join(' ');
-    this.weekCircles = circles;
+    for (let i = 0; i < n; i++) {
+      const v = values[i];
+      const yV = mapY(v);
+
+      // rect desde baseline a valor
+      const y = Math.min(zeroY, yV);
+      const h = Math.abs(zeroY - yV);
+
+      const x = +(gap + i * (w + gap)).toFixed(2);
+
+      const cls: WeekBar['cls'] = v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero';
+
+      bars.push({
+        x,
+        w: +w.toFixed(2),
+        y,
+        h: +h.toFixed(2),
+        v,
+        fecha: this.weekLabels[i] || '—',
+        cls
+      });
+    }
+
+    this.weekBars = bars;
   }
 
   irAUsuarios() {
-  this.router.navigate(['/settings']); // cambia la ruta si usas otra
-}
+    this.router.navigate(['/settings']);
+  }
 }

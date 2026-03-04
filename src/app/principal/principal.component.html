@@ -2,181 +2,166 @@
   <!-- Header -->
   <header class="topbar">
     <div class="brand">
-      <div class="logo" aria-label="Logo">
-  <img src="icon.png" alt="NetVora" style="width:26px;height:26px;object-fit:contain" />
-    </div>
-
-
+      <img class="brand-logo" src="icon.png" alt="NetVora" />
       <div class="brand-text">
         <h1 class="title">Panel de resumen</h1>
         <p class="subtitle">Estadísticas rápidas de hoy</p>
       </div>
     </div>
 
-    <div class="date-pill">
-      <span class="dot"></span>
+    <div class="date">
+      <span class="date-dot" aria-hidden="true"></span>
       <span class="date-text">{{ todayLabel || '—' }}</span>
     </div>
   </header>
 
   <!-- Estado -->
   <div *ngIf="cargando" class="state">Cargando resumen…</div>
-  <div *ngIf="!cargando && error" class="state error">{{ error }}</div>
+  <div *ngIf="!cargando && error" class="state state-error">{{ error }}</div>
 
-  <!-- Cards -->
-  <section class="grid" *ngIf="!cargando && !error">
-    <!-- 1) Total noticias hoy -->
-    <article class="card">
-      <div class="card-head">
-        <p class="label">Total de noticias hoy</p>
-        <span class="badge">Hoy</span>
+  <!-- Contenido -->
+  <section *ngIf="!cargando && !error" class="content">
+    <!-- Métricas -->
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-label">Total de noticias hoy</div>
+        <div class="metric-value">{{ stats.totalHoy }}</div>
+        <div class="metric-hint">Publicaciones detectadas en el día</div>
       </div>
 
       <div class="metric">
-        <div class="value">{{ stats.totalHoy }}</div>
-        <div class="hint">Publicaciones detectadas en el día</div>
-      </div>
-    </article>
+        <div class="metric-label">Sentimiento (hoy)</div>
 
-    <!-- 2) Sentimientos -->
-    <article class="card">
-      <div class="card-head">
-        <p class="label">Sentimiento (hoy)</p>
-        <span class="badge subtle">Resumen</span>
-      </div>
+        <!-- ✅ ORDENADO: siempre Pos / Neu / Neg -->
+        <div class="sent-grid" role="list" aria-label="Sentimiento hoy">
+          <div class="sent" role="listitem">
+            <div class="sent-k">Positivas</div>
+            <div class="sent-v pos">{{ stats.positivas }}</div>
+          </div>
 
-      <div class="triplet">
-        <div class="mini">
-          <div class="mini-label">Positivas</div>
-          <div class="mini-value positive">{{ stats.positivas }}</div>
+          <div class="sent" role="listitem">
+            <div class="sent-k">Neutras</div>
+            <div class="sent-v neu">{{ stats.neutras }}</div>
+          </div>
+
+          <div class="sent" role="listitem">
+            <div class="sent-k">Negativas</div>
+            <div class="sent-v neg">{{ stats.negativas }}</div>
+          </div>
         </div>
 
-        <div class="mini">
-          <div class="mini-label">Neutras</div>
-          <div class="mini-value neutral">{{ stats.neutras }}</div>
-        </div>
-
-        <div class="mini">
-          <div class="mini-label">Negativas</div>
-          <div class="mini-value negative">{{ stats.negativas }}</div>
-        </div>
-      </div>
-
-      <div class="hint">Conteo de sentimiento en las noticias del día</div>
-    </article>
-
-    <!-- 3) Categoría más usada -->
-    <article class="card">
-      <div class="card-head">
-        <p class="label">Categoría más usada</p>
-        <span class="badge subtle">Top</span>
+        <div class="metric-hint">Conteo de sentimiento en noticias del día</div>
       </div>
 
       <div class="metric">
-        <div class="value text">{{ stats.categoriaTop || '—' }}</div>
-        <div class="hint">Categoría predominante en el periodo</div>
-      </div>
-    </article>
-
-    <!-- 4) Top 3 entidades -->
-    <article class="card">
-      <div class="card-head">
-        <p class="label">Top 3 entidades</p>
-        <span class="badge subtle">NER</span>
+        <div class="metric-label">Categoría más usada</div>
+        <div class="metric-value metric-text">{{ stats.categoriaTop || '—' }}</div>
+        <div class="metric-hint">Categoría predominante en el periodo</div>
       </div>
 
-      
+      <div class="metric">
+        <div class="metric-label">Top 3 entidades</div>
 
-      <ol class="rank">
-      <li class="rank-item" *ngFor="let e of top3Entidades; index as i; trackBy: trackByIndex">
-        <span class="rank-n">{{ i + 1 }}</span>
-        <span class="rank-name">{{ e.entidad || '—' }}</span>
-        <!-- opcional mostrar total -->
-        <span class="rank-val">{{ e.total  }}</span>
-      </li>
-    </ol>
+        <ol class="rank">
+          <li class="rank-item" *ngFor="let e of top3Entidades; index as i; trackBy: trackByIndex">
+            <span class="rank-n">{{ i + 1 }}</span>
+            <span class="rank-name">{{ e.entidad || '—' }}</span>
+            <span class="rank-val">{{ e.total }}</span>
+          </li>
+        </ol>
 
-      <div class="hint">Entidades más mencionadas</div>
-    </article>
-  </section>
-
-  <!-- Gráfica de índice (Últimos 7 días) -->
-  <section class="week-line-card" *ngIf="!cargando && !error">
-    <div class="week-line-head">
-      <div>
-        <h2 class="week-line-title">Índice de sentimiento</h2>
-        <p class="week-line-subtitle">Evolución en los últimos 7 días</p>
+        <div class="metric-hint">Entidades más mencionadas</div>
       </div>
-
-      <div class="week-line-pill">7D</div>
     </div>
 
-    <div class="week-line-chart">
-      <svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-label="Índice 7 días">
-        <polyline
-          [attr.points]="weekPoints"
-          [ngClass]="{
-            'line-pos': weekLineClass === 'pos',
-            'line-neg': weekLineClass === 'neg',
-            'line-zero': weekLineClass === 'zero'
-          }"
-        ></polyline>
+    <!-- ✅ Gráfica más abajo y más grande -->
+    <div class="chart">
+      <div class="chart-head">
+        <div>
+          <h2 class="chart-title">Índice de sentimiento</h2>
+          <p class="chart-subtitle">Últimos 7 días (baseline 0)</p>
+        </div>
 
-        <g class="points">
-          <circle
-            *ngFor="let p of weekCircles; trackBy: trackByCircle"
-            [attr.cx]="p.x"
-            [attr.cy]="p.y"
-            r="0.9"
-            [ngClass]="{
-              'pt-pos': p.v > 0,
-              'pt-neg': p.v < 0,
-              'pt-zero': p.v === 0
-            }"
-          ></circle>
-        </g>
-      </svg>
-
-      <div class="week-x-axis">
-        <span class="mono">{{ weekLabels[0] || '—' }}</span>
-        <span class="mono">{{ weekLabels[weekLabels.length - 1] || '—' }}</span>
+        <div class="chart-meta mono">
+          {{ weekDomainMin | number:'1.2-2' }} → {{ weekDomainMax | number:'1.2-2' }}
+        </div>
       </div>
 
-      <div class="week-metrics">
-        <div class="wm">
-          <div class="wm-label">Máx</div>
-          <div class="wm-value mono">{{ weekMax | number:'1.3-3' }}</div>
+      <div class="chart-wrap">
+        <svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-label="Índice 7 días (barras)">
+          <line class="zero-line" x1="0" [attr.y1]="weekZeroY" x2="100" [attr.y2]="weekZeroY"></line>
+
+          <g class="bars">
+            <ng-container *ngFor="let b of weekBars; trackBy: trackByBar">
+              <rect
+                [attr.x]="b.x"
+                [attr.y]="b.y"
+                [attr.width]="b.w"
+                [attr.height]="b.h"
+                [ngClass]="{
+                  'bar-pos': b.cls === 'pos',
+                  'bar-neg': b.cls === 'neg',
+                  'bar-zero': b.cls === 'zero'
+                }"
+                rx="1.2"
+                ry="1.2"
+              >
+                <title>{{ b.fecha }} • índice: {{ b.v | number:'1.3-3' }}</title>
+              </rect>
+            </ng-container>
+          </g>
+        </svg>
+      </div>
+
+      <div class="chart-foot">
+        <div class="mono">{{ weekLabels[0] || '—' }}</div>
+        <div class="foot-metrics mono">
+          <span>max {{ weekMax | number:'1.2-2' }}</span>
+          <span>avg {{ weekAvg | number:'1.2-2' }}</span>
+          <span>min {{ weekMin | number:'1.2-2' }}</span>
+        </div>
+        <div class="mono">{{ weekLabels[weekLabels.length - 1] || '—' }}</div>
+      </div>
+    </div>
+
+    <!-- ✅ Para no dejar vacío: resumen inferior limpio -->
+    <div class="bottom">
+      <h3 class="bottom-title">Resumen 7D</h3>
+
+      <div class="rows">
+        <div class="row">
+          <span class="row-k">Promedio del índice</span>
+          <span class="row-v mono">{{ weekAvg | number:'1.3-3' }}</span>
         </div>
 
-        <div class="wm">
-          <div class="wm-label">Prom</div>
-          <div class="wm-value mono">{{ weekAvg | number:'1.3-3' }}</div>
+        <div class="row">
+          <span class="row-k">Mejor día (máx)</span>
+          <span class="row-v mono">{{ weekMax | number:'1.3-3' }}</span>
         </div>
 
-        <div class="wm">
-          <div class="wm-label">Mín</div>
-          <div class="wm-value mono">{{ weekMin | number:'1.3-3' }}</div>
+        <div class="row">
+          <span class="row-k">Peor día (mín)</span>
+          <span class="row-v mono">{{ weekMin | number:'1.3-3' }}</span>
+        </div>
+
+        <div class="row subtle">
+          <span class="row-k">Tip</span>
+          <span class="row-v">Pasa el mouse sobre una barra para ver el detalle.</span>
         </div>
       </div>
     </div>
   </section>
 </div>
+
 <!-- Modal sin usuarios -->
 <div class="modal-overlay" *ngIf="showNoUsersModal">
   <div class="modal">
     <h2>No hay usuarios configurados</h2>
-    <p>
-      Para ver estadísticas necesitas agregar o activar al menos un medio.
-    </p>
+    <p>Para ver estadísticas necesitas agregar o activar al menos un medio.</p>
 
     <div class="modal-actions">
-      <button class="btn-primary" (click)="irAUsuarios()">
-        Ir a configuración
-      </button>
-
-      <button class="btn-secondary" (click)="showNoUsersModal=false">
-        Cerrar
-      </button>
+      <button class="btn-primary" (click)="irAUsuarios()">Ir a configuración</button>
+      <button class="btn-ghost" (click)="showNoUsersModal=false">Cerrar</button>
     </div>
   </div>
 </div>

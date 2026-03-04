@@ -68,7 +68,7 @@ export class PrincipalComponent implements OnInit {
         console.log('Usuarios cargados:', this.users);
          if (this.users.length === 0) {
           // ✅ Mensaje de alerta
-          this.error = 'No tienes usuarios activos para "Medio". Ve a Configuración y agrega cuentas para ver estadísticas.';
+          this.error = 'No tienes usuarios activos. Ve a Configuración y selecciona las cuentas que deseas monitorear';
 
           // ✅ Limpia la UI (opcional, recomendado)
           this.todayLabel = '';

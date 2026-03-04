@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 import { ApiService } from '../services/api.service';
 import { HomePageResponse } from '../interfaces/homePage';
+import { users } from '../interfaces/users';
 
 interface PrincipalStatsVM {
   totalHoy: number;
@@ -9,7 +10,11 @@ interface PrincipalStatsVM {
   neutras: number;
   negativas: number;
   categoriaTop: string;
-  topEntidades: string[];
+  topEntidades: TopEntidadVM[];
+}
+export interface TopEntidadVM {
+  entidad: string;
+  total: number;
 }
 
 interface CirclePoint {
@@ -38,6 +43,8 @@ export class PrincipalComponent implements OnInit {
   weekLabels: string[] = [];
   weekLineClass: 'pos' | 'neg' | 'zero' = 'zero';
 
+  users: users[] = [];
+
   // Métricas (índice)
   weekMax = 0;
   weekMin = 0;
@@ -50,24 +57,52 @@ export class PrincipalComponent implements OnInit {
   constructor(private apiService: ApiService) {}
 
   ngOnInit(): void {
-    this.loadMainStats();
+    this.loadUsers();
+  }
+
+  loadUsers(): void {
+    this.apiService.getUsers2("Medio").subscribe({
+      next: (data) => {
+        this.users = data;
+        // Cargar noticias iniciales
+        console.log('Usuarios cargados:', this.users);
+         if (this.users.length === 0) {
+          // ✅ Mensaje de alerta
+          this.error = 'No tienes usuarios activos para "Medio". Ve a Configuración y agrega cuentas para ver estadísticas.';
+
+          // ✅ Limpia la UI (opcional, recomendado)
+          this.todayLabel = '';
+          this.stats = this.emptyStats();
+          this.last7Days = [];
+          this.resetWeekChart();
+          return;
+        }
+
+        this.loadMainStats(this.users.map(u => u.idTweetUser.toString()));
+        
+      },
+      error: (error) => {
+        console.error('❌ Error al cargar usuarios:', error);
+      }
+    });
   }
 
   // Top 3 fijo para el template (si no hay datos, rellena con "—")
-  get top3Entidades(): string[] {
-    const src = Array.isArray(this.stats.topEntidades) ? this.stats.topEntidades : [];
-    return [src[0] ?? '—', src[1] ?? '—', src[2] ?? '—'];
-  }
+  get top3Entidades(): TopEntidadVM[] {
+  const src: TopEntidadVM[] = Array.isArray(this.stats?.topEntidades) ? this.stats.topEntidades : [];
+  const fallback: TopEntidadVM = { entidad: '—', total: 0 };
+  return [src[0] ?? fallback, src[1] ?? fallback, src[2] ?? fallback];
+}
 
   trackByIndex = (i: number) => i;
 
   trackByCircle = (_: number, p: CirclePoint) => `${p.x}-${p.y}-${p.v}`;
 
-  private loadMainStats(): void {
+  private loadMainStats(users?: string[]): void {
     this.cargando = true;
     this.error = '';
 
-    this.apiService.getMainPageStats()
+    this.apiService.getMainPageStats(users)
       .pipe(finalize(() => (this.cargando = false)))
       .subscribe({
         next: (res: HomePageResponse) => {
@@ -76,6 +111,8 @@ export class PrincipalComponent implements OnInit {
           // Header
           this.todayLabel = daily?.fecha ?? '';
 
+          
+          console.log(daily.top_3_entidades)
           // Cards
           this.stats = {
             totalHoy: this.toNumber(daily?.total_noticias),
@@ -83,8 +120,9 @@ export class PrincipalComponent implements OnInit {
             neutras: this.toNumber(daily?.sentimientos?.neutro),
             negativas: this.toNumber(daily?.sentimientos?.negativo),
             categoriaTop: (daily?.top_categoria ?? '—').trim() || '—',
-            topEntidades: Array.isArray(daily?.top_3_entidades) ? daily.top_3_entidades : []
+            topEntidades: Array.isArray(daily?.top_3_entidades)? daily.top_3_entidades.map((e: any) => ({entidad: e?.entidad ?? '—',total: Number(e?.total ?? 0)})): []
           };
+          
 
           // 7 días
           this.last7Days = Array.isArray(res?.last_7_days) ? res.last_7_days : [];

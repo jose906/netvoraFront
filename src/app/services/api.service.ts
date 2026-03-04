@@ -129,6 +129,10 @@ getRepliesSummaryMany(tweetIds: any[]) {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' })
     return this.http.post<users[]>(this.apiUrl+'users',{tipo:tipo}, {headers});
   }
+  getUsers2(tipo:string){
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' })
+    return this.http.post<users[]>(this.apiUrl+'users2',{tipo:tipo}, {headers});
+  }
   searchbyid(id:number):Observable<user>{
     return this.http.get<user>(`${this.apiUrl}users/${id}`);
   }
@@ -168,9 +172,9 @@ getRepliesSummaryMany(tweetIds: any[]) {
     return this.http.post<any>(this.apiUrl+'sync',body, {headers});   
   
   }   
-  getMainPageStats(): Observable<HomePageResponse> {
-
-    return this.http.get<HomePageResponse>(this.apiUrl+'main_dashboard');
+  getMainPageStats(users?: string[]): Observable<HomePageResponse> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post<HomePageResponse>(this.apiUrl+'main_dashboard', { users }, { headers });
   }
  getWordcloud(body: any) {
   return this.http.post(`${this.apiUrl}wordcloud`, body, {
@@ -197,6 +201,15 @@ getGuardados(limit = 10, offset = 0, category?: string) {
   if (category && category !== 'inicio') url += `&category=${encodeURIComponent(category)}`;
   return this.http.get<{ ok: boolean; items: NewsItem[]; limit: number; offset: number }>(url);
 }
+
+getSavedMap(category?: string) {
+  const params: any = {};
+  if (category) params.category = category;
+  return this.http.get<{ ok: boolean; saved: Record<string, any> }>(
+    `${this.apiUrl}saved_posts_map`,
+    { params }
+  );
+}
        
   // POST: guarda tweet
   guardarTweet(tweetid: string): Observable<any> {
@@ -220,6 +233,19 @@ upsertNote(tweetid: string, note: string) {
 
 deleteNote(tweetid: string) {
   return this.http.delete<{ ok: boolean }>(`${this.apiUrl}user_tweets/note/${tweetid}`);
+}
+
+// api.service.ts
+followTweetUser(tweetuser_id: string) {
+  return this.http.post(`${this.apiUrl}follow_tweetuser`, { tweetuser_id });
+}
+
+unfollowTweetUser(tweetuser_id: string) {
+  return this.http.post(`${this.apiUrl}unfollow_tweetuser`, { tweetuser_id });
+}
+
+getFollowedTweetUsers() {
+  return this.http.get<{ ok: boolean; rows: { tweetuser_id: string }[] }>(`${this.apiUrl}followed_tweetusers`);
 }
 
 

@@ -12,6 +12,7 @@ import { ApiService } from '../../services/api.service';
 import { BaseChartDirective } from 'ng2-charts';
 import { NETVORA_PALETTE,exportCanvasWithWhiteBg } from '../../utils/helpers';
 import e from 'express';
+import { users } from '../../interfaces/users';
 
 type EntItem = { entidad: string; total: number };
 type TopUserItem = { usuario: string; total: number };
@@ -41,9 +42,10 @@ type IndiceSentItem = {
 export class PoliticaEstadisticasComponent implements OnInit {
   @Input() startDate!: Date | null;
   @Input() endDate!: Date | null;
-  @Input() selectedUsers: number[] = [];
+  @Input() selectedUsers: string[] = [];
   @Input() categoria!: string;
   @Input() searchText: string = '';
+  @Input() users: users[] = [];
 
   loading = false;
   errorMsg = '';

@@ -5,6 +5,7 @@ import { users } from '../interfaces/users';
 import { ApiService } from '../services/api.service';
 import { Router } from '@angular/router';
 import { EstadisticasEntiPersonasComponent } from '../data/estadisticas-enti-personas/estadisticas-enti-personas.component';
+import e from 'express';
 
 @Component({
   selector: 'app-estadisticas',
@@ -28,7 +29,7 @@ export class EstadisticasComponent implements OnInit, AfterViewInit {
   endDate: Date | null = null;
 
   users: users[] = [];
-  selectedUsers: number[] = [];
+  selectedUsers: string[] = [];
   searchText: string = ''; 
 
   private didInitialLoad = false;
@@ -56,6 +57,7 @@ export class EstadisticasComponent implements OnInit, AfterViewInit {
 
   private reloadSelectedComponent(): void {
     if (this.selectedComponent === 'todos') {
+      console.log('Cargando datos para TODOS con usuarios:', this.users);
       this.todosComponent?.cargarDatos();
       return;
     }
@@ -80,15 +82,33 @@ export class EstadisticasComponent implements OnInit, AfterViewInit {
   }
 
   loadUsers(): void {
-    this.apiService.getUsers('todos').subscribe({
-      next: (data) => {
-        this.users = data;
-        // ❌ ya NO llames cargarDatos aquí
-      },
-      error: (error) => console.error('❌ Error al cargar usuarios:', error),
-    });
+  var tipo = this.mapSelectedToTipo(this.selectedComponent);
+
+  if (tipo !== 'todos' && tipo !== 'Entidad' && tipo !== 'Persona') {
+    
+    tipo = 'Medio'; // fallback si el mapping falla por alguna razón
+  
   }
 
+  this.apiService.getUsers2(tipo).subscribe({
+    next: (data) => {
+      this.users = data;
+      console.log('Usuarios cargados:', this.users);
+    },
+    error: (error) => console.error('❌ Error al cargar usuarios:', error),
+  });
+}
+
+private mapSelectedToTipo(selected: string): string {
+  const map: Record<string, string> = {
+    todos: 'todos',
+    entidades: 'Entidad',
+    personas: 'Persona',
+    medios: 'Medio', // si tenés esta opción en el UI
+  };
+
+  return map[selected] ?? 'Medio'; // fallback
+}
   aplicarFechas() {
     // Si quieres permitir aplicar manual SOLO cuando el usuario define endDate:
     // (o deja tu lógica actual)

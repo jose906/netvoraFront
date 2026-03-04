@@ -10,6 +10,7 @@ import { finalize } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { BaseChartDirective } from 'ng2-charts';
 import { NETVORA_PALETTE,exportCanvasWithWhiteBg } from '../../utils/helpers';
+import { users } from '../../interfaces/users';
 
 type EntItem = { entidad: string; total: number };
 type TopUserItem = { usuario: string; total: number };
@@ -40,11 +41,13 @@ type IndiceSentItem = {
 export class EstadisticasEntiPersonasComponent implements OnInit {
   @Input() startDate!: Date | null;
   @Input() endDate!: Date | null;
-  @Input() selectedUsers: number[] = [];
+  @Input() selectedUsers: string[] = [];
 
   // En tu HTML se muestra "Estadísticas — {{ categoria || 'Categoría' }}"
   // pero tú quieres "categoría none". Deja default 'none' y no lo mandamos al backend.
   @Input() categoria: string = 'none';
+
+  @Input() users: users[] = [];
 
   // ✅ fijo para este dashboard
   @Input() type_user: string = 'Persona';

@@ -25,7 +25,7 @@ export class SeguridadComponent {
 
   searchText: string = ''; // 🔹 texto de búsqueda
   users: users[] = [];
-  selectedUsers: number[] = []; // 🔹 lista de IDs seleccionados
+  selectedUsers: string[] = []; // 🔹 lista de IDs seleccionados
 
   repliesByTweet: Record<string, { negativo: number; neutro: number; positivo: number }> = {};
   loadingReplies: Record<string, boolean> = {};
@@ -47,11 +47,12 @@ export class SeguridadComponent {
   }
 
   /** Cargar usuarios */
-  loadUsers(): void {
-    this.apiService.getUsers("Medio").subscribe({
+ loadUsers(): void {
+    this.apiService.getUsers2("Medio").subscribe({
       next: (data) => {
         this.users = data;
-        this.load(this.startDate); // Cargar noticias después de obtener los usuarios
+        // Cargar noticias iniciales
+        this.load(this.startDate, undefined, this.users.map(u => u.idTweetUser.toString()));
       },
       error: (error) => {
         console.error('❌ Error al cargar usuarios:', error);
@@ -100,7 +101,7 @@ loadNextPage(): void {
   }
 
   /** Cargar noticias — puede recibir o no filtros */
-  load(startDate?: Date, endDate?: Date, users?: number[], page?:number, searchText?: string): void {
+  load(startDate?: Date, endDate?: Date, users?: string[], page?:number, searchText?: string): void {
       this.cargando = true;
       this.error = '';
       this.datos = [];
@@ -115,7 +116,7 @@ loadNextPage(): void {
 
       if (startDate) body.startDate = startDate;
       if (endDate) body.endDate = endDate;
-      if (users && users.length > 0) body.users = users;
+      if (users && users.length > 0) body.users = users; else body.users = this.users.map(u => u.idTweetUser.toString());
       if (searchText) body.searchText = searchText;
 
       this.apiService.getPostsSegu(body).subscribe({

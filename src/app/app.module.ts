@@ -56,6 +56,7 @@ import { PerfilComponent } from './perfil/perfil.component';
 import { SubscriptionInterceptor } from './core/interceptor/subscription.interceptor';
 import { SubscriptionGuard } from './core/guards/subscription.guard';
 import { GuardarComponent } from './guardar/guardar.component';
+import { SettingsComponent } from './settings/settings.component';
 
 
 // Initialize Firebase
@@ -83,6 +84,7 @@ const routes: Routes = [
   { path: 'account', component:PerfilComponent},
   { path:'perfil', component:PerfilComponent, canActivate:[AuthGuard]},
   { path: 'guardar', component: GuardarComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
+  {path: 'settings', component: SettingsComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
   
 
 
@@ -116,6 +118,7 @@ const routes: Routes = [
     AmbienteComponent,
     PerfilComponent,
     GuardarComponent,
+    SettingsComponent,
     
   ],
   imports: [

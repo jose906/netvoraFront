@@ -85,12 +85,16 @@
         <span class="badge subtle">NER</span>
       </div>
 
+      
+
       <ol class="rank">
-        <li class="rank-item" *ngFor="let e of top3Entidades; index as i; trackBy: trackByIndex">
-          <span class="rank-n">{{ i + 1 }}</span>
-          <span class="rank-name">{{ e || '—' }}</span>
-        </li>
-      </ol>
+      <li class="rank-item" *ngFor="let e of top3Entidades; index as i; trackBy: trackByIndex">
+        <span class="rank-n">{{ i + 1 }}</span>
+        <span class="rank-name">{{ e.entidad || '—' }}</span>
+        <!-- opcional mostrar total -->
+        <span class="rank-val">{{ e.total  }}</span>
+      </li>
+    </ol>
 
       <div class="hint">Entidades más mencionadas</div>
     </article>

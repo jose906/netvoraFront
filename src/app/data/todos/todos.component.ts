@@ -1,10 +1,11 @@
-import {Component,Input,ChangeDetectionStrategy,ChangeDetectorRef} from '@angular/core';
+import {Component,Input,ChangeDetectionStrategy,ChangeDetectorRef,SimpleChanges} from '@angular/core';
 import { finalize } from 'rxjs/operators';
 import { ChartData, ChartOptions, ChartType } from 'chart.js';
 import { ChartConfiguration } from 'chart.js';
 import { ApiService } from '../../services/api.service';
 import { StatsResponse } from '../../interfaces/data/mainDashboard';
 import { NETVORA_PALETTE,exportCanvasWithWhiteBg } from '../../utils/helpers';
+import { users } from '../../interfaces/users';
 
 type TopItem = { nombre: string; total: number };
 type EntItem = { entidad: string; total: number };
@@ -18,8 +19,9 @@ type EntItem = { entidad: string; total: number };
 export class TodosComponent {
   @Input() startDate!: Date | null;
   @Input() endDate!: Date | null;
-  @Input() selectedUsers: number[] = [];
-  @Input() searchText: string = '';
+  @Input() selectedUsers: string[] = [];
+  @Input() searchText:string = '';
+  @Input() users:users[] = [] ;
 
   loading = false;
   errorMsg = '';
@@ -104,43 +106,59 @@ export class TodosComponent {
   };
 
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
+  ngOnChanges(changes: SimpleChanges): void {
+    // auto-load cuando ya hay startDate y llegaron users (seguidos)
+    const startChanged = !!changes['startDate'];
+    const usersChanged = !!changes['users'];
+    const selChanged = !!changes['selectedUsers'];
+    const searchChanged = !!changes['searchText'];
+    const endChanged = !!changes['endDate'];
+
+    if (!this.startDate) return;
+
+    // si no hay seleccion manual, esperamos a que existan seguidos
+    if (this.selectedUsers.length === 0 && (!this.users || this.users.length === 0)) return;
+
+    if (startChanged || usersChanged || selChanged || searchChanged || endChanged) {
+      this.cargarDatos();
+    }
+  }
 
   public cargarDatos(): void {
-  if (!this.startDate) return;
+    if (!this.startDate) return;
 
-  const start = this.toYMD(this.startDate);
+    const body: any = {
+      start: this.toYMD(this.startDate),
+      // prioridad: selección manual > seguidos
+      users: this.selectedUsers.length > 0
+        ? this.selectedUsers
+        : (this.users ?? []).map(u => String(u.idTweetUser)),
+    };
+    console.log('Cargando datos con body:', body);
 
-  const body: any = {
-    start,
-    users: this.selectedUsers || [],
-  };
+    // 🔒 si por algo no hay usuarios, no pegues al backend
+    if (!body.users.length) return;
 
-  // ✅ SOLO si el usuario eligió endDate, lo mandas
-  if (this.endDate) {
-    body.end = this.toYMD(this.endDate);
-  }
-  if (this.searchText) {
-    body.search = this.searchText;
-  }
+    if (this.endDate) body.end = this.toYMD(this.endDate);
+    if (this.searchText?.trim()) body.search = this.searchText.trim();
 
-  this.loading = true;
-  this.errorMsg = '';
-  this.cdr.markForCheck();
+    this.loading = true;
+    this.errorMsg = '';
+    this.cdr.markForCheck();
 
-  this.api.getAllData(body)
-    .pipe(finalize(() => {
-      this.loading = false;
-      this.cdr.markForCheck();
-    }))
-    .subscribe({
-      next: (res) => this.mapResponse(res),
-      error: () => {
-        this.errorMsg = 'No se pudo cargar el dashboard.';
+    this.api.getAllData(body)
+      .pipe(finalize(() => {
+        this.loading = false;
         this.cdr.markForCheck();
-      },
-    });
-}
-
+      }))
+      .subscribe({
+        next: (res) => this.mapResponse(res),
+        error: () => {
+          this.errorMsg = 'No se pudo cargar el dashboard.';
+          this.cdr.markForCheck();
+        },
+      });
+  }
 
   private mapResponse(res: StatsResponse): void {
     // ======= KPI =======

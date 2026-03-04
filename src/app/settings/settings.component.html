@@ -1,0 +1,179 @@
+<div class="users-page two-cols">
+
+  <!-- TOAST / ALERTAS -->
+  <div class="toast-wrap" aria-live="polite" aria-atomic="true">
+    <div *ngIf="toast.show" class="toast" [ngClass]="toast.type">
+      <div class="toast-main">
+        <div class="toast-title">{{ toast.title }}</div>
+        <div class="toast-msg">{{ toast.message }}</div>
+      </div>
+      <button type="button" class="toast-close" (click)="hideToast()" aria-label="Cerrar alerta">✕</button>
+    </div>
+  </div>
+
+  <!-- =======================
+       LISTA (IZQUIERDA)
+  ======================== -->
+  <section class="panel panel-list">
+    <header class="panel-head">
+      <div class="head-text">
+        <h2 class="title">Usuarios del sistema</h2>
+        <p class="subtitle">Gestiona seguimiento de cuentas</p>
+      </div>
+
+      <div class="filters" role="tablist" aria-label="Filtro tipo de cuenta">
+        <button type="button"
+          class="chip"
+          [class.is-active]="selectedTipo === 'todos'"
+          (click)="changeTipo('todos')">
+          Todos
+        </button>
+
+        <button type="button"
+          class="chip"
+          [class.is-active]="selectedTipo === 'persona'"
+          (click)="changeTipo('persona')">
+          Personas
+        </button>
+
+        <button type="button"
+          class="chip"
+          [class.is-active]="selectedTipo === 'medio'"
+          (click)="changeTipo('medio')">
+          Medios
+        </button>
+
+        <button type="button"
+          class="chip"
+          [class.is-active]="selectedTipo === 'entidad'"
+          (click)="changeTipo('entidad')">
+          Entidades
+        </button>
+      </div>
+    </header>
+
+    <!-- loader -->
+    <div *ngIf="cargando" class="state">
+      <span class="spinner" aria-hidden="true"></span>
+      Cargando usuarios…
+    </div>
+
+    <!-- lista con scroll -->
+    <div class="list-scroll" *ngIf="!cargando && users.length; else emptyState">
+      <div class="list">
+        <article *ngFor="let u of filteredUsers(); trackBy: trackById" class="row">
+
+          <div class="row-left">
+            <div class="avatar" aria-hidden="true">
+              {{ (u.TweetUser || u.idTweetUser || 'U').toString().charAt(0) }}
+            </div>
+
+            <div class="info">
+              <div class="name" [title]="u.TweetUser || ''">
+                {{ u.TweetUser || 'Sin nombre' }}
+              </div>
+
+              <div class="meta">
+                <span class="id">ID: {{ u.idTweetUser }}</span>
+                <span class="badge">{{ (u.tipeUser || u.nameUser || '—') }}</span>
+              </div>
+            </div>
+          </div>
+
+          <button type="button"
+            class="btn-follow"
+            [class.is-following]="isFollowingTweetUser(u.idTweetUser)"
+            [disabled]="followBusyIds.has(u.idTweetUser)"
+            (click)="toggleFollowTweetUser(u.idTweetUser, u.TweetUser || 'Usuario')">
+
+            <ng-container *ngIf="!isFollowingTweetUser(u.idTweetUser)">
+              <span *ngIf="!followBusyIds.has(u.idTweetUser)">➕ Seguir</span>
+              <span *ngIf="followBusyIds.has(u.idTweetUser)">Procesando…</span>
+            </ng-container>
+
+            <ng-container *ngIf="isFollowingTweetUser(u.idTweetUser)">
+              <span *ngIf="!followBusyIds.has(u.idTweetUser)">✔ Siguiendo</span>
+              <span *ngIf="followBusyIds.has(u.idTweetUser)">Procesando…</span>
+            </ng-container>
+          </button>
+
+        </article>
+      </div>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="empty">
+        <div class="empty-title">No hay usuarios disponibles</div>
+        <div class="empty-sub">Prueba cambiando el filtro o agrega un usuario a la derecha.</div>
+      </div>
+    </ng-template>
+  </section>
+
+  <!-- =======================
+       ADMIN / BUSCAR (DERECHA)
+  ======================== -->
+  <section class="panel panel-admin">
+    <header class="panel-head compact">
+      <div class="head-text">
+        <h2 class="title">Administrar usuarios</h2>
+        <p class="subtitle">Busca por nombre o ID y agrégalos al sistema</p>
+      </div>
+    </header>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Buscar por nombre</label>
+        <input #inputNombre class="input" type="text" placeholder="Ej: juan_perez" (keydown.enter)="buscar(inputNombre.value, inputId.value)" />
+      </div>
+
+      <div class="field">
+        <label>Buscar por ID</label>
+        <input #inputId class="input" type="text" placeholder="Ej: 123" (keydown.enter)="buscar(inputNombre.value, inputId.value)" />
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn primary" [disabled]="searching" (click)="buscar(inputNombre.value, inputId.value)">
+        <span *ngIf="!searching">Buscar</span>
+        <span *ngIf="searching">Buscando…</span>
+      </button>
+
+      <button type="button" class="btn ghost" (click)="cancelar(inputNombre, inputId)">
+        Limpiar
+      </button>
+    </div>
+
+    <div class="field">
+      <label>Clasificación</label>
+      <select #selectOpciones class="select">
+        <option value="">Seleccione una opción</option>
+        <option value="medio">Medio</option>
+        <option value="persona">Persona</option>
+        <option value="entidad">Entidad</option>
+      </select>
+      <small class="hint">Debe coincidir con tu backend (medio/persona/entidad).</small>
+    </div>
+
+    <div class="result" *ngIf="user">
+      <div class="result-head">
+        <h3 class="section-title">Usuario encontrado</h3>
+        <span class="badge ok">Listo</span>
+      </div>
+
+      <ul class="info-list">
+        <li><span class="k">ID TweetUser</span><span class="v">{{ user.id }}</span></li>
+        <li><span class="k">Usuario Twitter</span><span class="v">{{ user.username }}</span></li>
+        <li><span class="k">Nombre</span><span class="v">{{ user.name }}</span></li>
+      </ul>
+    </div>
+
+    <button type="button"
+      class="btn success full"
+      [disabled]="!user || adding"
+      (click)="agregar(user!.username, user!.id, user!.name, selectOpciones.value)">
+      <span *ngIf="!adding">Agregar usuario</span>
+      <span *ngIf="adding">Agregando…</span>
+    </button>
+  </section>
+
+</div>

@@ -17,24 +17,32 @@ export class PoliticaComponent implements OnInit {
   newsData: NewsData[] = [];
   cargando: boolean = false;
   error: string = '';
-  startDate: Date | undefined = new Date(); // 🔹 Puede no tener fecha
-  endDate: Date | undefined ; // 🔹 Puede no tener fecha
+  startDate: Date | undefined = new Date();
+  endDate: Date | undefined;
+
   currentPage: number = 1;
-  pageSize: number = 10;  // cantidad de resultados por página
+  pageSize: number = 10;
   hasMore: boolean = false;
 
-  searchText: string = ''; // 🔹 texto de búsqueda
+  searchText: string = '';
   users: users[] = [];
-  selectedUsers: string[] = []; // 🔹 lista de IDs seleccionados
+  selectedUsers: string[] = [];
+
   repliesByTweet: Record<string, { negativo: number; neutro: number; positivo: number }> = {};
   loadingReplies: Record<string, boolean> = {};
 
+  // Guardados
   guardados = new Set<string>();
-  savingIds = new Set<string>(); // para bloquear doble click
+  savingIds = new Set<string>();
   errorGuardar = '';
 
+  // Notas (traídas desde saved_posts_map)
+  notesByTweet = new Map<string, string>();
+  noteDraft: Record<string, string> = {};
+  savingNoteIds = new Set<string>();
 
-  
+  // UI expandible de nota
+  openNotes = new Set<string>();
 
   constructor(
     private apiService: ApiService,
@@ -43,18 +51,17 @@ export class PoliticaComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUsers();
-    
-     // 🔹 Cargar todas las noticias sin filtros al inicio
-     
+    // hydrateSavedState() se llama después de cargar feed en load()
   }
 
   /** Cargar usuarios */
   loadUsers(): void {
-    this.apiService.getUsers("Medio").subscribe({
+    this.apiService.getUsers2("Medio").subscribe({
       next: (data) => {
         this.users = data;
-        this.load(this.startDate);
-         // Cargar noticias después de obtener los usuarios
+        // Cargar noticias iniciales
+        
+        this.load(this.startDate, undefined, this.users.map(u => u.idTweetUser.toString()));
       },
       error: (error) => {
         console.error('❌ Error al cargar usuarios:', error);
@@ -62,133 +69,164 @@ export class PoliticaComponent implements OnInit {
     });
   }
 
-  
-
   /** Filtrar solo cuando se presiona el botón */
   filtrar(): void {
     let dateFormatted: Date | undefined = undefined;
-    let dateFormattedEnd: string | undefined = undefined;
+    let dateFormattedEnd: Date | undefined = undefined;
 
-    console.log(this.selectedUsers)
     if (this.startDate) dateFormatted = this.startDate;
-    if (this.endDate) dateFormattedEnd = this.endDate.toISOString().split('T')[0];
+    if (this.endDate) dateFormattedEnd = this.endDate;
+
     this.load(dateFormatted, dateFormattedEnd, this.selectedUsers, 1, this.searchText);
   }
+
   getFormattedDate(): string | undefined {
-  if (this.startDate) {
-    return new Dateformater().formatearFechaAyyyymmdd(this.startDate);
-  }
-  return undefined;
-}
-loadNextPage(): void {
-    let dateFormatted: Date | undefined = undefined;
-    let dateFormattedEnd: string | undefined = undefined;
-    console.log('Cargando página:', this.currentPage);
-    if (this.startDate) dateFormatted = this.startDate;
-    if (this.endDate) dateFormattedEnd = this.endDate.toISOString().split('T')[0];
-    this.currentPage += 1;
-    console.log('Página actualizada a:', this.currentPage);
-    this.load(dateFormatted, dateFormattedEnd, this.selectedUsers, this.currentPage, this.searchText);
-  }
-  loadPreviousPage(): void {
-    let dateFormatted: Date | undefined = undefined;
-    let dateFormattedEnd: string | undefined = undefined;
-    
-    if (this.startDate) dateFormatted = this.startDate;
-    if (this.endDate) dateFormattedEnd = this.endDate.toISOString().split('T')[0]; 
-    if (this.currentPage > 1) {
-      this.currentPage -= 1;
-      this.load(dateFormatted, dateFormattedEnd, this.selectedUsers, this.currentPage, this.searchText);
+    if (this.startDate) {
+      return new Dateformater().formatearFechaAyyyymmdd(this.startDate);
     }
+    return undefined;
+  }
+
+  loadNextPage(): void {
+    if (!this.hasMore || this.cargando) return;
+
+    let dateFormatted: Date | undefined = undefined;
+    let dateFormattedEnd: Date | undefined = undefined;
+
+    if (this.startDate) dateFormatted = this.startDate;
+    if (this.endDate) dateFormattedEnd = this.endDate;
+
+    this.currentPage += 1;
+    
+  
+    this.load(dateFormatted, dateFormattedEnd, this.selectedUsers, this.currentPage, this.searchText);
+  
+  }
+
+  loadPreviousPage(): void {
+    if (this.currentPage <= 1 || this.cargando) return;
+
+    let dateFormatted: Date | undefined = undefined;
+    let dateFormattedEnd: Date | undefined = undefined;
+
+    if (this.startDate) dateFormatted = this.startDate;
+    if (this.endDate) dateFormattedEnd = this.endDate;
+
+    this.currentPage -= 1;
+    this.load(dateFormatted, dateFormattedEnd, this.selectedUsers, this.currentPage, this.searchText);
   }
 
   /** Cargar noticias — puede recibir o no filtros */
-  load(startDate?: Date, endDate?: string, users?: string[], page?:number, searchText?: string): void {
-      this.cargando = true;
-      this.error = '';
-      this.datos = [];
-      console.log("start",startDate)
-      const pageToLoad = page ?? this.currentPage;
+  load(startDate?: Date, endDate?: Date, users?: string[], page?: number, searchText?: string): void {
+    this.cargando = true;
+    this.error = '';
 
-      const body: any = {
-        page: pageToLoad,
-        limit: this.pageSize
-      };
+    const pageToLoad = page ?? this.currentPage;
 
- 
-      if (startDate) body.startDate = startDate;
-      if (endDate) body.endDate = endDate;
-      if (users && users.length > 0) body.users = users;
-      if (searchText) body.searchText = searchText;
-      console.log('Cargando con filtros:', body);
-      this.apiService.getNews(body).subscribe({
-        next: (data: any) => {
-          console.log(data);
-          this.datos = data.resultado || [];
-          this.currentPage = data.page;
-          const tweetIds = this.datos.map(x => x.tweetid);
-           
-        
-          this.apiService.getRepliesSummaryMany(tweetIds).subscribe({
+    const body: any = {
+      page: pageToLoad,
+      limit: this.pageSize
+    };
+
+    if (startDate) body.startDate = startDate;
+    if (endDate) body.endDate = endDate;
+    if (users && users.length > 0) body.users = users; else body.users = this.users.map(u => u.idTweetUser.toString());
+    if (searchText) body.searchText = searchText;
+
+    console.log('Cargando con filtros:', body);
+
+    this.apiService.getNews(body).subscribe({
+      next: (data: any) => {
+        this.datos = data.resultado || [];
+        this.currentPage = data.page ?? pageToLoad;
+
+        // 1) Resumen de replies por tweet
+        const tweetIds = (this.datos || []).map(x => x.tweetid);
+        this.apiService.getRepliesSummaryMany(tweetIds).subscribe({
           next: (rows: any[]) => {
-            // Construir mapa tweetid -> counts
             const map: Record<string, { negativo: number; neutro: number; positivo: number }> = {};
-            
             for (const r of rows || []) {
               const key = String(r.tweetid);
-              
               if (!map[key]) map[key] = { negativo: 0, neutro: 0, positivo: 0 };
-
               if (r.sentimiento === 'negativo') map[key].negativo = r.total;
               if (r.sentimiento === 'neutro') map[key].neutro = r.total;
               if (r.sentimiento === 'positivo') map[key].positivo = r.total;
-              
             }
-            
-
             this.repliesByTweet = map;
           },
           error: (e) => console.error('❌ Error summary many:', e)
         });
-          this.hasMore = this.datos.length === this.pageSize;
-          this.cargando = false;
-        },
-        error: (error) => {
-          console.error('❌ Error al obtener datos:', error);
-          this.error = 'Error al cargar los datos';
-          this.cargando = false;
-        }
-      });
-      this.cargarGuardados();
-}
 
+        // 2) Hidratar guardados + notas (lookup global)
+        //    Esto marca el botón "Guardado" y precarga notas si existen
+        this.hydrateSavedState();
+
+        this.hasMore = this.datos.length === this.pageSize;
+        this.cargando = false;
+      },
+      error: (error) => {
+        console.error('❌ Error al obtener datos:', error);
+        this.error = 'Error al cargar los datos';
+        this.cargando = false;
+      }
+    });
+  }
 
   /** Navegar al detalle */
   irADetalle(datos: NewsItem): void {
     this.router.navigate(['/resumen'], { state: { datos } });
   }
+
   toLocalYMD(date: Date): string {
-  // reconstruye la fecha usando componentes locales (evita desfase)
-  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  console.log('toLocalYMD - entrada:', date, '-> reconstruida:', d);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
+    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
 
+  /** Helpers tweetid -> string estable */
+  private tid(tweetid: any): string {
+    return tweetid?.toString?.() ?? String(tweetid);
+  }
 
+  /** Cargar mapa de guardados+nota del usuario (endpoint nuevo saved_posts_map) */
+  private hydrateSavedState(category?: string) {
+    this.apiService.getSavedMap(category).subscribe({
+      next: (res: any) => {
+        if (!res?.ok) return;
 
-getRepliesCounts(tweetid: string) {
+        const saved = res.saved || {};
 
-  
-  return this.repliesByTweet[tweetid] ?? { negativo: 0, neutro: 0, positivo: 0 };
-}
- 
-toggleGuardar(item: any) {
+        // Set para marcar guardados
+        this.guardados = new Set(Object.keys(saved));
 
-    const id = item.tweetid.toString();
-    console.log('Toggle guardar para ID:', id);
+        // Notas
+        this.notesByTweet.clear();
+
+        for (const tid of Object.keys(saved)) {
+          const note = (saved[tid]?.note ?? '').toString();
+          this.notesByTweet.set(tid, note);
+
+          // no pisar lo que el usuario está escribiendo
+          if (this.noteDraft[tid] === undefined) {
+            this.noteDraft[tid] = note;
+          }
+        }
+      },
+      error: (e: any) => console.error('❌ saved map error', e)
+    });
+  }
+
+  getRepliesCounts(tweetid: string) {
+    return this.repliesByTweet[String(tweetid)] ?? { negativo: 0, neutro: 0, positivo: 0 };
+  }
+
+  // =========================
+  // Guardar / Desguardar
+  // =========================
+  toggleGuardar(item: any) {
+    const id = this.tid(item.tweetid);
     if (this.savingIds.has(id)) return;
 
     this.errorGuardar = '';
@@ -199,9 +237,12 @@ toggleGuardar(item: any) {
       this.apiService.borrarGuardado(id).subscribe({
         next: () => {
           this.guardados.delete(id);
+          // también limpiar nota local si quieres
+          this.notesByTweet.set(id, '');
+          this.noteDraft[id] = '';
           this.savingIds.delete(id);
         },
-        error: (e) => {
+        error: (e: any) => {
           console.error('Error borrando guardado', e);
           this.errorGuardar = 'No se pudo quitar de guardados.';
           this.savingIds.delete(id);
@@ -214,9 +255,11 @@ toggleGuardar(item: any) {
     this.apiService.guardarTweet(id).subscribe({
       next: () => {
         this.guardados.add(id);
+        // opcional: abrir nota automáticamente
+        // this.openNotes.add(id);
         this.savingIds.delete(id);
       },
-      error: (e) => {
+      error: (e: any) => {
         console.error('Error guardando', e);
         this.errorGuardar = 'No se pudo guardar.';
         this.savingIds.delete(id);
@@ -224,35 +267,98 @@ toggleGuardar(item: any) {
     });
   }
 
- cargarGuardados() {
-  this.apiService.getGuardados().subscribe({
-    next: (res) => {
-      const rows = res.items ?? [];
-      this.guardados = new Set(rows.map(r => String(r.tweetid)));
-      console.log('Guardados cargados:', this.guardados);
-    },
-    error: (e) => console.error('Error cargando guardados', e)
-  });
-}
-
   isGuardado(tweetid: any): boolean {
-    return this.guardados.has(tweetid.toString());
+    return this.guardados.has(this.tid(tweetid));
   }
 
+  // =========================
+  // Notas (requiere tus endpoints upsertNote/deleteNote)
+  // =========================
+  hasNote(tweetid: any): boolean {
+    const id = this.tid(tweetid);
+    const saved = (this.notesByTweet.get(id) ?? '').trim();
+    return saved.length > 0;
+  }
 
-  resetFiltros(){
-  this.startDate = null as any;
-  this.endDate = null as any;
-  this.selectedUsers = [];
+  getNote(tweetid: any): string {
+    return this.notesByTweet.get(this.tid(tweetid)) ?? '';
+  }
+
+  noteChanged(tweetid: any): boolean {
+    const id = this.tid(tweetid);
+    return (this.noteDraft[id] ?? '').trim() !== (this.notesByTweet.get(id) ?? '').trim();
+  }
+
+  guardarNota(tweetid: any) {
+    const id = this.tid(tweetid);
+
+    // (opcional) si no está guardado, no permitir nota
+    if (!this.guardados.has(id)) {
+      this.errorGuardar = 'Guarda el post primero para agregar una nota.';
+      return;
+    }
+
+    const note = (this.noteDraft[id] ?? '').trim();
+    if (!note) return;
+
+    this.savingNoteIds.add(id);
+
+    this.apiService.upsertNote(id, note).subscribe({
+      next: (res: any) => {
+        if (res?.ok) {
+          this.notesByTweet.set(id, note);
+          this.noteDraft[id] = note;
+        }
+        this.savingNoteIds.delete(id);
+      },
+      error: (e: any) => {
+        console.error('Error guardando nota', e);
+        this.savingNoteIds.delete(id);
+      }
+    });
+  }
+
+  borrarNota(tweetid: any) {
+    const id = this.tid(tweetid);
+
+    this.savingNoteIds.add(id);
+    this.apiService.deleteNote(id).subscribe({
+      next: (res: any) => {
+        if (res?.ok) {
+          this.notesByTweet.set(id, '');
+          this.noteDraft[id] = '';
+        }
+        this.savingNoteIds.delete(id);
+      },
+      error: (e: any) => {
+        console.error('Error borrando nota', e);
+        this.savingNoteIds.delete(id);
+      }
+    });
+  }
+
+  // =========================
+  // UI Nota expandible
+  // =========================
+  toggleNote(tweetid: any) {
+    const id = this.tid(tweetid);
+    if (this.openNotes.has(id)) this.openNotes.delete(id);
+    else this.openNotes.add(id);
+  }
+
+  isNoteOpen(tweetid: any): boolean {
+    return this.openNotes.has(this.tid(tweetid));
+  }
+
+  // =========================
+  // Reset filtros
+  // =========================
+  resetFiltros() {
+    this.startDate = undefined;
+    this.endDate = undefined;
+    this.selectedUsers = [];
+    this.searchText = '';
+    this.currentPage = 1;
+    this.load(); // recargar sin filtros
+  }
 }
-
-
-
-}
-
-  
-
-
-
-
-

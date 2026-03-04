@@ -137,6 +137,11 @@
           <span>Estadísticas</span>
         </a>
       </li>
+      <li routerLinkActive="active">
+        <a routerLink="/settings" matTooltip="Configuración">
+          <i class="fas fa-cog"></i>
+          <span>Configuración</span>
+        </a>
 
       <!-- ✅ Dropdown: Admin -->
       <li class="menu-dropdown" *ngIf="(authz.role$ | async) === 'admin'">

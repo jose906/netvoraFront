@@ -3,6 +3,7 @@ import { finalize } from 'rxjs/operators';
 import { ApiService } from '../services/api.service';
 import { HomePageResponse } from '../interfaces/homePage';
 import { users } from '../interfaces/users';
+import { Router } from '@angular/router';
 
 interface PrincipalStatsVM {
   totalHoy: number;
@@ -54,39 +55,34 @@ export class PrincipalComponent implements OnInit {
   cargando = false;
   error = '';
 
-  constructor(private apiService: ApiService) {}
+  showNoUsersModal = false;
+
+  constructor(private apiService: ApiService, private router: Router) {}
 
   ngOnInit(): void {
     this.loadUsers();
   }
 
   loadUsers(): void {
-    this.apiService.getUsers2("Medio").subscribe({
-      next: (data) => {
-        this.users = data;
-        // Cargar noticias iniciales
-        console.log('Usuarios cargados:', this.users);
-         if (this.users.length === 0) {
-          // ✅ Mensaje de alerta
-          this.error = 'No tienes usuarios activos. Ve a Configuración y selecciona las cuentas que deseas monitorear';
+  this.apiService.getUsers2("Medio").subscribe({
+    next: (data) => {
+      this.users = Array.isArray(data) ? data : [];
 
-          // ✅ Limpia la UI (opcional, recomendado)
-          this.todayLabel = '';
-          this.stats = this.emptyStats();
-          this.last7Days = [];
-          this.resetWeekChart();
-          return;
-        }
-
-        this.loadMainStats(this.users.map(u => u.idTweetUser.toString()));
-        
-      },
-      error: (error) => {
-        console.error('❌ Error al cargar usuarios:', error);
+      if (this.users.length === 0) {
+        // 🔴 Mostrar popup
+        this.showNoUsersModal = true;
+        return;
       }
-    });
-  }
 
+      console.log('Usuarios cargados:', this.users);
+      this.loadMainStats(this.users.map(u => String(u.idTweetUser)));
+    },
+    error: (error) => {
+      console.error('❌ Error al cargar usuarios:', error);
+      this.error = 'No se pudieron cargar los usuarios.';
+    }
+  });
+}
   // Top 3 fijo para el template (si no hay datos, rellena con "—")
   get top3Entidades(): TopEntidadVM[] {
   const src: TopEntidadVM[] = Array.isArray(this.stats?.topEntidades) ? this.stats.topEntidades : [];
@@ -218,4 +214,8 @@ export class PrincipalComponent implements OnInit {
     this.weekPoints = points.join(' ');
     this.weekCircles = circles;
   }
+
+  irAUsuarios() {
+  this.router.navigate(['/settings']); // cambia la ruta si usas otra
+}
 }

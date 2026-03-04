@@ -161,3 +161,22 @@
     </div>
   </section>
 </div>
+<!-- Modal sin usuarios -->
+<div class="modal-overlay" *ngIf="showNoUsersModal">
+  <div class="modal">
+    <h2>No hay usuarios configurados</h2>
+    <p>
+      Para ver estadísticas necesitas agregar o activar al menos un medio.
+    </p>
+
+    <div class="modal-actions">
+      <button class="btn-primary" (click)="irAUsuarios()">
+        Ir a configuración
+      </button>
+
+      <button class="btn-secondary" (click)="showNoUsersModal=false">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>

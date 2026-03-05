@@ -3,8 +3,8 @@
 
   /* ✅ NetVora tokens (mismos que tu sistema) */
 
-  --surface: rgba(255,255,255,0.92);
-  --surface2: rgba(248,250,252,0.92);
+  --surface: var(--bg);
+  --surface2: var(--bg);
 
   --text:#0f172a;
   --muted:#64748b;

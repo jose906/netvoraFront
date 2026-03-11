@@ -3,7 +3,13 @@
   <!-- Header -->
   <header class="header">
     <div class="title">
-      <h2>Estadísticas — <span class="mono">{{ categoria || 'Categoría' }}</span></h2>
+      <h2>
+        Estadísticas —
+        <span class="mono">{{ type_user }}</span>
+        <ng-container *ngIf="(categoria || '').toLowerCase() !== 'none'">
+          · <span class="mono">{{ categoria }}</span>
+        </ng-container>
+      </h2>
       <p class="sub">Total, entidades, timeline, sentimientos, usuarios y SentVsUser.</p>
     </div>
 

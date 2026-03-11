@@ -1,4 +1,4 @@
-import {Component,Input,ChangeDetectionStrategy,ChangeDetectorRef,SimpleChanges} from '@angular/core';
+import {Component,Input,ChangeDetectionStrategy,ChangeDetectorRef,SimpleChanges, OnChanges} from '@angular/core';
 import { finalize } from 'rxjs/operators';
 import { ChartData, ChartOptions, ChartType } from 'chart.js';
 import { ChartConfiguration } from 'chart.js';
@@ -16,7 +16,7 @@ type EntItem = { entidad: string; total: number };
   styleUrls: ['./todos.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TodosComponent {
+export class TodosComponent implements OnChanges {
   @Input() startDate!: Date | null;
   @Input() endDate!: Date | null;
   @Input() selectedUsers: string[] = [];
@@ -107,58 +107,71 @@ export class TodosComponent {
 
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
   ngOnChanges(changes: SimpleChanges): void {
-    // auto-load cuando ya hay startDate y llegaron users (seguidos)
-    const startChanged = !!changes['startDate'];
-    const usersChanged = !!changes['users'];
-    const selChanged = !!changes['selectedUsers'];
-    const searchChanged = !!changes['searchText'];
-    const endChanged = !!changes['endDate'];
+  const startChanged = !!changes['startDate'];
+  const endChanged = !!changes['endDate'];
+  const usersChanged = !!changes['users'];
+  const selChanged = !!changes['selectedUsers'];
+  const searchChanged = !!changes['searchText'];
 
-    if (!this.startDate) return;
+  if (!this.startDate) return;
 
-    // si no hay seleccion manual, esperamos a que existan seguidos
-    if (this.selectedUsers.length === 0 && (!this.users || this.users.length === 0)) return;
+  // si no hay usuarios seleccionados y tampoco hay usuarios disponibles, no llames backend
+  const usersToSend = this.selectedUsers.length > 0
+    ? this.selectedUsers
+    : (this.users ?? []).map(u => String(u.idTweetUser));
 
-    if (startChanged || usersChanged || selChanged || searchChanged || endChanged) {
-      this.cargarDatos();
-    }
+  if (!usersToSend.length) return;
+
+  if (startChanged || endChanged || usersChanged || selChanged || searchChanged) {
+    this.cargarDatos();
   }
+}
 
-  public cargarDatos(): void {
-    if (!this.startDate) return;
+ public cargarDatos(): void {
+  if (!this.startDate) return;
 
-    const body: any = {
-      start: this.toYMD(this.startDate),
-      // prioridad: selección manual > seguidos
-      users: this.selectedUsers.length > 0
-        ? this.selectedUsers
-        : (this.users ?? []).map(u => String(u.idTweetUser)),
-    };
-    console.log('Cargando datos con body:', body);
+  const usersToSend = this.selectedUsers.length > 0
+    ? this.selectedUsers.map(String)
+    : (this.users ?? []).map(u => String(u.idTweetUser));
 
-    // 🔒 si por algo no hay usuarios, no pegues al backend
-    if (!body.users.length) return;
-
-    if (this.endDate) body.end = this.toYMD(this.endDate);
-    if (this.searchText?.trim()) body.search = this.searchText.trim();
-
-    this.loading = true;
-    this.errorMsg = '';
+  if (!usersToSend.length) {
+    this.totalPosts = 0;
+    this.topLocacion = [];
+    this.topOrganizacion = [];
+    this.topPersona = [];
+    this.errorMsg = 'No hay usuarios disponibles para consultar.';
     this.cdr.markForCheck();
-
-    this.api.getAllData(body)
-      .pipe(finalize(() => {
-        this.loading = false;
-        this.cdr.markForCheck();
-      }))
-      .subscribe({
-        next: (res) => this.mapResponse(res),
-        error: () => {
-          this.errorMsg = 'No se pudo cargar el dashboard.';
-          this.cdr.markForCheck();
-        },
-      });
+    return;
   }
+
+  const body: any = {
+    start: this.toYMD(this.startDate),
+    users: usersToSend,
+  };
+
+  if (this.endDate) body.end = this.toYMD(this.endDate);
+
+  const search = this.searchText?.trim();
+  if (search) body.search = search;
+
+  this.loading = true;
+  this.errorMsg = '';
+  this.cdr.markForCheck();
+
+  this.api.getAllData(body)
+    .pipe(finalize(() => {
+      this.loading = false;
+      this.cdr.markForCheck();
+    }))
+    .subscribe({
+      next: (res) => this.mapResponse(res),
+      error: (err) => {
+        console.error('❌ Error getAllData:', err);
+        this.errorMsg = 'No se pudo cargar el dashboard.';
+        this.cdr.markForCheck();
+      },
+    });
+}
 
   private mapResponse(res: StatsResponse): void {
     // ======= KPI =======

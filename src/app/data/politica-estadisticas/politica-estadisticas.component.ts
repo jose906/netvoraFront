@@ -1,17 +1,18 @@
 import {
   Component,
   Input,
-  OnInit,
+  OnChanges,
+  SimpleChanges,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  ViewChild
+  ViewChild,
+  OnDestroy
 } from '@angular/core';
 import { ChartData, ChartOptions, ChartType } from 'chart.js';
 import { finalize } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { BaseChartDirective } from 'ng2-charts';
 import { NETVORA_PALETTE,exportCanvasWithWhiteBg } from '../../utils/helpers';
-import e from 'express';
 import { users } from '../../interfaces/users';
 
 type EntItem = { entidad: string; total: number };
@@ -39,7 +40,7 @@ type IndiceSentItem = {
   styleUrls: ['./politica-estadisticas.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PoliticaEstadisticasComponent implements OnInit {
+export class PoliticaEstadisticasComponent implements OnChanges, OnDestroy {
   @Input() startDate!: Date | null;
   @Input() endDate!: Date | null;
   @Input() selectedUsers: string[] = [];
@@ -183,55 +184,90 @@ userIndiceChartOptions: ChartOptions<'bar'> = {
     private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
-  // 🔥 carga automática al entrar
-  if (this.startDate) {
+  ngOnChanges(changes: SimpleChanges): void {
+  if (!this.startDate) return;
+
+  const startChanged = !!changes['startDate'];
+  const endChanged = !!changes['endDate'];
+  const usersChanged = !!changes['users'];
+  const selChanged = !!changes['selectedUsers'];
+  const searchChanged = !!changes['searchText'];
+  const catChanged = !!changes['categoria'];
+
+  const usersToSend = this.getUsersToSend();
+  if (!usersToSend.length) return;
+
+  if (startChanged || endChanged || usersChanged || selChanged || searchChanged || catChanged) {
     this.cargarDatos();
     this.loadWordcloud();
   }
 }
-
-  public cargarDatos(): void {
-    if (!this.startDate) return;
-
-    const start = this.toYMD(this.startDate);
-
-    const body: any = {
-      start,
-      users: this.selectedUsers || [],
-      categoria: this.categoria || '',
-      type_user: 'Medio'
-    };
-
-    // ✅ SOLO si el usuario eligió endDate, lo mandas
-    if (this.endDate) {
-      body.end = this.toYMD(this.endDate);
-    }
-    if (this.searchText) {
-      body.search = this.searchText;
-    } 
-
-    this.loading = true;
-    this.errorMsg = '';
-    this.cdr.markForCheck();
-
-    this.apiService.getCategoriesData(body)
-      .pipe(finalize(() => {
-        this.loading = false;
-        this.cdr.markForCheck();
-      }))
-      .subscribe({
-        next: (res) => {
-          console.log('📥 Response recibida:', res);
-          this.mapResponse(res);
-        },
-        error: (err) => {
-          console.error('❌ Error:', err);
-          this.errorMsg = 'No se pudo cargar el dashboard.';
-          this.cdr.markForCheck();
-        },
-      });
+ngOnDestroy(): void {
+  if (this.wordcloudUrl) {
+    URL.revokeObjectURL(this.wordcloudUrl);
   }
+}
+
+private getUsersToSend(): string[] {
+  if (this.selectedUsers?.length) {
+    return this.selectedUsers.map(String);
+  }
+
+  return (this.users ?? []).map(u => String(u.idTweetUser));
+}
+
+ 
+
+ public cargarDatos(): void {
+  if (!this.startDate) return;
+
+  const usersToSend = this.getUsersToSend();
+  if (!usersToSend.length) {
+    this.errorMsg = 'No hay usuarios disponibles para consultar.';
+    this.totalPosts = 0;
+    this.topUsers = [];
+    this.userIndice = [];
+    this.cdr.markForCheck();
+    return;
+  }
+
+  const body: any = {
+    start: this.toYMD(this.startDate),
+    users: usersToSend,
+    categoria: this.categoria || '',
+    type_user: 'Medio'
+  };
+
+  if (this.endDate) {
+    body.end = this.toYMD(this.endDate);
+  }
+
+  const search = (this.searchText || '').trim();
+  if (search) {
+    body.search = search;
+  }
+
+  this.loading = true;
+  this.errorMsg = '';
+  this.cdr.markForCheck();
+
+  this.apiService.getCategoriesData(body)
+    .pipe(finalize(() => {
+      this.loading = false;
+      this.cdr.markForCheck();
+    }))
+    .subscribe({
+      next: (res) => {
+        console.log('📥 Response recibida:', res);
+        this.mapResponse(res);
+      },
+      error: (err) => {
+        console.error('❌ Error getCategoriesData:', err);
+        this.errorMsg = 'No se pudo cargar el dashboard.';
+        this.cdr.markForCheck();
+      },
+    });
+}
 
   private mapResponse(res: any): void {
     // Total posts
@@ -320,16 +356,16 @@ userIndiceChartOptions: ChartOptions<'bar'> = {
   ]
     };
       // Extra: Índice por usuario (tabla)
-  const ui = Array.isArray(res.indice_sentimiento) ? res.indice_sentimiento : (Array.isArray(res?.indice_sentimiento) ? res.UserIndice : []);
-  this.userIndice = ui.map((x: any) => ({
-    TweetUser: String(x.user ?? ''),
-    pos: Number(x.positivos ?? 0),
-    neg: Number(x.negativos ?? 0),
-    total: Number(x.total ?? 0),
-    // normaliza por si viene 0..100
-    indice: this.normalizeIndiceSigned(Number(x.indice_sentimiento ?? 0)),
+  const rawIndice = Array.isArray(res?.indice_sentimiento)
+  ? res.indice_sentimiento
+  : (Array.isArray(res?.indice) ? res.indice : []);
+  this.userIndice = rawIndice.map((x: any) => ({
+  TweetUser: String(x.user ?? x.TweetUser ?? ''),
+  pos: Number(x.positivos ?? x.pos ?? 0),
+  neg: Number(x.negativos ?? x.neg ?? 0),
+  total: Number(x.total ?? 0),
+  indice: this.normalizeIndiceSigned(Number(x.indice_sentimiento ?? x.indice ?? 0)),
 }))
-// orden bonito (total desc)
 .sort((a: UserIndiceItem, b: UserIndiceItem) => b.total - a.total);
 // ===== Índice de sentimiento por usuario (viene como strings) =====
 const rawIdx = Array.isArray(res?.indice_sentimiento) ? res.indice_sentimiento : (Array.isArray(res?.indice) ? res.indice : []);
@@ -436,6 +472,12 @@ this.indiceSent = [...filtered].sort((a, b) => b.total - a.total);
 loadWordcloud() {
   if (!this.startDate) return;
 
+  const usersToSend = this.getUsersToSend();
+  if (!usersToSend.length) {
+    this.wordcloudUrl = null;
+    return;
+  }
+
   this.loadingWordcloud = true;
   this.cdr.markForCheck();
 
@@ -444,18 +486,13 @@ loadWordcloud() {
     end: this.endDate ? this.toYMD(this.endDate) : undefined,
     categoria: this.categoria,
     tipo_cuenta: 'Medio',
-    users: this.selectedUsers ?? []
+    users: usersToSend
   };
 
   this.apiService.getWordcloud(body).subscribe({
     next: (resp) => {
-      console.log('✅ wordcloud status:', resp.status);
-      console.log('✅ content-type:', resp.headers.get('content-type'));
-
       const blob = resp.body as Blob;
-      console.log('✅ isBlob:', blob instanceof Blob, 'size:', blob?.size, 'type:', blob?.type);
 
-      // Si el backend devolvió JSON de error “disfrazado”
       if (blob?.type?.includes('application/json')) {
         blob.text().then(t => console.error('🧨 Backend devolvió JSON:', t));
         this.wordcloudUrl = null;
@@ -464,9 +501,7 @@ loadWordcloud() {
         return;
       }
 
-      // Blob vacío
       if (!blob || blob.size === 0) {
-        console.error('❌ Blob vacío (no hay imagen)');
         this.wordcloudUrl = null;
         this.loadingWordcloud = false;
         this.cdr.markForCheck();

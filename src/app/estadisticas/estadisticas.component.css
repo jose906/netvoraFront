@@ -17,9 +17,15 @@
 .nav-shell{
   display:grid;
   grid-template-columns: 1.2fr 0.8fr;
-  gap: 18px;
-  padding: 18px 0;
+  gap: 22px;
+
+  padding: 20px 28px;     /* margen interno */
+  margin-bottom: 10px;    /* espacio inferior */
+
   border-bottom: 1px solid var(--soft);
+  max-width: 1400px;      /* centra el contenido */
+  margin-left:auto;
+  margin-right:auto;
 }
 
 .nav-left,
@@ -49,6 +55,11 @@
   font-weight: 900;
   letter-spacing: .06em;
   text-transform: uppercase;
+}
+/* botón full width */
+.nv-btn-full{
+  grid-column: 1 / -1;
+  justify-content: center !important;
 }
 
 .nav-head-text p{
@@ -129,16 +140,7 @@
   position: relative;
 }
 
-.nv-btn.is-active::after{
-  content:"";
-  position:absolute;
-  left: 12px;
-  right: 12px;
-  bottom: 6px;
-  height: 2px;
-  border-radius: 999px;
-  background: rgba(109,40,217,.55);
-}
+
 
 /* kbd */
 .nv-kbd{
@@ -182,7 +184,21 @@
 :host ::ng-deep .mat-mdc-form-field .mat-mdc-form-field-flex{
   border-radius: 12px;
 }
+/* quitar linea morada de material */
+.nv-btn:focus,
+.nv-btn:active{
+  outline:none !important;
+  box-shadow:none !important;
+}
 
+:host ::ng-deep .mat-mdc-button-base:focus{
+  outline:none !important;
+  box-shadow:none !important;
+}
+
+:host ::ng-deep .mat-mdc-button-base .mat-mdc-focus-indicator{
+  display:none !important;
+}
 /* acciones */
 .actions{
   display:flex;

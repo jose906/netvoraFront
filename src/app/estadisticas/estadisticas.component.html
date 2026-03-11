@@ -1,41 +1,134 @@
 <div class="nav-shell">
 
-  <!-- Left: navegación -->
   <section class="nav-left">
-    <header class="nav-head">
+    <div class="nav-head">
       <div class="nav-head-text">
-        <h3>Gráficos</h3>
-        <p>Selecciona una vista para explorar métricas</p>
+        <h3>Categorías</h3>
+        <p>Selecciona una categoría para filtrar.</p>
       </div>
-      <div class="nav-head-pill">Vistas</div>
-    </header>
+      <span class="nav-head-pill subtle">{{ selectedCategoria || 'Todas' }}</span>
+    </div>
 
-    <!-- principal -->
-    <button
-      mat-raised-button
-      class="nv-btn nv-btn--main"
-      [class.is-active]="selectedComponent === 'todos'"
-      (click)="cambiarGrafico('todos')"
-    >
-      <mat-icon>dashboard</mat-icon>
-      <span>Panel principal</span>
-      <span class="nv-kbd">⌘1</span>
-    </button>
-
-    <div class="nav-divider"></div>
-
-    <!-- grid categorías (filtradas) -->
     <div class="nv-grid">
+
+      <!-- Panel principal -->
       <button
-        *ngFor="let item of navItemsFiltered"
+        mat-raised-button
+        class="nv-btn nv-btn--main nv-btn-full"
+        [class.is-active]="selectedComponent === 'todos'"
+        (click)="goToView('todos', 'Panel principal', 'todos')">
+        <mat-icon>dashboard</mat-icon>
+        Panel principal
+      </button>
+
+      <button
         mat-raised-button
         class="nv-btn"
-        [class.is-active]="selectedComponent === item.key"
-        (click)="cambiarGrafico(item.key)"
-      >
-        <mat-icon>{{ item.icon }}</mat-icon>
-        <span>{{ item.label }}</span>
+        [class.is-active]="selectedComponent === 'politica'"
+        (click)="goToView('politica', 'Política', 'Medio')">
+        <mat-icon>account_balance</mat-icon>
+        Política
       </button>
+
+      <button
+        mat-raised-button
+        class="nv-btn"
+        [class.is-active]="selectedComponent === 'economia'"
+        (click)="goToView('economia', 'Economía', 'Medio')">
+        <mat-icon>payments</mat-icon>
+        Economía
+      </button>
+
+      <button
+        mat-raised-button
+        class="nv-btn"
+        [class.is-active]="selectedComponent === 'seguridad'"
+        (click)="goToView('seguridad', 'Seguridad', 'Medio')">
+        <mat-icon>security</mat-icon>
+        Seguridad
+      </button>
+
+      <button
+        mat-raised-button
+        class="nv-btn"
+        [class.is-active]="selectedComponent === 'deportes'"
+        (click)="goToView('deportes', 'Deportes', 'Medio')">
+        <mat-icon>sports_soccer</mat-icon>
+        Deportes
+      </button>
+
+      <button
+        mat-raised-button
+        class="nv-btn"
+        [class.is-active]="selectedComponent === 'ambiente'"
+        (click)="goToView('ambiente', 'Medio ambiente', 'Medio')">
+        <mat-icon>eco</mat-icon>
+        Medio ambiente
+      </button>
+
+      <button
+        mat-raised-button
+        class="nv-btn"
+        [class.is-active]="selectedComponent === 'salud'"
+        (click)="goToView('salud', 'Salud', 'Medio')">
+        <mat-icon>medical_services</mat-icon>
+        Salud
+      </button>
+
+      <button
+        mat-raised-button
+        class="nv-btn"
+        [class.is-active]="selectedComponent === 'social'"
+        (click)="goToView('social', 'Sociedad', 'Medio')">
+        <mat-icon>groups</mat-icon>
+        Sociedad
+      </button>
+
+      <button
+        mat-raised-button
+        class="nv-btn"
+        [class.is-active]="selectedComponent === 'educacion'"
+        (click)="goToView('educacion', 'Educación', 'Medio')">
+        <mat-icon>school</mat-icon>
+        Educación
+      </button>
+
+      <button
+        mat-raised-button
+        class="nv-btn"
+        [class.is-active]="selectedComponent === 'gestiones'"
+        (click)="goToView('gestiones', 'Gestiones públicas', 'Medio')">
+        <mat-icon>fact_check</mat-icon>
+        Gestiones públicas
+      </button>
+
+      <button
+        mat-raised-button
+        class="nv-btn"
+        [class.is-active]="selectedComponent === 'otros'"
+        (click)="goToView('otros', 'Otros', 'Medio')">
+        <mat-icon>category</mat-icon>
+        Otros temas
+      </button>
+
+      <button
+        mat-raised-button
+        class="nv-btn"
+        [class.is-active]="selectedComponent === 'entidades'"
+        (click)="goToView('entidades', 'Entidades', 'Entidad')">
+        <mat-icon>domain</mat-icon>
+        Entidades públicas
+      </button>
+
+      <button
+        mat-raised-button
+        class="nv-btn"
+        [class.is-active]="selectedComponent === 'personas'"
+        (click)="goToView('personas', 'Personas', 'Persona')">
+        <mat-icon>person</mat-icon>
+        Personas públicas
+      </button>
+
     </div>
   </section>
 
@@ -62,7 +155,7 @@
     <mat-form-field appearance="outline" class="filter-item">
       <mat-label>Seleccionar usuarios</mat-label>
       <mat-select [(ngModel)]="selectedUsers" multiple>
-        <mat-option *ngFor="let user of users" [value]="user.idTweetUser">
+        <mat-option *ngFor="let user of users; trackBy: trackByUserId" [value]="user.idTweetUser">
           {{ user.TweetUser }}
         </mat-option>
       </mat-select>
@@ -75,16 +168,14 @@
         matInput
         placeholder="Texto de búsqueda"
         [(ngModel)]="searchText"
-        [ngModelOptions]="{ standalone: true }"
-      >
+        [ngModelOptions]="{ standalone: true }">
     </mat-form-field>
 
     <div class="actions">
       <button
         mat-raised-button
         class="nv-action nv-action--primary"
-        (click)="aplicarFechas()"
-      >
+        (click)="aplicarFechas()">
         <mat-icon>check</mat-icon>
         <span>Aplicar</span>
       </button>
@@ -93,14 +184,12 @@
         mat-button
         class="nv-action nv-action--ghost"
         type="button"
-        (click)="resetFiltros()"
-      >
+        (click)="resetFiltros()">
         <mat-icon>restart_alt</mat-icon>
         <span>Limpiar</span>
       </button>
     </div>
 
-    <!-- mini resumen -->
     <div class="filters-summary">
       <div class="fs-row">
         <span class="fs-k">Vista</span>
@@ -112,53 +201,139 @@
       </div>
     </div>
   </aside>
-
 </div>
 
-<!-- Contenido inferior (gráficos) -->
 <section class="chart-section">
-  
-
   <div class="chart-container">
-    <app-todos *ngIf="selectedComponent === 'todos'"
-      [startDate]="startDate" [endDate]="endDate" [selectedUsers]="selectedUsers" [searchText]="searchText" [users]="users"></app-todos>
 
-    <app-politica-estadisticas *ngIf="selectedComponent === 'politica'" categoria="politica"
-      [startDate]="startDate" [endDate]="endDate" [selectedUsers]="selectedUsers" [searchText]="searchText" [users]="users"></app-politica-estadisticas>
+    <app-todos
+      *ngIf="selectedComponent === 'todos'"
+      [startDate]="startDate"
+      [endDate]="endDate"
+      [selectedUsers]="selectedUsers"
+      [searchText]="searchText"
+      [users]="users">
+    </app-todos>
 
-    <app-politica-estadisticas *ngIf="selectedComponent === 'economia'" categoria="economia"
-      [startDate]="startDate" [endDate]="endDate" [selectedUsers]="selectedUsers" [searchText]="searchText" [users]="users"></app-politica-estadisticas>
+    <app-politica-estadisticas
+      *ngIf="selectedComponent === 'politica'"
+      categoria="politica"
+      [startDate]="startDate"
+      [endDate]="endDate"
+      [selectedUsers]="selectedUsers"
+      [searchText]="searchText"
+      [users]="users">
+    </app-politica-estadisticas>
 
-    <app-politica-estadisticas *ngIf="selectedComponent === 'deportes'" categoria="deportes"
-      [startDate]="startDate" [endDate]="endDate" [selectedUsers]="selectedUsers" [searchText]="searchText" [users]="users"></app-politica-estadisticas>
+    <app-politica-estadisticas
+      *ngIf="selectedComponent === 'economia'"
+      categoria="economia"
+      [startDate]="startDate"
+      [endDate]="endDate"
+      [selectedUsers]="selectedUsers"
+      [searchText]="searchText"
+      [users]="users">
+    </app-politica-estadisticas>
 
-    <app-politica-estadisticas *ngIf="selectedComponent === 'seguridad'" categoria="seguridad"
-      [startDate]="startDate" [endDate]="endDate" [selectedUsers]="selectedUsers" [searchText]="searchText" [users]="users"></app-politica-estadisticas>
+    <app-politica-estadisticas
+      *ngIf="selectedComponent === 'deportes'"
+      categoria="deportes"
+      [startDate]="startDate"
+      [endDate]="endDate"
+      [selectedUsers]="selectedUsers"
+      [searchText]="searchText"
+      [users]="users">
+    </app-politica-estadisticas>
 
-    <app-politica-estadisticas *ngIf="selectedComponent === 'social'" categoria="social"
-      [startDate]="startDate" [endDate]="endDate" [selectedUsers]="selectedUsers" [searchText]="searchText" [users]="users"></app-politica-estadisticas>
+    <app-politica-estadisticas
+      *ngIf="selectedComponent === 'seguridad'"
+      categoria="seguridad"
+      [startDate]="startDate"
+      [endDate]="endDate"
+      [selectedUsers]="selectedUsers"
+      [searchText]="searchText"
+      [users]="users">
+    </app-politica-estadisticas>
 
-    <app-politica-estadisticas *ngIf="selectedComponent === 'ambiente'" categoria="ambiente"
-      [startDate]="startDate" [endDate]="endDate" [selectedUsers]="selectedUsers" [searchText]="searchText" [users]="users"></app-politica-estadisticas>
+    <app-politica-estadisticas
+      *ngIf="selectedComponent === 'social'"
+      categoria="social"
+      [startDate]="startDate"
+      [endDate]="endDate"
+      [selectedUsers]="selectedUsers"
+      [searchText]="searchText"
+      [users]="users">
+    </app-politica-estadisticas>
 
-    <app-politica-estadisticas *ngIf="selectedComponent === 'salud'" categoria="salud"
-      [startDate]="startDate" [endDate]="endDate" [selectedUsers]="selectedUsers" [searchText]="searchText" [users]="users"></app-politica-estadisticas>
+    <app-politica-estadisticas
+      *ngIf="selectedComponent === 'ambiente'"
+      categoria="ambiente"
+      [startDate]="startDate"
+      [endDate]="endDate"
+      [selectedUsers]="selectedUsers"
+      [searchText]="searchText"
+      [users]="users">
+    </app-politica-estadisticas>
 
-    <app-politica-estadisticas *ngIf="selectedComponent === 'educacion'" categoria="educacion"
-      [startDate]="startDate" [endDate]="endDate" [selectedUsers]="selectedUsers" [searchText]="searchText" [users]="users"></app-politica-estadisticas>
+    <app-politica-estadisticas
+      *ngIf="selectedComponent === 'salud'"
+      categoria="salud"
+      [startDate]="startDate"
+      [endDate]="endDate"
+      [selectedUsers]="selectedUsers"
+      [searchText]="searchText"
+      [users]="users">
+    </app-politica-estadisticas>
 
-    <app-politica-estadisticas *ngIf="selectedComponent === 'gestiones'" categoria="gestiones"
-      [startDate]="startDate" [endDate]="endDate" [selectedUsers]="selectedUsers" [searchText]="searchText" [users]="users"></app-politica-estadisticas>
+    <app-politica-estadisticas
+      *ngIf="selectedComponent === 'educacion'"
+      categoria="educacion"
+      [startDate]="startDate"
+      [endDate]="endDate"
+      [selectedUsers]="selectedUsers"
+      [searchText]="searchText"
+      [users]="users">
+    </app-politica-estadisticas>
 
-    <app-politica-estadisticas *ngIf="selectedComponent === 'otros'" categoria="otros"
-      [startDate]="startDate" [endDate]="endDate" [selectedUsers]="selectedUsers" [searchText]="searchText" [users]="users"></app-politica-estadisticas>
+    <app-politica-estadisticas
+      *ngIf="selectedComponent === 'gestiones'"
+      categoria="gestiones"
+      [startDate]="startDate"
+      [endDate]="endDate"
+      [selectedUsers]="selectedUsers"
+      [searchText]="searchText"
+      [users]="users">
+    </app-politica-estadisticas>
 
-    <app-estadisticas-enti-personas *ngIf="selectedComponent === 'entidades'"
-      [startDate]="startDate" [endDate]="endDate" [selectedUsers]="selectedUsers"
-      [type_user]="'Entidad'" [searchText]="searchText" [users]="users"></app-estadisticas-enti-personas>
+    <app-politica-estadisticas
+      *ngIf="selectedComponent === 'otros'"
+      categoria="otros"
+      [startDate]="startDate"
+      [endDate]="endDate"
+      [selectedUsers]="selectedUsers"
+      [searchText]="searchText"
+      [users]="users">
+    </app-politica-estadisticas>
 
-    <app-estadisticas-enti-personas *ngIf="selectedComponent === 'personas'"
-      [startDate]="startDate" [endDate]="endDate" [selectedUsers]="selectedUsers"
-      [type_user]="'Persona'" [searchText]="searchText" [users]="users"></app-estadisticas-enti-personas>
+    <app-estadisticas-enti-personas
+      *ngIf="selectedComponent === 'entidades'"
+      [startDate]="startDate"
+      [endDate]="endDate"
+      [selectedUsers]="selectedUsers"
+      [type_user]="'Entidad'"
+      [searchText]="searchText"
+      [users]="users">
+    </app-estadisticas-enti-personas>
+
+    <app-estadisticas-enti-personas
+      *ngIf="selectedComponent === 'personas'"
+      [startDate]="startDate"
+      [endDate]="endDate"
+      [selectedUsers]="selectedUsers"
+      [type_user]="'Persona'"
+      [searchText]="searchText"
+      [users]="users">
+    </app-estadisticas-enti-personas>
+
   </div>
 </section>

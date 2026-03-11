@@ -38,7 +38,7 @@ export class SettingsComponent implements OnInit {
   private toastTimer: any = null;
 
   constructor(private apiService: ApiService) {}
-
+ 
   ngOnInit(): void {
     this.loadUsers('todos');
 

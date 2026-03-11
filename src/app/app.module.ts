@@ -63,7 +63,7 @@ import { SettingsComponent } from './settings/settings.component';
 
 
 const routes: Routes = [
-  { path: '', component: PrincipalComponent, canActivate: [AuthGuard] },
+  { path: '', component: PrincipalComponent, canActivate: [AuthGuard],data: { subscriptionRequired: true } },
   { path: 'politica', component: PoliticaComponent, canActivate: [AuthGuard] },
   { path: 'economia', component: EconomiaComponent, canActivate: [AuthGuard] },
   { path: 'resumen',  component: ResumenComponent},

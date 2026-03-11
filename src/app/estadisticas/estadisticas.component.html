@@ -11,7 +11,6 @@
 
     <div class="nv-grid">
 
-      <!-- Panel principal -->
       <button
         mat-raised-button
         class="nv-btn nv-btn--main nv-btn-full"
@@ -132,7 +131,6 @@
     </div>
   </section>
 
-  <!-- Right: filtros -->
   <aside class="nav-right">
     <header class="nav-head">
       <div class="nav-head-text">
@@ -145,8 +143,8 @@
     <mat-form-field appearance="outline" class="filter-item">
       <mat-label>Rango de fechas</mat-label>
       <mat-date-range-input [rangePicker]="picker">
-        <input matStartDate placeholder="Inicio" [(ngModel)]="startDate">
-        <input matEndDate placeholder="Fin" [(ngModel)]="endDate">
+        <input matStartDate placeholder="Inicio" [(ngModel)]="filterStartDate">
+        <input matEndDate placeholder="Fin" [(ngModel)]="filterEndDate">
       </mat-date-range-input>
       <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-date-range-picker #picker></mat-date-range-picker>
@@ -154,7 +152,7 @@
 
     <mat-form-field appearance="outline" class="filter-item">
       <mat-label>Seleccionar usuarios</mat-label>
-      <mat-select [(ngModel)]="selectedUsers" multiple>
+      <mat-select [(ngModel)]="filterSelectedUsers" multiple>
         <mat-option *ngFor="let user of users; trackBy: trackByUserId" [value]="user.idTweetUser">
           {{ user.TweetUser }}
         </mat-option>
@@ -167,7 +165,7 @@
       <input
         matInput
         placeholder="Texto de búsqueda"
-        [(ngModel)]="searchText"
+        [(ngModel)]="filterSearchText"
         [ngModelOptions]="{ standalone: true }">
     </mat-form-field>
 
@@ -197,7 +195,7 @@
       </div>
       <div class="fs-row">
         <span class="fs-k">Usuarios</span>
-        <span class="fs-v mono">{{ selectedUsers.length || 0 }}</span>
+        <span class="fs-v mono">{{ filterSelectedUsers.length || 0 }}</span>
       </div>
     </div>
   </aside>
@@ -208,130 +206,130 @@
 
     <app-todos
       *ngIf="selectedComponent === 'todos'"
-      [startDate]="startDate"
-      [endDate]="endDate"
-      [selectedUsers]="selectedUsers"
-      [searchText]="searchText"
+      [startDate]="appliedStartDate"
+      [endDate]="appliedEndDate"
+      [selectedUsers]="appliedSelectedUsers"
+      [searchText]="appliedSearchText"
       [users]="users">
     </app-todos>
 
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'politica'"
       categoria="politica"
-      [startDate]="startDate"
-      [endDate]="endDate"
-      [selectedUsers]="selectedUsers"
-      [searchText]="searchText"
+      [startDate]="appliedStartDate"
+      [endDate]="appliedEndDate"
+      [selectedUsers]="appliedSelectedUsers"
+      [searchText]="appliedSearchText"
       [users]="users">
     </app-politica-estadisticas>
 
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'economia'"
       categoria="economia"
-      [startDate]="startDate"
-      [endDate]="endDate"
-      [selectedUsers]="selectedUsers"
-      [searchText]="searchText"
+      [startDate]="appliedStartDate"
+      [endDate]="appliedEndDate"
+      [selectedUsers]="appliedSelectedUsers"
+      [searchText]="appliedSearchText"
       [users]="users">
     </app-politica-estadisticas>
 
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'deportes'"
       categoria="deportes"
-      [startDate]="startDate"
-      [endDate]="endDate"
-      [selectedUsers]="selectedUsers"
-      [searchText]="searchText"
+      [startDate]="appliedStartDate"
+      [endDate]="appliedEndDate"
+      [selectedUsers]="appliedSelectedUsers"
+      [searchText]="appliedSearchText"
       [users]="users">
     </app-politica-estadisticas>
 
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'seguridad'"
       categoria="seguridad"
-      [startDate]="startDate"
-      [endDate]="endDate"
-      [selectedUsers]="selectedUsers"
-      [searchText]="searchText"
+      [startDate]="appliedStartDate"
+      [endDate]="appliedEndDate"
+      [selectedUsers]="appliedSelectedUsers"
+      [searchText]="appliedSearchText"
       [users]="users">
     </app-politica-estadisticas>
 
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'social'"
       categoria="social"
-      [startDate]="startDate"
-      [endDate]="endDate"
-      [selectedUsers]="selectedUsers"
-      [searchText]="searchText"
+      [startDate]="appliedStartDate"
+      [endDate]="appliedEndDate"
+      [selectedUsers]="appliedSelectedUsers"
+      [searchText]="appliedSearchText"
       [users]="users">
     </app-politica-estadisticas>
 
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'ambiente'"
       categoria="ambiente"
-      [startDate]="startDate"
-      [endDate]="endDate"
-      [selectedUsers]="selectedUsers"
-      [searchText]="searchText"
+      [startDate]="appliedStartDate"
+      [endDate]="appliedEndDate"
+      [selectedUsers]="appliedSelectedUsers"
+      [searchText]="appliedSearchText"
       [users]="users">
     </app-politica-estadisticas>
 
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'salud'"
       categoria="salud"
-      [startDate]="startDate"
-      [endDate]="endDate"
-      [selectedUsers]="selectedUsers"
-      [searchText]="searchText"
+      [startDate]="appliedStartDate"
+      [endDate]="appliedEndDate"
+      [selectedUsers]="appliedSelectedUsers"
+      [searchText]="appliedSearchText"
       [users]="users">
     </app-politica-estadisticas>
 
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'educacion'"
       categoria="educacion"
-      [startDate]="startDate"
-      [endDate]="endDate"
-      [selectedUsers]="selectedUsers"
-      [searchText]="searchText"
+      [startDate]="appliedStartDate"
+      [endDate]="appliedEndDate"
+      [selectedUsers]="appliedSelectedUsers"
+      [searchText]="appliedSearchText"
       [users]="users">
     </app-politica-estadisticas>
 
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'gestiones'"
       categoria="gestiones"
-      [startDate]="startDate"
-      [endDate]="endDate"
-      [selectedUsers]="selectedUsers"
-      [searchText]="searchText"
+      [startDate]="appliedStartDate"
+      [endDate]="appliedEndDate"
+      [selectedUsers]="appliedSelectedUsers"
+      [searchText]="appliedSearchText"
       [users]="users">
     </app-politica-estadisticas>
 
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'otros'"
       categoria="otros"
-      [startDate]="startDate"
-      [endDate]="endDate"
-      [selectedUsers]="selectedUsers"
-      [searchText]="searchText"
+      [startDate]="appliedStartDate"
+      [endDate]="appliedEndDate"
+      [selectedUsers]="appliedSelectedUsers"
+      [searchText]="appliedSearchText"
       [users]="users">
     </app-politica-estadisticas>
 
     <app-estadisticas-enti-personas
       *ngIf="selectedComponent === 'entidades'"
-      [startDate]="startDate"
-      [endDate]="endDate"
-      [selectedUsers]="selectedUsers"
+      [startDate]="appliedStartDate"
+      [endDate]="appliedEndDate"
+      [selectedUsers]="appliedSelectedUsers"
       [type_user]="'Entidad'"
-      [searchText]="searchText"
+      [searchText]="appliedSearchText"
       [users]="users">
     </app-estadisticas-enti-personas>
 
     <app-estadisticas-enti-personas
       *ngIf="selectedComponent === 'personas'"
-      [startDate]="startDate"
-      [endDate]="endDate"
-      [selectedUsers]="selectedUsers"
+      [startDate]="appliedStartDate"
+      [endDate]="appliedEndDate"
+      [selectedUsers]="appliedSelectedUsers"
       [type_user]="'Persona'"
-      [searchText]="searchText"
+      [searchText]="appliedSearchText"
       [users]="users">
     </app-estadisticas-enti-personas>
 

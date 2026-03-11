@@ -32,13 +32,24 @@ export class EstadisticasComponent implements OnInit {
   selectedComponent: VistaDashboard = 'todos';
   selectedCategoria = 'Panel principal';
 
-  startDate: Date | null = new Date();
-  endDate: Date | null = null;
+  // =========================
+  // FILTROS DEL FORMULARIO
+  // =========================
+  filterStartDate: Date | null = new Date();
+  filterEndDate: Date | null = null;
+  filterSelectedUsers: string[] = [];
+  filterSearchText = '';
+
+  // =========================
+  // FILTROS APLICADOS
+  // SOLO ESTOS SE MANDAN A LOS HIJOS
+  // =========================
+  appliedStartDate: Date | null = new Date();
+  appliedEndDate: Date | null = null;
+  appliedSelectedUsers: string[] = [];
+  appliedSearchText = '';
 
   users: users[] = [];
-  selectedUsers: string[] = [];
-  searchText = '';
-
   loadingUsers = false;
 
   constructor(
@@ -50,14 +61,6 @@ export class EstadisticasComponent implements OnInit {
     this.goToView('todos', 'Panel principal', 'todos');
   }
 
-  /**
-   * Método único para cambiar de vista.
-   * Aquí centralizas:
-   * - componente
-   * - etiqueta visible
-   * - tipo de usuarios a cargar
-   * - limpieza de selección previa
-   */
   goToView(
     component: VistaDashboard,
     categoriaLabel: string,
@@ -66,18 +69,16 @@ export class EstadisticasComponent implements OnInit {
     this.selectedComponent = component;
     this.selectedCategoria = categoriaLabel;
 
-    // limpiamos selección manual porque puede venir de otro tipo de dashboard
-    this.selectedUsers = [];
+    // ✅ resetear filtros al cambiar de categoría
+    this.resetFiltrosInterno();
 
-    // opcional: limpiar búsqueda al cambiar de dashboard
-    // this.searchText = '';
+    // ✅ como cambió la vista, también actualizamos los filtros aplicados
+    this.syncAppliedFilters();
 
+    // ✅ cargar usuarios del nuevo tipo
     this.loadUsers(tipo);
   }
 
-  /**
-   * Carga solo el combo de usuarios.
-   */
   loadUsers(tipo: TipoCuenta): void {
     let tipoFinal: TipoCuenta = tipo;
 
@@ -101,34 +102,45 @@ export class EstadisticasComponent implements OnInit {
     });
   }
 
-  /**
-   * El botón aplicar NO necesita llamar manualmente al hijo
-   * porque los hijos ya recargan con ngOnChanges.
-   * Solo validamos y forzamos cambio de referencia si hace falta.
-   */
   aplicarFechas(): void {
-    if (!this.startDate) {
+    if (!this.filterStartDate) {
       console.warn('⚠ Debes seleccionar una fecha de inicio.');
       return;
     }
 
-    if (this.startDate && this.endDate && this.startDate > this.endDate) {
+    if (this.filterStartDate && this.filterEndDate && this.filterStartDate > this.filterEndDate) {
       console.warn('⚠ La fecha inicio no puede ser mayor que la fecha fin.');
       return;
     }
 
-    // Fuerza nueva referencia para disparar ngOnChanges en hijos si Angular no detecta cambio
-    this.startDate = this.startDate ? new Date(this.startDate) : null;
-    this.endDate = this.endDate ? new Date(this.endDate) : null;
-    this.selectedUsers = [...this.selectedUsers];
-    this.searchText = `${this.searchText}`;
+    // ✅ solo aquí se disparan cambios hacia los hijos
+    this.syncAppliedFilters();
   }
 
   resetFiltros(): void {
-    this.startDate = new Date();
-    this.endDate = null;
-    this.selectedUsers = [];
-    this.searchText = '';
+    // limpia formulario
+    this.resetFiltrosInterno();
+
+    // si quieres que "Limpiar" también recargue automáticamente:
+    this.syncAppliedFilters();
+
+    // si NO quieres recargar con el botón limpiar,
+    // comenta la línea anterior.
+  }
+
+  private resetFiltrosInterno(): void {
+    this.filterStartDate = new Date();
+    this.filterEndDate = null;
+    this.filterSelectedUsers = [];
+    this.filterSearchText = '';
+  }
+
+  private syncAppliedFilters(): void {
+    // ✅ nuevas referencias para disparar ngOnChanges solo al aplicar
+    this.appliedStartDate = this.filterStartDate ? new Date(this.filterStartDate) : null;
+    this.appliedEndDate = this.filterEndDate ? new Date(this.filterEndDate) : null;
+    this.appliedSelectedUsers = [...this.filterSelectedUsers];
+    this.appliedSearchText = `${this.filterSearchText}`;
   }
 
   trackByUserId = (_: number, user: users) => user.idTweetUser;

@@ -5,6 +5,7 @@ import { ApiService } from '../services/api.service';
 import { Router } from '@angular/router';
 import { users } from '../interfaces/users';
 import { Dateformater } from '../utils/dateformater';
+import { linkifyText } from '../utils/helpers'
 
 @Component({
   selector: 'app-ambiente',
@@ -245,7 +246,9 @@ toggleGuardar(item: any) {
   this.selectedUsers = [];
   this.searchText = '';
 }
-
+formatText(text: string): string {
+    return linkifyText(text);
+  }
 
 
 

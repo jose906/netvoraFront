@@ -5,6 +5,7 @@ import { ApiService } from '../services/api.service';
 import { Router } from '@angular/router';
 import { Dateformater } from '../utils/dateformater';
 import { users } from '../interfaces/users';
+import {linkifyText} from '../utils/helpers'
 
 
 @Component({
@@ -248,6 +249,11 @@ toggleGuardar(item: any) {
   this.selectedUsers = [];
   this.searchText = '';
 }
+
+ formatText(text: string): string {
+      return linkifyText(text);
+    }
+  
 
 
 

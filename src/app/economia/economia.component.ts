@@ -6,6 +6,7 @@ import { NewsData } from '../interfaces/NewsData';
 import { Dateformater } from '../utils/dateformater';
 import { NewsItem } from '../interfaces/NewsItem';
 import { users } from '../interfaces/users';
+import { linkifyText } from '../utils/helpers'
 
 @Component({
   selector: 'app-economia',
@@ -249,6 +250,10 @@ toggleGuardar(item: any) {
   this.endDate = null as any;
   this.selectedUsers = [];
 }
+formatText(text: string): string {
+    return linkifyText(text);
+  }
+
 
 
 

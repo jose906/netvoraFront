@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { Dateformater } from '../utils/dateformater';
 import { NewsItem } from '../interfaces/NewsItem';
 import { users } from '../interfaces/users';
+import {linkifyText} from '../utils/helpers'
 
 @Component({
   selector: 'app-social',
@@ -246,6 +247,10 @@ toggleGuardar(item: any) {
   this.selectedUsers = [];
   this.searchText = '';
 }
+
+formatText(text: string): string {
+    return linkifyText(text);
+  }
 
 
 

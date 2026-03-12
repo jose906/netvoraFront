@@ -5,6 +5,7 @@ import { NewsData } from '../interfaces/NewsData';
 import { Dateformater } from '../utils/dateformater';
 import { NewsItem } from '../interfaces/NewsItem';
 import { users } from '../interfaces/users';
+import { linkifyText } from '../utils/helpers'
 
 @Component({
   selector: 'app-politica',
@@ -220,6 +221,9 @@ export class PoliticaComponent implements OnInit {
 
   getRepliesCounts(tweetid: string) {
     return this.repliesByTweet[String(tweetid)] ?? { negativo: 0, neutro: 0, positivo: 0 };
+  }
+   formatText(text: string): string {
+    return linkifyText(text);
   }
 
   // =========================

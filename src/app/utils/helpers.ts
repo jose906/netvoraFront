@@ -124,5 +124,36 @@ export function exportCanvasWithWhiteBg(canvas: HTMLCanvasElement): string {
 
   return tmpCanvas.toDataURL('image/png');
 }
+// src/app/helpers/helpers.ts
+
+export function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+export function linkifyText(text: string): string {
+  if (!text) return '';
+
+  // Primero escapamos HTML para evitar problemas
+  let safeText = escapeHtml(text);
+
+  // Regex para detectar links http/https
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+  // Reemplazar links por <a>
+  safeText = safeText.replace(urlRegex, (url) => {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+  });
+
+  // Mantener saltos de línea
+  safeText = safeText.replace(/\n/g, '<br>');
+
+  return safeText;
+}
+
 
 

@@ -124,7 +124,7 @@
   </div>
     </div>
 
-    <p class="news-text">{{ item.text }}</p>
+    <p class="news-text" [innerHTML]="formatText(item.text)"></p>
 
     <div class="news-date">
       {{ item.created | date:'mediumDate' }}

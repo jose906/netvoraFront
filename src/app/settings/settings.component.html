@@ -1,4 +1,4 @@
-<div class="users-page two-cols">
+<div class="users-page">
 
   <!-- TOAST / ALERTAS -->
   <div class="toast-wrap" aria-live="polite" aria-atomic="true">
@@ -11,15 +11,33 @@
     </div>
   </div>
 
-  <!-- =======================
-       LISTA (IZQUIERDA)
-  ======================== -->
-  <section class="panel panel-list">
-    <header class="panel-head">
-      <div class="head-text">
-        <h2 class="title">Usuarios del sistema</h2>
-        <p class="subtitle">Gestiona seguimiento de cuentas</p>
-      </div>
+  <!-- HEADER -->
+  <section class="page-hero">
+    <div class="page-hero__content">
+      <span class="hero-chip">Configuración</span>
+      <h1 class="page-title">Gestión de usuarios</h1>
+      <p class="page-subtitle">
+        Administra las cuentas del sistema, sigue usuarios relevantes y agrega nuevos perfiles.
+      </p>
+    </div>
+  </section>
+
+  <div class="two-cols">
+
+    <!-- =======================
+         LISTA (IZQUIERDA)
+    ======================== -->
+    <section class="panel panel-list">
+      <header class="panel-head">
+        <div class="head-text">
+          <h2 class="title">Usuarios del sistema</h2>
+          <p class="subtitle">Gestiona seguimiento de cuentas</p>
+        </div>
+
+        <div class="panel-badge">
+          {{ filteredUsers().length }} visibles
+        </div>
+      </header>
 
       <div class="filters" role="tablist" aria-label="Filtro tipo de cuenta">
         <button type="button"
@@ -50,131 +68,173 @@
           Entidades
         </button>
       </div>
-    </header>
 
-    <!-- loader -->
-    <div *ngIf="cargando" class="state">
-      <span class="spinner" aria-hidden="true"></span>
-      Cargando usuarios…
-    </div>
+      <!-- loader -->
+      <div *ngIf="cargando" class="state state-card">
+        <span class="spinner" aria-hidden="true"></span>
+        <div>
+          <div class="state-title">Cargando usuarios…</div>
+          <div class="state-sub">Espera un momento mientras se actualiza la lista.</div>
+        </div>
+      </div>
 
-    <!-- lista con scroll -->
-    <div class="list-scroll" *ngIf="!cargando && users.length; else emptyState">
-      <div class="list">
-        <article *ngFor="let u of filteredUsers(); trackBy: trackById" class="row">
+      <!-- lista con scroll -->
+      <div class="list-scroll" *ngIf="!cargando && users.length; else emptyState">
+        <div class="list">
+          <article *ngFor="let u of filteredUsers(); trackBy: trackById" class="row">
 
-          <div class="row-left">
-            <div class="avatar" aria-hidden="true">
-              {{ (u.TweetUser || u.idTweetUser || 'U').toString().charAt(0) }}
+            <div class="row-left">
+              <div class="avatar" aria-hidden="true">
+                {{ (u.TweetUser || u.idTweetUser || 'U').toString().charAt(0) }}
+              </div>
+
+              <div class="info">
+                <div class="name-row">
+                  <div class="name" [title]="u.TweetUser || ''">
+                    {{ u.TweetUser || 'Sin nombre' }}
+                  </div>
+                  <span class="badge badge-type">{{ (u.tipeUser || u.nameUser || '—') }}</span>
+                </div>
+
+                <div class="meta">
+                  <span class="meta-item">ID: {{ u.idTweetUser }}</span>
+                  <span class="meta-dot">•</span>
+                  <span class="meta-item">
+                    {{ isFollowingTweetUser(u.idTweetUser) ? 'Siguiendo' : 'No seguido' }}
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <div class="info">
-              <div class="name" [title]="u.TweetUser || ''">
-                {{ u.TweetUser || 'Sin nombre' }}
-              </div>
+            <button type="button"
+              class="btn-follow"
+              [class.is-following]="isFollowingTweetUser(u.idTweetUser)"
+              [disabled]="followBusyIds.has(u.idTweetUser)"
+              (click)="toggleFollowTweetUser(u.idTweetUser, u.TweetUser || 'Usuario')">
 
-              <div class="meta">
-                <span class="id">ID: {{ u.idTweetUser }}</span>
-                <span class="badge">{{ (u.tipeUser || u.nameUser || '—') }}</span>
-              </div>
+              <ng-container *ngIf="!isFollowingTweetUser(u.idTweetUser)">
+                <span *ngIf="!followBusyIds.has(u.idTweetUser)">➕ Seguir</span>
+                <span *ngIf="followBusyIds.has(u.idTweetUser)">Procesando…</span>
+              </ng-container>
+
+              <ng-container *ngIf="isFollowingTweetUser(u.idTweetUser)">
+                <span *ngIf="!followBusyIds.has(u.idTweetUser)">✔ Siguiendo</span>
+                <span *ngIf="followBusyIds.has(u.idTweetUser)">Procesando…</span>
+              </ng-container>
+            </button>
+
+          </article>
+        </div>
+      </div>
+
+      <ng-template #emptyState>
+        <div class="empty">
+          <div class="empty-icon">👥</div>
+          <div class="empty-title">No hay usuarios disponibles</div>
+          <div class="empty-sub">Prueba cambiando el filtro o agrega un usuario a la derecha.</div>
+        </div>
+      </ng-template>
+    </section>
+
+    <!-- =======================
+         ADMIN / BUSCAR (DERECHA)
+    ======================== -->
+    <section class="panel panel-admin">
+      <header class="panel-head compact">
+        <div class="head-text">
+          <h2 class="title">Administrar usuarios</h2>
+          <small class="subtitle">Si no encuentras al usuario, puedes agregarlo manualmente.</small>
+          <p class="subtitle">Busca por nombre o ID y agrégalos al sistema</p>
+        </div>
+      </header>
+
+      <div class="admin-box">
+
+        <div class="admin-section">
+          <div class="admin-section__head">
+            <h3 class="section-label">Búsqueda</h3>
+            <p class="section-help">Completa uno de los campos para localizar el usuario.</p>
+          </div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label>Buscar por nombre</label>
+              <input
+                #inputNombre
+                class="input"
+                type="text"
+                placeholder="Ej: juan_perez"
+                (keydown.enter)="buscar(inputNombre.value, inputId.value)" />
+            </div>
+
+            <div class="field">
+              <label>Buscar por ID</label>
+              <input
+                #inputId
+                class="input"
+                type="text"
+                placeholder="Ej: 123"
+                (keydown.enter)="buscar(inputNombre.value, inputId.value)" />
             </div>
           </div>
 
-          <button type="button"
-            class="btn-follow"
-            [class.is-following]="isFollowingTweetUser(u.idTweetUser)"
-            [disabled]="followBusyIds.has(u.idTweetUser)"
-            (click)="toggleFollowTweetUser(u.idTweetUser, u.TweetUser || 'Usuario')">
+          <div class="actions">
+            <button type="button" class="btn primary" [disabled]="searching" (click)="buscar(inputNombre.value, inputId.value)">
+              <span *ngIf="!searching">Buscar</span>
+              <span *ngIf="searching">Buscando…</span>
+            </button>
 
-            <ng-container *ngIf="!isFollowingTweetUser(u.idTweetUser)">
-              <span *ngIf="!followBusyIds.has(u.idTweetUser)">➕ Seguir</span>
-              <span *ngIf="followBusyIds.has(u.idTweetUser)">Procesando…</span>
-            </ng-container>
+            <button type="button" class="btn ghost" (click)="cancelar(inputNombre, inputId)">
+              Limpiar
+            </button>
+          </div>
+        </div>
 
-            <ng-container *ngIf="isFollowingTweetUser(u.idTweetUser)">
-              <span *ngIf="!followBusyIds.has(u.idTweetUser)">✔ Siguiendo</span>
-              <span *ngIf="followBusyIds.has(u.idTweetUser)">Procesando…</span>
-            </ng-container>
-          </button>
+        <div class="admin-divider"></div>
 
-        </article>
+        <div class="admin-section">
+          <div class="admin-section__head">
+            <h3 class="section-label">Clasificación</h3>
+            <p class="section-help">Selecciona el tipo antes de agregar el usuario.</p>
+          </div>
+
+          <div class="field">
+            <label>Clasificación</label>
+            <select #selectOpciones class="select">
+              <option value="">Seleccione una opción</option>
+              <option value="medio">Medio</option>
+              <option value="persona">Persona</option>
+              <option value="entidad">Entidad</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="result" *ngIf="user">
+          <div class="result-head">
+            <div>
+              <h3 class="section-title">Usuario encontrado</h3>
+              <p class="result-subtitle">Verifica la información antes de agregarlo.</p>
+            </div>
+            <span class="badge ok">Listo</span>
+          </div>
+
+          <ul class="info-list">
+            <li><span class="k">ID TweetUser</span><span class="v">{{ user.id }}</span></li>
+            <li><span class="k">Usuario Twitter</span><span class="v">{{ user.username }}</span></li>
+            <li><span class="k">Nombre</span><span class="v">{{ user.name }}</span></li>
+          </ul>
+        </div>
+
+        <button type="button"
+          class="btn success full add-button"
+          [disabled]="!user || adding"
+          (click)="agregar(user!.username, user!.id, user!.name, selectOpciones.value)">
+          <span *ngIf="!adding">Agregar usuario</span>
+          <span *ngIf="adding">Agregando…</span>
+        </button>
+
       </div>
-    </div>
+    </section>
 
-    <ng-template #emptyState>
-      <div class="empty">
-        <div class="empty-title">No hay usuarios disponibles</div>
-        <div class="empty-sub">Prueba cambiando el filtro o agrega un usuario a la derecha.</div>
-      </div>
-    </ng-template>
-  </section>
-
-  <!-- =======================
-       ADMIN / BUSCAR (DERECHA)
-  ======================== -->
-  <section class="panel panel-admin">
-    <header class="panel-head compact">
-      <div class="head-text">
-        <h2 class="title">Administrar usuarios</h2>
-        <small class="subtitle">Si no encuentras al usuario, puedes agregarlo manualmente.</small>
-        <p class="subtitle">Busca por nombre o ID y agrégalos al sistema</p>
-      </div>
-    </header>
-
-    <div class="form-grid">
-      <div class="field">
-        <label>Buscar por nombre</label>
-        <input #inputNombre class="input" type="text" placeholder="Ej: juan_perez" (keydown.enter)="buscar(inputNombre.value, inputId.value)" />
-      </div>
-
-      <div class="field">
-        <label>Buscar por ID</label>
-        <input #inputId class="input" type="text" placeholder="Ej: 123" (keydown.enter)="buscar(inputNombre.value, inputId.value)" />
-      </div>
-    </div>
-
-    <div class="actions">
-      <button type="button" class="btn primary" [disabled]="searching" (click)="buscar(inputNombre.value, inputId.value)">
-        <span *ngIf="!searching">Buscar</span>
-        <span *ngIf="searching">Buscando…</span>
-      </button>
-
-      <button type="button" class="btn ghost" (click)="cancelar(inputNombre, inputId)">
-        Limpiar
-      </button>
-    </div>
-
-    <div class="field">
-      <label>Clasificación</label>
-      <select #selectOpciones class="select">
-        <option value="">Seleccione una opción</option>
-        <option value="medio">Medio</option>
-        <option value="persona">Persona</option>
-        <option value="entidad">Entidad</option>
-      </select>
-    
-    </div>
-
-    <div class="result" *ngIf="user">
-      <div class="result-head">
-        <h3 class="section-title">Usuario encontrado</h3>
-        <span class="badge ok">Listo</span>
-      </div>
-
-      <ul class="info-list">
-        <li><span class="k">ID TweetUser</span><span class="v">{{ user.id }}</span></li>
-        <li><span class="k">Usuario Twitter</span><span class="v">{{ user.username }}</span></li>
-        <li><span class="k">Nombre</span><span class="v">{{ user.name }}</span></li>
-      </ul>
-    </div>
-
-    <button type="button"
-      class="btn success full"
-      [disabled]="!user || adding"
-      (click)="agregar(user!.username, user!.id, user!.name, selectOpciones.value)">
-      <span *ngIf="!adding">Agregar usuario</span>
-      <span *ngIf="adding">Agregando…</span>
-    </button>
-  </section>
-
+  </div>
 </div>

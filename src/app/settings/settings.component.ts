@@ -46,6 +46,7 @@ export class SettingsComponent implements OnInit {
       next: (res) => {
         const ids = (res?.rows || []).map((r: any) => String(r.tweetuser_id));
         this.followingUsers = new Set(ids);
+        console.log(res)
       },
       error: (e) => {
         console.error('Error cargando seguidos', e);

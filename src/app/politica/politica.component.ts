@@ -171,7 +171,7 @@ export class PoliticaComponent implements OnInit {
         this.cargando = false;
       }
     });
-  }
+  } 
 
   /** Navegar al detalle */
   irADetalle(datos: NewsItem): void {

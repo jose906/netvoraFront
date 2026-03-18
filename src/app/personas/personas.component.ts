@@ -6,6 +6,7 @@ import { NewsData } from '../interfaces/NewsData';
 import { NewsItem } from '../interfaces/NewsItem';
 import { users } from '../interfaces/users';
 import { Dateformater } from '../utils/dateformater';
+import { linkifyText } from '../utils/helpers'
 
 // ajusta la ruta a tu interfaz
 
@@ -130,7 +131,7 @@ export class PersonasComponent implements OnInit {
           next: (rows: any[]) => {
             // Construir mapa tweetid -> counts
             const map: Record<string, { negativo: number; neutro: number; positivo: number }> = {};
-            
+            console.log(rows)
             for (const r of rows || []) {
               const key = String(r.tweetid);
               
@@ -215,6 +216,9 @@ getRepliesCounts(tweetid: string) {
   
   return this.repliesByTweet[tweetid] ?? { negativo: 0, neutro: 0, positivo: 0 };
 }
+ formatText(text: string): string {
+    return linkifyText(text);
+  }
 
 toggleGuardar(item: any) {
 

@@ -130,7 +130,7 @@
 </div>
 
     <!-- Texto de la noticia -->
-    <p class="news-text">{{ item.text }}</p>
+    <p class="news-text" [innerHTML]="formatText(item.text)"></p>
     
     <!-- Fecha -->
     <div class="news-date">{{ item.created | date:'mediumDate' }}</div>

@@ -92,7 +92,7 @@
 
   <!-- 🔹 Lista de noticias -->
   <div *ngIf="!cargando && datos.length" class="news-container">
-  <div *ngFor="let item of datos" class="news-item">
+  <div *ngFor="let item of datos" class="news-item" #captureCard>
 
    <div class="news-header">
   <span class="news-title">{{ item.TweetUser }}</span>
@@ -125,6 +125,13 @@
       [class.saved]="isGuardado(item.tweetid)">
       {{ isGuardado(item.tweetid) ? 'Guardado' : 'Guardar' }}
     </button>
+
+     <button
+          class="btn-download"
+          (click)="downloadCard(captureCard, item.tweetid)"
+          title="Descargar imagen">
+          ⬇
+        </button>
 
 
   </div>

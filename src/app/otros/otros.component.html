@@ -99,32 +99,39 @@
   <div *ngIf="error" class="error">{{ error }}</div>
 
   <!-- 🔹 Lista de noticias -->
-  <div *ngIf="!cargando && datos.length" class="news-container">
-  <div *ngFor="let item of datos" class="news-item">
+ <div *ngIf="!cargando && datos.length" class="news-container">
+  <div *ngFor="let item of datos" class="news-item" #captureCard>
 
     <div class="news-header">
       <span class="news-title">{{ item.TweetUser }}</span>
 
-       <div class="header-actions">
-    <span class="status-chip" [ngClass]="{
-      'negativo': item.sentimiento === 'negativo',
-      'neutral': item.sentimiento === 'neutro',
-      'positivo': item.sentimiento === 'positivo'
-    }">
-      {{ item.sentimiento }}
-    </span>
+      <div class="header-actions">
+        <span class="status-chip" [ngClass]="{
+          'negativo': item.sentimiento === 'negativo',
+          'neutral': item.sentimiento === 'neutro',
+          'positivo': item.sentimiento === 'positivo'
+        }">
+          {{ item.sentimiento }}
+        </span>
 
-    <button
-      class="btn-save"
-      (click)="toggleGuardar(item)"
-      [disabled]="savingIds.has(item.tweetid.toString())"
-      [class.saved]="isGuardado(item.tweetid)">
-      {{ isGuardado(item.tweetid) ? 'Guardado' : 'Guardar' }}
-    </button>
-  </div>
+        <button
+          class="btn-save"
+          (click)="toggleGuardar(item)"
+          [disabled]="savingIds.has(item.tweetid.toString())"
+          [class.saved]="isGuardado(item.tweetid)">
+          {{ isGuardado(item.tweetid) ? 'Guardado' : 'Guardar' }}
+        </button>
+
+        <button
+          class="btn-download"
+          (click)="downloadCard(captureCard, item.tweetid)"
+          title="Descargar imagen">
+          ⬇
+        </button>
+      </div>
     </div>
 
-    <p class="news-text">{{ item.text }}</p>
+    <p class="news-text" [innerHTML]="formatText(item.text)"></p>
 
     <div class="news-date">
       {{ item.created | date:'mediumDate' }}
@@ -132,22 +139,20 @@
 
     <div class="sentiment-icons">
       <div class="icon red">
-        <span class="">Negativo</span>
+        <span>Negativo</span>
         <span class="count">{{ getRepliesCounts(item.tweetid).negativo }}</span>
       </div>
 
       <div class="icon yellow">
-        <span class="">Neutral</span>
+        <span>Neutral</span>
         <span class="count">{{ getRepliesCounts(item.tweetid).neutro }}</span>
       </div>
 
       <div class="icon green">
-        <span class="">Positivo</span>
+        <span>Positivo</span>
         <span class="count">{{ getRepliesCounts(item.tweetid).positivo }}</span>
       </div>
     </div>
-
-   
 
   </div>
 </div>

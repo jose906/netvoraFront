@@ -7,6 +7,7 @@ import { NewsItem } from '../interfaces/NewsItem';
 import { users } from '../interfaces/users';
 import { Dateformater } from '../utils/dateformater';
 import { linkifyText } from '../utils/helpers'
+import { toPng } from 'html-to-image';
 
 // ajusta la ruta a tu interfaz
 
@@ -280,6 +281,27 @@ toggleGuardar(item: any) {
     this.selectedUsers = [];
     this.searchText = '';
   }
+  async downloadCard(cardElement: HTMLElement, tweetId: string | number): Promise<void> {
+      try {
+        if (!cardElement) return;
+    
+        const dataUrl = await toPng(cardElement, {
+          cacheBust: true,
+          pixelRatio: 2,
+          backgroundColor: '#ffffff',
+          skipFonts: true
+        });
+    
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = `tweet-${tweetId}.png`;
+        link.click();
+      } catch (error) {
+        console.error('Error al descargar la imagen:', error);
+      }
+    }
+    
+  
 
     
 

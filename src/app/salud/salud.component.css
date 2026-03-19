@@ -636,4 +636,38 @@ button[mat-flat-button].pagination-btn[disabled]{
   align-items: center;
   gap: 10px;
 }
+.btn-download {
+  margin-left: 8px;
+  border: none;
+  background: rgba(15, 23, 42, 0.05);
+  color: #0f172a;
+  border-radius: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.btn-download:hover {
+  background: rgba(109, 40, 217, 0.1);
+  color: #6d28d9;
+  transform: translateY(-1px);
+}
+.btn-download {
+  border: none;
+  background: #f8fafc;
+  color: #334155;
+  border-radius: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: 0.2s ease;
+  margin-left: 8px;
+}
+
+.btn-download:hover {
+  background: #e2e8f0;
+  transform: translateY(-1px);
+}
 

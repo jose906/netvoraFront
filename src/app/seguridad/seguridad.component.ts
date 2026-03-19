@@ -7,6 +7,7 @@ import { Dateformater } from '../utils/dateformater';
 import { NewsItem } from '../interfaces/NewsItem';
 import { users } from '../interfaces/users';
 import {linkifyText} from '../utils/helpers'
+import { toPng } from 'html-to-image';
 
 @Component({
   selector: 'app-seguridad',
@@ -255,6 +256,26 @@ toggleGuardar(item: any) {
 formatText(text: string): string {
     return linkifyText(text);
   }
+
+     async downloadCard(cardElement: HTMLElement, tweetId: string | number): Promise<void> {
+        try {
+          if (!cardElement) return;
+      
+          const dataUrl = await toPng(cardElement, {
+            cacheBust: true,
+            pixelRatio: 2,
+            backgroundColor: '#ffffff',
+            skipFonts: true
+          });
+      
+          const link = document.createElement('a');
+          link.href = dataUrl;
+          link.download = `tweet-${tweetId}.png`;
+          link.click();
+        } catch (error) {
+          console.error('Error al descargar la imagen:', error);
+        }
+      }
 
 
 

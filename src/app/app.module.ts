@@ -141,7 +141,8 @@ const routes: Routes = [
     AngularFireModule.initializeApp(environment.firebase),
    AngularFireAuthModule,
     AngularFireAuthModule, 
-    MatTooltipModule
+    MatTooltipModule,
+    
 
 
   ],

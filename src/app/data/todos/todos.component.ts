@@ -154,6 +154,8 @@ export class TodosComponent implements OnChanges {
   const search = this.searchText?.trim();
   if (search) body.search = search;
 
+  
+
   this.loading = true;
   this.errorMsg = '';
   this.cdr.markForCheck();
@@ -186,6 +188,7 @@ export class TodosComponent implements OnChanges {
     const tl = res?.time_line ?? [];
     const labels = tl.map((x: any) => this.formatTimelineLabel(x.fecha));
     const data = tl.map((x: any) => Number(x.total || 0));
+    console.log(res)
 
     this.timelineData = {
       labels,
@@ -258,14 +261,12 @@ export class TodosComponent implements OnChanges {
   }
 
   private formatTimelineLabel(fecha: string): string {
-    // Recibe "Mon, 15 Dec 2025 00:00:00 GMT" -> label "15/12"
-    const dt = new Date(fecha);
-    if (Number.isNaN(dt.getTime())) return fecha;
-    const dd = String(dt.getDate()).padStart(2, '0');
-    const mm = String(dt.getMonth() + 1).padStart(2, '0');
-    return `${dd}/${mm}`;
-  }
-
+  const dt = new Date(fecha);
+  if (Number.isNaN(dt.getTime())) return fecha;
+  const dd = String(dt.getUTCDate()).padStart(2, '0');
+  const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
+  return `${dd}/${mm}`;
+}
   // ======= downloads (ya los tenías) =======
   downloadChart(event: Event) {
     const chartContainer = (event.target as HTMLElement).closest('.chart');

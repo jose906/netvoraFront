@@ -246,6 +246,7 @@ private getUsersToSend(): string[] {
   if (search) {
     body.search = search;
   }
+  console.log(body)
 
   this.loading = true;
   this.errorMsg = '';
@@ -280,7 +281,7 @@ private getUsersToSend(): string[] {
 
     // Timeline (🔥 Fix: UTC + update chart)
     const tl = Array.isArray(res?.time_line) ? res.time_line : [];
-
+ 
     this.timelineData = {
       labels: tl.map((x: any) => this.formatTimelineLabelUTC(x.fecha)),
       datasets: [

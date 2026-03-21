@@ -252,10 +252,10 @@ export class EstadisticasEntiPersonasComponent implements OnInit, OnChanges {
   private mapResponse(res: any): void {
     this.totalPosts = res?.total_posts?.total_posts ?? res?.total_posts ?? 0;
 
-    this.topLocacion = this.normalizeArray(res?.locacion);
-    this.topOrganizacion = this.normalizeArray(res?.organizacion);
-    this.topPersona = this.normalizeArray(res?.persona);
-
+    this.topLocacion = (res?.locacion ?? []).slice(0, 3);
+    this.topOrganizacion = (res?.organizacion ?? []).slice(0, 3);
+    this.topPersona = (res?.persona ?? []).slice(0, 3);
+    
     // Timeline
     const tl = res?.time_line ?? res?.timeline ?? [];
     this.timelineData = {

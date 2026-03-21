@@ -250,111 +250,117 @@ export class EstadisticasEntiPersonasComponent implements OnInit, OnChanges {
   }
 
   private mapResponse(res: any): void {
-    this.totalPosts = res?.total_posts?.total_posts ?? res?.total_posts ?? 0;
+  this.totalPosts = res?.total_posts?.total_posts ?? res?.total_posts ?? 0;
 
-    this.topLocacion = (res?.locacion ?? []).slice(0, 3);
-    this.topOrganizacion = (res?.organizacion ?? []).slice(0, 3);
-    this.topPersona = (res?.persona ?? []).slice(0, 3);
+  this.topLocacion = this.normalizeArray(res?.locacion).slice(0, 3);
+  this.topOrganizacion = this.normalizeArray(res?.organizacion).slice(0, 3);
+  this.topPersona = this.normalizeArray(res?.persona).slice(0, 3);
 
-    // Timeline
-    const tl = res?.time_line ?? res?.timeline ?? [];
-    this.timelineData = {
-      labels: tl.map((x: any) => this.formatTimelineLabel(x.fecha)),
-      datasets: [{
-        label: 'Posts por día',
-        data: tl.map((x: any) => Number(x.total || 0)),
-        tension: 0.35,
-        fill: false,
-        pointRadius: 2,
-        borderColor: NETVORA_PALETTE.timeline.line,
-        backgroundColor: NETVORA_PALETTE.timeline.fill,
-        pointBackgroundColor: NETVORA_PALETTE.timeline.point,
-        pointHoverRadius: 4,
-        borderWidth: 2
-      }]
-    };
+  // Timeline
+  const tl = Array.isArray(res?.time_line)
+    ? res.time_line
+    : Array.isArray(res?.timeline)
+    ? res.timeline
+    : [];
 
-    // Sentimientos
-    const sent = res?.sentiment?.posts_per_sentiment ?? res?.posts_per_sentiment ?? {};
-    this.sentimentData = {
-      labels: ['Negativo', 'Neutro', 'Positivo'],
-      datasets: [{
-        label: 'Sentimientos',
-        data: [
-          Number(sent.negativo || 0),
-          Number(sent.neutro || 0),
-          Number(sent.positivo || 0)
-        ],
-        backgroundColor: [
-          NETVORA_PALETTE.sentiment.negativo,
-          NETVORA_PALETTE.sentiment.neutro,
-          NETVORA_PALETTE.sentiment.positivo
-        ],
-      }]
-    };
+  this.timelineData = {
+    labels: tl.map((x: any) => this.formatTimelineLabel(x.fecha)),
+    datasets: [{
+      label: 'Posts por día',
+      data: tl.map((x: any) => Number(x.total || 0)),
+      tension: 0.35,
+      fill: false,
+      pointRadius: 2,
+      borderColor: NETVORA_PALETTE.timeline.line,
+      backgroundColor: NETVORA_PALETTE.timeline.fill,
+      pointBackgroundColor: NETVORA_PALETTE.timeline.point,
+      pointHoverRadius: 4,
+      borderWidth: 2
+    }]
+  };
 
-    // Top users list
-    this.topUsers = (res?.top_users ?? []).map((u: any) => ({
-      usuario: u.usuario ?? u.TweetUser ?? u.user ?? '',
-      total: Number(u.total || 0)
-    }));
+  // Sentimientos
+  const sent = res?.sentiment?.posts_per_sentiment ?? res?.posts_per_sentiment ?? {};
+  this.sentimentData = {
+    labels: ['Negativo', 'Neutro', 'Positivo'],
+    datasets: [{
+      label: 'Sentimientos',
+      data: [
+        Number(sent.negativo || 0),
+        Number(sent.neutro || 0),
+        Number(sent.positivo || 0)
+      ],
+      backgroundColor: [
+        NETVORA_PALETTE.sentiment.negativo,
+        NETVORA_PALETTE.sentiment.neutro,
+        NETVORA_PALETTE.sentiment.positivo
+      ],
+    }]
+  };
 
-    // SentVsUser
-    const svu = res?.SentVsUser ?? res?.sent_vs_user ?? {};
-    const keys = Object.keys(svu);
-
-    this.sentVsUserData = {
-      labels: keys,
-      datasets: [
-        { label: 'Negativo', data: keys.map(k => Number(svu[k]?.negativo || 0)), backgroundColor: NETVORA_PALETTE.sentiment.negativo, borderWidth: 0, borderRadius: 6 },
-        { label: 'Neutro',   data: keys.map(k => Number(svu[k]?.neutro   || 0)), backgroundColor: NETVORA_PALETTE.sentiment.neutro,   borderWidth: 0, borderRadius: 6 },
-        { label: 'Positivo', data: keys.map(k => Number(svu[k]?.positivo || 0)), backgroundColor: NETVORA_PALETTE.sentiment.positivo, borderWidth: 0, borderRadius: 6 }
-      ]
-    };
-
-    // Índice (ranking chart)
-    const rawIdx = Array.isArray(res?.indice_sentimiento) ? res.indice_sentimiento
-                  : (Array.isArray(res?.indice) ? res.indice : []);
-
-    this.indiceSent = rawIdx.map((x: any) => ({
-      user: String(x.user ?? ''),
-      positivos: Number(x.positivos ?? 0),
-      negativos: Number(x.negativos ?? 0),
-      total: Number(x.total ?? 0),
-      indice: Number(x.indice_sentimiento ?? 0)
-    }));
-
-    const MIN_TOTAL = 3;
-    const filtered = this.indiceSent.filter(x => x.total >= MIN_TOTAL);
-    const sorted = [...filtered].sort((a, b) => b.indice - a.indice);
-    const TOP = 12;
-    const top = sorted.slice(0, TOP);
-
-    this.userIndiceChartData = {
-      labels: top.map(x => x.user),
-      datasets: [{
-        label: 'Índice (%)',
-        data: top.map(x => +(this.normalizeIndiceSigned(x.indice) * 100).toFixed(1)),
-        backgroundColor: NETVORA_PALETTE.indice.positivo,
-        borderRadius: 8,
-        borderWidth: 0
-      }]
-    };
-
-    // Tabla “detalle índice” (usa userIndice)
-    this.userIndice = filtered
-      .map((x: any) => ({
-        TweetUser: String(x.user ?? ''),
-        pos: Number(x.positivos ?? 0),
-        neg: Number(x.negativos ?? 0),
-        total: Number(x.total ?? 0),
-        indice: this.normalizeIndiceSigned(Number(x.indice ?? x.indice_sentimiento ?? 0))
+  this.topUsers = Array.isArray(res?.top_users)
+    ? res.top_users.map((u: any) => ({
+        usuario: u.usuario ?? u.TweetUser ?? u.user ?? '',
+        total: Number(u.total || 0)
       }))
-      .sort((a, b) => b.total - a.total);
+    : [];
 
-    queueMicrotask(() => this.timelineChart?.update());
-    this.cdr.markForCheck();
-  }
+  const svu = res?.SentVsUser ?? res?.sent_vs_user ?? {};
+  const keys = svu && typeof svu === 'object' ? Object.keys(svu) : [];
+
+  this.sentVsUserData = {
+    labels: keys,
+    datasets: [
+      { label: 'Negativo', data: keys.map(k => Number(svu[k]?.negativo || 0)), backgroundColor: NETVORA_PALETTE.sentiment.negativo, borderWidth: 0, borderRadius: 6 },
+      { label: 'Neutro',   data: keys.map(k => Number(svu[k]?.neutro || 0)), backgroundColor: NETVORA_PALETTE.sentiment.neutro, borderWidth: 0, borderRadius: 6 },
+      { label: 'Positivo', data: keys.map(k => Number(svu[k]?.positivo || 0)), backgroundColor: NETVORA_PALETTE.sentiment.positivo, borderWidth: 0, borderRadius: 6 }
+    ]
+  };
+
+  const rawIdx = Array.isArray(res?.indice_sentimiento)
+    ? res.indice_sentimiento
+    : Array.isArray(res?.indice)
+    ? res.indice
+    : [];
+
+  this.indiceSent = rawIdx.map((x: any) => ({
+    user: String(x.user ?? ''),
+    positivos: Number(x.positivos ?? 0),
+    negativos: Number(x.negativos ?? 0),
+    total: Number(x.total ?? 0),
+    indice: Number(x.indice_sentimiento ?? 0)
+  }));
+
+  const MIN_TOTAL = 3;
+  const filtered = this.indiceSent.filter(x => x.total >= MIN_TOTAL);
+  const sorted = [...filtered].sort((a, b) => b.indice - a.indice);
+  const TOP = 12;
+  const top = sorted.slice(0, TOP);
+
+  this.userIndiceChartData = {
+    labels: top.map(x => x.user),
+    datasets: [{
+      label: 'Índice (%)',
+      data: top.map(x => +(this.normalizeIndiceSigned(x.indice) * 100).toFixed(1)),
+      backgroundColor: NETVORA_PALETTE.indice.positivo,
+      borderRadius: 8,
+      borderWidth: 0
+    }]
+  };
+
+  this.userIndice = filtered
+    .map((x: any) => ({
+      TweetUser: String(x.user ?? ''),
+      pos: Number(x.positivos ?? 0),
+      neg: Number(x.negativos ?? 0),
+      total: Number(x.total ?? 0),
+      indice: this.normalizeIndiceSigned(Number(x.indice ?? x.indice_sentimiento ?? 0))
+    }))
+    .sort((a, b) => b.total - a.total);
+
+  queueMicrotask(() => this.timelineChart?.update());
+  this.cdr.markForCheck();
+}
 
   // WordCloud
   loadWordcloud() {

@@ -255,7 +255,7 @@ export class EstadisticasEntiPersonasComponent implements OnInit, OnChanges {
     this.topLocacion = (res?.locacion ?? []).slice(0, 3);
     this.topOrganizacion = (res?.organizacion ?? []).slice(0, 3);
     this.topPersona = (res?.persona ?? []).slice(0, 3);
-    
+
     // Timeline
     const tl = res?.time_line ?? res?.timeline ?? [];
     this.timelineData = {
@@ -451,12 +451,12 @@ export class EstadisticasEntiPersonasComponent implements OnInit, OnChanges {
   }
 
   private formatTimelineLabel(fecha: string): string {
-    const dt = new Date(fecha);
-    if (Number.isNaN(dt.getTime())) return fecha;
-    const dd = String(dt.getDate()).padStart(2, '0');
-    const mm = String(dt.getMonth() + 1).padStart(2, '0');
-    return `${dd}/${mm}`;
-  }
+  const dt = new Date(fecha);
+  if (Number.isNaN(dt.getTime())) return fecha;
+  const dd = String(dt.getUTCDate()).padStart(2, '0');
+  const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
+  return `${dd}/${mm}`;
+}
 
   private normalizeArray(value: any): EntItem[] {
     if (Array.isArray(value)) {

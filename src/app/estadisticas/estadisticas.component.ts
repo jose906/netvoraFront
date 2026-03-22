@@ -14,7 +14,7 @@ type VistaDashboard =
   | 'economia'
   | 'seguridad'
   | 'deportes'
-  | 'social'
+  | 'sociedad'
   | 'ambiente'
   | 'salud'
   | 'educacion'

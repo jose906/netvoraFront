@@ -77,8 +77,8 @@
       <button
         mat-raised-button
         class="nv-btn"
-        [class.is-active]="selectedComponent === 'social'"
-        (click)="goToView('social', 'Sociedad', 'Medio')">
+        [class.is-active]="selectedComponent === 'sociedad'"
+        (click)="goToView('sociedad', 'Sociedad', 'Medio')">
         <mat-icon>groups</mat-icon>
         Sociedad
       </button>
@@ -254,8 +254,8 @@
     </app-politica-estadisticas>
 
     <app-politica-estadisticas
-      *ngIf="selectedComponent === 'social'"
-      categoria="social"
+      *ngIf="selectedComponent === 'sociedad'"
+      categoria="sociedad"
       [startDate]="appliedStartDate"
       [endDate]="appliedEndDate"
       [selectedUsers]="appliedSelectedUsers"

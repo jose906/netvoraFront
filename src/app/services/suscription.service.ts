@@ -30,7 +30,7 @@ export interface SubscriptionStatusResponse {
 })
 export class SuscriptionService {
 
-    private baseUrl = 'https://netvoraback-109294037791.europe-west1.run.app'; // <-- ajusta
+    private baseUrl = 'https://netvoraback-109294037791.europe-west1.run.app'; 
   private _status$ = new BehaviorSubject<SubscriptionStatusResponse | null>(null);
   status$ = this._status$.asObservable();
 

@@ -124,7 +124,7 @@ loadNextPage(): void {
 
       this.apiService.getPostSalud(body).subscribe({
         next: (data: any) => {
-          console.log(data);
+          
           this.datos = data.resultado || [];
           this.currentPage = data.page;
 

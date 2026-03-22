@@ -246,7 +246,7 @@ private getUsersToSend(): string[] {
   if (search) {
     body.search = search;
   }
-  console.log(body)
+  
 
   this.loading = true;
   this.errorMsg = '';
@@ -259,11 +259,11 @@ private getUsersToSend(): string[] {
     }))
     .subscribe({
       next: (res) => {
-        console.log('📥 Response recibida:', res);
+        
         this.mapResponse(res);
       },
       error: (err) => {
-        console.error('❌ Error getCategoriesData:', err);
+       
         this.errorMsg = 'No se pudo cargar el dashboard.';
         this.cdr.markForCheck();
       },
@@ -411,10 +411,7 @@ this.indiceSent = [...filtered].sort((a, b) => b.total - a.total);
 
 
 
-    // Debug útil
-    console.log('TL raw:', tl);
-    console.log('TL labels:', this.timelineData.labels);
-    console.log('TL data:', this.timelineData.datasets[0].data);
+   
 
     // ✅ Fuerza repaint del chart (OnPush + ng2-charts)
     queueMicrotask(() => {

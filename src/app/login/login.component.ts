@@ -82,10 +82,10 @@ loadingLogin: boolean = false;
 
   try {
     await this.auth.login(email, password);
-    console.log('✅ Usuario logueado con éxito');
+    
     this.router.navigate(['/']);
   } catch (error: any) {
-    console.error('❌ Error al loguearse:', error);
+   
 
     const code = error?.code;
 
@@ -133,7 +133,7 @@ loadingLogin: boolean = false;
       await this.auth.forgotPassword(email);
       this.msg = 'Si el correo existe, te llegará un email para restablecer la contraseña.';
     } catch (e: any) {
-      console.error('Reset error:', e?.code, e);
+      
       this.msg = 'No se pudo enviar el correo. Intenta nuevamente.';
     } finally {
       this.loading = false;

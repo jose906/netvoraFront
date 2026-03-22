@@ -272,7 +272,7 @@ formatText(text: string): string {
       link.download = `tweet-${tweetId}.png`;
       link.click();
     } catch (error) {
-      console.error('Error al descargar la imagen:', error);
+      
     }
   }
   

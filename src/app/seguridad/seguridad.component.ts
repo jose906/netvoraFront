@@ -124,7 +124,7 @@ loadNextPage(): void {
 
       this.apiService.getPostsSegu(body).subscribe({
         next: (data: any) => {
-          console.log(data);
+         
           this.datos = data.resultado || [];
           this.currentPage = data.page;
 

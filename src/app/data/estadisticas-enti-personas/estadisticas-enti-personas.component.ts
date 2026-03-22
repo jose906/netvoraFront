@@ -390,7 +390,7 @@ export class EstadisticasEntiPersonasComponent implements OnInit, OnChanges {
       const blob = resp.body as Blob;
 
       if (blob?.type?.includes('application/json')) {
-        blob.text().then(t => console.error('🧨 Backend devolvió JSON:', t));
+        blob.text().then(t => console.error('', t));
         this.wordcloudUrl = null;
         this.loadingWordcloud = false;
         this.cdr.markForCheck();

@@ -206,7 +206,7 @@ toggleGuardar(item: any) {
           this.savingIds.delete(id);
         },
         error: (e) => {
-          console.error('Error borrando guardado', e);
+          
           this.errorGuardar = 'No se pudo quitar de guardados.';
           this.savingIds.delete(id);
         }

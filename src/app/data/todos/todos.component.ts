@@ -188,7 +188,7 @@ export class TodosComponent implements OnChanges {
     const tl = res?.time_line ?? [];
     const labels = tl.map((x: any) => this.formatTimelineLabel(x.fecha));
     const data = tl.map((x: any) => Number(x.total || 0));
-    console.log(res)
+    
 
     this.timelineData = {
       labels,

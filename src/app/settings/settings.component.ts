@@ -49,7 +49,7 @@ export class SettingsComponent implements OnInit {
         console.log(res)
       },
       error: (e) => {
-        console.error('Error cargando seguidos', e);
+        
         this.showToast('error', 'Error', 'No se pudo cargar la lista de seguidos.');
       }
     });
@@ -104,7 +104,7 @@ export class SettingsComponent implements OnInit {
         else this.showToast('success', 'Listo', `Ahora sigues a ${label}.`);
       },
       error: (e) => {
-        console.error('Error follow/unfollow', e);
+        
         // rollback
         if (currently) this.followingUsers.add(id);
         else this.followingUsers.delete(id);
@@ -123,7 +123,7 @@ export class SettingsComponent implements OnInit {
         this.cargando = false;
       },
       error: (error) => {
-        console.error('❌ Error al cargar usuarios:', error);
+        
         this.cargando = false;
         this.showToast('error', 'Error', 'No se pudo cargar la lista de usuarios.');
       }
@@ -171,7 +171,7 @@ export class SettingsComponent implements OnInit {
           }
         },
         error: (error) => {
-          console.error('❌ Error al buscar usuario por nombre:', error);
+          
           this.searching = false;
           this.user = null;
           this.showToast('error', 'Error', 'Falló la búsqueda por nombre.');
@@ -200,7 +200,7 @@ export class SettingsComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('❌ Error al buscar usuario por ID:', error);
+        
         this.searching = false;
         this.user = null;
         this.showToast('error', 'Error', 'Falló la búsqueda por ID.');
@@ -264,7 +264,7 @@ export class SettingsComponent implements OnInit {
         this.user = null;
       },
       error: (error) => {
-        console.error('❌ Error al agregar usuario:', error);
+        
         this.adding = false;
         this.showToast('error', 'Error', 'No se pudo agregar el usuario. Revisa backend/duplicados.');
       }

@@ -92,24 +92,24 @@ export class EstadisticasComponent implements OnInit {
       next: (data) => {
         this.users = data || [];
         this.loadingUsers = false;
-        console.log('✅ Usuarios cargados:', this.users);
+        
       },
       error: (error) => {
         this.loadingUsers = false;
         this.users = [];
-        console.error('❌ Error al cargar usuarios:', error);
+        
       },
     });
   }
 
   aplicarFechas(): void {
     if (!this.filterStartDate) {
-      console.warn('⚠ Debes seleccionar una fecha de inicio.');
+      
       return;
     }
 
     if (this.filterStartDate && this.filterEndDate && this.filterStartDate > this.filterEndDate) {
-      console.warn('⚠ La fecha inicio no puede ser mayor que la fecha fin.');
+      
       return;
     }
 

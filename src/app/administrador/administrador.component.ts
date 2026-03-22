@@ -81,7 +81,7 @@ export class AdministradorComponent implements OnInit {
         this.cargando = false;
       },
       error: (error) => {
-        console.error('❌ Error al cargar usuarios:', error);
+        
         this.cargando = false;
       }
     });
@@ -123,7 +123,7 @@ async crearSuscripcion(): Promise<void> {
 
     this.apiService.createUserPlan(body, token).subscribe({
       next: (resp) => {
-        console.log('✅ Suscripción creada:', resp);
+        
         this.subMsg = '✅ Suscripción creada correctamente.';
         this.creatingSub = false;
 
@@ -131,7 +131,7 @@ async crearSuscripcion(): Promise<void> {
         this.loadAppUsers();
       },
       error: (err) => {
-        console.error('❌ Error creando suscripción:', err);
+        
         this.subMsg = '❌ No se pudo crear la suscripción.';
         this.creatingSub = false;
       }
@@ -148,12 +148,12 @@ async crearSuscripcion(): Promise<void> {
 
     this.apiService.createNewUser({ name, mail, tipo, estado }).subscribe({
       next: (data) => {
-        console.log('✅ Usuario creado:', data);
+       
         
         this.loadUsers(); // Recarga la lista de usuarios después de agregar uno nuevo
       },
       error: (error) => {
-        console.error('❌ Error al crear usuario:', error);
+       
       }
     }); 
 
@@ -166,16 +166,16 @@ async crearSuscripcion(): Promise<void> {
       const body = { name: this.nombre2, email: this.email,  tipeUser: this.tipo, estadoUser: this.estado };
       this.apiService.syncUsers(body,token).subscribe({
         next: (data) => {
-          console.log('✅ Usuarios sincronizados:', data);
+          
           this.loadUsers(); // Recarga la lista de usuarios después de sincronizar
         },
         error: (error) => { 
-          console.error('❌ Error al sincronizar usuarios:', error);
+          
         }  
       });
-      console.log('✅ Usuario registrado con éxito');
+      
     } catch (error) {
-      console.error('❌ Error al registrar usuario:', error);
+      
     }
   }
   // 🔎 Buscar por nombre o por id
@@ -194,11 +194,11 @@ async crearSuscripcion(): Promise<void> {
     if (nameTrim) {
       this.apiService.searchbyname(nameTrim).subscribe({
         next: (data) => {
-          console.log('✅ Usuario por nombre:', data);
+         
           this.user = data;
         },
         error: (error) => {
-          console.error('❌ Error al buscar usuario por nombre:', error);
+          
           this.user = null;
         }
       });
@@ -209,7 +209,7 @@ async crearSuscripcion(): Promise<void> {
     if (idTrim) {
       this.apiService.searchbyid(Number(idTrim)).subscribe({   // Asegúrate de tener este método en el ApiService
         next: (data) => {
-          console.log('✅ Usuario por ID:', data);
+          
           this.user = data;
         },
         error: (error) => {
@@ -227,7 +227,7 @@ async crearSuscripcion(): Promise<void> {
   agregar(userName:string,id:string,name:string,tipo:string): void {
     // Aquí puedes navegar a una pantalla de "nuevo usuario"
     // o abrir un modal. Por ahora solo log:
-    console.log('🟢 Click en Agregar');
+    
     const newUser:users={
       idTweetUser:id,
       TweetUser:userName,

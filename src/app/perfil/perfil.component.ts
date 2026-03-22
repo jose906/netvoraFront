@@ -139,7 +139,7 @@ export class PerfilComponent implements OnInit, OnDestroy {
         this.sub.lastPayment = null;
       },
       error: (err) => {
-        console.error('account/me error:', err);
+        
         this.setMsg('err', 'No se pudo cargar tu cuenta. Revisa tu sesión o tu API.');
       },
       complete: () => (this.loading.subscription = false)

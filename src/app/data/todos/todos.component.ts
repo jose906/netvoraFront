@@ -168,7 +168,7 @@ export class TodosComponent implements OnChanges {
     .subscribe({
       next: (res) => this.mapResponse(res),
       error: (err) => {
-        console.error('❌ Error getAllData:', err);
+      
         this.errorMsg = 'No se pudo cargar el dashboard.';
         this.cdr.markForCheck();
       },

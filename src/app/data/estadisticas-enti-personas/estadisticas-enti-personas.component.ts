@@ -242,7 +242,7 @@ export class EstadisticasEntiPersonasComponent implements OnInit, OnChanges {
       .subscribe({
         next: (res) => this.mapResponse(res),
         error: (err) => {
-          console.error('❌ Error getCategoriesData:', err);
+          
           this.errorMsg = 'No se pudo cargar el dashboard.';
           this.cdr.markForCheck();
         },
@@ -255,7 +255,7 @@ export class EstadisticasEntiPersonasComponent implements OnInit, OnChanges {
   this.topLocacion = this.normalizeArray(res?.locacion).slice(0, 3);
   this.topOrganizacion = this.normalizeArray(res?.organizacion).slice(0, 3);
   this.topPersona = this.normalizeArray(res?.persona).slice(0, 3);
-
+  
   // Timeline
   const tl = Array.isArray(res?.time_line)
     ? res.time_line
@@ -411,7 +411,7 @@ export class EstadisticasEntiPersonasComponent implements OnInit, OnChanges {
       this.cdr.markForCheck();
     },
     error: (err) => {
-      console.error('❌ wordcloud error:', err);
+      
       this.wordcloudUrl = null;
       this.loadingWordcloud = false;
       this.cdr.markForCheck();

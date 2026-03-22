@@ -79,7 +79,7 @@ export class PrincipalComponent implements OnInit {
         this.loadMainStats(this.users.map(u => String(u.idTweetUser)));
       },
       error: (error) => {
-        console.error('❌ Error al cargar usuarios:', error);
+        
         this.error = 'No se pudieron cargar los usuarios.';
       }
     });
@@ -124,7 +124,7 @@ export class PrincipalComponent implements OnInit {
           this.buildWeekBarChart(this.last7Days);
         },
         error: (err) => {
-          console.error('❌ Error getMainPageStats:', err);
+          
           this.error = 'No se pudo cargar el resumen de hoy.';
 
           this.todayLabel = '';

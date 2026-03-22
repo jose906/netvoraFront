@@ -16,7 +16,7 @@ export class SubscriptionGuard implements CanActivate {
     return this.sub.fetchStatus().pipe(
       map(res => {
         const s = res.subscription;
-        console.log('🔒 SubscriptionGuard: status=%o',s);
+        
         // Admin u otros roles -> sin bloqueo
         if (s.status === 'skip_role') return true;
 

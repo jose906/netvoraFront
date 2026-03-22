@@ -28,7 +28,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.afAuth.authState.subscribe(async (user) => {
-      console.log('🔥 authState changed:', user?.uid);
+      
 
       if (user) {
         // IMPORTANTE: espera un micro-tick para que currentUser esté listo

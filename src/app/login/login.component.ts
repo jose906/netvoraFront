@@ -171,17 +171,17 @@ loadingLogin: boolean = false;
 
     this.apiService.syncUsers(body, token).subscribe({
       next: (data) => {
-        console.log('✅ Usuarios sincronizados:', data);
+        
         this.signupMsg = '✅ Usuario registrado con éxito.';
       },
       error: (error) => {
-        console.error('❌ Error al sincronizar usuarios:', error);
+       
         this.signupMsg = 'Se creó la cuenta, pero falló la sincronización.';
       }
     });
 
   } catch (e: any) {
-    console.error('❌ Error al registrar usuario:', e);
+   
 
     const code = e?.code || e?.error?.code;
 

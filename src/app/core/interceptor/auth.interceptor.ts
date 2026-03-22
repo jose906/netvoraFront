@@ -13,7 +13,7 @@ export class AuthInterceptor implements HttpInterceptor {
       switchMap(async (user) => {
         if (!user) return req;
         const token = await user.getIdToken();
-        console.log('TOKEN?', token?.slice(0, 20));
+        
         return req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
       }),
       switchMap((authReq) => next.handle(authReq))

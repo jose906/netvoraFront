@@ -495,7 +495,7 @@ loadWordcloud() {
       const blob = resp.body as Blob;
 
       if (blob?.type?.includes('application/json')) {
-        blob.text().then(t => console.error('🧨 Backend devolvió JSON:', t));
+        blob.text().then(t => console.error('', t));
         this.wordcloudUrl = null;
         this.loadingWordcloud = false;
         this.cdr.markForCheck();
@@ -516,7 +516,7 @@ loadWordcloud() {
       this.cdr.markForCheck();
     },
     error: (err) => {
-      console.error('❌ wordcloud error:', err);
+      
       this.wordcloudUrl = null;
       this.loadingWordcloud = false;
       this.cdr.markForCheck();

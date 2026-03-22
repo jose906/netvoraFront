@@ -31,9 +31,9 @@ export class AuthzService {
       this.roleSubject.next(role);
       this.loaded = true;
 
-      console.log('✅ role loaded:', role);
+      
     } catch (err) {
-      console.error('❌ refreshMe failed:', err);
+      
       this.roleSubject.next('viewer');
       this.loaded = true;
     }

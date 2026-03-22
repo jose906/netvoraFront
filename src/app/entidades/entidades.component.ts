@@ -56,7 +56,7 @@ export class EntidadesComponent  implements OnInit {
         this.load(this.startDate, undefined, this.users.map(u => u.idTweetUser.toString()));
       },
       error: (error) => {
-        console.error('❌ Error al cargar usuarios:', error);
+        
       }
     });
   }
@@ -82,11 +82,11 @@ export class EntidadesComponent  implements OnInit {
     loadNextPage(): void {
         let dateFormatted: Date | undefined = undefined;
         let dateFormattedEnd: Date | undefined = undefined;
-        console.log('Cargando página:', this.currentPage);
+        
         if (this.startDate) dateFormatted = this.startDate;
         if (this.endDate) dateFormattedEnd = this.endDate;
         this.currentPage += 1;
-        console.log('Página actualizada a:', this.currentPage);
+        
         this.load(dateFormatted, dateFormattedEnd, this.selectedUsers, this.currentPage, this.searchText);
       }
       loadPreviousPage(): void {
@@ -122,7 +122,7 @@ export class EntidadesComponent  implements OnInit {
     
           this.apiService.getPostsEntidades(body).subscribe({
             next: (data: any) => {
-              console.log(data);
+             
               this.datos = data.resultado || [];
               this.currentPage = data.page;
 
@@ -149,7 +149,7 @@ export class EntidadesComponent  implements OnInit {
 
             this.repliesByTweet = map;
           },
-          error: (e) => console.error('❌ Error summary many:', e)
+          error: (e) => {}
         });
               
               
@@ -157,18 +157,13 @@ export class EntidadesComponent  implements OnInit {
               this.cargando = false;
             },
             error: (error) => {
-              console.error('❌ Error al obtener datos:', error);
+              
               this.error = 'Error al cargar los datos';
               this.cargando = false;
             }
           });
     }
-    guardarClasificacion(tweetid: number, categoria: string, sentimiento: string): void {
-     
-      
-    
-    }
-    
+   
       /** Navegar al detalle */
       irADetalle(datos: NewsItem): void {
         this.router.navigate(['/resumen'], { state: { datos } });
@@ -227,7 +222,7 @@ getRepliesCounts(tweetid: string) {
 toggleGuardar(item: any) {
 
     const id = item.tweetid.toString();
-    console.log('Toggle guardar para ID:', id);
+   
     if (this.savingIds.has(id)) return;
 
     this.errorGuardar = '';
@@ -241,7 +236,7 @@ toggleGuardar(item: any) {
           this.savingIds.delete(id);
         },
         error: (e) => {
-          console.error('Error borrando guardado', e);
+          
           this.errorGuardar = 'No se pudo quitar de guardados.';
           this.savingIds.delete(id);
         }
@@ -256,7 +251,7 @@ toggleGuardar(item: any) {
         this.savingIds.delete(id);
       },
       error: (e) => {
-        console.error('Error guardando', e);
+        
         this.errorGuardar = 'No se pudo guardar.';
         this.savingIds.delete(id);
       }
@@ -268,9 +263,9 @@ toggleGuardar(item: any) {
     next: (res) => {
       const rows = res.items ?? [];
       this.guardados = new Set(rows.map(r => String(r.tweetid)));
-      console.log('Guardados cargados:', this.guardados);
+      
     },
-    error: (e) => console.error('Error cargando guardados', e)
+    error: (e) => {}
   });
 }
 
@@ -305,7 +300,7 @@ toggleGuardar(item: any) {
         link.download = `tweet-${tweetId}.png`;
         link.click();
       } catch (error) {
-        console.error('Error al descargar la imagen:', error);
+        
       }
     }
     

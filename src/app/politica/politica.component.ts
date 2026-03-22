@@ -70,7 +70,7 @@ export class PoliticaComponent implements OnInit {
         this.load(this.startDate, undefined, this.users.map(u => u.idTweetUser.toString()));
       },
       error: (error) => {
-        console.error('❌ Error al cargar usuarios:', error);
+        
       }
     });
   }
@@ -139,7 +139,7 @@ export class PoliticaComponent implements OnInit {
     if (users && users.length > 0) body.users = users; else body.users = this.users.map(u => u.idTweetUser.toString());
     if (searchText) body.searchText = searchText;
 
-    console.log('Cargando con filtros:', body);
+    
 
     this.apiService.getNews(body).subscribe({
       next: (data: any) => {
@@ -160,7 +160,7 @@ export class PoliticaComponent implements OnInit {
             }
             this.repliesByTweet = map;
           },
-          error: (e) => console.error('❌ Error summary many:', e)
+          error: (e) => {}
         });
 
         // 2) Hidratar guardados + notas (lookup global)
@@ -171,7 +171,7 @@ export class PoliticaComponent implements OnInit {
         this.cargando = false;
       },
       error: (error) => {
-        console.error('❌ Error al obtener datos:', error);
+        
         this.error = 'Error al cargar los datos';
         this.cargando = false;
       }
@@ -220,7 +220,7 @@ export class PoliticaComponent implements OnInit {
           }
         }
       },
-      error: (e: any) => console.error('❌ saved map error', e)
+      error: (e: any) => {}
     });
   }
 
@@ -252,7 +252,7 @@ export class PoliticaComponent implements OnInit {
           this.savingIds.delete(id);
         },
         error: (e: any) => {
-          console.error('Error borrando guardado', e);
+          
           this.errorGuardar = 'No se pudo quitar de guardados.';
           this.savingIds.delete(id);
         }
@@ -269,7 +269,7 @@ export class PoliticaComponent implements OnInit {
         this.savingIds.delete(id);
       },
       error: (e: any) => {
-        console.error('Error guardando', e);
+        
         this.errorGuardar = 'No se pudo guardar.';
         this.savingIds.delete(id);
       }
@@ -321,7 +321,7 @@ export class PoliticaComponent implements OnInit {
         this.savingNoteIds.delete(id);
       },
       error: (e: any) => {
-        console.error('Error guardando nota', e);
+        
         this.savingNoteIds.delete(id);
       }
     });
@@ -340,7 +340,7 @@ export class PoliticaComponent implements OnInit {
         this.savingNoteIds.delete(id);
       },
       error: (e: any) => {
-        console.error('Error borrando nota', e);
+        
         this.savingNoteIds.delete(id);
       }
     });
@@ -388,7 +388,7 @@ async downloadCard(cardElement: HTMLElement, tweetId: string | number): Promise<
     link.download = `tweet-${tweetId}.png`;
     link.click();
   } catch (error) {
-    console.error('Error al descargar la imagen:', error);
+    
   }
 }
 

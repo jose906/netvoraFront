@@ -88,7 +88,7 @@ savingNoteIds = new Set<string>();
   loadUsers(): void {
     this.apiService.getUsers('Medio').subscribe({
       next: (data) => (this.users = data),
-      error: (err) => console.error('❌ Error al cargar usuarios:', err),
+      error: (err) => {},
     });
   }
 
@@ -182,13 +182,13 @@ this.notesByTweet.clear(); // opcional: para no mezclar páginas
 
             this.repliesByTweet = map;
           },
-          error: (e) => console.error('❌ Error summary many:', e)
+          error: (e) => {}
         });
         this.hasMore = (this.datos.length === this.pageSize);
         this.cargando = false;
       },
       error: (err) => {
-        console.error('❌ Error al obtener guardados:', err);
+        
         this.error = 'Error al cargar los datos';
         this.cargando = false;
       }
@@ -197,7 +197,7 @@ this.notesByTweet.clear(); // opcional: para no mezclar páginas
   toggleGuardar(item: any) {
 
     const id = item.tweetid.toString();
-    console.log('Toggle guardar para ID:', id);
+    
     if (this.savingIds.has(id)) return;
 
     this.errorGuardar = '';
@@ -211,7 +211,7 @@ this.notesByTweet.clear(); // opcional: para no mezclar páginas
           this.savingIds.delete(id);
         },
         error: (e) => {
-          console.error('Error borrando guardado', e);
+          
           this.errorGuardar = 'No se pudo quitar de guardados.';
           this.savingIds.delete(id);
         }
@@ -226,7 +226,7 @@ this.notesByTweet.clear(); // opcional: para no mezclar páginas
         this.savingIds.delete(id);
       },
       error: (e) => {
-        console.error('Error guardando', e);
+        
         this.errorGuardar = 'No se pudo guardar.';
         this.savingIds.delete(id);
       }
@@ -239,9 +239,9 @@ this.notesByTweet.clear(); // opcional: para no mezclar páginas
       const rows = res.items ?? [];
       this.guardados = new Set(rows.map(r => String(r.tweetid)));
       
-      console.log('Guardados cargados:', this.guardados);
+      
     },
-    error: (e) => console.error('Error cargando guardados', e)
+    error: (e) => {}
   });
 }
 
@@ -294,7 +294,7 @@ guardarNota(tweetid: any) {
       this.savingNoteIds.delete(id);
     },
     error: (e) => {
-      console.error('Error guardando nota', e);
+      
       this.savingNoteIds.delete(id);
     }
   });
@@ -313,7 +313,7 @@ borrarNota(tweetid: any) {
       this.savingNoteIds.delete(id);
     },
     error: (e) => {
-      console.error('Error borrando nota', e);
+    
       this.savingNoteIds.delete(id);
     }
   });

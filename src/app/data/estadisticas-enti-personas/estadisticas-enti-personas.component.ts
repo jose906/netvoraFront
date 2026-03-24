@@ -396,7 +396,7 @@ export class EstadisticasEntiPersonasComponent implements OnInit, OnChanges {
         this.cdr.markForCheck();
         return;
       }
-
+ 
       if (!blob || blob.size === 0) {
         this.wordcloudUrl = null;
         this.loadingWordcloud = false;

@@ -422,29 +422,29 @@ this.indiceSent = [...filtered].sort((a, b) => b.total - a.total);
   }
 
   // ===== Downloads =====
-  downloadChart(event: Event) {
-    const chartContainer = (event.target as HTMLElement).closest('.chart');
-    const canvas = chartContainer?.querySelector('canvas') as HTMLCanvasElement | null;
-    if (!canvas) return;
+ downloadChart(event: Event) {
+  const button = event.currentTarget as HTMLElement;
+  const panel = button.closest('.panel');
+  const canvas = panel?.querySelector('canvas') as HTMLCanvasElement | null;
+  if (!canvas) return;
 
+  const link = document.createElement('a');
+  link.href = exportCanvasWithWhiteBg(canvas);
+  link.download = `grafico-${Date.now()}.png`;
+  link.click();
+}
+
+public downloadAllCharts() {
+  const canvases = document.querySelectorAll('.panel canvas') as NodeListOf<HTMLCanvasElement>;
+  if (!canvases.length) return;
+
+  canvases.forEach((canvas, index) => {
     const link = document.createElement('a');
     link.href = exportCanvasWithWhiteBg(canvas);
-    link.download = `grafico-${Date.now()}.png`;
+    link.download = `grafico-${index + 1}-${Date.now()}.png`;
     link.click();
-  }
-
-  public downloadAllCharts() {
-    const canvases = document.querySelectorAll('.chart canvas') as NodeListOf<HTMLCanvasElement>;
-    if (!canvases.length) return;
-
-    canvases.forEach((canvas, index) => {
-      const link = document.createElement('a');
-      link.href = exportCanvasWithWhiteBg(canvas);
-      link.download = `grafico-${index + 1}-${Date.now()}.png`;
-      link.click();
-    });
-  }
-
+  });
+}
   trackByEntidad = (_: number, item: { entidad: string }) => item.entidad;
   trackByUser = (_: number, item: { usuario: string }) => item.usuario;
 

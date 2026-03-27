@@ -339,3 +339,56 @@ details[open] .dropdown-trigger .chevron{
   background: rgba(109,40,217,0.06);
   border-color: rgba(109,40,217,0.18);
 }
+/* ========= MOBILE ========= */
+@media (max-width: 768px){
+
+  .sidebar{
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 260px;
+    height: 100%;
+    z-index: 1000;
+
+    transition: left .25s ease;
+  }
+
+  .sidebar.open{
+    left: 0;
+  }
+
+  /* overlay oscuro */
+  .sidebar-overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,0.4);
+    backdrop-filter: blur(2px);
+    z-index: 900;
+  }
+
+  /* botón hamburguesa */
+  .menu-toggle{
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 1100;
+
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+
+    border: 1px solid rgba(15,23,42,0.1);
+    background: #fff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  }
+
+  .menu-toggle i{
+    font-size: 18px;
+    color: #0f172a;
+  }
+}

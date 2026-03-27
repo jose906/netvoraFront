@@ -1,5 +1,16 @@
 <!-- 🔹 Sidebar -->
-<nav class="sidebar">
+ <!-- botón hamburguesa -->
+<button class="menu-toggle" (click)="toggleSidebar()">
+  <i class="fas fa-bars"></i>
+</button>
+
+<!-- overlay -->
+<div 
+  class="sidebar-overlay" 
+  *ngIf="isSidebarOpen" 
+  (click)="toggleSidebar()">
+</div>
+<nav class="sidebar"  [class.open]="isSidebarOpen">
 
   <!-- 🔹 Header -->
   <div class="sidebar-header">

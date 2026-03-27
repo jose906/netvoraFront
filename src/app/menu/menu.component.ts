@@ -59,4 +59,9 @@ export class MenuComponent implements OnInit {
   canEditCategories(): boolean {
     return this.authz.hasRole('admin', 'analista');
   }
+  isSidebarOpen = false;
+
+toggleSidebar(){
+  this.isSidebarOpen = !this.isSidebarOpen;
+}
 }

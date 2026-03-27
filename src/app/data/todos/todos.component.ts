@@ -179,6 +179,8 @@ export class TodosComponent implements OnChanges {
     // ======= KPI =======
     this.totalPosts = res?.posts?.total_posts ?? 0;
 
+    console.log(res)
+    
     // Top 3 (tomas los primeros 3 del array ya ordenado)
     this.topLocacion = (res?.locacion ?? []).slice(0, 3);
     this.topOrganizacion = (res?.organizacion ?? []).slice(0, 3);

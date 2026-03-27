@@ -28,20 +28,19 @@
 
   <div class="grid">
     <div class="kv">
-  <span class="k">Costo</span>
-  <span class="v">{{ sub.cost === null ? '—' : ('$' + sub.cost) }}</span>
-</div>
+      <span class="k">Costo</span>
+      <span class="v">{{ sub.cost === null ? '—' : ('$' + sub.cost) }}</span>
+    </div>
 
-<div class="kv">
-  <span class="k">Duración</span>
-  <span class="v">{{ sub.durationDays === null ? '—' : (sub.durationDays + ' días') }}</span>
-</div>
+    <div class="kv">
+      <span class="k">Duración</span>
+      <span class="v">{{ sub.durationDays === null ? '—' : (sub.durationDays + ' días') }}</span>
+    </div>
 
-<div class="kv" *ngIf="sub.description">
-  <span class="k">Descripción</span>
-  <span class="v">{{ sub.description }}</span>
-</div>
-
+    <div class="kv" *ngIf="sub.description">
+      <span class="k">Descripción</span>
+      <span class="v">{{ sub.description }}</span>
+    </div>
 
     <!-- ========= Perfil ========= -->
     <article class="card">
@@ -49,7 +48,7 @@
         <h3>Perfil</h3>
         <span class="muted">Datos básicos</span>
       </div>
- 
+
       <form (ngSubmit)="saveProfile()" #profileForm="ngForm" class="form">
 
         <div class="row">
@@ -92,16 +91,6 @@
                 [(ngModel)]="profile.org"
                 placeholder="NetVora / Empresa / ONG"
               />
-            </div>
-          </div>
-
-          <div class="field">
-            <label>Zona horaria</label>
-            <div class="control">
-              <i class="fas fa-clock"></i>
-              <select name="tz" [(ngModel)]="profile.timezone">
-                <option *ngFor="let t of timezones" [value]="t">{{ t }}</option>
-              </select>
             </div>
           </div>
         </div>
@@ -162,7 +151,6 @@
       <div class="note">
         <i class="fas fa-circle-info"></i>
         <span>Si necesitas activar o cambiar de plan puedes contactarnos a ventas&#64;netvora.org.</span>
-
       </div>
     </article>
 
@@ -176,6 +164,28 @@
       <form (ngSubmit)="changePassword()" #passForm="ngForm" class="form">
 
         <div class="field">
+          <label>Contraseña actual</label>
+          <div class="control">
+            <i class="fas fa-lock"></i>
+            <input
+              [type]="ui.showCurrentPass ? 'text' : 'password'"
+              name="currentPassword"
+              [(ngModel)]="pass.currentPassword"
+              placeholder="Tu contraseña actual"
+              required
+              minlength="8"
+            />
+            <button
+              class="icon-btn"
+              type="button"
+              (click)="ui.showCurrentPass = !ui.showCurrentPass"
+              [attr.aria-label]="ui.showCurrentPass ? 'Ocultar' : 'Mostrar'">
+              <i class="fas" [class.fa-eye]="!ui.showCurrentPass" [class.fa-eye-slash]="ui.showCurrentPass"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="field">
           <label>Nueva contraseña</label>
           <div class="control">
             <i class="fas fa-lock"></i>
@@ -187,7 +197,10 @@
               required
               minlength="8"
             />
-            <button class="icon-btn" type="button" (click)="ui.showPass = !ui.showPass"
+            <button
+              class="icon-btn"
+              type="button"
+              (click)="ui.showPass = !ui.showPass"
               [attr.aria-label]="ui.showPass ? 'Ocultar' : 'Mostrar'">
               <i class="fas" [class.fa-eye]="!ui.showPass" [class.fa-eye-slash]="ui.showPass"></i>
             </button>
@@ -206,7 +219,10 @@
               required
               minlength="8"
             />
-            <button class="icon-btn" type="button" (click)="ui.showPass2 = !ui.showPass2"
+            <button
+              class="icon-btn"
+              type="button"
+              (click)="ui.showPass2 = !ui.showPass2"
               [attr.aria-label]="ui.showPass2 ? 'Ocultar' : 'Mostrar'">
               <i class="fas" [class.fa-eye]="!ui.showPass2" [class.fa-eye-slash]="ui.showPass2"></i>
             </button>
@@ -217,7 +233,9 @@
         </div>
 
         <div class="actions">
-          <button class="btn danger" type="submit"
+          <button
+            class="btn danger"
+            type="submit"
             [disabled]="loading.pass || !passForm.valid || !passwordsMatch()">
             <span *ngIf="!loading.pass"><i class="fas fa-key"></i> Cambiar contraseña</span>
             <span *ngIf="loading.pass"><i class="fas fa-spinner fa-spin"></i> Cambiando…</span>

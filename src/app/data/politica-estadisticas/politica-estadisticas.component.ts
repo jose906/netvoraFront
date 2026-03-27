@@ -491,6 +491,8 @@ loadWordcloud() {
     next: (resp) => {
       const blob = resp.body as Blob;
 
+      
+
       if (blob?.type?.includes('application/json')) {
         blob.text().then(t => console.error('', t));
         this.wordcloudUrl = null;

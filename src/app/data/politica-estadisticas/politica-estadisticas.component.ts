@@ -283,7 +283,7 @@ private getUsersToSend(): string[] {
     this.totalRepliesNeutro = res.total_replies.neutro ?? 0
     this.totalRepliesPositivo = res.total_replies.positivo ?? 0 
 
-    console.log(res)
+   
 
     // Top 3 entidades
     this.topLocacion = (res?.locacion ?? []).slice(0, 3);

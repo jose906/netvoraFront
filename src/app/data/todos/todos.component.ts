@@ -191,7 +191,7 @@ totalRepliesPositivo = 0;
     this.totalRepliesPositivo = res.total_replies.positivo ?? 0
 
 
-    console.log(res)
+   
     
     // Top 3 (tomas los primeros 3 del array ya ordenado)
     this.topLocacion = (res?.locacion ?? []).slice(0, 3);

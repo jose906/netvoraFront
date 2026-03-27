@@ -3,14 +3,8 @@
   <!-- Header -->
   <header class="header">
     <div class="title">
-      <h2>
-        Estadísticas —
-        <span class="mono">{{ type_user }}</span>
-        <ng-container *ngIf="(categoria || '').toLowerCase() !== 'none'">
-          · <span class="mono">{{ categoria }}</span>
-        </ng-container>
-      </h2>
-      <p class="sub">Total, entidades, timeline, sentimientos, usuarios y SentVsUser.</p>
+      <h2>Estadísticas — <span class="mono">{{ categoria || 'Categoría' }}</span></h2>
+      <p class="sub">Total, entidades, timeline, sentimientos y ranking por usuario.</p>
     </div>
 
     <div class="actions">
@@ -25,53 +19,76 @@
 
   <div *ngIf="errorMsg" class="alert">{{ errorMsg }}</div>
 
-  <!-- KPI row (sin cards) -->
+  <!-- KPI -->
   <section class="kpi">
-    <div class="kpi-main">
-      <div class="kpi-label">Total posts</div>
-      <div class="kpi-value">{{ totalPosts | number }}</div>
-      <div class="kpi-hint mono">
-        {{ startDate ? (startDate | date:'yyyy-MM-dd') : '—' }}
-        →
-        {{ endDate ? (endDate | date:'yyyy-MM-dd') : '—' }}
-      </div>
-    </div>
+    <div class="kpi">
+      <div class="kpi-summary">
+        <div class="kpi-main">
+          <div class="kpi-label">Total posts</div>
+          <div class="kpi-value">{{ totalPosts | number }}</div>
+          <div class="kpi-hint">
+            Rango: {{ startDate ? (startDate | date:'yyyy-MM-dd') : '—' }} →
+            {{ endDate ? (endDate | date:'yyyy-MM-dd') : '—' }}
+          </div>
+        </div>
 
-    <div class="kpi-tops">
-      <div class="topbox">
-        <div class="top-title">Top 3 Locación</div>
-        <ul class="toplist">
-          <li *ngFor="let it of topLocacion; trackBy: trackByEntidad">
-            <span class="name">{{ it.entidad }}</span>
-            <span class="val mono">{{ it.total | number }}</span>
-          </li>
-        </ul>
+        <div class="topbox compact">
+          <div class="top-title">Top Replies</div>
+          <div class="top-big-value">{{ totalReplies| number }}</div>
+
+          <div class="reply-sentiment">
+            <div class="reply-item neg">
+              <span>Negativo</span>
+              <strong>{{ totalRepliesNegativo | number }}</strong>
+            </div>
+            <div class="reply-item neu">
+              <span>Neutro</span>
+              <strong>{{ totalRepliesNeutro | number }}</strong>
+            </div>
+            <div class="reply-item pos">
+              <span>Positivo</span>
+              <strong>{{ totalRepliesPositivo | number }}</strong>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="topbox">
-        <div class="top-title">Top 3 Organización</div>
-        <ul class="toplist">
-          <li *ngFor="let it of topOrganizacion; trackBy: trackByEntidad">
-            <span class="name">{{ it.entidad }}</span>
-            <span class="val mono">{{ it.total | number }}</span>
-          </li>
-        </ul>
-      </div>
+      <div class="kpi-tops">
+        <div class="topbox">
+          <div class="top-title">Top 3 Locación</div>
+          <ul class="toplist">
+            <li *ngFor="let it of topLocacion; trackBy: trackByEntidad">
+              <span class="name">{{ it.entidad }}</span>
+              <span class="val">{{ it.total | number }}</span>
+            </li>
+          </ul>
+        </div>
 
-      <div class="topbox">
-        <div class="top-title">Top 3 Persona</div>
-        <ul class="toplist">
-          <li *ngFor="let it of topPersona; trackBy: trackByEntidad">
-            <span class="name">{{ it.entidad }}</span>
-            <span class="val mono">{{ it.total | number }}</span>
-          </li>
-        </ul>
+        <div class="topbox">
+          <div class="top-title">Top 3 Organización</div>
+          <ul class="toplist">
+            <li *ngFor="let it of topOrganizacion; trackBy: trackByEntidad">
+              <span class="name">{{ it.entidad }}</span>
+              <span class="val">{{ it.total | number }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="topbox">
+          <div class="top-title">Top 3 Persona</div>
+          <ul class="toplist">
+            <li *ngFor="let it of topPersona; trackBy: trackByEntidad">
+              <span class="name">{{ it.entidad }}</span>
+              <span class="val">{{ it.total | number }}</span>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- Timeline -->
-  <section class="panel">
+  <section class="panel chart-panel">
     <div class="panel-head">
       <div>
         <div class="panel-title">Línea de tiempo</div>
@@ -95,7 +112,7 @@
           <div class="panel-title">Sentimientos</div>
           <div class="panel-sub">Distribución general</div>
         </div>
- 
+
         <div class="right">
           <select class="select" [(ngModel)]="sentimentChartType">
             <option *ngFor="let t of sentimentTypeOptions" [ngValue]="t">{{ t }}</option>
@@ -130,14 +147,13 @@
   <!-- Bloque inferior -->
   <section class="bottom-grid">
 
-    <!-- 1) Índice (FULL WIDTH) -->
+    <!-- Índice chart FULL WIDTH -->
     <section class="panel">
       <div class="panel-head">
         <div>
           <div class="panel-title">Índice de sentimientos por usuario</div>
           <div class="panel-sub">Ranking por índice (Top) — gráfico</div>
         </div>
-
         <button class="iconbtn" (click)="downloadChart($event)" title="Descargar gráfico">⬇</button>
       </div>
 
@@ -151,7 +167,7 @@
       </div>
     </section>
 
-    <!-- 2) Listas lado a lado -->
+    <!-- Listas -->
     <section class="lists-row">
 
       <!-- Top users -->
@@ -196,7 +212,7 @@
             <span>Usuario</span>
             <span class="t-num">Pos</span>
             <span class="t-num">Neg</span>
-            <span class="t-num">Total</span>
+            <span class="t-num">Tot</span>
             <span class="t-num">Índice</span>
           </div>
 
@@ -219,7 +235,7 @@
 
     </section>
 
-    <!-- 3) WordCloud (FULL WIDTH) -->
+    <!-- Wordcloud FULL WIDTH -->
     <section class="panel">
       <div class="panel-head">
         <div>
@@ -242,12 +258,10 @@
           <span>Generando wordcloud…</span>
         </div>
 
-        <img
-          *ngIf="!loadingWordcloud && wordcloudUrl"
-          [src]="wordcloudUrl"
-          alt="wordcloud"
-          class="wordcloud-img"
-        />
+        <img *ngIf="!loadingWordcloud && wordcloudUrl"
+             [src]="wordcloudUrl"
+             alt="wordcloud"
+             class="wordcloud-img" />
 
         <div *ngIf="!loadingWordcloud && !wordcloudUrl" class="wc-empty">
           <div class="empty-title">Sin datos suficientes</div>

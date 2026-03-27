@@ -21,50 +21,73 @@
 
   <!-- KPI -->
   <section class="kpi">
-    <div class="kpi-main">
-      <div class="kpi-label">Total posts</div>
-      <div class="kpi-value">{{ totalPosts | number }}</div>
-      <div class="kpi-hint mono">
-        {{ startDate ? (startDate | date:'yyyy-MM-dd') : '—' }}
-        →
-        {{ endDate ? (endDate | date:'yyyy-MM-dd') : '—' }}
-      </div>
-    </div>
+    <div class="kpi">
+      <div class="kpi-summary">
+        <div class="kpi-main">
+          <div class="kpi-label">Total posts</div>
+          <div class="kpi-value">{{ totalPosts | number }}</div>
+          <div class="kpi-hint">
+            Rango: {{ startDate ? (startDate | date:'yyyy-MM-dd') : '—' }} →
+            {{ endDate ? (endDate | date:'yyyy-MM-dd') : '—' }}
+          </div>
+        </div>
 
-    <div class="kpi-tops">
-      <div class="topbox">
-        <div class="top-title">Top 3 Locación</div>
-        <ul class="toplist">
-          <li *ngFor="let it of topLocacion; trackBy: trackByEntidad">
-            <span class="name">{{ it.entidad }}</span>
-            <span class="val mono">{{ it.total | number }}</span>
-          </li>
-        </ul>
+        <div class="topbox compact">
+          <div class="top-title">Total Replies</div>
+          <div class="top-big-value">{{ totalReplies| number }}</div>
+
+          <div class="reply-sentiment">
+            <div class="reply-item neg">
+              <span>Negativo</span>
+              <strong>{{ totalRepliesNegativo | number }}</strong>
+            </div>
+            <div class="reply-item neu">
+              <span>Neutro</span>
+              <strong>{{ totalRepliesNeutro | number }}</strong>
+            </div>
+            <div class="reply-item pos">
+              <span>Positivo</span>
+              <strong>{{ totalRepliesPositivo | number }}</strong>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="topbox">
-        <div class="top-title">Top 3 Organización</div>
-        <ul class="toplist">
-          <li *ngFor="let it of topOrganizacion; trackBy: trackByEntidad">
-            <span class="name">{{ it.entidad }}</span>
-            <span class="val mono">{{ it.total | number }}</span>
-          </li>
-        </ul>
-      </div>
+      <div class="kpi-tops">
+        <div class="topbox">
+          <div class="top-title">Top 3 Locación</div>
+          <ul class="toplist">
+            <li *ngFor="let it of topLocacion; trackBy: trackByEntidad">
+              <span class="name">{{ it.entidad }}</span>
+              <span class="val">{{ it.total | number }}</span>
+            </li>
+          </ul>
+        </div>
 
-      <div class="topbox">
-        <div class="top-title">Top 3 Persona</div>
-        <ul class="toplist">
-          <li *ngFor="let it of topPersona; trackBy: trackByEntidad">
-            <span class="name">{{ it.entidad }}</span>
-            <span class="val mono">{{ it.total | number }}</span>
-          </li>
-        </ul>
+        <div class="topbox">
+          <div class="top-title">Top 3 Organización</div>
+          <ul class="toplist">
+            <li *ngFor="let it of topOrganizacion; trackBy: trackByEntidad">
+              <span class="name">{{ it.entidad }}</span>
+              <span class="val">{{ it.total | number }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="topbox">
+          <div class="top-title">Top 3 Persona</div>
+          <ul class="toplist">
+            <li *ngFor="let it of topPersona; trackBy: trackByEntidad">
+              <span class="name">{{ it.entidad }}</span>
+              <span class="val">{{ it.total | number }}</span>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Timeline (más alto, más aire) -->
+  <!-- Timeline -->
   <section class="panel chart-panel">
     <div class="panel-head">
       <div>
@@ -73,7 +96,7 @@
       </div>
       <button class="iconbtn" (click)="downloadChart($event)" title="Descargar gráfico">⬇</button>
     </div>
- 
+
     <div class="chart-wrap chart-wrap--lg">
       <canvas baseChart [type]="'line'" [data]="timelineData" [options]="lineOptions"></canvas>
     </div>

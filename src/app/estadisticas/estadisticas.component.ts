@@ -59,7 +59,7 @@ export class EstadisticasComponent implements OnInit {
 
   ngOnInit(): void {
     this.goToView('todos', 'Panel principal', 'todos');
-  }
+  } 
 
   goToView(
     component: VistaDashboard,

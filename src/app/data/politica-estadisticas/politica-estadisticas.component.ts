@@ -57,6 +57,11 @@ export class PoliticaEstadisticasComponent implements OnChanges, OnDestroy {
   topOrganizacion: EntItem[] = [];
   topPersona: EntItem[] = [];
 
+   totalReplies = 0;
+    totalRepliesNegativo = 0;
+totalRepliesNeutro = 0;
+totalRepliesPositivo = 0;
+
   // ===== Top users list =====
   topUsers: TopUserItem[] = [];
 
@@ -273,6 +278,12 @@ private getUsersToSend(): string[] {
   private mapResponse(res: any): void {
     // Total posts
     this.totalPosts = res?.total_posts?.total_posts ?? 0;
+    this.totalReplies = res.total_replies.total ?? 0
+    this.totalRepliesNegativo = res.total_replies.negativo ?? 0
+    this.totalRepliesNeutro = res.total_replies.neutro ?? 0
+    this.totalRepliesPositivo = res.total_replies.positivo ?? 0 
+
+    console.log(res)
 
     // Top 3 entidades
     this.topLocacion = (res?.locacion ?? []).slice(0, 3);
@@ -490,6 +501,7 @@ loadWordcloud() {
   this.apiService.getWordcloud(body).subscribe({
     next: (resp) => {
       const blob = resp.body as Blob;
+
 
       
 

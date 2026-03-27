@@ -29,6 +29,13 @@ export class TodosComponent implements OnChanges {
   // ======= KPI =======
   totalPosts = 0;
 
+  totalReplies = 0;
+    totalRepliesNegativo = 0;
+totalRepliesNeutro = 0;
+totalRepliesPositivo = 0;
+
+
+
   topLocacion: EntItem[] = [];
   topOrganizacion: EntItem[] = [];
   topPersona: EntItem[] = [];
@@ -178,6 +185,11 @@ export class TodosComponent implements OnChanges {
   private mapResponse(res: StatsResponse): void {
     // ======= KPI =======
     this.totalPosts = res?.posts?.total_posts ?? 0;
+    this.totalReplies = res?.total_replies.total ?? 0
+    this.totalRepliesNegativo = res.total_replies.negativo ?? 0
+    this.totalRepliesNeutro = res.total_replies.neutro ?? 0
+    this.totalRepliesPositivo = res.total_replies.positivo ?? 0
+
 
     console.log(res)
     

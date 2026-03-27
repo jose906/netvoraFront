@@ -74,6 +74,11 @@ export class EstadisticasEntiPersonasComponent implements OnInit, OnChanges {
   topOrganizacion: EntItem[] = [];
   topPersona: EntItem[] = [];
 
+  totalReplies = 0;
+    totalRepliesNegativo = 0;
+totalRepliesNeutro = 0;
+totalRepliesPositivo = 0;
+
   // ===== Top users list =====
   topUsers: TopUserItem[] = [];
 
@@ -252,9 +257,16 @@ export class EstadisticasEntiPersonasComponent implements OnInit, OnChanges {
   private mapResponse(res: any): void {
   this.totalPosts = res?.total_posts?.total_posts ?? res?.total_posts ?? 0;
 
+  this.totalReplies = res.total_replies.total ?? 0
+    this.totalRepliesNegativo = res.total_replies.negativo ?? 0
+    this.totalRepliesNeutro = res.total_replies.neutro ?? 0
+    this.totalRepliesPositivo = res.total_replies.positivo ?? 0 
+
   this.topLocacion = this.normalizeArray(res?.locacion).slice(0, 3);
   this.topOrganizacion = this.normalizeArray(res?.organizacion).slice(0, 3);
   this.topPersona = this.normalizeArray(res?.persona).slice(0, 3);
+
+  console.log(res)
   
   // Timeline
   const tl = Array.isArray(res?.time_line)

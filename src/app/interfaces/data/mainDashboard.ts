@@ -19,6 +19,7 @@ export interface StatsResponse {
   posts: {
     total_posts: number;
   };
+  total_replies:{negativo:number,neutro:number,positivo:number,total:number}
 
   posts_categories: {
     posts_per_category: Record<string, number>;

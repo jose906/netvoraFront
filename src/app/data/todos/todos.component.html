@@ -21,14 +21,36 @@
     {{ errorMsg }}
   </div>
 
-  <!-- KPI + Top 3 -->
+  <!-- KPI + Top posts/replies + Top 3 -->
   <div class="kpi">
-    <div class="kpi-main">
-      <div class="kpi-label">Total posts</div>
-      <div class="kpi-value">{{ totalPosts | number }}</div>
-      <div class="kpi-hint">
-        Rango: {{ startDate ? (startDate | date:'yyyy-MM-dd') : '—' }} →
-        {{ endDate ? (endDate | date:'yyyy-MM-dd') : '—' }}
+    <div class="kpi-summary">
+      <div class="kpi-main">
+        <div class="kpi-label">Total posts</div>
+        <div class="kpi-value">{{ totalPosts | number }}</div>
+        <div class="kpi-hint">
+          Rango: {{ startDate ? (startDate | date:'yyyy-MM-dd') : '—' }} →
+          {{ endDate ? (endDate | date:'yyyy-MM-dd') : '—' }}
+        </div>
+      </div>
+
+      <div class="topbox compact">
+        <div class="top-title">Total Replies</div>
+        <div class="top-big-value">{{ totalReplies | number }}</div>
+
+        <div class="reply-sentiment">
+          <div class="reply-item neg">
+            <span>Negativo</span>
+            <strong>{{ totalRepliesNegativo | number }}</strong>
+          </div>
+          <div class="reply-item neu">
+            <span>Neutro</span>
+            <strong>{{ totalRepliesNeutro | number }}</strong>
+          </div>
+          <div class="reply-item pos">
+            <span>Positivo</span>
+            <strong>{{ totalRepliesPositivo | number }}</strong>
+          </div>
+        </div>
       </div>
     </div>
 

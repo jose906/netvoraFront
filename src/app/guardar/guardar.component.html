@@ -17,10 +17,27 @@
 </header>
 
 <div class="page">
+  <header class="hero-v3">
+    <div class="hero-content">
+      <div class="brand-row">
+        <span class="live-dot"></span>
+        <span class="category-label">{{ activeCategory | uppercase }}</span>
+      </div>
+
+      <h1 class="hero-title">Publicaciones <span>Guardadas</span></h1>
+      <p class="hero-subtitle">
+        Monitoreo estratégico de tendencias y sentimiento en tiempo real.
+      </p>
+    </div>
+  </header>
+
   <section class="filters-section">
     <div class="filters-header">
-      <h3><mat-icon>tune</mat-icon> Filtros</h3>
-      <span class="page-indicator">Categoría: {{ activeCategory }}</span>
+      <h3>
+        <mat-icon>tune</mat-icon>
+        <span>Filtros de Búsqueda</span>
+      </h3>
+      <span class="page-indicator">Mostrando resultados de: {{ activeCategory }}</span>
     </div>
 
     <div class="filters-row">
@@ -45,39 +62,51 @@
 
       <mat-form-field appearance="outline" class="filter-item">
         <mat-label>Buscar</mat-label>
-        <input matInput [(ngModel)]="searchText" placeholder="Texto de búsqueda" />
+        <input matInput [(ngModel)]="searchText" placeholder="Palabra clave..." />
       </mat-form-field>
 
       <div class="filter-buttons">
         <button mat-flat-button class="filter-btn" (click)="filtrar()">
           <mat-icon>search</mat-icon>
-          Filtrar
+          <span>Filtrar</span>
         </button>
 
-        <button mat-stroked-button class="filter-btn" (click)="limpiar()">
+        <button mat-stroked-button class="filter-btn filter-btn-secondary" (click)="limpiar()">
           <mat-icon>refresh</mat-icon>
-          Limpiar
         </button>
       </div>
     </div>
   </section>
 
-  <div *ngIf="cargando" class="state">⏳ Cargando noticias...</div>
-  <div *ngIf="error" class="state state-error">{{ error }}</div>
+  <div *ngIf="cargando" class="skeleton-container">
+    <div *ngFor="let i of [1,2,3,4]" class="skeleton-item">
+      <div class="sk-header pulse"></div>
+      <div class="sk-body pulse"></div>
+      <div class="sk-footer pulse"></div>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="state state-error">
+    {{ error }}
+  </div>
 
   <section *ngIf="!cargando && datos.length" class="news-container">
     <article *ngFor="let item of datos" class="news-item">
-
       <div class="news-header">
-        <div class="news-title">{{ item.TweetUser }}</div>
+        <div class="news-title-block">
+          <div class="news-title">{{ item.TweetUser }}</div>
+          <span class="news-date">{{ item.created | date:'medium' }}</span>
+        </div>
 
-        <div class="chips-right">
-          <span class="status-chip"
-                [ngClass]="{
-                  negativo: item.sentimiento === 'negativo',
-                  neutral: item.sentimiento === 'neutro',
-                  positivo: item.sentimiento === 'positivo'
-                }">
+        <div class="header-right">
+          <span
+            class="status-chip"
+            [ngClass]="{
+              'negativo': item.sentimiento === 'negativo',
+              'neutral': item.sentimiento === 'neutro',
+              'positivo': item.sentimiento === 'positivo'
+            }"
+          >
             {{ item.sentimiento }}
           </span>
 
@@ -85,117 +114,110 @@
         </div>
       </div>
 
-      <p class="news-text">{{ item.text }}</p>
+      <p class="news-text" [innerHTML]="formatText(item.text)"></p>
 
       <div class="news-meta">
-        <span class="news-date">{{ item.created | date:'mediumDate' }}</span>
-
         <div class="sentiment-icons">
-          <span class="icon">Negativo <b>{{ getRepliesCounts(item.tweetid).negativo }}</b></span>
-          <span class="icon">Neutral <b>{{ getRepliesCounts(item.tweetid).neutro }}</b></span>
-          <span class="icon">Positivo <b>{{ getRepliesCounts(item.tweetid).positivo }}</b></span>
+          <span class="icon red">
+            Negativo <b>{{ getRepliesCounts(item.tweetid).negativo }}</b>
+          </span>
+          <span class="icon yellow">
+            Neutral <b>{{ getRepliesCounts(item.tweetid).neutro }}</b>
+          </span>
+          <span class="icon green">
+            Positivo <b>{{ getRepliesCounts(item.tweetid).positivo }}</b>
+          </span>
         </div>
 
         <button
           class="btn-save"
           (click)="toggleGuardar(item)"
           [disabled]="savingIds.has(item.tweetid.toString())"
-          [class.saved]="isGuardado(item.tweetid)">
+          [class.saved]="isGuardado(item.tweetid)"
+        >
           {{ isGuardado(item.tweetid) ? 'Guardado' : 'Guardar' }}
         </button>
       </div>
-      <!-- 🔹 Nota Personal Expandible -->
-<div class="note-wrapper">
 
-  <!-- Header clickeable -->
-  <div class="note-toggle"
-       (click)="toggleNote(item.tweetid)"
-       [class.open]="isNoteOpen(item.tweetid)"
-       [class.has-note]="hasNote(item.tweetid)">
+      <div class="note-wrapper">
+        <div
+          class="note-toggle"
+          (click)="toggleNote(item.tweetid)"
+          [class.open]="isNoteOpen(item.tweetid)"
+          [class.has-note]="hasNote(item.tweetid)"
+        >
+          <div class="note-left">
+            <mat-icon>sticky_note_2</mat-icon>
+            <span>Nota personal</span>
+          </div>
 
-    <div class="note-left">
-      <mat-icon>sticky_note_2</mat-icon>
-      <span>Nota personal</span>
-    </div>
+          <div class="note-right">
+            <span *ngIf="hasNote(item.tweetid)" class="note-indicator">✔ Guardada</span>
+            <mat-icon class="arrow">
+              {{ isNoteOpen(item.tweetid) ? 'expand_less' : 'expand_more' }}
+            </mat-icon>
+          </div>
+        </div>
 
-    <div class="note-right">
-      <span *ngIf="hasNote(item.tweetid)" class="note-indicator">
-        ✔ Guardada
-      </span>
-      <mat-icon class="arrow">
-        {{ isNoteOpen(item.tweetid) ? 'expand_less' : 'expand_more' }}
-      </mat-icon>
-    </div>
-  </div>
+        <div class="note-content" [class.open]="isNoteOpen(item.tweetid)">
+          <mat-form-field appearance="outline" class="note-field">
+            <textarea
+              matInput
+              rows="3"
+              [(ngModel)]="noteDraft[item.tweetid]"
+              placeholder="Escribe algo importante..."
+            ></textarea>
+          </mat-form-field>
 
-  <!-- Contenido expandible -->
-  <div class="note-content"
-       [class.open]="isNoteOpen(item.tweetid)">
+          <div class="note-actions">
+            <button
+              mat-flat-button
+              (click)="guardarNota(item.tweetid)"
+              [disabled]="savingNoteIds.has(item.tweetid.toString()) || !noteChanged(item.tweetid)"
+            >
+              <mat-icon>save</mat-icon>
+              {{ hasNote(item.tweetid) ? 'Modificar' : 'Agregar' }}
+            </button>
 
-    <mat-form-field appearance="outline" class="note-field">
-      <mat-label>Escribe tu nota</mat-label>
-      <textarea
-        matInput
-        rows="3"
-        cdkTextareaAutosize
-        cdkAutosizeMinRows="3"
-        cdkAutosizeMaxRows="8"
-        [ngModel]="noteDraft[item.tweetid]"
-        [textContent]="noteDraft[item.tweetid]"
-        (ngModelChange)="noteDraft[item.tweetid] = $event"
-        placeholder="Ej: revisar este post luego, confirmar dato, etc.">
-      </textarea>
-    </mat-form-field>
-
-    <div class="note-actions">
-      <button
-        mat-flat-button
-        type="button"
-        (click)="guardarNota(item.tweetid)"
-        [disabled]="savingNoteIds.has(item.tweetid.toString()) 
-                    || !noteDraft[item.tweetid].trim() 
-                    || !noteChanged(item.tweetid)">
-        <mat-icon>{{ hasNote(item.tweetid) ? 'save' : 'add' }}</mat-icon>
-        {{ hasNote(item.tweetid) ? 'Modificar' : 'Agregar' }}
-      </button>
-
-      <button
-        mat-stroked-button
-        color="warn"
-        type="button"
-        (click)="borrarNota(item.tweetid)"
-        [disabled]="!hasNote(item.tweetid)">
-        <mat-icon>delete</mat-icon>
-        Borrar
-      </button>
-    </div>
-  </div>
-
-</div>
-      
-
+            <button
+              mat-stroked-button
+              color="warn"
+              (click)="borrarNota(item.tweetid)"
+              [disabled]="!hasNote(item.tweetid)"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
     </article>
   </section>
 
   <div class="pagination" *ngIf="!cargando && datos.length">
-    <button mat-flat-button class="pagination-btn prev"
-            (click)="loadPreviousPage()"
-            [disabled]="currentPage === 1">
-      <mat-icon>arrow_back_ios_new</mat-icon>
+    <button
+      mat-flat-button
+      class="pagination-btn"
+      (click)="loadPreviousPage()"
+      [disabled]="currentPage === 1"
+    >
+      <mat-icon>arrow_back_ios</mat-icon>
       Anterior
     </button>
 
     <span class="page-indicator">Página {{ currentPage }}</span>
 
-    <button mat-flat-button class="pagination-btn next"
-            (click)="loadNextPage()"
-            [disabled]="!hasMore">
+    <button
+      mat-flat-button
+      class="pagination-btn"
+      (click)="loadNextPage()"
+      [disabled]="!hasMore"
+    >
       Siguiente
       <mat-icon>arrow_forward_ios</mat-icon>
     </button>
   </div>
 
   <div *ngIf="!cargando && !datos.length && !error" class="state">
-    No hay noticias disponibles para los filtros seleccionados.
+    No se encontraron noticias con estos criterios.
   </div>
 </div>

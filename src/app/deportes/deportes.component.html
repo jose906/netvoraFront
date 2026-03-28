@@ -2,27 +2,25 @@
 
   <!-- 🔹 Encabezado principal mejorado -->
   <!-- 🔹 Encabezado principal -->
-<header class="hero">
-  <div class="hero-main">
-    <div class="hero-kicker">Categoría Deportes</div>
-
-   
-    <p class="hero-subtitle">
-      Clasificación de noticias por fecha y usuarios. Filtra rápido y detecta tendencias con sentimiento incluido.
+<header class="header-v3">
+  <div class="header-content">
+    <div class="brand-section">
+      <img src="logo2.png" alt="Logo" class="main-logo" />
+      <div class="divider"></div>
+      <div class="category-tag">Deportes</div>
+    </div>
+    
+    <h1 class="main-title">Análisis de <span>Tendencias</span></h1>
+    <p class="main-description">
+      Monitoreo en tiempo real de narrativa digital y sentimiento de usuario.
     </p>
 
-    <!-- ✅ en vez de lista larga -->
-    <div class="hero-chips">
-      <span class="chip">⚡ Tiempo real</span>
-      <span class="chip">📊 Tendencias por usuario</span>
-      <span class="chip">🗓️ Filtro por fecha</span>
-      <span class="chip">📉 Sentimiento</span>
-    </div>
-  </div>
-
-  <div class="hero-aside" aria-hidden="true">
-    <div class="hero-media">
-      <img src="logo2.png" alt="" />
+    <div class="quick-stats">
+      <div class="stat-pill">
+        <span class="dot live"></span> Tiempo Real
+      </div>
+      <div class="stat-pill">📊 +240 Noticias hoy</div>
+      <div class="stat-pill">🎭 Sentimiento Mixto</div>
     </div>
   </div>
 </header>
@@ -61,7 +59,7 @@
       </mat-option>
     </mat-select>
   </mat-form-field>
-
+ 
   <!-- Búsqueda por texto -->
   <mat-form-field appearance="outline" class="filter-item">
     <mat-label>Buscar</mat-label>
@@ -93,13 +91,29 @@
 </div>
 
   <!-- 🔹 Estado de carga -->
-  <div *ngIf="cargando" class="loading">⏳ Cargando noticias...</div>
+ <div *ngIf="cargando" class="skeleton-container">
+  <div *ngFor="let i of [1,2,3]" class="skeleton-card">
+    <div class="skeleton-header">
+      <div class="skeleton-circle pulse"></div>
+      <div class="skeleton-line title pulse"></div>
+      <div class="skeleton-pill pulse"></div>
+    </div>
+    <div class="skeleton-line pulse"></div>
+    <div class="skeleton-line pulse"></div>
+    <div class="skeleton-line short pulse"></div>
+    <div class="skeleton-footer">
+      <div class="skeleton-pill sm pulse"></div>
+      <div class="skeleton-pill sm pulse"></div>
+      <div class="skeleton-pill sm pulse"></div>
+    </div>
+  </div>
+</div>
 
   <!-- 🔹 Error -->
   <div *ngIf="error" class="error">{{ error }}</div>
 
   <!-- 🔹 Lista de noticias -->
-  <div *ngIf="!cargando && datos.length" class="news-container">
+ <div *ngIf="!cargando && datos.length" class="news-container">
   <div *ngFor="let item of datos" class="news-item" #captureCard>
 
     <div class="news-header">
@@ -156,6 +170,7 @@
 
   </div>
 </div>
+
   <!-- 🔹 Paginación -->
   <div class="pagination" *ngIf="!cargando && datos.length">
     <button

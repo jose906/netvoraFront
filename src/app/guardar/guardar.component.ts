@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { NewsItem } from '../interfaces/NewsItem';
 import { users } from '../interfaces/users';
 import { Observable } from 'rxjs';
-
+import {linkifyText} from '../utils/helpers'
 type CategoryKey =
   | 'inicio' | 'politica' | 'economia' | 'seguridad' | 'deportes' | 'salud'
   | 'sociedad' | 'educacion' | 'gestion' | 'otros' | 'entidades' | 'personas' | 'ambiente';
@@ -339,6 +339,9 @@ toggleNote(tweetid: any) {
 isNoteOpen(tweetid: any): boolean {
   return this.openNotes.has(tweetid.toString());
 }
+formatText(text: string): string {
+    return linkifyText(text);
+  }
 
 
 }

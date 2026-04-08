@@ -151,13 +151,13 @@ getRepliesSummaryMany(tweetIds: any[]) {
   getMainPageData(): Observable<MainPageData> {
     return this.http.get<MainPageData>(this.apiUrl);
   }
-  updateCategory(body: { idTweet: string; oldCategory?: string, newCategory?: string}): Observable<any> {
+  updateCategory(body: { idTweet: string; oldCategory?: string, newCategory?: string, text?: string }): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<any>(this.apiUrl+'update_category',body, {headers});
     
   }
  
-  updateSentiment(body: { idTweet: string; oldSentiment?: string, newSentiment?: string}): Observable<any> {
+  updateSentiment(body: { idTweet: string; oldSentiment?: string, newSentiment?: string, text?: string }): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<any>(this.apiUrl+'update_sentiment',body, {headers});
     

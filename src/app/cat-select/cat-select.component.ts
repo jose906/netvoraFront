@@ -177,9 +177,9 @@ export class CatSelectComponent implements OnInit{
   }
 
   /** Actualizar categoría de un tweet */
-  accion(tweetId: string, newCategoria: string, oldCategoria: string): void {
+  accion(tweetId: string, newCategoria: string, oldCategoria: string, text: string): void {
     this.apiService
-      .updateCategory({ idTweet: tweetId, newCategory: newCategoria, oldCategory: oldCategoria })
+      .updateCategory({ idTweet: tweetId, newCategory: newCategoria, oldCategory: oldCategoria, text: text })
       .subscribe({
         next: (resp) => {
           console.log('✅ Categoría actualizada:', resp);
@@ -190,9 +190,9 @@ export class CatSelectComponent implements OnInit{
       });
   }
 
-  accionsentiment(tweetId: string, newSentimiento: string, oldSentimiento: string): void {
+  accionsentiment(tweetId: string, newSentimiento: string, oldSentimiento: string, text: string): void {
     this.apiService
-      .updateSentiment({ idTweet: tweetId, newSentiment: newSentimiento, oldSentiment: oldSentimiento })
+      .updateSentiment({ idTweet: tweetId, newSentiment: newSentimiento, oldSentiment: oldSentimiento, text: text })
       .subscribe({
         next: (resp) => {
           console.log('✅ Sentimiento actualizado:', resp);

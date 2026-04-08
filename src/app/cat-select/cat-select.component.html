@@ -188,23 +188,23 @@
 
       <!-- Acciones por categoría -->
       <div class="news-actions">
-        <button type="button" (click)="accion(item.tweetid, 'Politica', item.categoria)">Política</button>
-        <button type="button" (click)="accion(item.tweetid, 'Economia', item.categoria)">Economía</button>
-        <button type="button" (click)="accion(item.tweetid, 'Seguridad', item.categoria)">Seguridad</button>
-        <button type="button" (click)="accion(item.tweetid, 'Deportes', item.categoria)">Deportes</button>
-        <button type="button" (click)="accion(item.tweetid, 'Salud', item.categoria)">Salud</button>
-        <button type="button" (click)="accion(item.tweetid, 'Sociedad', item.categoria)">Sociedad</button>
-        <button type="button" (click)="accion(item.tweetid, 'Educacion', item.categoria)">Educación</button>
-        <button type="button" (click)="accion(item.tweetid, 'Ambiente', item.categoria)">Medio Ambiente</button>
-        <button type="button" (click)="accion(item.tweetid, 'Gestion', item.categoria)">Gestión</button>
-        <button type="button" (click)="accion(item.tweetid, 'Otros', item.categoria)">Otros</button>
+        <button type="button" (click)="accion(item.tweetid, 'Politica', item.categoria,item.text)">Política</button>
+        <button type="button" (click)="accion(item.tweetid, 'Economia', item.categoria,item.text)">Economía</button>
+        <button type="button" (click)="accion(item.tweetid, 'Seguridad', item.categoria,item.text)">Seguridad</button>
+        <button type="button" (click)="accion(item.tweetid, 'Deportes', item.categoria,item.text)">Deportes</button>
+        <button type="button" (click)="accion(item.tweetid, 'Salud', item.categoria,item.text)">Salud</button>
+        <button type="button" (click)="accion(item.tweetid, 'Sociedad', item.categoria,item.text)">Sociedad</button>
+        <button type="button" (click)="accion(item.tweetid, 'Educacion', item.categoria,item.text)">Educación</button>
+        <button type="button" (click)="accion(item.tweetid, 'Ambiente', item.categoria,item.text)">Medio Ambiente</button>
+        <button type="button" (click)="accion(item.tweetid, 'Gestion', item.categoria,item.text)">Gestión</button>
+        <button type="button" (click)="accion(item.tweetid, 'Otros', item.categoria,item.text)">Otros</button>
       </div>
 
       <!-- ✅ NUEVO: acciones por sentimiento -->
       <div class="sentiment-actions">
-        <button type="button" class="sbtn pos" (click)="accionsentiment(item.tweetid, 'positivo', item.sentimiento)">Positivo</button>
-        <button type="button" class="sbtn neu" (click)="accionsentiment(item.tweetid, 'neutro', item.sentimiento)">Neutro</button>
-        <button type="button" class="sbtn neg" (click)="accionsentiment(item.tweetid, 'negativo', item.sentimiento)">Negativo</button>
+        <button type="button" class="sbtn pos" (click)="accionsentiment(item.tweetid, 'positivo', item.sentimiento,item.text)">Positivo</button>
+        <button type="button" class="sbtn neu" (click)="accionsentiment(item.tweetid, 'neutro', item.sentimiento,item.text)">Neutro</button>
+        <button type="button" class="sbtn neg" (click)="accionsentiment(item.tweetid, 'negativo', item.sentimiento,item.text)">Negativo</button>
       </div>
 
     </article>

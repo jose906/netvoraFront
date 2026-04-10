@@ -383,6 +383,63 @@
   gap:14px;
   margin-top:14px;
 }
+.toggle-view {
+  display: flex;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.toggle-view button {
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  background: #eee;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.toggle-view button.active {
+  background: #6d28d9;
+  color: white;
+}
+.chart.small {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.replies-chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  min-height: 220px;
+  max-height: 220px;
+  overflow: hidden;
+}
+
+.replies-chart-wrap canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.chart-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.btn-download {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
 
 /* =========================
    Responsive
@@ -516,5 +573,20 @@
   .chart-wrap{
     height:220px;
     min-height:220px;
+  }
+}
+@media (max-width: 768px){
+  .replies-chart-wrap {
+    height: 200px;
+    min-height: 200px;
+    max-height: 200px;
+  }
+}
+
+@media (max-width: 560px){
+  .replies-chart-wrap {
+    height: 180px;
+    min-height: 180px;
+    max-height: 180px;
   }
 }

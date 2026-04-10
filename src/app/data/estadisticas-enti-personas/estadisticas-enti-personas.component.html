@@ -32,25 +32,56 @@
           </div>
         </div>
 
-        <div class="topbox compact">
-          <div class="top-title">Top Replies</div>
-          <div class="top-big-value">{{ totalReplies| number }}</div>
+           <div class="topbox compact">
 
-          <div class="reply-sentiment">
-            <div class="reply-item neg">
-              <span>Negativo</span>
-              <strong>{{ totalRepliesNegativo | number }}</strong>
-            </div>
-            <div class="reply-item neu">
-              <span>Neutro</span>
-              <strong>{{ totalRepliesNeutro | number }}</strong>
-            </div>
-            <div class="reply-item pos">
-              <span>Positivo</span>
-              <strong>{{ totalRepliesPositivo | number }}</strong>
-            </div>
-          </div>
-        </div>
+  <div class="top-title">Total Replies</div>
+  <div class="top-big-value">{{ totalReplies | number }}</div>
+
+  <!-- 🔘 Toggle -->
+  <div class="toggle-view">
+    <button (click)="viewModeReplies = 'table'" [class.active]="viewModeReplies === 'table'">
+      Tabla
+    </button>
+    <button (click)="viewModeReplies = 'chart'" [class.active]="viewModeReplies === 'chart'">
+      Gráfico
+    </button>
+  </div>
+
+  <!-- 📊 TABLA -->
+  <div *ngIf="viewModeReplies === 'table'" class="reply-sentiment">
+    <div class="reply-item neg">
+      <span>Negativo</span>
+      <strong>{{ totalRepliesNegativo | number }}</strong>
+    </div>
+    <div class="reply-item neu">
+      <span>Neutro</span>
+      <strong>{{ totalRepliesNeutro | number }}</strong>
+    </div>
+    <div class="reply-item pos">
+      <span>Positivo</span>
+      <strong>{{ totalRepliesPositivo | number }}</strong>
+    </div>
+  </div>
+
+  <!-- 🥧 GRÁFICO -->
+  <div *ngIf="viewModeReplies === 'chart'" class="chart small">
+  <div class="chart-actions">
+    <button class="btn-download" (click)="downloadChart($event)">
+      ⬇
+    </button>
+  </div>
+
+  <div class="chart-wrap replies-chart-wrap">
+    <canvas
+      baseChart
+      [data]="repliesChartData"
+      [type]="'doughnut'"
+      [options]="repliesChartOptions">
+    </canvas>
+  </div>
+</div>
+
+</div>
       </div>
 
       <div class="kpi-tops">

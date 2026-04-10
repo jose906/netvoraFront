@@ -85,6 +85,8 @@ totalRepliesPositivo = 0;
   // ===== Chart selectors =====
   sentimentChartType: ChartType = 'doughnut';
   readonly sentimentTypeOptions: ChartType[] = ['doughnut', 'pie', 'bar'];
+    viewModeReplies: 'table' | 'chart' = 'table';
+
 
   // ===== Timeline =====
   timelineData: ChartData<'line'> = {
@@ -109,6 +111,39 @@ totalRepliesPositivo = 0;
     plugins: { legend: { display: true }, tooltip: { enabled: true } },
     scales: { x: { ticks: { maxRotation: 0 } }, y: { beginAtZero: true } }
   };
+  readonly repliesChartOptions: ChartOptions<'doughnut'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  cutout: '65%',
+  animation: false,
+  hover: {
+    mode: 'nearest'
+  },
+  plugins: {
+    legend: { display: true },
+    tooltip: { enabled: true },
+  },
+  elements: {
+    arc: {
+      borderWidth: 0,
+      hoverOffset: 6
+    }
+  }
+};
+  repliesChartData: ChartData<'doughnut'> = {
+  labels: ['Negativo', 'Neutro', 'Positivo'],
+  datasets: [{
+    data: [0, 0, 0],
+    backgroundColor: [
+      NETVORA_PALETTE.sentiment.negativo,
+      NETVORA_PALETTE.sentiment.neutro,
+      NETVORA_PALETTE.sentiment.positivo
+    ],
+    borderWidth: 0
+  }]
+};
+
+
 
   // ===== Sentimientos =====
   sentimentData: ChartData = {
@@ -309,6 +344,22 @@ totalRepliesPositivo = 0;
       ],
     }]
   };
+   this.repliesChartData = {
+  labels: ['Negativo', 'Neutro', 'Positivo'],
+  datasets: [{
+    data: [
+      this.totalRepliesNegativo,
+      this.totalRepliesNeutro,
+      this.totalRepliesPositivo
+    ],
+    backgroundColor: [
+      NETVORA_PALETTE.sentiment.negativo,
+      NETVORA_PALETTE.sentiment.neutro,
+      NETVORA_PALETTE.sentiment.positivo
+    ],
+    borderWidth: 0
+  }]
+};
 
   this.topUsers = Array.isArray(res?.top_users)
     ? res.top_users.map((u: any) => ({

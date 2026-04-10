@@ -328,6 +328,7 @@ details[open] .dropdown-trigger .chevron{
   opacity: 0.95;
 }
 
+
 .nv-modal-btn.account-btn{
   border: 1px solid rgba(15,23,42,0.12);
   background: #ffffff;
@@ -338,6 +339,9 @@ details[open] .dropdown-trigger .chevron{
 .nv-modal-btn.account-btn:hover{
   background: rgba(109,40,217,0.06);
   border-color: rgba(109,40,217,0.18);
+}
+.menu-toggle{
+  display: none;
 }
 /* ========= MOBILE ========= */
 @media (max-width: 768px){
@@ -390,5 +394,6 @@ details[open] .dropdown-trigger .chevron{
   .menu-toggle i{
     font-size: 18px;
     color: #0f172a;
+
   }
 }

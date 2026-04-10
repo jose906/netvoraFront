@@ -46,6 +46,7 @@ totalRepliesPositivo = 0;
 
   readonly sentimentTypeOptions: ChartType[] = ['doughnut', 'pie', 'bar'];
   readonly categoriesTypeOptions: ChartType[] = ['bar', 'doughnut', 'pie'];
+  viewModeReplies: 'table' | 'chart' = 'table';
 
   // ======= Charts data =======
   timelineChartType: ChartType = 'line';
@@ -89,6 +90,7 @@ totalRepliesPositivo = 0;
     }],
   };
 
+
   // ======= Options =======
   readonly commonCardChartOptions: ChartOptions = {
     responsive: true,
@@ -98,6 +100,25 @@ totalRepliesPositivo = 0;
       tooltip: { enabled: true },
     },
   };
+  readonly repliesChartOptions: ChartOptions<'doughnut'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  cutout: '65%',
+  animation: false,
+  hover: {
+    mode: 'nearest'
+  },
+  plugins: {
+    legend: { display: true },
+    tooltip: { enabled: true },
+  },
+  elements: {
+    arc: {
+      borderWidth: 0,
+      hoverOffset: 6
+    }
+  }
+};
 
   readonly lineOptions: ChartOptions<'line'> = {
     responsive: true,
@@ -111,6 +132,18 @@ totalRepliesPositivo = 0;
       y: { beginAtZero: true },
     },
   };
+  repliesChartData: ChartData<'doughnut'> = {
+  labels: ['Negativo', 'Neutro', 'Positivo'],
+  datasets: [{
+    data: [0, 0, 0],
+    backgroundColor: [
+      NETVORA_PALETTE.sentiment.negativo,
+      NETVORA_PALETTE.sentiment.neutro,
+      NETVORA_PALETTE.sentiment.positivo
+    ],
+    borderWidth: 0
+  }]
+};
 
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
   ngOnChanges(changes: SimpleChanges): void {
@@ -222,6 +255,22 @@ totalRepliesPositivo = 0;
         },
       ],
     };
+    this.repliesChartData = {
+  labels: ['Negativo', 'Neutro', 'Positivo'],
+  datasets: [{
+    data: [
+      this.totalRepliesNegativo,
+      this.totalRepliesNeutro,
+      this.totalRepliesPositivo
+    ],
+    backgroundColor: [
+      NETVORA_PALETTE.sentiment.negativo,
+      NETVORA_PALETTE.sentiment.neutro,
+      NETVORA_PALETTE.sentiment.positivo
+    ],
+    borderWidth: 0
+  }]
+};
 
     // ======= Sentimientos =======
     const s = res?.sentimientos?.posts_per_sentiment ?? ({} as any);

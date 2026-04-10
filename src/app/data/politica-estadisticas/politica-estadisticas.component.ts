@@ -72,6 +72,7 @@ totalRepliesPositivo = 0;
   // ===== Chart selectors =====
   sentimentChartType: ChartType = 'doughnut';
   readonly sentimentTypeOptions: ChartType[] = ['doughnut', 'pie', 'bar'];
+   viewModeReplies: 'table' | 'chart' = 'table';
 
   // ===== Timeline =====
   @ViewChild(BaseChartDirective) timelineChart?: BaseChartDirective;
@@ -110,6 +111,37 @@ totalRepliesPositivo = 0;
     maintainAspectRatio: false,
     plugins: { legend: { display: true }, tooltip: { enabled: true } }
   };
+   repliesChartData: ChartData<'doughnut'> = {
+  labels: ['Negativo', 'Neutro', 'Positivo'],
+  datasets: [{
+    data: [0, 0, 0],
+    backgroundColor: [
+      NETVORA_PALETTE.sentiment.negativo,
+      NETVORA_PALETTE.sentiment.neutro,
+      NETVORA_PALETTE.sentiment.positivo
+    ],
+    borderWidth: 0
+  }]
+};
+ readonly repliesChartOptions: ChartOptions<'doughnut'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  cutout: '65%',
+  animation: false,
+  hover: {
+    mode: 'nearest'
+  },
+  plugins: {
+    legend: { display: true },
+    tooltip: { enabled: true },
+  },
+  elements: {
+    arc: {
+      borderWidth: 0,
+      hoverOffset: 6
+    }
+  }
+};
 
   // ===== SentVsUser (bar apilado) =====
   sentVsUserData: ChartData<'bar'> = {
@@ -310,6 +342,22 @@ private getUsersToSend(): string[] {
         }
       ]
     };
+    this.repliesChartData = {
+  labels: ['Negativo', 'Neutro', 'Positivo'],
+  datasets: [{
+    data: [
+      this.totalRepliesNegativo,
+      this.totalRepliesNeutro,
+      this.totalRepliesPositivo
+    ],
+    backgroundColor: [
+      NETVORA_PALETTE.sentiment.negativo,
+      NETVORA_PALETTE.sentiment.neutro,
+      NETVORA_PALETTE.sentiment.positivo
+    ],
+    borderWidth: 0
+  }]
+};
 
     // Sentimientos
     const s = res?.sentiment?.posts_per_sentiment ?? {};

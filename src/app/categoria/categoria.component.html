@@ -1,10 +1,33 @@
 <div class="page">
 
   <!-- =====================================================
-       NETVORA SIGNAL HERO
+       HEADER
   ====================================================== -->
 
   <header class="signal-hero">
+
+    <div
+      class="pulse-loading"
+      *ngIf="cargandoPulse">
+
+      <span class="pulse-loading-dot"></span>
+
+      Actualizando Pulse…
+
+    </div>
+
+    <div
+      class="pulse-error"
+      *ngIf="!cargandoPulse && errorPulse">
+
+      {{ errorPulse }}
+
+    </div>
+
+
+    <!-- =====================================================
+         IDENTIDAD
+    ====================================================== -->
 
     <div class="signal-hero-top">
 
@@ -31,27 +54,46 @@
 
 
         <h1>
-          Entidades públicas
+          {{ categoriaLabel }}
         </h1>
 
 
         <p>
-          Sigue la actividad, narrativa y reacción
-          alrededor de las principales entidades públicas.
+          Qué está marcando la conversación
+          sobre {{ categoriaLabel }}.
         </p>
 
       </div>
 
 
-      <div class="hero-context">
+      <!-- CAMBIO RÁPIDO DE CATEGORÍA -->
+
+      <div class="hero-category-switch">
 
         <span>
-          FUENTE
+          Explorando
         </span>
 
-        <strong>
-          Cuentas institucionales
-        </strong>
+        <mat-form-field
+          appearance="outline"
+          class="hero-category-select">
+
+          <mat-select
+            [(ngModel)]="selectedCategoryPath"
+            [ngModelOptions]="{ standalone: true }"
+            (selectionChange)="cambiarCategoria()">
+
+            <mat-option
+              *ngFor="let category of categories"
+              [value]="category.path">
+
+              {{ category.label }}
+
+            </mat-option>
+
+          </mat-select>
+
+        </mat-form-field>
 
       </div>
 
@@ -67,9 +109,9 @@
       *ngIf="!cargandoPulse && pulse">
 
 
-      <!-- =================================================
-           MÉTRICAS
-      ================================================== -->
+      <!-- =====================================================
+           MÉTRICAS PRINCIPALES
+      ====================================================== -->
 
       <div class="pulse-metrics">
 
@@ -96,15 +138,15 @@
         <div class="pulse-metric">
 
           <span class="pulse-metric-label">
-            ENTIDADES
+            MEDIOS
           </span>
 
           <strong>
-            {{ totalEntidades }}
+            {{ totalMedios }}
           </strong>
 
           <small>
-            con actividad
+            participando
           </small>
 
         </div>
@@ -112,6 +154,8 @@
 
         <div class="pulse-divider"></div>
 
+
+        <!-- SE MANTIENE IGUAL -->
 
         <div class="pulse-metric">
 
@@ -133,11 +177,7 @@
         <div class="pulse-divider"></div>
 
 
-        <div
-          class="
-            pulse-metric
-            pulse-metric-highlight
-          ">
+        <div class="pulse-metric pulse-metric-highlight">
 
           <span class="pulse-metric-label">
             TONO DOMINANTE
@@ -156,9 +196,9 @@
       </div>
 
 
-      <!-- =================================================
-           ACTIVIDAD 7 DÍAS
-      ================================================== -->
+      <!-- =====================================================
+           PULSE 7 DÍAS
+      ====================================================== -->
 
       <div class="pulse-chart-panel">
 
@@ -171,7 +211,7 @@
             </span>
 
             <strong>
-              Actividad institucional
+              Actividad de la conversación
             </strong>
 
           </div>
@@ -235,9 +275,9 @@
       </div>
 
 
-      <!-- =================================================
-           SENTIMIENTO
-      ================================================== -->
+      <!-- =====================================================
+           SENTIMIENTO DE PUBLICACIONES
+      ====================================================== -->
 
       <div class="pulse-analysis">
 
@@ -268,26 +308,17 @@
           aria-label="Distribución del sentimiento">
 
           <div
-            class="
-              sentiment-segment
-              positive
-            "
+            class="sentiment-segment positive"
             [style.width.%]="porcentajePositivo">
           </div>
 
           <div
-            class="
-              sentiment-segment
-              neutral
-            "
+            class="sentiment-segment neutral"
             [style.width.%]="porcentajeNeutro">
           </div>
 
           <div
-            class="
-              sentiment-segment
-              negative
-            "
+            class="sentiment-segment negative"
             [style.width.%]="porcentajeNegativo">
           </div>
 
@@ -298,12 +329,7 @@
 
           <div class="sentiment-legend-item">
 
-            <span
-              class="
-                legend-dot
-                positive
-              ">
-            </span>
+            <span class="legend-dot positive"></span>
 
             <div>
 
@@ -322,12 +348,7 @@
 
           <div class="sentiment-legend-item">
 
-            <span
-              class="
-                legend-dot
-                neutral
-              ">
-            </span>
+            <span class="legend-dot neutral"></span>
 
             <div>
 
@@ -346,12 +367,7 @@
 
           <div class="sentiment-legend-item">
 
-            <span
-              class="
-                legend-dot
-                negative
-              ">
-            </span>
+            <span class="legend-dot negative"></span>
 
             <div>
 
@@ -373,43 +389,19 @@
 
     </div>
 
-
-    <!-- =================================================
-         ESTADO DEL PULSE
-    ================================================== -->
-
-    <div
-      class="pulse-loading"
-      *ngIf="cargandoPulse">
-
-      <span class="pulse-loading-dot"></span>
-
-      Actualizando Pulse…
-
-    </div>
-
-
-    <div
-      class="pulse-error"
-      *ngIf="!cargandoPulse && errorPulse">
-
-      {{ errorPulse }}
-
-    </div>
-
   </header>
 
 
   <!-- =====================================================
-       FILTROS
+       CONTROLES
   ====================================================== -->
 
-  <section class="entity-controls">
+  <section class="category-controls">
 
     <div class="filters-bar">
 
 
-      <!-- FECHA -->
+      <!-- FECHAS -->
 
       <mat-form-field
         appearance="outline"
@@ -426,26 +418,20 @@
             matStartDate
             placeholder="Inicio"
             [(ngModel)]="startDate"
-            [ngModelOptions]="{
-              standalone: true
-            }">
+            [ngModelOptions]="{ standalone: true }">
 
           <input
             matEndDate
             placeholder="Fin"
             [(ngModel)]="endDate"
-            [ngModelOptions]="{
-              standalone: true
-            }">
+            [ngModelOptions]="{ standalone: true }">
 
         </mat-date-range-input>
-
 
         <mat-datepicker-toggle
           matSuffix
           [for]="picker">
         </mat-datepicker-toggle>
-
 
         <mat-date-range-picker
           #picker>
@@ -454,28 +440,24 @@
       </mat-form-field>
 
 
-      <!-- ENTIDADES -->
+      <!-- MEDIOS -->
 
       <mat-form-field
         appearance="outline"
         class="filter-control">
 
         <mat-label>
-          Entidades
+          Medios
         </mat-label>
 
         <mat-select
           [(ngModel)]="selectedUsers"
-          [ngModelOptions]="{
-            standalone: true
-          }"
+          [ngModelOptions]="{ standalone: true }"
           multiple>
 
           <mat-option
             *ngFor="let user of users"
-            [value]="
-              user.idTweetUser.toString()
-            ">
+            [value]="user.idTweetUser.toString()">
 
             {{ user.TweetUser }}
 
@@ -490,10 +472,7 @@
 
       <mat-form-field
         appearance="outline"
-        class="
-          filter-control
-          search-filter
-        ">
+        class="filter-control search-filter">
 
         <mat-label>
           Buscar
@@ -501,13 +480,10 @@
 
         <input
           matInput
-          placeholder="Buscar en publicaciones"
+          placeholder="Buscar en {{ categoriaLabel }}"
           [(ngModel)]="searchText"
-          [ngModelOptions]="{
-            standalone: true
-          }"
+          [ngModelOptions]="{ standalone: true }"
           (keyup.enter)="filtrar()">
-
 
         <button
           *ngIf="searchText"
@@ -525,17 +501,14 @@
       </mat-form-field>
 
 
-      <!-- ACCIONES -->
+      <!-- BOTONES -->
 
       <div class="filter-actions">
 
         <button
           type="button"
           mat-flat-button
-          class="
-            filter-btn
-            primary
-          "
+          class="filter-btn primary"
           [disabled]="cargando"
           (click)="filtrar()">
 
@@ -551,10 +524,7 @@
         <button
           type="button"
           mat-stroked-button
-          class="
-            filter-btn
-            ghost
-          "
+          class="filter-btn ghost"
           [disabled]="cargando"
           (click)="resetFiltros()">
 
@@ -579,10 +549,7 @@
 
   <div
     *ngIf="error"
-    class="
-      feedback
-      feedback-error
-    ">
+    class="feedback feedback-error">
 
     <mat-icon>
       error_outline
@@ -590,24 +557,6 @@
 
     <span>
       {{ error }}
-    </span>
-
-  </div>
-
-
-  <div
-    *ngIf="errorGuardar"
-    class="
-      feedback
-      feedback-error
-    ">
-
-    <mat-icon>
-      bookmark_remove
-    </mat-icon>
-
-    <span>
-      {{ errorGuardar }}
     </span>
 
   </div>
@@ -630,29 +579,17 @@
         <div class="skeleton-source">
 
           <div
-            class="
-              skeleton
-              skeleton-avatar
-            ">
+            class="skeleton skeleton-avatar">
           </div>
-
 
           <div class="skeleton-source-copy">
 
             <div
-              class="
-                skeleton
-                skeleton-line
-                source
-              ">
+              class="skeleton skeleton-line source">
             </div>
 
             <div
-              class="
-                skeleton
-                skeleton-line
-                date
-              ">
+              class="skeleton skeleton-line date">
             </div>
 
           </div>
@@ -665,27 +602,15 @@
       <div class="skeleton-body">
 
         <div
-          class="
-            skeleton
-            skeleton-line
-            full
-          ">
+          class="skeleton skeleton-line full">
         </div>
 
         <div
-          class="
-            skeleton
-            skeleton-line
-            full
-          ">
+          class="skeleton skeleton-line full">
         </div>
 
         <div
-          class="
-            skeleton
-            skeleton-line
-            medium
-          ">
+          class="skeleton skeleton-line medium">
         </div>
 
       </div>
@@ -696,7 +621,7 @@
 
 
   <!-- =====================================================
-       SIN RESULTADOS
+       VACÍO
   ====================================================== -->
 
   <section
@@ -710,27 +635,23 @@
     <div class="empty-icon">
 
       <mat-icon>
-        account_balance
+        article
       </mat-icon>
 
     </div>
 
-
     <span class="empty-kicker">
-      SIN ACTIVIDAD
+      SIN RESULTADOS
     </span>
-
 
     <h3>
       No encontramos publicaciones
     </h3>
 
-
     <p>
-      No hay actividad de entidades públicas
+      No hay publicaciones de {{ categoriaLabel }}
       para los filtros seleccionados.
     </p>
-
 
     <button
       mat-stroked-button
@@ -755,21 +676,21 @@
     "
     class="results-section">
 
+
     <div class="results-header">
 
       <div>
 
         <span class="section-kicker">
-          SEÑALES DETECTADAS
+          PUBLICACIONES
         </span>
 
         <h2>
-          Actividad institucional
+          {{ categoriaLabel }}
         </h2>
 
         <p>
-          Publicaciones recientes de las
-          entidades monitoreadas.
+          Publicaciones relacionadas con esta categoría.
         </p>
 
       </div>
@@ -791,7 +712,7 @@
 
 
     <!-- ===================================================
-         CARDS
+         LISTA
     ==================================================== -->
 
     <div class="news-list">
@@ -802,7 +723,9 @@
         #cardRef>
 
 
-        <!-- HEADER -->
+        <!-- =================================================
+             HEADER PUBLICACIÓN
+        ================================================== -->
 
         <header class="news-card-header">
 
@@ -811,7 +734,7 @@
             <div class="source-avatar">
 
               {{
-                (item.TweetUser || 'E')
+                (item.TweetUser || 'F')
                   .charAt(0)
               }}
 
@@ -824,7 +747,7 @@
 
                 {{
                   item.TweetUser ||
-                  'Entidad pública'
+                  'Fuente'
                 }}
 
               </strong>
@@ -847,52 +770,24 @@
           </div>
 
 
-          <!-- ACCIONES -->
-
           <div class="card-actions">
-
-
-            <!-- CATEGORÍA -->
-
-            <span
-              *ngIf="item.categoria"
-              class="category-badge"
-              [ngClass]="
-                categoryClass(
-                  item.categoria
-                )
-              ">
-
-              <span class="category-dot"></span>
-
-              {{
-                item.categoria ||
-                'Otros'
-              }}
-
-            </span>
-
-
-            <!-- SENTIMIENTO -->
 
             <span
               *ngIf="item.sentimiento"
               class="sentiment-badge"
               [ngClass]="{
                 'positive':
-                  item.sentimiento ===
-                  'positivo',
+                  item.sentimiento === 'positivo',
 
                 'negative':
-                  item.sentimiento ===
-                  'negativo',
+                  item.sentimiento === 'negativo',
 
                 'neutral':
-                  item.sentimiento ===
-                  'neutro'
+                  item.sentimiento === 'neutro'
               }">
 
-              <span class="sentiment-dot">
+              <span
+                class="sentiment-dot">
               </span>
 
               {{ item.sentimiento }}
@@ -900,39 +795,31 @@
             </span>
 
 
-            <!-- GUARDAR -->
-
             <button
               mat-icon-button
               class="action-btn"
               [class.active]="
-                isGuardado(
-                  item.tweetid
-                )
+                isGuardado(item.tweetid)
               "
               [disabled]="
                 savingIds.has(
                   item.tweetid.toString()
                 )
               "
-              (click)="
-                toggleGuardar(item)
-              ">
+              (click)="toggleGuardar(item)">
 
               <mat-icon>
+
                 {{
-                  isGuardado(
-                    item.tweetid
-                  )
+                  isGuardado(item.tweetid)
                     ? 'bookmark'
                     : 'bookmark_border'
                 }}
+
               </mat-icon>
 
             </button>
 
-
-            <!-- DESCARGAR -->
 
             <button
               mat-icon-button
@@ -964,276 +851,299 @@
           <div
             class="news-text"
             [innerHTML]="
-              formatText(
-                item.text
-              )
+              formatText(item.text)
             ">
+          </div>
+
+
+          <!-- =================================================
+               ENTIDADES
+          ================================================== -->
+
+          <div
+            *ngIf="
+              item.persona ||
+              item.organizacion ||
+              item.lugar
+            "
+            class="entities-block">
+
+            <span class="entities-label">
+              Mencionados
+            </span>
+
+
+            <div class="entities">
+
+              <span
+                *ngIf="item.persona"
+                class="entity">
+
+                <mat-icon>
+                  person
+                </mat-icon>
+
+                {{ item.persona }}
+
+              </span>
+
+
+              <span
+                *ngIf="item.organizacion"
+                class="entity">
+
+                <mat-icon>
+                  business
+                </mat-icon>
+
+                {{ item.organizacion }}
+
+              </span>
+
+
+              <span
+                *ngIf="item.lugar"
+                class="entity">
+
+                <mat-icon>
+                  location_on
+                </mat-icon>
+
+                {{ item.lugar }}
+
+              </span>
+
+            </div>
+
           </div>
 
         </div>
 
-<!-- =================================================
-     REACCIÓN
-================================================== -->
 
-<!-- =================================================
-     ADMIN / PRO ACTIVO
-================================================== -->
+        <!-- =================================================
+             REPLIES — PRO
+        ================================================== -->
 
-<ng-container
-  *ngIf="
-    !accessLoading &&
-    canViewReplies
-  ">
+        <ng-container
+          *ngIf="
+            !accessLoading &&
+            canViewReplies
+          ">
 
-  <footer
-    class="conversation-summary"
-    *ngIf="
-      getRepliesCounts(
-        item.tweetid
-      ) as replies
-    ">
+          <footer
+            class="conversation-summary"
+            *ngIf="
+              getRepliesCounts(
+                item.tweetid
+              ) as replies
+            ">
 
-    <div class="conversation-heading">
+            <div class="conversation-heading">
 
-      <div class="conversation-icon">
+              <div class="conversation-icon">
 
-        <mat-icon>
-          forum
-        </mat-icon>
+                <mat-icon>
+                  forum
+                </mat-icon>
 
-      </div>
+              </div>
 
 
-      <div class="conversation-heading-copy">
+              <div class="conversation-heading-copy">
 
-        <span class="conversation-eyebrow">
-          CONVERSACIÓN
-        </span>
+                <span class="conversation-eyebrow">
+                  CONVERSACIÓN
+                </span>
 
-        <strong>
-          Reacción de la conversación
-        </strong>
+                <strong>
+                  Reacción de la conversación
+                </strong>
 
-        <span>
-          Sentimiento de los comentarios
-        </span>
+                <span>
+                  Sentimiento de los comentarios
+                </span>
 
-      </div>
+              </div>
 
-    </div>
+            </div>
 
 
-    <div class="conversation-stats">
+            <div class="conversation-stats">
 
 
-      <div
-        class="
-          conversation-stat
-          positive
-        ">
+              <div
+                class="conversation-stat positive">
 
-        <span class="conversation-dot">
-        </span>
+                <span
+                  class="conversation-dot">
+                </span>
 
-        <div class="conversation-stat-copy">
+                <strong>
+                  {{ replies.positivo }}
+                </strong>
 
-          <strong>
-            {{ replies.positivo }}
-          </strong>
+                <span>
+                  Positivos
+                </span>
 
-          <span>
-            Positivos
-          </span>
+              </div>
 
-        </div>
 
-      </div>
+              <div
+                class="conversation-stat neutral">
 
+                <span
+                  class="conversation-dot">
+                </span>
 
-      <div
-        class="
-          conversation-stat
-          neutral
-        ">
+                <strong>
+                  {{ replies.neutro }}
+                </strong>
 
-        <span class="conversation-dot">
-        </span>
+                <span>
+                  Neutros
+                </span>
 
-        <div class="conversation-stat-copy">
+              </div>
 
-          <strong>
-            {{ replies.neutro }}
-          </strong>
 
-          <span>
-            Neutros
-          </span>
+              <div
+                class="conversation-stat negative">
 
-        </div>
+                <span
+                  class="conversation-dot">
+                </span>
 
-      </div>
+                <strong>
+                  {{ replies.negativo }}
+                </strong>
 
+                <span>
+                  Negativos
+                </span>
 
-      <div
-        class="
-          conversation-stat
-          negative
-        ">
+              </div>
 
-        <span class="conversation-dot">
-        </span>
+            </div>
 
-        <div class="conversation-stat-copy">
+          </footer>
 
-          <strong>
-            {{ replies.negativo }}
-          </strong>
+        </ng-container>
 
-          <span>
-            Negativos
-          </span>
 
-        </div>
+        <!-- =================================================
+             REPLIES — FREE / BÁSICO
+        ================================================== -->
 
-      </div>
+        <footer
+          class="
+            conversation-summary
+            conversation-locked
+          "
+          *ngIf="
+            !accessLoading &&
+            !canViewReplies
+          ">
 
-    </div>
 
-  </footer>
+          <div class="conversation-locked-main">
 
-</ng-container>
+            <div class="conversation-lock-icon">
 
+              <mat-icon>
+                lock
+              </mat-icon>
 
-<!-- =================================================
-     FREE / BÁSICO
-================================================== -->
+            </div>
 
-<footer
-  class="
-    conversation-summary
-    conversation-locked
-  "
-  *ngIf="
-    !accessLoading &&
-    !canViewReplies
-  ">
 
-  <div class="conversation-locked-main">
+            <div class="conversation-lock-copy">
 
-    <div class="conversation-lock-icon">
+              <div class="conversation-lock-top">
 
-      <mat-icon>
-        lock
-      </mat-icon>
+                <span class="conversation-lock-label">
+                  ANÁLISIS DE COMENTARIOS
+                </span>
 
-    </div>
+                <span class="conversation-pro-badge">
 
+                  <mat-icon>
+                    workspace_premium
+                  </mat-icon>
 
-    <div class="conversation-lock-copy">
+                  PRO
 
-      <div class="conversation-lock-top">
+                </span>
 
-        <span class="conversation-lock-label">
-          ANÁLISIS DE COMENTARIOS
-        </span>
+              </div>
 
 
-        <span class="conversation-pro-badge">
+              <strong>
+                Descubre cómo reaccionan las personas
+              </strong>
 
-          <mat-icon>
-            workspace_premium
-          </mat-icon>
 
-          PRO
+              <p>
+                Analiza el sentimiento de los comentarios
+                y descubre si la conversación es positiva,
+                neutral o negativa.
+              </p>
 
-        </span>
+            </div>
 
-      </div>
+          </div>
 
 
-      <strong>
-        Descubre cómo reaccionan las personas
-      </strong>
+          <div class="conversation-locked-preview">
 
+            <div class="locked-preview-item positive">
 
-      <p>
-        Analiza el sentimiento de los comentarios
-        relacionados con esta publicación institucional
-        y descubre si la reacción es positiva,
-        neutral o negativa.
-      </p>
+              <span class="locked-preview-dot"></span>
 
-    </div>
+              <span>
+                Positivos
+              </span>
 
-  </div>
+              <strong>
+                —
+              </strong>
 
+            </div>
 
-  <div class="conversation-locked-preview">
 
+            <div class="locked-preview-item neutral">
 
-    <div
-      class="
-        locked-preview-item
-        positive
-      ">
+              <span class="locked-preview-dot"></span>
 
-      <span class="locked-preview-dot">
-      </span>
+              <span>
+                Neutros
+              </span>
 
-      <span>
-        Positivos
-      </span>
+              <strong>
+                —
+              </strong>
 
-      <strong>
-        —
-      </strong>
+            </div>
 
-    </div>
 
+            <div class="locked-preview-item negative">
 
-    <div
-      class="
-        locked-preview-item
-        neutral
-      ">
+              <span class="locked-preview-dot"></span>
 
-      <span class="locked-preview-dot">
-      </span>
+              <span>
+                Negativos
+              </span>
 
-      <span>
-        Neutros
-      </span>
+              <strong>
+                —
+              </strong>
 
-      <strong>
-        —
-      </strong>
+            </div>
 
-    </div>
+          </div>
 
+        </footer>
 
-    <div
-      class="
-        locked-preview-item
-        negative
-      ">
-
-      <span class="locked-preview-dot">
-      </span>
-
-      <span>
-        Negativos
-      </span>
-
-      <strong>
-        —
-      </strong>
-
-    </div>
-
-  </div>
-
-</footer>
 
       </article>
 
@@ -1253,6 +1163,7 @@
     "
     class="pagination">
 
+
     <div class="pagination-info">
 
       <span>
@@ -1270,10 +1181,7 @@
 
       <button
         mat-stroked-button
-        class="
-          pagination-btn
-          previous
-        "
+        class="pagination-btn previous"
         [disabled]="currentPage <= 1"
         (click)="loadPreviousPage()">
 
@@ -1288,10 +1196,7 @@
 
       <button
         mat-flat-button
-        class="
-          pagination-btn
-          next
-        "
+        class="pagination-btn next"
         [disabled]="!hasMore"
         (click)="loadNextPage()">
 
@@ -1308,4 +1213,3 @@
   </nav>
 
 </div>
-

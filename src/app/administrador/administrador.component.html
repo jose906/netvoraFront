@@ -1,226 +1,982 @@
-<div class="contenedor">
+<div class="admin-page">
 
-  <!-- Header del módulo -->
-  <header class="page-head">
-    <div class="page-head-inner">
-      <div class="page-head-text">
-        <div class="nv-logo">NV</div>
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
 
-        <div>
-          <h1 class="page-title">Usuarios</h1>
-          <p class="page-subtitle">Registra, busca y gestiona usuarios del sistema.</p>
-        </div>
+  <header class="page-header">
+
+    <div class="page-header-main">
+
+      <div class="page-icon">
+        <mat-icon>admin_panel_settings</mat-icon>
       </div>
 
-      <div class="page-head-badges">
-        <span class="badge subtle">Administración</span>
-        <span class="badge">Usuarios</span>
+      <div class="page-heading">
+        <span class="eyebrow">Administración</span>
+
+        <h1>Gestión de usuarios</h1>
+
+        <p>
+          Administra accesos, fuentes de información y suscripciones de NetVora.
+        </p>
       </div>
+
     </div>
+
+
+    <div class="page-status">
+
+      <span class="status-dot"></span>
+
+      <div>
+        <span>Panel administrativo</span>
+        <strong>NetVora</strong>
+      </div>
+
+    </div>
+
   </header>
 
-  <!-- Layout principal -->
-  <div class="layout">
 
-    <!-- Columna izquierda -->
-    <section class="card">
-      <div class="card-head">
-        <h2 class="card-title">Registrar usuario</h2>
-        <p class="card-subtitle">Crea un usuario con rol y estado</p>
-      </div>
+  <!-- =====================================================
+       LAYOUT PRINCIPAL
+  ====================================================== -->
 
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Nombre</label>
-          <input class="input" type="text" placeholder="Ej: Juan" [(ngModel)]="nombre2"/>
-        </div>
+  <div class="admin-grid">
 
-        <div class="form-group">
-          <label>Email</label>
-          <input class="input" type="text" placeholder="tucorreo@ejemplo.com" [(ngModel)]="email"/>
-        </div>
 
-        <div class="form-group">
-          <label>Contraseña</label>
-          <input class="input" type="password" placeholder="••••••••" [(ngModel)]="password"/>
-        </div>
+    <!-- ===================================================
+         COLUMNA IZQUIERDA
+    ==================================================== -->
 
-        <div class="form-group">
-          <label>Tipo</label>
-          <select class="select" [(ngModel)]="tipo">
-            <option value="">Todos</option>
-            <option value="Admin">Admin</option>
-            <option value="Usuario">Usuario</option>
-          </select>
-        </div>
+    <aside class="admin-sidebar">
 
-        <div class="form-group">
-          <label>Estado</label>
-          <select class="select" [(ngModel)]="estado">
-            <option value="">Todos</option>
-            <option value="Activo">Activo</option>
-            <option value="Inactivo">Inactivo</option>
-          </select>
-        </div>
-      </div>
 
-      <div class="actions">
-        <button class="btn btn-dark" (click)="registrarUsuario()">Registrar</button>
-        <button class="btn btn-ghost" type="button" (click)="cancelar()">Limpiar</button>
-      </div>
+      <!-- CREAR USUARIO -->
 
-      <div class="hint">
-        Consejo: usa un email válido y una contraseña segura.
-      </div>
-    </section>
+      <section class="panel create-user-panel">
 
-    <!-- Columna derecha -->
-    <section class="stack">
+        <div class="panel-header">
 
-      <!-- Buscar -->
-      <div class="card">
-        <div class="card-head">
-          <h2 class="card-title">Administrar usuarios</h2>
-          <p class="card-subtitle">Busca por nombre o ID y agrega al sistema</p>
-        </div>
+          <div class="panel-heading">
 
-        <div class="form-grid-2">
-          <div class="form-group">
-            <label>Buscar por nombre</label>
-            <input #inputNombre class="input" type="text" placeholder="Ej: juan_perez"/>
-          </div>
-
-          <div class="form-group">
-            <label>Buscar por ID</label>
-            <input #inputId class="input" type="text" placeholder="Ej: 123"/>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button class="btn btn-dark" (click)="buscar(inputNombre.value, inputId.value)">
-            Buscar
-          </button>
-          <button class="btn btn-ghost" type="button" (click)="cancelar()">Limpiar</button>
-        </div>
-
-        <div class="form-group">
-          <label>Clasificación</label>
-          <select #selectOpciones class="select">
-            <option value="">Seleccione una opción</option>
-            <option value="Medio">Medio</option>
-            <option value="Persona">Persona</option>
-            <option value="Entidad">Entidad</option>
-          </select>
-        </div>
-
-        <div class="usuario-detalle" *ngIf="user">
-          <div class="detail-head">
-            <h3 class="section-title">Usuario encontrado</h3>
-            <span class="badge success">Listo</span>
-          </div>
-
-          <ul class="info-list">
-            <li><span class="k">ID TweetUser</span><span class="v">{{ user.id }}</span></li>
-            <li><span class="k">Usuario Twitter</span><span class="v">{{ user.username }}</span></li>
-            <li><span class="k">Nombre</span><span class="v">{{ user.name }}</span></li>
-          </ul>
-        </div>
-
-        <button
-          [disabled]="!user"
-          class="btn btn-success full"
-          (click)="agregar(user!.username, user!.id, user!.name, selectOpciones.value)">
-          Agregar usuario
-        </button>
-      </div>
-
-      <!-- Asignar plan -->
-      <div class="card">
-        <div class="card-head">
-          <h2 class="card-title">Nuevo plan</h2>
-          <p class="card-subtitle">Asigna un plan a un usuario y calcula inicio/fin automáticamente.</p>
-        </div>
-
-        <div class="form-grid-2">
-          <div class="form-group">
-            <label>Usuario</label>
-            <select class="select" [(ngModel)]="selectedUserId" name="selectedUserId">
-              <option [ngValue]="null">Seleccione usuario…</option>
-              <option *ngFor="let u of appUsers" [ngValue]="u.id">
-                {{ u.display_name }} — {{ u.email }}
-              </option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Plan</label>
-            <select class="select" [(ngModel)]="selectedPlanId" name="selectedPlanId" (change)="onPlanChange()">
-              <option [ngValue]="null">Seleccione plan…</option>
-              <option *ngFor="let p of plans" [ngValue]="p.id">
-                {{ p.name }} ({{ p.duration_days }} días) — Bs {{ p.cost }}
-              </option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Inicio</label>
-            <input class="input" type="date" [(ngModel)]="startDate" name="startDate" (change)="recalcEndDate()" />
-          </div>
-
-          <div class="form-group">
-            <label>Fin</label>
-            <input class="input" type="date" [(ngModel)]="endDate" name="endDate" readonly />
-            <div class="hint small" *ngIf="selectedPlan">
-              Se calcula con {{ selectedPlan.duration_days }} días.
+            <div class="panel-icon violet">
+              <mat-icon>person_add</mat-icon>
             </div>
+
+            <div>
+              <h2>Nuevo usuario</h2>
+
+              <p>
+                Crea una cuenta con acceso a NetVora.
+              </p>
+            </div>
+
           </div>
+
         </div>
 
-        <div class="actions">
-          <button class="btn btn-dark" (click)="crearSuscripcion()" [disabled]="!canCreateSubscription() || creatingSub">
-            {{ creatingSub ? 'Creando…' : 'Crear suscripción' }}
-          </button>
-          <button class="btn btn-ghost" type="button" (click)="resetPlanForm()">Limpiar</button>
-        </div>
 
-        <div class="hint" *ngIf="subMsg">{{ subMsg }}</div>
-      </div>
+        <div class="panel-body">
 
-      <!-- Lista -->
-      <div class="card card-lista">
-        <div class="card-head row-between">
-          <div>
-            <h2 class="card-title">Lista de usuarios</h2>
-            <p class="card-subtitle">Usuarios ya registrados</p>
+
+          <!-- NOMBRE -->
+
+          <div class="field-group">
+
+            <label for="userName">
+              Nombre
+            </label>
+
+            <div class="input-shell">
+
+              <mat-icon>person_outline</mat-icon>
+
+              <input
+                id="userName"
+                class="input"
+                type="text"
+                placeholder="Ej. Juan Pérez"
+                [(ngModel)]="nombre2"
+              />
+
+            </div>
+
           </div>
-          <span class="badge subtle">{{ users.length || 0 }} total</span>
+
+
+          <!-- EMAIL -->
+
+          <div class="field-group">
+
+            <label for="userEmail">
+              Correo electrónico
+            </label>
+
+            <div class="input-shell">
+
+              <mat-icon>mail_outline</mat-icon>
+
+              <input
+                id="userEmail"
+                class="input"
+                type="email"
+                placeholder="correo@empresa.com"
+                [(ngModel)]="email"
+              />
+
+            </div>
+
+          </div>
+
+
+          <!-- PASSWORD -->
+
+          <div class="field-group">
+
+            <label for="userPassword">
+              Contraseña
+            </label>
+
+            <div class="input-shell">
+
+              <mat-icon>lock_outline</mat-icon>
+
+              <input
+                id="userPassword"
+                class="input"
+                type="password"
+                placeholder="••••••••"
+                [(ngModel)]="password"
+              />
+
+            </div>
+
+          </div>
+
+
+          <!-- TIPO -->
+
+          <div class="field-group">
+
+            <label>
+              Rol
+            </label>
+
+            <div class="select-shell">
+
+              <mat-icon>manage_accounts</mat-icon>
+
+              <select
+                class="select"
+                [(ngModel)]="tipo"
+              >
+                <option value="">
+                  Seleccionar rol
+                </option>
+
+                <option value="Admin">
+                  Administrador
+                </option>
+
+                <option value="Usuario">
+                  Usuario
+                </option>
+              </select>
+
+              <mat-icon class="select-arrow">
+                expand_more
+              </mat-icon>
+
+            </div>
+
+          </div>
+
+
+          <!-- ESTADO -->
+
+          <div class="field-group">
+
+            <label>
+              Estado
+            </label>
+
+            <div class="select-shell">
+
+              <mat-icon>toggle_on</mat-icon>
+
+              <select
+                class="select"
+                [(ngModel)]="estado"
+              >
+                <option value="">
+                  Seleccionar estado
+                </option>
+
+                <option value="Activo">
+                  Activo
+                </option>
+
+                <option value="Inactivo">
+                  Inactivo
+                </option>
+              </select>
+
+              <mat-icon class="select-arrow">
+                expand_more
+              </mat-icon>
+
+            </div>
+
+          </div>
+
+
+          <!-- ACCIONES -->
+
+          <div class="form-actions vertical-actions">
+
+            <button
+              class="btn btn-primary btn-full"
+              type="button"
+              (click)="registrarUsuario()"
+            >
+
+              <mat-icon>person_add</mat-icon>
+
+              <span>
+                Crear usuario
+              </span>
+
+            </button>
+
+
+            <button
+              class="btn btn-secondary btn-full"
+              type="button"
+              (click)="cancelar()"
+            >
+
+              <span>
+                Limpiar formulario
+              </span>
+
+            </button>
+
+          </div>
+
+
+          <div class="security-hint">
+
+            <mat-icon>shield</mat-icon>
+
+            <p>
+              Utiliza un correo válido y asigna únicamente los permisos
+              necesarios para cada usuario.
+            </p>
+
+          </div>
+
         </div>
 
-        <div *ngIf="cargando" class="state">Cargando usuarios…</div>
+      </section>
 
-        <div *ngIf="!cargando && users.length" class="lista-users">
-          <div *ngFor="let item of users" class="user-row">
-            <div class="user-main">
-              <div class="user-left">
-                <div class="user-avatar">
-                  {{ (item.TweetUser || 'U').slice(0,1) }}
-                </div>
-                <div class="user-meta">
-                  <span class="user-name">{{ item.TweetUser }}</span>
-                  <span class="user-id">ID: {{ item.idTweetUser }}</span>
-                </div>
+    </aside>
+
+
+
+    <!-- ===================================================
+         COLUMNA PRINCIPAL
+    ==================================================== -->
+
+    <main class="admin-content">
+
+
+      <!-- =================================================
+           CUENTA X / TWITTER
+      ================================================== -->
+
+      <section class="panel">
+
+        <div class="panel-header">
+
+          <div class="panel-heading">
+
+            <div class="panel-icon">
+              <mat-icon>travel_explore</mat-icon>
+            </div>
+
+            <div>
+              <h2>Agregar fuente de X</h2>
+
+              <p>
+                Busca una cuenta pública y agrégala a las fuentes monitoreadas.
+              </p>
+            </div>
+
+          </div>
+
+
+          <span class="panel-badge">
+            Fuentes
+          </span>
+
+        </div>
+
+
+        <div class="panel-body">
+
+
+          <div class="search-layout">
+
+
+            <!-- BUSCAR USERNAME -->
+
+            <div class="field-group">
+
+              <label>
+                Usuario de X
+              </label>
+
+              <div class="input-shell">
+
+                <span class="input-prefix">us</span>
+
+                <input
+                  #inputNombre
+                  class="input"
+                  type="text"
+                  placeholder="nombre_usuario"
+                />
+
               </div>
-              <span class="chip">{{ item.tipeUser }}</span>
+
             </div>
+
+
+            <div class="search-divider">
+              <span>o</span>
+            </div>
+
+
+            <!-- BUSCAR ID -->
+
+            <div class="field-group">
+
+              <label>
+                ID de usuario
+              </label>
+
+              <div class="input-shell">
+
+                <mat-icon>tag</mat-icon>
+
+                <input
+                  #inputId
+                  class="input"
+                  type="text"
+                  placeholder="Ej. 123456789"
+                />
+
+              </div>
+
+            </div>
+
           </div>
+
+
+          <div class="search-actions">
+
+            <button
+              class="btn btn-primary"
+              type="button"
+              (click)="buscar(inputNombre.value, inputId.value)"
+            >
+
+              <mat-icon>search</mat-icon>
+
+              Buscar cuenta
+
+            </button>
+
+
+            <button
+              class="btn btn-secondary"
+              type="button"
+              (click)="cancelar()"
+            >
+
+              Limpiar
+
+            </button>
+
+          </div>
+
+
+
+          <!-- RESULTADO -->
+
+          <div
+            class="search-result"
+            *ngIf="user"
+          >
+
+            <div class="result-header">
+
+              <div class="result-profile">
+
+                <div class="result-avatar">
+                  {{
+                    (user.username || 'U')
+                      .slice(0,1)
+                      .toUpperCase()
+                  }}
+                </div>
+
+
+                <div class="result-name">
+
+                  <span class="result-status">
+                    <span></span>
+                    Cuenta encontrada
+                  </span>
+
+                  <strong>
+                    {{ user.name }}
+                  </strong>
+
+                  <small>
+                    {{ user.username }}
+                  </small>
+
+                </div>
+
+              </div>
+
+
+              <mat-icon class="result-check">
+                check_circle
+              </mat-icon>
+
+            </div>
+
+
+            <div class="result-details">
+
+              <div class="detail-item">
+
+                <span>ID de X</span>
+
+                <strong>
+                  {{ user.id }}
+                </strong>
+
+              </div>
+
+
+              <div class="detail-item">
+
+                <span>Usuario</span>
+
+                <strong>
+                  {{ user.username }}
+                </strong>
+
+              </div>
+
+
+              <div class="detail-item">
+
+                <span>Nombre</span>
+
+                <strong>
+                  {{ user.name }}
+                </strong>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+
+          <!-- CLASIFICACIÓN + AGREGAR -->
+
+          <div class="source-footer">
+
+            <div class="field-group classification-field">
+
+              <label>
+                Clasificación de la fuente
+              </label>
+
+              <div class="select-shell">
+
+                <mat-icon>category</mat-icon>
+
+                <select
+                  #selectOpciones
+                  class="select"
+                >
+
+                  <option value="">
+                    Seleccionar clasificación
+                  </option>
+
+                  <option value="Medio">
+                    Medio
+                  </option>
+
+                  <option value="Persona">
+                    Persona
+                  </option>
+
+                  <option value="Entidad">
+                    Entidad
+                  </option>
+
+                </select>
+
+                <mat-icon class="select-arrow">
+                  expand_more
+                </mat-icon>
+
+              </div>
+
+            </div>
+
+
+            <button
+              class="btn btn-primary add-source-btn"
+              [disabled]="!user"
+              type="button"
+              (click)="
+                agregar(
+                  user!.username,
+                  user!.id,
+                  user!.name,
+                  selectOpciones.value
+                )
+              "
+            >
+
+              <mat-icon>add</mat-icon>
+
+              Agregar fuente
+
+            </button>
+
+          </div>
+
         </div>
 
-        <div *ngIf="!cargando && !users.length" class="state">
-          No hay usuarios registrados.
-        </div>
-      </div>
+      </section>
 
-    </section>
+
+
+      <!-- =================================================
+           SUSCRIPCIÓN
+      ================================================== -->
+
+      <section class="panel">
+
+        <div class="panel-header">
+
+          <div class="panel-heading">
+
+            <div class="panel-icon emerald">
+              <mat-icon>workspace_premium</mat-icon>
+            </div>
+
+            <div>
+              <h2>Asignar suscripción</h2>
+
+              <p>
+                Vincula un plan activo a un usuario de NetVora.
+              </p>
+            </div>
+
+          </div>
+
+
+          <span class="panel-badge premium">
+            Planes
+          </span>
+
+        </div>
+
+
+        <div class="panel-body">
+
+
+          <div class="subscription-grid">
+
+
+            <!-- USUARIO -->
+
+            <div class="field-group">
+
+              <label>
+                Usuario
+              </label>
+
+              <div class="select-shell">
+
+                <mat-icon>person_outline</mat-icon>
+
+                <select
+                  class="select"
+                  [(ngModel)]="selectedUserId"
+                  name="selectedUserId"
+                >
+
+                  <option [ngValue]="null">
+                    Seleccionar usuario
+                  </option>
+
+                  <option
+                    *ngFor="let u of appUsers"
+                    [ngValue]="u.id"
+                  >
+                    {{ u.display_name }} — {{ u.email }}
+                  </option>
+
+                </select>
+
+                <mat-icon class="select-arrow">
+                  expand_more
+                </mat-icon>
+
+              </div>
+
+            </div>
+
+
+            <!-- PLAN -->
+
+            <div class="field-group">
+
+              <label>
+                Plan
+              </label>
+
+              <div class="select-shell">
+
+                <mat-icon>sell</mat-icon>
+
+                <select
+                  class="select"
+                  [(ngModel)]="selectedPlanId"
+                  name="selectedPlanId"
+                  (change)="onPlanChange()"
+                >
+
+                  <option [ngValue]="null">
+                    Seleccionar plan
+                  </option>
+
+                  <option
+                    *ngFor="let p of plans"
+                    [ngValue]="p.id"
+                  >
+                    {{ p.name }}
+                    · {{ p.duration_days }} días
+                    · Bs {{ p.cost }}
+                  </option>
+
+                </select>
+
+                <mat-icon class="select-arrow">
+                  expand_more
+                </mat-icon>
+
+              </div>
+
+            </div>
+
+
+            <!-- START -->
+
+            <div class="field-group">
+
+              <label>
+                Fecha de inicio
+              </label>
+
+              <div class="input-shell">
+
+                <mat-icon>calendar_today</mat-icon>
+
+                <input
+                  class="input"
+                  type="date"
+                  [(ngModel)]="startDate"
+                  name="startDate"
+                  (change)="recalcEndDate()"
+                />
+
+              </div>
+
+            </div>
+
+
+            <!-- END -->
+
+            <div class="field-group">
+
+              <label>
+                Fecha de finalización
+              </label>
+
+              <div class="input-shell readonly-shell">
+
+                <mat-icon>event_available</mat-icon>
+
+                <input
+                  class="input"
+                  type="date"
+                  [(ngModel)]="endDate"
+                  name="endDate"
+                  readonly
+                />
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+
+          <!-- PLAN INFO -->
+
+          <div
+            class="plan-summary"
+            *ngIf="selectedPlan"
+          >
+
+            <div class="plan-summary-icon">
+              <mat-icon>schedule</mat-icon>
+            </div>
+
+
+            <div>
+
+              <span>
+                Duración seleccionada
+              </span>
+
+              <strong>
+                {{ selectedPlan.duration_days }} días
+              </strong>
+
+            </div>
+
+          </div>
+
+
+
+          <div class="subscription-footer">
+
+            <div
+              class="subscription-message"
+              *ngIf="subMsg"
+            >
+              {{ subMsg }}
+            </div>
+
+
+            <div class="form-actions">
+
+              <button
+                class="btn btn-secondary"
+                type="button"
+                (click)="resetPlanForm()"
+              >
+                Limpiar
+              </button>
+
+
+              <button
+                class="btn btn-primary"
+                type="button"
+                (click)="crearSuscripcion()"
+                [disabled]="
+                  !canCreateSubscription() ||
+                  creatingSub
+                "
+              >
+
+                <mat-icon>add_card</mat-icon>
+
+                {{
+                  creatingSub
+                    ? 'Creando...'
+                    : 'Crear suscripción'
+                }}
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+
+      <!-- =================================================
+           LISTA DE FUENTES
+      ================================================== -->
+
+      <section class="panel sources-panel">
+
+        <div class="panel-header">
+
+          <div class="panel-heading">
+
+            <div class="panel-icon blue">
+              <mat-icon>group</mat-icon>
+            </div>
+
+            <div>
+
+              <h2>Fuentes registradas</h2>
+
+              <p>
+                Cuentas de X disponibles para análisis dentro de NetVora.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="source-count">
+
+            <strong>
+              {{ users.length || 0 }}
+            </strong>
+
+            <span>
+              fuentes
+            </span>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- LOADING -->
+
+        <div
+          *ngIf="cargando"
+          class="users-loading"
+        >
+
+          <div
+            class="user-skeleton"
+            *ngFor="let x of [1,2,3,4]"
+          >
+
+            <div class="sk-avatar"></div>
+
+            <div class="sk-info">
+              <span></span>
+              <small></small>
+            </div>
+
+            <div class="sk-chip"></div>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- LISTA -->
+
+        <div
+          *ngIf="!cargando && users.length"
+          class="users-list"
+        >
+
+          <div
+            *ngFor="let item of users"
+            class="user-item"
+          >
+
+            <div class="user-profile">
+
+              <div class="user-avatar">
+
+                {{
+                  (item.TweetUser || 'U')
+                    .slice(0,1)
+                    .toUpperCase()
+                }}
+
+              </div>
+
+
+              <div class="user-info">
+
+                <strong>
+                  {{ item.TweetUser }}
+                </strong>
+
+                <span>
+                  ID {{ item.idTweetUser }}
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <span
+              class="source-type"
+              [class.person]="item.tipeUser === 'Persona'"
+              [class.entity]="item.tipeUser === 'Entidad'"
+            >
+              {{ item.tipeUser }}
+            </span>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- VACÍO -->
+
+        <div
+          *ngIf="!cargando && !users.length"
+          class="empty-state"
+        >
+
+          <div class="empty-icon">
+            <mat-icon>person_search</mat-icon>
+          </div>
+
+          <strong>
+            No hay fuentes registradas
+          </strong>
+
+          <span>
+            Agrega una cuenta de X para comenzar.
+          </span>
+
+        </div>
+
+      </section>
+
+    </main>
 
   </div>
+
 </div>

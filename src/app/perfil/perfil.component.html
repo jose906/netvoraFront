@@ -1,254 +1,1022 @@
-<section class="account-page">
+<div class="profile-page">
 
-  <!-- Header -->
-  <header class="head">
-    <div class="title">
-      <h2>Mi cuenta</h2>
-      <p>Gestiona tu perfil, tu plan y cambia tu contraseña.</p>
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
+
+  <header class="profile-header">
+
+    <div class="profile-heading">
+
+      <div class="breadcrumb">
+        Configuración
+        <span>/</span>
+        Perfil
+      </div>
+
+      <div class="identity-row">
+
+        <div class="profile-avatar">
+          {{
+            (profile.displayName || profile.email || 'N')
+              .charAt(0)
+              .toUpperCase()
+          }}
+        </div>
+
+        <div class="identity-copy">
+
+          <div class="identity-top">
+
+            <h1>
+              {{ profile.displayName || 'Mi perfil' }}
+            </h1>
+
+            <div class="identity-badges">
+
+              <span class="role-badge">
+                {{ role || 'Usuario' }}
+              </span>
+
+              <span
+                class="account-state"
+                [class.active]="
+                  !estadoUser ||
+                  estadoUser.toLowerCase() === 'activo'
+                "
+              >
+                <span class="state-dot"></span>
+
+                {{
+                  estadoUser || 'Activo'
+                }}
+              </span>
+
+            </div>
+
+          </div>
+
+          <p>
+            Administra tu información, tu plan y la seguridad de tu cuenta.
+          </p>
+
+          <div class="identity-meta">
+
+            <span>
+              {{ profile.email || 'Sin correo registrado' }}
+            </span>
+
+            <span class="meta-divider"></span>
+
+            <span>
+              {{ profile.org || 'Cuenta NetVora' }}
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
 
-    <div class="badges">
-      <span class="pill" [class.ok]="sub.status==='activa'" [class.warn]="sub.status!=='activa'">
-        <i class="fas fa-bolt"></i>
-        {{ sub.status | titlecase }}
-      </span>
-
-      <span class="pill soft">
-        <i class="fas fa-id-badge"></i>
-        {{ role | uppercase }}
-      </span>
-    </div>
   </header>
 
-  <!-- Alerts -->
-  <div *ngIf="msg.text" class="alert" [class.ok]="msg.type==='ok'" [class.err]="msg.type==='err'">
-    <i class="fas" [class.fa-circle-check]="msg.type==='ok'" [class.fa-triangle-exclamation]="msg.type==='err'"></i>
-    <span>{{ msg.text }}</span>
+
+  <!-- =====================================================
+       MENSAJE
+  ====================================================== -->
+
+  <div
+    *ngIf="msg.text"
+    class="feedback"
+    [class.success]="msg.type === 'ok'"
+    [class.error]="msg.type === 'err'"
+  >
+
+    <div class="feedback-mark">
+      {{ msg.type === 'ok' ? '✓' : '!' }}
+    </div>
+
+    <span>
+      {{ msg.text }}
+    </span>
+
   </div>
 
-  <div class="grid">
-    <div class="kv">
-      <span class="k">Costo</span>
-      <span class="v">{{ sub.cost === null ? '—' : ('$' + sub.cost) }}</span>
-    </div>
 
-    <div class="kv">
-      <span class="k">Duración</span>
-      <span class="v">{{ sub.durationDays === null ? '—' : (sub.durationDays + ' días') }}</span>
-    </div>
+  <!-- =====================================================
+       LAYOUT
+  ====================================================== -->
 
-    <div class="kv" *ngIf="sub.description">
-      <span class="k">Descripción</span>
-      <span class="v">{{ sub.description }}</span>
-    </div>
+  <main class="profile-layout">
 
-    <!-- ========= Perfil ========= -->
-    <article class="card">
-      <div class="card-head">
-        <h3>Perfil</h3>
-        <span class="muted">Datos básicos</span>
-      </div>
 
-      <form (ngSubmit)="saveProfile()" #profileForm="ngForm" class="form">
+    <!-- ===================================================
+         COLUMNA PRINCIPAL
+    ==================================================== -->
 
-        <div class="row">
-          <div class="field">
-            <label>Nombre</label>
-            <div class="control">
-              <i class="fas fa-user"></i>
-              <input
-                name="displayName"
-                [(ngModel)]="profile.displayName"
-                placeholder="Tu nombre"
-                required
-                minlength="2"
-              />
-            </div>
-            <small class="hint">Esto se mostrará en tu panel.</small>
-          </div>
+    <div class="main-column">
 
-          <div class="field">
-            <label>Email</label>
-            <div class="control readonly">
-              <i class="fas fa-envelope"></i>
-              <input
-                name="email"
-                [ngModel]="profile.email"
-                readonly
-              />
-            </div>
-            <small class="hint">El email no se puede cambiar aquí.</small>
-          </div>
-        </div>
 
-        <div class="row">
-          <div class="field">
-            <label>Organización (opcional)</label>
-            <div class="control">
-              <i class="fas fa-building"></i>
-              <input
-                name="org"
-                [(ngModel)]="profile.org"
-                placeholder="NetVora / Empresa / ONG"
-              />
-            </div>
-          </div>
-        </div>
+      <!-- =================================================
+           INFORMACIÓN PERSONAL
+      ================================================== -->
 
-        <div class="actions">
-          <button class="btn" type="submit" [disabled]="loading.profile || !profileForm.valid">
-            <span *ngIf="!loading.profile"><i class="fas fa-floppy-disk"></i> Guardar cambios</span>
-            <span *ngIf="loading.profile"><i class="fas fa-spinner fa-spin"></i> Guardando…</span>
-          </button>
-        </div>
+      <section class="section-card">
 
-      </form>
-    </article>
+        <header class="section-header">
 
-    <!-- ========= Suscripción ========= -->
-    <article class="card">
-      <div class="card-head">
-        <h3>Suscripción</h3>
-        <span class="muted">Plan y vencimiento</span>
-      </div>
+          <div>
 
-      <div class="sub-grid">
-        <div class="kv">
-          <span class="k">Plan</span>
-          <span class="v">{{ sub.plan }}</span>
-        </div>
-
-        <div class="kv">
-          <span class="k">Estado</span>
-          <span class="v">
-            <span class="status" [class.ok]="sub.status==='activa'" [class.warn]="sub.status!=='activa'">
-              {{ sub.status | titlecase }}
+            <span class="section-kicker">
+              Cuenta
             </span>
-          </span>
-        </div>
 
-        <div class="kv">
-          <span class="k">Fecha de vencimiento</span>
-          <span class="v">{{ sub.expiresAt ? (sub.expiresAt | date:'mediumDate') : '—' }}</span>
-        </div>
+            <h2>
+              Información personal
+            </h2>
 
-        <div class="kv">
-          <span class="k">Renovación</span>
-          <span class="v">{{ sub.renewal }}</span>
-        </div>
+            <p>
+              Esta información identifica tu cuenta dentro de NetVora.
+            </p>
 
-        <div class="kv">
-          <span class="k">Límites</span>
-          <span class="v">{{ sub.limits }}</span>
-        </div>
-
-        <div class="kv">
-          <span class="k">Último pago</span>
-          <span class="v">{{ sub.lastPayment ? (sub.lastPayment | date:'mediumDate') : '—' }}</span>
-        </div>
-      </div>
-
-      <div class="note">
-        <i class="fas fa-circle-info"></i>
-        <span>Si necesitas activar o cambiar de plan puedes contactarnos a ventas&#64;netvora.org.</span>
-      </div>
-    </article>
-
-    <!-- ========= Seguridad ========= -->
-    <article class="card">
-      <div class="card-head">
-        <h3>Seguridad</h3>
-        <span class="muted">Cambiar contraseña</span>
-      </div>
-
-      <form (ngSubmit)="changePassword()" #passForm="ngForm" class="form">
-
-        <div class="field">
-          <label>Contraseña actual</label>
-          <div class="control">
-            <i class="fas fa-lock"></i>
-            <input
-              [type]="ui.showCurrentPass ? 'text' : 'password'"
-              name="currentPassword"
-              [(ngModel)]="pass.currentPassword"
-              placeholder="Tu contraseña actual"
-              required
-              minlength="8"
-            />
-            <button
-              class="icon-btn"
-              type="button"
-              (click)="ui.showCurrentPass = !ui.showCurrentPass"
-              [attr.aria-label]="ui.showCurrentPass ? 'Ocultar' : 'Mostrar'">
-              <i class="fas" [class.fa-eye]="!ui.showCurrentPass" [class.fa-eye-slash]="ui.showCurrentPass"></i>
-            </button>
           </div>
-        </div>
 
-        <div class="field">
-          <label>Nueva contraseña</label>
-          <div class="control">
-            <i class="fas fa-lock"></i>
-            <input
-              [type]="ui.showPass ? 'text' : 'password'"
-              name="newPassword"
-              [(ngModel)]="pass.newPassword"
-              placeholder="Mínimo 8 caracteres"
-              required
-              minlength="8"
-            />
-            <button
-              class="icon-btn"
-              type="button"
-              (click)="ui.showPass = !ui.showPass"
-              [attr.aria-label]="ui.showPass ? 'Ocultar' : 'Mostrar'">
-              <i class="fas" [class.fa-eye]="!ui.showPass" [class.fa-eye-slash]="ui.showPass"></i>
-            </button>
+        </header>
+
+
+        <div class="section-body">
+
+          <div class="form-grid">
+
+
+            <!-- NOMBRE -->
+
+            <div class="field field-full">
+
+              <label for="displayName">
+                Nombre
+              </label>
+
+              <div class="input-control">
+
+                <span class="input-icon">
+
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5.33 0-8 2.67-8 5v1h16v-1c0-2.33-2.67-5-8-5Z"
+                    ></path>
+                  </svg>
+
+                </span>
+
+                <input
+                  id="displayName"
+                  type="text"
+                  [(ngModel)]="profile.displayName"
+                  placeholder="Tu nombre"
+                  autocomplete="name"
+                />
+
+              </div>
+
+              <span class="field-help">
+                Este es el nombre que se mostrará dentro de NetVora.
+              </span>
+
+            </div>
+
+
+            <!-- EMAIL -->
+
+            <div class="field">
+
+              <label for="email">
+                Correo electrónico
+              </label>
+
+              <div class="input-control readonly">
+
+                <span class="input-icon">
+
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M3 5h18v14H3V5Zm2 2v.6l7 4.67 7-4.67V7H5Zm14 10V10l-7 4.67L5 10v7h14Z"
+                    ></path>
+                  </svg>
+
+                </span>
+
+                <input
+                  id="email"
+                  type="email"
+                  [value]="profile.email"
+                  readonly
+                />
+
+                <span class="readonly-label">
+                  Verificado
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <!-- ORGANIZACIÓN -->
+
+            <div class="field">
+
+              <label for="organization">
+                Organización
+              </label>
+
+              <div class="input-control">
+
+                <span class="input-icon">
+
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M4 21V3h10v5h6v13H4Zm2-2h2v-2H6v2Zm0-4h2v-2H6v2Zm0-4h2V9H6v2Zm0-4h2V5H6v2Zm4 12h2v-2h-2v2Zm0-4h2v-2h-2v2Zm0-4h2V9h-2v2Zm0-4h2V5h-2v2Zm4 12h4v-9h-4v9Z"
+                    ></path>
+                  </svg>
+
+                </span>
+
+                <input
+                  id="organization"
+                  type="text"
+                  [(ngModel)]="profile.org"
+                  placeholder="Nombre de la organización"
+                />
+
+              </div>
+
+            </div>
+
+
+            <!-- TIMEZONE -->
+
+            <div class="field field-full">
+
+              <label for="timezone">
+                Zona horaria
+              </label>
+
+              <div class="input-control select-control">
+
+                <span class="input-icon">
+
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm6.92 6h-3.01a15.8 15.8 0 0 0-1.38-3.05A8.05 8.05 0 0 1 18.92 8ZM12 4c.82 1.04 1.47 2.4 1.82 4h-3.64C10.53 6.4 11.18 5.04 12 4ZM4.26 14a7.9 7.9 0 0 1 0-4h3.4a16.4 16.4 0 0 0 0 4h-3.4Zm.82 2h3.01c.3 1.1.76 2.13 1.38 3.05A8.05 8.05 0 0 1 5.08 16ZM8.09 8H5.08a8.05 8.05 0 0 1 4.39-3.05A15.8 15.8 0 0 0 8.09 8ZM12 20c-.82-1.04-1.47-2.4-1.82-4h3.64c-.35 1.6-1 2.96-1.82 4Zm2.16-6H9.84a14.5 14.5 0 0 1 0-4h4.32a14.5 14.5 0 0 1 0 4Zm.37 5.05A15.8 15.8 0 0 0 15.91 16h3.01a8.05 8.05 0 0 1-4.39 3.05ZM16.34 14a16.4 16.4 0 0 0 0-4h3.4a7.9 7.9 0 0 1 0 4h-3.4Z"
+                    ></path>
+                  </svg>
+
+                </span>
+
+                <select
+                  id="timezone"
+                  [(ngModel)]="profile.timezone"
+                >
+
+                  <option
+                    *ngFor="let timezone of timezones"
+                    [value]="timezone"
+                  >
+                    {{ timezone }}
+                  </option>
+
+                </select>
+
+              </div>
+
+              <span class="field-help">
+                NetVora utilizará esta zona horaria para mostrar fechas y actividad.
+              </span>
+
+            </div>
+
           </div>
-        </div>
 
-        <div class="field">
-          <label>Repetir contraseña</label>
-          <div class="control">
-            <i class="fas fa-shield-halved"></i>
-            <input
-              [type]="ui.showPass2 ? 'text' : 'password'"
-              name="repeatPassword"
-              [(ngModel)]="pass.repeatPassword"
-              placeholder="Repite la contraseña"
-              required
-              minlength="8"
-            />
+
+          <!-- ACTION -->
+
+          <div class="section-actions">
+
+            <span class="save-hint">
+              Los cambios solo afectan la información de tu perfil.
+            </span>
+
             <button
-              class="icon-btn"
               type="button"
-              (click)="ui.showPass2 = !ui.showPass2"
-              [attr.aria-label]="ui.showPass2 ? 'Ocultar' : 'Mostrar'">
-              <i class="fas" [class.fa-eye]="!ui.showPass2" [class.fa-eye-slash]="ui.showPass2"></i>
+              class="primary-button"
+              [disabled]="loading.profile"
+              (click)="saveProfile()"
+            >
+
+              <ng-container *ngIf="!loading.profile">
+                Guardar cambios
+              </ng-container>
+
+              <ng-container *ngIf="loading.profile">
+
+                <span class="spinner light small"></span>
+
+                Guardando
+
+              </ng-container>
+
             </button>
+
           </div>
-          <small class="hint err" *ngIf="pass.repeatPassword && !passwordsMatch()">
-            Las contraseñas no coinciden.
-          </small>
+
         </div>
 
-        <div class="actions">
-          <button
-            class="btn danger"
-            type="submit"
-            [disabled]="loading.pass || !passForm.valid || !passwordsMatch()">
-            <span *ngIf="!loading.pass"><i class="fas fa-key"></i> Cambiar contraseña</span>
-            <span *ngIf="loading.pass"><i class="fas fa-spinner fa-spin"></i> Cambiando…</span>
-          </button>
+      </section>
+
+
+      <!-- =================================================
+           SEGURIDAD
+      ================================================== -->
+
+      <section class="section-card security-card">
+
+        <header class="section-header">
+
+          <div>
+
+            <span class="section-kicker">
+              Seguridad
+            </span>
+
+            <h2>
+              Contraseña
+            </h2>
+
+            <p>
+              Actualiza la contraseña que utilizas para acceder a tu cuenta.
+            </p>
+
+          </div>
+
+          <div class="security-symbol">
+
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                d="M17 8h-1V6a4 4 0 0 0-8 0v2H7a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-8a3 3 0 0 0-3-3Zm-7-2a2 2 0 0 1 4 0v2h-4V6Zm8 13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v8Z"
+              ></path>
+            </svg>
+
+          </div>
+
+        </header>
+
+
+        <div class="section-body">
+
+          <div class="password-form">
+
+
+            <!-- ACTUAL -->
+
+            <div class="field">
+
+              <label for="currentPassword">
+                Contraseña actual
+              </label>
+
+              <div class="input-control">
+
+                <span class="input-icon">
+
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M12 2a5 5 0 0 0-4.9 6H5a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-8a3 3 0 0 0-3-3h-2.1A5 5 0 0 0 12 2Zm0 2a3 3 0 0 1 3 3c0 .35-.06.69-.17 1H9.17A3 3 0 0 1 12 4Zm7 16H5a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1Z"
+                    ></path>
+                  </svg>
+
+                </span>
+
+                <input
+                  id="currentPassword"
+                  [type]="ui.showCurrentPass ? 'text' : 'password'"
+                  [(ngModel)]="pass.currentPassword"
+                  autocomplete="current-password"
+                  placeholder="Tu contraseña actual"
+                />
+
+                <button
+                  type="button"
+                  class="password-toggle"
+                  (click)="ui.showCurrentPass = !ui.showCurrentPass"
+                >
+                  {{
+                    ui.showCurrentPass
+                      ? 'Ocultar'
+                      : 'Mostrar'
+                  }}
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <!-- NUEVA CONTRASEÑA -->
+
+            <div class="password-grid">
+
+              <div class="field">
+
+                <label for="newPassword">
+                  Nueva contraseña
+                </label>
+
+                <div class="input-control">
+
+                  <span class="input-icon">
+
+                    <svg
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M17 8h-1V6a4 4 0 0 0-8 0v2H7a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-8a3 3 0 0 0-3-3ZM10 6a2 2 0 1 1 4 0v2h-4V6Zm8 13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v8Z"
+                      ></path>
+                    </svg>
+
+                  </span>
+
+                  <input
+                    id="newPassword"
+                    [type]="ui.showPass ? 'text' : 'password'"
+                    [(ngModel)]="pass.newPassword"
+                    autocomplete="new-password"
+                    placeholder="Mínimo 8 caracteres"
+                  />
+
+                  <button
+                    type="button"
+                    class="password-toggle"
+                    (click)="ui.showPass = !ui.showPass"
+                  >
+                    {{
+                      ui.showPass
+                        ? 'Ocultar'
+                        : 'Mostrar'
+                    }}
+                  </button>
+
+                </div>
+
+              </div>
+
+
+              <!-- REPETIR -->
+
+              <div class="field">
+
+                <label for="repeatPassword">
+                  Repetir contraseña
+                </label>
+
+                <div
+                  class="input-control"
+                  [class.invalid]="
+                    pass.repeatPassword &&
+                    !passwordsMatch()
+                  "
+                >
+
+                  <span class="input-icon">
+
+                    <svg
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M17 8h-1V6a4 4 0 0 0-8 0v2H7a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-8a3 3 0 0 0-3-3ZM10 6a2 2 0 1 1 4 0v2h-4V6Zm8 13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v8Z"
+                      ></path>
+                    </svg>
+
+                  </span>
+
+                  <input
+                    id="repeatPassword"
+                    [type]="ui.showPass2 ? 'text' : 'password'"
+                    [(ngModel)]="pass.repeatPassword"
+                    autocomplete="new-password"
+                    placeholder="Repite la contraseña"
+                  />
+
+                  <button
+                    type="button"
+                    class="password-toggle"
+                    (click)="ui.showPass2 = !ui.showPass2"
+                  >
+                    {{
+                      ui.showPass2
+                        ? 'Ocultar'
+                        : 'Mostrar'
+                    }}
+                  </button>
+
+                </div>
+
+                <span
+                  class="field-error"
+                  *ngIf="
+                    pass.repeatPassword &&
+                    !passwordsMatch()
+                  "
+                >
+                  Las contraseñas no coinciden.
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <!-- PASSWORD RULE -->
+
+            <div class="password-rule">
+
+              <span class="rule-dot"></span>
+
+              Utiliza al menos 8 caracteres.
+
+            </div>
+
+
+            <!-- ACTION -->
+
+            <div class="security-actions">
+
+              <span>
+                Se te pedirá tu contraseña actual para confirmar el cambio.
+              </span>
+
+              <button
+                type="button"
+                class="security-button"
+                [disabled]="loading.pass"
+                (click)="changePassword()"
+              >
+
+                <ng-container *ngIf="!loading.pass">
+                  Cambiar contraseña
+                </ng-container>
+
+                <ng-container *ngIf="loading.pass">
+
+                  <span class="spinner small"></span>
+
+                  Actualizando
+
+                </ng-container>
+
+              </button>
+
+            </div>
+
+          </div>
+
         </div>
 
-      </form>
+      </section>
 
-      <div class="note soft">
-        <i class="fas fa-shield"></i>
-        <span>Consejo: usa una contraseña larga y única.</span>
-      </div>
-    </article>
+    </div>
+
+
+    <!-- ===================================================
+         COLUMNA DERECHA
+    ==================================================== -->
+
+    <aside class="side-column">
+
+
+      <!-- =================================================
+           SUSCRIPCIÓN
+      ================================================== -->
+
+      <section class="subscription-card">
+
+        <!-- LOADING -->
+
+        <div
+          class="subscription-loading"
+          *ngIf="loading.subscription"
+        >
+
+          <span class="spinner"></span>
+
+          <div>
+
+            <strong>
+              Cargando tu plan
+            </strong>
+
+            <span>
+              Consultando tu suscripción.
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <!-- CONTENT -->
+
+        <ng-container *ngIf="!loading.subscription">
+
+          <div class="subscription-top">
+
+            <div>
+
+              <span class="subscription-kicker">
+                Suscripción
+              </span>
+
+              <div class="plan-title-row">
+
+                <h2>
+                  {{ sub.plan }}
+                </h2>
+
+                <span
+                  class="subscription-status"
+                  [class.active]="sub.status === 'activa'"
+                  [class.warning]="sub.status !== 'activa'"
+                >
+                  <span class="status-dot"></span>
+
+                  {{
+                    sub.status === 'activa'
+                      ? 'Activa'
+                      : sub.status
+                  }}
+                </span>
+
+              </div>
+
+            </div>
+
+            <div class="plan-symbol">
+              N
+            </div>
+
+          </div>
+
+
+          <p
+            class="plan-description"
+            *ngIf="sub.description"
+          >
+            {{ sub.description }}
+          </p>
+
+
+          <div class="plan-divider"></div>
+
+
+          <!-- PLAN DETAILS -->
+
+          <div class="plan-details">
+
+            <div class="plan-row">
+
+              <span>
+                Plan actual
+              </span>
+
+              <strong class="purple-value">
+                {{ sub.plan }}
+              </strong>
+
+            </div>
+
+
+            <div
+              class="plan-row"
+              *ngIf="sub.cost !== null"
+            >
+
+              <span>
+                Precio
+              </span>
+
+              <strong>
+                ${{ sub.cost | number:'1.0-2' }}
+              </strong>
+
+            </div>
+
+
+            <div
+              class="plan-row"
+              *ngIf="sub.durationDays !== null"
+            >
+
+              <span>
+                Duración
+              </span>
+
+              <strong>
+                {{ sub.durationDays }} días
+              </strong>
+
+            </div>
+
+
+            <div
+              class="plan-row"
+              *ngIf="sub.startDate"
+            >
+
+              <span>
+                Inicio
+              </span>
+
+              <strong>
+                {{ sub.startDate | date:'dd MMM yyyy' }}
+              </strong>
+
+            </div>
+
+
+            <div
+              class="plan-row"
+              *ngIf="sub.expiresAt"
+            >
+
+              <span>
+                Válido hasta
+              </span>
+
+              <strong>
+                {{ sub.expiresAt | date:'dd MMM yyyy' }}
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          <!-- DATE VISUAL -->
+
+          <div
+            class="plan-validity"
+            *ngIf="sub.expiresAt"
+          >
+
+            <div class="validity-icon">
+
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  d="M7 2v2H5a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3h-2V2h-2v2H9V2H7Zm12 18H5a1 1 0 0 1-1-1v-8h16v8a1 1 0 0 1-1 1Zm1-11H4V7a1 1 0 0 1 1-1h2v2h2V6h6v2h2V6h2a1 1 0 0 1 1 1v2Z"
+                ></path>
+              </svg>
+
+            </div>
+
+            <div>
+
+              <span>
+                Próxima fecha importante
+              </span>
+
+              <strong>
+                {{ sub.expiresAt | date:'dd MMMM yyyy' }}
+              </strong>
+
+            </div>
+
+          </div>
+          <!-- =================================================
+     PRUEBA GRATUITA
+================================================== -->
+
+<div
+  class="free-trial-box"
+  *ngIf="
+    freeTrial.loaded &&
+    freeTrial.available
+  "
+>
+
+  <div class="free-trial-icon">
+
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path
+        d="M12 2 15 8l6 .9-4.5 4.4 1.1 6.2L12 16.6 6.4 19.5l1.1-6.2L3 8.9 9 8l3-6Zm0 4.5-1.65 3.35-3.7.54 2.68 2.61-.63 3.69L12 14.95l3.3 1.74-.63-3.69 2.68-2.61-3.7-.54L12 6.5Z"
+      ></path>
+    </svg>
 
   </div>
-</section>
+
+
+  <div class="free-trial-content">
+
+    <span class="free-trial-label">
+      Disponible para tu cuenta
+    </span>
+
+    <h3>
+      Prueba NetVora gratis
+    </h3>
+
+    <p>
+      Activa 7 días gratuitos con todas las funciones
+      incluidas en el plan Básico.
+    </p>
+
+
+    <div class="free-trial-benefits">
+
+      <span>
+        ✓ Sin costo
+      </span>
+
+      <span>
+        ✓ 7 días
+      </span>
+
+      <span>
+        ✓ Sin tarjeta
+      </span>
+
+    </div>
+
+
+    <button
+      type="button"
+      class="free-trial-button"
+      [disabled]="loading.freeTrial"
+      (click)="activateFreeTrial()"
+    >
+
+      <ng-container *ngIf="!loading.freeTrial">
+
+        Activar 7 días gratis
+
+      </ng-container>
+
+
+      <ng-container *ngIf="loading.freeTrial">
+
+        <span class="spinner light small"></span>
+
+        Activando...
+
+      </ng-container>
+
+    </button>
+
+  </div>
+
+</div>
+<div
+  class="free-trial-used"
+  *ngIf="
+    freeTrial.loaded &&
+    freeTrial.used &&
+    sub.status === 'sin_plan'
+  "
+>
+
+  <span class="free-trial-used-icon">
+    ✓
+  </span>
+
+  <div>
+
+    <strong>
+      Prueba gratuita utilizada
+    </strong>
+
+    <p>
+      Ya utilizaste los 7 días gratuitos disponibles para esta cuenta.
+    </p>
+
+  </div>
+
+</div>
+
+        </ng-container>
+
+      </section>
+
+
+      <!-- =================================================
+           CUENTA
+      ================================================== -->
+
+      <section class="account-summary">
+
+        <span class="summary-kicker">
+          Cuenta
+        </span>
+
+        <h3>
+          Acceso a NetVora
+        </h3>
+
+        <div class="account-summary-list">
+
+          <div>
+
+            <span>
+              Rol
+            </span>
+
+            <strong>
+              {{ role || 'Usuario' }}
+            </strong>
+
+          </div>
+
+          <div>
+
+            <span>
+              Estado
+            </span>
+
+            <strong class="active-text">
+              {{ estadoUser || 'Activo' }}
+            </strong>
+
+          </div>
+
+          <div>
+
+            <span>
+              Zona horaria
+            </span>
+
+            <strong>
+              {{ profile.timezone }}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =================================================
+           HELP
+      ================================================== -->
+
+      <section class="profile-help">
+
+        <div class="help-icon">
+          i
+        </div>
+
+        <div>
+
+          <strong>
+            Tu cuenta es personal
+          </strong>
+
+          <p>
+            Mantén tus datos y contraseña actualizados para proteger tu acceso a NetVora.
+          </p>
+
+        </div>
+
+      </section>
+
+    </aside>
+
+  </main>
+
+</div>

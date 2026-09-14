@@ -14,7 +14,7 @@ import { NumberSymbol } from '@angular/common';
 import { HomePageResponse } from '../interfaces/homePage';
 import { StatsResponse } from '../interfaces/data/mainDashboard';
 import { DashboardStatsResponse } from '../interfaces/data/MediaDashboard';
-import { NewsItem } from '../interfaces/NewsItem';
+import { NewsItem, PulseResponse, TopicItem, TopicOption } from '../interfaces/NewsItem';
 
 
 
@@ -37,6 +37,26 @@ export class ApiService {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<NewsData[]>(`${this.apiUrl+'tweets'}`,body,{headers});
   }
+  getPostsCategoria(body: {categoria: string;startDate?: string;endDate?: string;users?: string[];searchText?: string;page?: number;limit?: number;}): Observable<any> {
+
+  const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+
+  return this.http.post<NewsData[]>(this.apiUrl + 'categoria',body,{ headers });
+}
+getPulse(body: {type: 'Medio' | 'Entidad' | 'Persona';categoria?: string;startDate?: string;endDate?: string;users?: string[]; searchText?: string;}): Observable<PulseResponse> {
+
+  const headers = new HttpHeaders({
+    'Content-Type': 'application/json'
+  });
+
+  return this.http.post<PulseResponse>(
+    this.apiUrl + 'pulse',
+    body,
+    { headers }
+  );
+}
   getPostsAmbiente(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<NewsData[]>(this.apiUrl+'ambiente',body,{headers});
@@ -106,7 +126,7 @@ getRepliesSummaryMany(tweetIds: any[]) {
     return this.http.post<NewsData[]>(this.apiUrl+'salud',body, {headers});
 
   }
-  getPostPer(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {  
+  getPostPer(body: { startDate?: string; endDate?: string; users?: String[], page?: number, limit?: number }): Observable<NewsData[]> {  
 
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<NewsData[]>(this.apiUrl+'personas',body, {headers});
@@ -118,11 +138,22 @@ getRepliesSummaryMany(tweetIds: any[]) {
     return this.http.post<NewsData[]>(this.apiUrl+'gestiones',body,{headers});
 
   }
-  getPostsEntidades(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {  
+  getPostsEntidades(body: { startDate?: string; endDate?: string; users?: String[], page?: number, limit?: number }): Observable<NewsData[]> {  
 
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<NewsData[]>(this.apiUrl+'entidades',body,{headers});
 
+  }
+  getTopic(body: {topicId: number;startDate?: string;endDate?: string;users?: string[];searchText?: string;page?: number;limit?: number;}): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+  return this.http.post<any>( this.apiUrl + 'get_topic',body, {headers}); 
+
+}
+
+  getTopics():Observable<TopicOption[]>{
+
+     return this.http.get<TopicOption[]>(this.apiUrl + 'get_list_topic');
+    
   }
 
   getUsers(tipo:string){
@@ -247,6 +278,8 @@ unfollowTweetUser(tweetuser_id: string) {
 getFollowedTweetUsers() {
   return this.http.get<{ ok: boolean; rows: { tweetuser_id: string }[] }>(`${this.apiUrl}followed_tweetusers`);
 }
+
+
 
 
   

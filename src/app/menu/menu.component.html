@@ -1,220 +1,709 @@
-<!-- 🔹 Sidebar -->
- <!-- botón hamburguesa -->
-<button class="menu-toggle" (click)="toggleSidebar()">
+<!-- ===================================================== -->
+<!-- BOTÓN MOBILE -->
+<!-- ===================================================== -->
+
+<button
+  class="menu-toggle"
+  type="button"
+  (click)="toggleSidebar()"
+  aria-label="Abrir menú"
+  [attr.aria-expanded]="isSidebarOpen"
+>
   <i class="fas fa-bars"></i>
 </button>
 
-<!-- overlay -->
-<div 
-  class="sidebar-overlay" 
-  *ngIf="isSidebarOpen" 
-  (click)="toggleSidebar()">
-</div>
-<nav class="sidebar"  [class.open]="isSidebarOpen">
 
-  <!-- 🔹 Header -->
+<!-- ===================================================== -->
+<!-- OVERLAY MOBILE -->
+<!-- ===================================================== -->
+
+<div
+  class="sidebar-overlay"
+  *ngIf="isSidebarOpen"
+  (click)="toggleSidebar()"
+></div>
+
+
+<!-- ===================================================== -->
+<!-- SIDEBAR -->
+<!-- ===================================================== -->
+
+<nav
+  class="sidebar"
+  [class.open]="isSidebarOpen"
+>
+
+  <!-- =================================================== -->
+  <!-- BRAND -->
+  <!-- =================================================== -->
+
   <div class="sidebar-header">
+
     <div class="app-logo">
 
-      <!-- ✅ Logo real (sin cuadrado NT) -->
-      
+      <div class="brand-symbol">
+        <span class="brand-dot"></span>
+
+        <div class="brand-bars">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
 
       <div class="app-text">
-        <h2>NetVora</h2>
-        <small>Panel de control</small>
+
+        <div class="brand-name">
+          NetVora
+        </div>
+
+        <div class="brand-subtitle">
+          Inteligencia informativa
+        </div>
+
       </div>
+
     </div>
+
   </div>
 
-  <!-- 🔹 Body -->
+
+  <!-- =================================================== -->
+  <!-- NAVEGACIÓN -->
+  <!-- =================================================== -->
+
   <div class="sidebar-body">
+
     <ul class="menu">
 
-      <!-- ===== General ===== -->
-      <li class="menu-section"><span>General</span></li>
 
-      <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <a routerLink="/" matTooltip="Inicio">
-          <i class="fas fa-house"></i>
-          <span>Inicio</span>
-        </a>
+      <!-- ================================================= -->
+      <!-- PRINCIPAL -->
+      <!-- ================================================= -->
+
+      <li class="menu-section">
+        <span>Principal</span>
       </li>
 
-      <!-- ===== Categorías ===== -->
-      <li class="menu-section"><span>Categorías</span></li>
 
-      <li routerLinkActive="active">
-        <a routerLink="/politica" matTooltip="Política">
-          <i class="fas fa-landmark"></i>
-          <span>Política</span>
+      <li
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+
+        <a
+          routerLink="/"
+          matTooltip="Inicio"
+        >
+
+          <span class="menu-icon">
+            <i class="fas fa-house"></i>
+          </span>
+
+          <span class="menu-label">
+            Inicio
+          </span>
+
         </a>
+
       </li>
 
-      <li routerLinkActive="active">
-        <a routerLink="/economia" matTooltip="Economía">
-          <i class="fas fa-coins"></i>
-          <span>Economía</span>
-        </a>
+
+      <!-- ================================================= -->
+      <!-- INTELIGENCIA -->
+      <!-- ================================================= -->
+
+      <li class="menu-section section-with-line">
+
+        <span>
+          Inteligencia
+        </span>
+
       </li>
 
-      <li routerLinkActive="active">
-        <a routerLink="/seguridad" matTooltip="Seguridad">
-          <i class="fas fa-shield-halved"></i>
-          <span>Seguridad</span>
-        </a>
-      </li>
 
-      <li routerLinkActive="active">
-        <a routerLink="/deportes" matTooltip="Deportes">
-          <i class="fas fa-futbol"></i>
-          <span>Deportes</span>
-        </a>
-      </li>
-      <li routerLinkActive="active">
-        <a routerLink="/ambiente" matTooltip="Medio Ambiente">
-          <i class="fas fa-leaf"></i>
-          <span>Medio Ambiente</span>
-        </a>
-      </li>
+      <!-- TÓPICOS -->
 
-      <li routerLinkActive="active">
-        <a routerLink="/salud" matTooltip="Salud">
-          <i class="fas fa-heart-pulse"></i>
-          <span>Salud</span>
-        </a>
-      </li>
+      <li
+        routerLinkActive="active"
+        class="featured-menu-item"
+      >
 
-      <li routerLinkActive="active">
-        <a routerLink="/social" matTooltip="Sociedad">
-          <i class="fas fa-users"></i>
-          <span>Sociedad</span>
-        </a>
-      </li>
+        <a
+          routerLink="/topics"
+          matTooltip="Tópicos emergentes"
+        >
 
-      <li routerLinkActive="active">
-        <a routerLink="/educacion" matTooltip="Educación">
-          <i class="fas fa-graduation-cap"></i>
-          <span>Educación</span>
-        </a>
-      </li>
+          <span class="menu-icon topic-icon">
+            <i class="fas fa-bolt"></i>
+          </span>
 
-      <li routerLinkActive="active">
-        <a routerLink="/gestiones" matTooltip="Gestiones públicas">
-          <!-- ✅ mejor icono para "gestiones públicas" -->
-          <i class="fas fa-clipboard-list"></i>
-          <span>Gestiones públicas</span>
-        </a>
-      </li>
+          <div class="menu-label-wrapper">
 
-      <li routerLinkActive="active">
-        <a routerLink="/otros" matTooltip="Otros temas">
-          <!-- ✅ mejor icono para "Otros" -->
-          <i class="fas fa-shapes"></i>
-          <span>Otros temas</span>
-        </a>
-      </li>
+            <span class="menu-label">
+              Tópicos emergentes
+            </span>
 
-      <li routerLinkActive="active">
-        <a routerLink="/entidades" matTooltip="Entidades públicas">
-          <!-- ✅ estaba repetido (layer-group). Este queda mejor -->
-          <i class="fas fa-building"></i>
-          <span>Entidades públicas</span>
-        </a>
-      </li>
+            <span class="menu-description">
+              Tendencias detectadas
+            </span>
 
-      <li routerLinkActive="active">
-        <a routerLink="/personas" matTooltip="Personajes públicos">
-          <i class="fas fa-user-tie"></i>
-          <span>Personajes públicos</span>
-        </a>
-      </li>
+          </div>
 
-      <li routerLinkActive="active">
-        <a routerLink="/guardar" matTooltip="Artículos guardados">
-          <i class="fas fa-bookmark"></i>
-          <span>Artículos guardados</span>
-        </a>
-      </li>
+          <span class="menu-new-badge">
+            IA
+          </span>
 
-      <!-- ===== Herramientas ===== -->
-      <li class="menu-section"><span>Herramientas</span></li>
-
-      <li routerLinkActive="active">
-        <a routerLink="/estadisticas" matTooltip="Estadísticas">
-          <i class="fas fa-chart-line"></i>
-          <span>Estadísticas</span>
-        </a>
-      </li>
-      <li routerLinkActive="active">
-        <a routerLink="/settings" matTooltip="Configuración">
-          <i class="fas fa-cog"></i>
-          <span>Configuración</span>
         </a>
 
-      <!-- ✅ Dropdown: Admin -->
-      <li class="menu-dropdown" *ngIf="(authz.role$ | async) === 'admin'">
+      </li>
+
+
+      <!-- ESTADÍSTICAS -->
+
+      <li routerLinkActive="active">
+
+        <a
+          routerLink="/estadisticas"
+          matTooltip="Estadísticas"
+        >
+
+          <span class="menu-icon">
+            <i class="fas fa-chart-line"></i>
+          </span>
+
+          <span class="menu-label">
+            Estadísticas
+          </span>
+
+        </a>
+
+      </li>
+
+
+      <!-- ================================================= -->
+      <!-- CATEGORÍAS -->
+      <!-- ================================================= -->
+
+      <li class="menu-section section-with-line">
+
+        <span>
+          Categorías
+        </span>
+
+      </li>
+
+
+      <!-- POLÍTICA -->
+
+      <li routerLinkActive="active">
+
+        <a
+          routerLink="/politica"
+          matTooltip="Política"
+        >
+
+          <span class="menu-icon">
+            <i class="fas fa-landmark"></i>
+          </span>
+
+          <span class="menu-label">
+            Política
+          </span>
+
+        </a>
+
+      </li>
+
+
+      <!-- ECONOMÍA -->
+
+      <li routerLinkActive="active">
+
+        <a
+          routerLink="/economia"
+          matTooltip="Economía"
+        >
+
+          <span class="menu-icon">
+            <i class="fas fa-coins"></i>
+          </span>
+
+          <span class="menu-label">
+            Economía
+          </span>
+
+        </a>
+
+      </li>
+
+
+      <!-- SEGURIDAD -->
+
+      <li routerLinkActive="active">
+
+        <a
+          routerLink="/seguridad"
+          matTooltip="Seguridad"
+        >
+
+          <span class="menu-icon">
+            <i class="fas fa-shield-halved"></i>
+          </span>
+
+          <span class="menu-label">
+            Seguridad
+          </span>
+
+        </a>
+
+      </li>
+
+
+      <!-- DEPORTES -->
+
+      <li routerLinkActive="active">
+
+        <a
+          routerLink="/deportes"
+          matTooltip="Deportes"
+        >
+
+          <span class="menu-icon">
+            <i class="fas fa-futbol"></i>
+          </span>
+
+          <span class="menu-label">
+            Deportes
+          </span>
+
+        </a>
+
+      </li>
+
+
+      <!-- MEDIO AMBIENTE -->
+
+      <li routerLinkActive="active">
+
+        <a
+          routerLink="/ambiente"
+          matTooltip="Medio Ambiente"
+        >
+
+          <span class="menu-icon">
+            <i class="fas fa-leaf"></i>
+          </span>
+
+          <span class="menu-label">
+            Medio Ambiente
+          </span>
+
+        </a>
+
+      </li>
+
+
+      <!-- SALUD -->
+
+      <li routerLinkActive="active">
+
+        <a
+          routerLink="/salud"
+          matTooltip="Salud"
+        >
+
+          <span class="menu-icon">
+            <i class="fas fa-heart-pulse"></i>
+          </span>
+
+          <span class="menu-label">
+            Salud
+          </span>
+
+        </a>
+
+      </li>
+
+
+      <!-- SOCIEDAD -->
+
+      <li routerLinkActive="active">
+
+        <a
+          routerLink="/social"
+          matTooltip="Sociedad"
+        >
+
+          <span class="menu-icon">
+            <i class="fas fa-users"></i>
+          </span>
+
+          <span class="menu-label">
+            Sociedad
+          </span>
+
+        </a>
+
+      </li>
+
+
+      <!-- EDUCACIÓN -->
+
+      <li routerLinkActive="active">
+
+        <a
+          routerLink="/educacion"
+          matTooltip="Educación"
+        >
+
+          <span class="menu-icon">
+            <i class="fas fa-graduation-cap"></i>
+          </span>
+
+          <span class="menu-label">
+            Educación
+          </span>
+
+        </a>
+
+      </li>
+
+
+      <!-- GESTIONES -->
+
+      <li routerLinkActive="active">
+
+        <a
+          routerLink="/gestiones"
+          matTooltip="Gestiones públicas"
+        >
+
+          <span class="menu-icon">
+            <i class="fas fa-clipboard-list"></i>
+          </span>
+
+          <span class="menu-label">
+            Gestiones públicas
+          </span>
+
+        </a>
+
+      </li>
+
+
+      <!-- OTROS -->
+
+      <li routerLinkActive="active">
+
+        <a
+          routerLink="/otros"
+          matTooltip="Otros temas"
+        >
+
+          <span class="menu-icon">
+            <i class="fas fa-shapes"></i>
+          </span>
+
+          <span class="menu-label">
+            Otros temas
+          </span>
+
+        </a>
+
+      </li>
+
+
+      <!-- ================================================= -->
+      <!-- EXPLORAR -->
+      <!-- ================================================= -->
+
+      <li class="menu-section section-with-line">
+
+        <span>
+          Explorar
+        </span>
+
+      </li>
+
+
+      <!-- ENTIDADES -->
+
+      <li routerLinkActive="active">
+
+        <a
+          routerLink="/entidades"
+          matTooltip="Entidades públicas"
+        >
+
+          <span class="menu-icon">
+            <i class="fas fa-building"></i>
+          </span>
+
+          <span class="menu-label">
+            Entidades públicas
+          </span>
+
+        </a>
+
+      </li>
+
+
+      <!-- PERSONAS -->
+
+      <li routerLinkActive="active">
+
+        <a
+          routerLink="/personas"
+          matTooltip="Personajes públicos"
+        >
+
+          <span class="menu-icon">
+            <i class="fas fa-user-tie"></i>
+          </span>
+
+          <span class="menu-label">
+            Personajes públicos
+          </span>
+
+        </a>
+
+      </li>
+
+
+      <!-- GUARDADOS -->
+
+      <li routerLinkActive="active">
+
+        <a
+          routerLink="/guardar"
+          matTooltip="Artículos guardados"
+        >
+
+          <span class="menu-icon">
+            <i class="fas fa-bookmark"></i>
+          </span>
+
+          <span class="menu-label">
+            Artículos guardados
+          </span>
+
+        </a>
+
+      </li>
+
+
+      <!-- ================================================= -->
+      <!-- SISTEMA -->
+      <!-- ================================================= -->
+
+      <li class="menu-section section-with-line">
+
+        <span>
+          Sistema
+        </span>
+
+      </li>
+
+
+      <!-- CONFIGURACIÓN -->
+
+      <li routerLinkActive="active">
+
+        <a
+          routerLink="/settings"
+          matTooltip="Configuración"
+        >
+
+          <span class="menu-icon">
+            <i class="fas fa-gear"></i>
+          </span>
+
+          <span class="menu-label">
+            Configuración
+          </span>
+
+        </a>
+
+      </li>
+
+
+      <!-- ================================================= -->
+      <!-- ADMIN -->
+      <!-- ================================================= -->
+
+      <li
+        class="menu-dropdown"
+        *ngIf="(authz.role$ | async) === 'admin'"
+      >
+
         <details>
+
           <summary class="dropdown-trigger">
-            <i class="fas fa-user-gear"></i>
-            <span>Administración</span>
+
+            <span class="menu-icon">
+              <i class="fas fa-user-gear"></i>
+            </span>
+
+            <span>
+              Administración
+            </span>
+
             <i class="fas fa-chevron-down chevron"></i>
+
           </summary>
 
+
           <ul class="submenu">
-            <li routerLinkActive="active">
-              <a routerLink="/administrador" matTooltip="Administrador">
-                <i class="fas fa-user-shield"></i>
-                <span>Administrador</span>
-              </a>
-            </li>
 
             <li routerLinkActive="active">
-              <a routerLink="/catSelect" matTooltip="Modificar categorías">
-                <i class="fas fa-tags"></i>
-                <span>Modificar categorías</span>
+
+              <a
+                routerLink="/administrador"
+                matTooltip="Administrador"
+              >
+
+                <span class="submenu-dot"></span>
+
+                <span>
+                  Usuarios
+                </span>
+
               </a>
+
             </li>
+
+
+            <li routerLinkActive="active">
+
+              <a
+                routerLink="/catSelect"
+                matTooltip="Modificar categorías"
+              >
+
+                <span class="submenu-dot"></span>
+
+                <span>
+                  Modificar categorías
+                </span>
+
+              </a>
+
+            </li>
+
           </ul>
+
         </details>
+
       </li>
 
+
     </ul>
+
   </div>
 
-  <!-- 🔹 Footer -->
- 
-<div class="sidebar-footer">
-  <div class="user-card">
-    <div class="user-row">
-      <div class="avatar" [matTooltip]="(userEmail$ | async) || ''">
-        {{ (userInitial$ | async) || 'U' }}
+
+  <!-- =================================================== -->
+  <!-- FOOTER -->
+  <!-- =================================================== -->
+
+  <div class="sidebar-footer">
+
+
+    <!-- USUARIO -->
+
+    <div class="user-card">
+
+      <div class="user-row">
+
+
+        <div
+          class="avatar"
+          [matTooltip]="(userEmail$ | async) || ''"
+        >
+
+          {{ (userInitial$ | async) || 'U' }}
+
+        </div>
+
+
+        <div class="user-meta">
+
+          <span class="user-name">
+
+            {{
+              (userDisplayName$ | async) ||
+              'Usuario'
+            }}
+
+          </span>
+
+
+          <span class="user-email">
+
+            {{
+              (userEmail$ | async) ||
+              ''
+            }}
+
+          </span>
+
+        </div>
+
+
+        <span class="role-badge">
+
+          {{
+            (authz.role$ | async) ||
+            'rol'
+          }}
+
+        </span>
+
+
       </div>
 
-      <div class="user-meta">
-        <span class="user-name">{{ (userDisplayName$ | async) || 'Usuario' }}</span>
-        <span class="user-email">{{ (userEmail$ | async) || '' }}</span>
-      </div>
-
-      <span class="role-badge">
-        {{ (authz.role$ | async) || 'rol' }}
-      </span>
     </div>
+
+
+    <!-- ACCIONES -->
+
+    <div class="footer-actions">
+
+
+      <button
+        type="button"
+        class="footer-action account-btn"
+        routerLink="/account"
+        matTooltip="Mi cuenta"
+      >
+
+        <i class="far fa-user"></i>
+
+        <span>
+          Mi cuenta
+        </span>
+
+      </button>
+
+
+      <button
+        type="button"
+        class="footer-action logout-btn"
+        (click)="logout()"
+      >
+
+        <i class="fas fa-arrow-right-from-bracket"></i>
+
+        <span>
+          Cerrar sesión
+        </span>
+
+      </button>
+
+
+    </div>
+
   </div>
-
-  <div class="footer-actions">
-
-    <button class="nv-modal-btn account-btn" routerLink="/account" matTooltip="Mi cuenta">
-      <i class="fas fa-user-circle"></i>
-      <span>Cuenta</span>
-    </button>
-    <button mat-flat-button class="logout-btn" (click)="logout()">
-      <i class="fas fa-right-from-bracket"></i>
-      <span>Cerrar sesión</span>
-    </button>
-
-    
-  </div>
-</div>
-
 
 </nav>

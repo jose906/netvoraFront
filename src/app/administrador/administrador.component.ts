@@ -119,7 +119,7 @@ async crearSuscripcion(): Promise<void> {
       plan_id: this.selectedPlanId,
       start_date: this.startDate,
       end_date: this.endDate
-    };
+    }; 
 
     this.apiService.createUserPlan(body, token).subscribe({
       next: (resp) => {

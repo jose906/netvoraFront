@@ -1,208 +1,615 @@
-<div class="nav-shell">
+<!-- =========================================================
+     NAVEGACIÓN PRINCIPAL
+========================================================= -->
 
-  <section class="nav-left">
-    <div class="nav-head">
-      <div class="nav-head-text">
-        <h3>Categorías</h3>
-        <p>Selecciona una categoría para filtrar.</p>
+<div class="dashboard-toolbar">
+
+  <!-- =====================================================
+       FILA SUPERIOR
+  ====================================================== -->
+
+  <div class="toolbar-main">
+
+    <!-- TÍTULO / VISTA ACTUAL -->
+    <div class="toolbar-title">
+      <span class="toolbar-eyebrow">NetVora Intelligence</span>
+
+      <div class="toolbar-title-row">
+        <h2>{{ selectedCategoria || 'Panel principal' }}</h2>
+
+        <span class="view-status">
+          <span class="view-status-dot"></span>
+          Análisis activo
+        </span>
       </div>
-      <span class="nav-head-pill subtle">{{ selectedCategoria || 'Todas' }}</span>
     </div>
 
-    <div class="nv-grid">
+
+    <!-- ACCIONES DERECHA -->
+    <div class="toolbar-actions">
 
       <button
-        mat-raised-button
-        class="nv-btn nv-btn--main nv-btn-full"
-        [class.is-active]="selectedComponent === 'todos'"
-        (click)="goToView('todos', 'Panel principal', 'todos')">
-        <mat-icon>dashboard</mat-icon>
-        Panel principal
-      </button>
-
-      <button
-        mat-raised-button
-        class="nv-btn"
-        [class.is-active]="selectedComponent === 'politica'"
-        (click)="goToView('politica', 'Política', 'Medio')">
-        <mat-icon>account_balance</mat-icon>
-        Política
-      </button>
-
-      <button
-        mat-raised-button
-        class="nv-btn"
-        [class.is-active]="selectedComponent === 'economia'"
-        (click)="goToView('economia', 'Economía', 'Medio')">
-        <mat-icon>payments</mat-icon>
-        Economía
-      </button>
-
-      <button
-        mat-raised-button
-        class="nv-btn"
-        [class.is-active]="selectedComponent === 'seguridad'"
-        (click)="goToView('seguridad', 'Seguridad', 'Medio')">
-        <mat-icon>security</mat-icon>
-        Seguridad
-      </button>
-
-      <button
-        mat-raised-button
-        class="nv-btn"
-        [class.is-active]="selectedComponent === 'deportes'"
-        (click)="goToView('deportes', 'Deportes', 'Medio')">
-        <mat-icon>sports_soccer</mat-icon>
-        Deportes
-      </button>
-
-      <button
-        mat-raised-button
-        class="nv-btn"
-        [class.is-active]="selectedComponent === 'ambiente'"
-        (click)="goToView('ambiente', 'Medio ambiente', 'Medio')">
-        <mat-icon>eco</mat-icon>
-        Medio ambiente
-      </button>
-
-      <button
-        mat-raised-button
-        class="nv-btn"
-        [class.is-active]="selectedComponent === 'salud'"
-        (click)="goToView('salud', 'Salud', 'Medio')">
-        <mat-icon>medical_services</mat-icon>
-        Salud
-      </button>
-
-      <button
-        mat-raised-button
-        class="nv-btn"
-        [class.is-active]="selectedComponent === 'sociedad'"
-        (click)="goToView('sociedad', 'Sociedad', 'Medio')">
-        <mat-icon>groups</mat-icon>
-        Sociedad
-      </button>
-
-      <button
-        mat-raised-button
-        class="nv-btn"
-        [class.is-active]="selectedComponent === 'educacion'"
-        (click)="goToView('educacion', 'Educación', 'Medio')">
-        <mat-icon>school</mat-icon>
-        Educación
-      </button>
-
-      <button
-        mat-raised-button
-        class="nv-btn"
-        [class.is-active]="selectedComponent === 'gestiones'"
-        (click)="goToView('gestiones', 'Gestiones públicas', 'Medio')">
-        <mat-icon>fact_check</mat-icon>
-        Gestiones públicas
-      </button>
-
-      <button
-        mat-raised-button
-        class="nv-btn"
-        [class.is-active]="selectedComponent === 'otros'"
-        (click)="goToView('otros', 'Otros', 'Medio')">
-        <mat-icon>category</mat-icon>
-        Otros temas
-      </button>
-
-      <button
-        mat-raised-button
-        class="nv-btn"
-        [class.is-active]="selectedComponent === 'entidades'"
-        (click)="goToView('entidades', 'Entidades', 'Entidad')">
-        <mat-icon>domain</mat-icon>
-        Entidades públicas
-      </button>
-
-      <button
-        mat-raised-button
-        class="nv-btn"
-        [class.is-active]="selectedComponent === 'personas'"
-        (click)="goToView('personas', 'Personas', 'Persona')">
-        <mat-icon>person</mat-icon>
-        Personas públicas
-      </button>
-
-    </div>
-  </section>
-
-  <aside class="nav-right">
-    <header class="nav-head">
-      <div class="nav-head-text">
-        <h3>Filtros</h3>
-        <p>Rango de fechas + cuentas</p>
-      </div>
-      <div class="nav-head-pill subtle">Aplicar</div>
-    </header>
-
-    <mat-form-field appearance="outline" class="filter-item">
-      <mat-label>Rango de fechas</mat-label>
-      <mat-date-range-input [rangePicker]="picker">
-        <input matStartDate placeholder="Inicio" [(ngModel)]="filterStartDate">
-        <input matEndDate placeholder="Fin" [(ngModel)]="filterEndDate">
-      </mat-date-range-input>
-      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-      <mat-date-range-picker #picker></mat-date-range-picker>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="filter-item">
-      <mat-label>Seleccionar usuarios</mat-label>
-      <mat-select [(ngModel)]="filterSelectedUsers" multiple>
-        <mat-option *ngFor="let user of users; trackBy: trackByUserId" [value]="user.idTweetUser">
-          {{ user.TweetUser }}
-        </mat-option>
-      </mat-select>
-      <mat-hint>Opcional: filtra por cuentas</mat-hint>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="filter-item">
-      <mat-label>Buscar</mat-label>
-      <input
-        matInput
-        placeholder="Texto de búsqueda"
-        [(ngModel)]="filterSearchText"
-        [ngModelOptions]="{ standalone: true }">
-    </mat-form-field>
-
-    <div class="actions">
-      <button
-        mat-raised-button
-        class="nv-action nv-action--primary"
-        (click)="aplicarFechas()">
-        <mat-icon>check</mat-icon>
-        <span>Aplicar</span>
-      </button>
-
-      <button
-        mat-button
-        class="nv-action nv-action--ghost"
         type="button"
-        (click)="resetFiltros()">
-        <mat-icon>restart_alt</mat-icon>
-        <span>Limpiar</span>
+        class="toolbar-filter-button"
+        [class.is-active]="filtersOpen"
+        (click)="toggleFilters()">
+
+        <mat-icon>tune</mat-icon>
+
+        <span>Filtros</span>
+
+        <span
+          class="filter-count"
+          *ngIf="activeFiltersCount > 0">
+          {{ activeFiltersCount }}
+        </span>
+
       </button>
+
     </div>
 
-    <div class="filters-summary">
-      <div class="fs-row">
-        <span class="fs-k">Vista</span>
-        <span class="fs-v mono">{{ selectedComponent }}</span>
+  </div>
+
+
+  <!-- =====================================================
+       NAVEGACIÓN DE CATEGORÍAS
+  ====================================================== -->
+
+  <nav
+    class="category-navigation"
+    aria-label="Categorías y análisis">
+
+    <!-- PANEL -->
+    <button
+      type="button"
+      class="category-tab"
+      [class.is-active]="selectedComponent === 'todos'"
+      (click)="goToView('todos', 'Panel principal', 'todos')">
+
+      <mat-icon>dashboard</mat-icon>
+      <span>Panel</span>
+
+    </button>
+
+
+    <!-- POLÍTICA -->
+    <button
+      type="button"
+      class="category-tab"
+      [class.is-active]="selectedComponent === 'politica'"
+      (click)="goToView('politica', 'Política', 'Medio')">
+
+      <mat-icon>account_balance</mat-icon>
+      <span>Política</span>
+
+    </button>
+
+
+    <!-- ECONOMÍA -->
+    <button
+      type="button"
+      class="category-tab"
+      [class.is-active]="selectedComponent === 'economia'"
+      (click)="goToView('economia', 'Economía', 'Medio')">
+
+      <mat-icon>payments</mat-icon>
+      <span>Economía</span>
+
+    </button>
+
+
+    <!-- SEGURIDAD -->
+    <button
+      type="button"
+      class="category-tab"
+      [class.is-active]="selectedComponent === 'seguridad'"
+      (click)="goToView('seguridad', 'Seguridad', 'Medio')">
+
+      <mat-icon>security</mat-icon>
+      <span>Seguridad</span>
+
+    </button>
+
+
+    <!-- SOCIEDAD -->
+    <button
+      type="button"
+      class="category-tab"
+      [class.is-active]="selectedComponent === 'sociedad'"
+      (click)="goToView('sociedad', 'Sociedad', 'Medio')">
+
+      <mat-icon>groups</mat-icon>
+      <span>Sociedad</span>
+
+    </button>
+
+
+    <!-- =================================================
+         MÁS CATEGORÍAS
+    ================================================== -->
+
+    <details class="nav-dropdown">
+
+      <summary
+        class="category-tab dropdown-trigger"
+        [class.is-active]="
+          selectedComponent === 'deportes' ||
+          selectedComponent === 'ambiente' ||
+          selectedComponent === 'salud' ||
+          selectedComponent === 'educacion' ||
+          selectedComponent === 'gestiones' ||
+          selectedComponent === 'otros'
+        ">
+
+        <mat-icon>apps</mat-icon>
+
+        <span>Más</span>
+
+        <mat-icon class="dropdown-chevron">
+          expand_more
+        </mat-icon>
+
+      </summary>
+
+
+      <div class="dropdown-menu">
+
+        <div class="dropdown-heading">
+          Más categorías
+        </div>
+
+
+        <button
+          type="button"
+          class="dropdown-item"
+          [class.is-active]="selectedComponent === 'deportes'"
+          (click)="goToView('deportes', 'Deportes', 'Medio')">
+
+          <span class="dropdown-icon">
+            <mat-icon>sports_soccer</mat-icon>
+          </span>
+
+          <span class="dropdown-copy">
+            <strong>Deportes</strong>
+            <small>Actividad deportiva y competencias</small>
+          </span>
+
+        </button>
+
+
+        <button
+          type="button"
+          class="dropdown-item"
+          [class.is-active]="selectedComponent === 'ambiente'"
+          (click)="goToView('ambiente', 'Medio ambiente', 'Medio')">
+
+          <span class="dropdown-icon">
+            <mat-icon>eco</mat-icon>
+          </span>
+
+          <span class="dropdown-copy">
+            <strong>Medio ambiente</strong>
+            <small>Clima, recursos y medio ambiente</small>
+          </span>
+
+        </button>
+
+
+        <button
+          type="button"
+          class="dropdown-item"
+          [class.is-active]="selectedComponent === 'salud'"
+          (click)="goToView('salud', 'Salud', 'Medio')">
+
+          <span class="dropdown-icon">
+            <mat-icon>medical_services</mat-icon>
+          </span>
+
+          <span class="dropdown-copy">
+            <strong>Salud</strong>
+            <small>Salud pública y actualidad sanitaria</small>
+          </span>
+
+        </button>
+
+
+        <button
+          type="button"
+          class="dropdown-item"
+          [class.is-active]="selectedComponent === 'educacion'"
+          (click)="goToView('educacion', 'Educación', 'Medio')">
+
+          <span class="dropdown-icon">
+            <mat-icon>school</mat-icon>
+          </span>
+
+          <span class="dropdown-copy">
+            <strong>Educación</strong>
+            <small>Educación y comunidad académica</small>
+          </span>
+
+        </button>
+
+
+        <button
+          type="button"
+          class="dropdown-item"
+          [class.is-active]="selectedComponent === 'gestiones'"
+          (click)="goToView('gestiones', 'Gestiones públicas', 'Medio')">
+
+          <span class="dropdown-icon">
+            <mat-icon>fact_check</mat-icon>
+          </span>
+
+          <span class="dropdown-copy">
+            <strong>Gestiones públicas</strong>
+            <small>Acciones y decisiones institucionales</small>
+          </span>
+
+        </button>
+
+
+        <button
+          type="button"
+          class="dropdown-item"
+          [class.is-active]="selectedComponent === 'otros'"
+          (click)="goToView('otros', 'Otros', 'Medio')">
+
+          <span class="dropdown-icon">
+            <mat-icon>category</mat-icon>
+          </span>
+
+          <span class="dropdown-copy">
+            <strong>Otros temas</strong>
+            <small>Conversaciones fuera de las categorías principales</small>
+          </span>
+
+        </button>
+
       </div>
-      <div class="fs-row">
-        <span class="fs-k">Usuarios</span>
-        <span class="fs-v mono">{{ filterSelectedUsers.length || 0 }}</span>
+
+    </details>
+
+
+    <div class="navigation-divider"></div>
+
+
+    <!-- =================================================
+         ANÁLISIS
+    ================================================== -->
+
+    <details class="nav-dropdown analysis-dropdown">
+
+      <summary
+        class="category-tab dropdown-trigger"
+        [class.is-active]="
+          selectedComponent === 'entidades' ||
+          selectedComponent === 'personas'
+        ">
+
+        <mat-icon>analytics</mat-icon>
+
+        <span>Análisis</span>
+
+        <mat-icon class="dropdown-chevron">
+          expand_more
+        </mat-icon>
+
+      </summary>
+
+
+      <div class="dropdown-menu dropdown-menu--right">
+
+        <div class="dropdown-heading">
+          Análisis especializado
+        </div>
+
+
+        <button
+          type="button"
+          class="dropdown-item"
+          [class.is-active]="selectedComponent === 'entidades'"
+          (click)="goToView('entidades', 'Entidades públicas', 'Entidad')">
+
+          <span class="dropdown-icon">
+            <mat-icon>domain</mat-icon>
+          </span>
+
+          <span class="dropdown-copy">
+            <strong>Entidades públicas</strong>
+            <small>Actividad y conversación institucional</small>
+          </span>
+
+        </button>
+
+
+        <button
+          type="button"
+          class="dropdown-item"
+          [class.is-active]="selectedComponent === 'personas'"
+          (click)="goToView('personas', 'Personas públicas', 'Persona')">
+
+          <span class="dropdown-icon">
+            <mat-icon>person</mat-icon>
+          </span>
+
+          <span class="dropdown-copy">
+            <strong>Personas públicas</strong>
+            <small>Actividad de actores públicos</small>
+          </span>
+
+        </button>
+
       </div>
+
+    </details>
+
+  </nav>
+
+
+  <!-- =====================================================
+       RESUMEN DE FILTROS APLICADOS
+  ====================================================== -->
+
+  <div class="filter-context">
+
+    <div class="filter-context-left">
+
+      <div class="context-chip">
+        <mat-icon>calendar_today</mat-icon>
+
+        <span *ngIf="!appliedEndDate">
+          Desde hoy
+        </span>
+
+        <span *ngIf="appliedEndDate">
+          Rango seleccionado
+        </span>
+      </div>
+
+
+      <div class="context-chip">
+
+        <mat-icon>alternate_email</mat-icon>
+
+        <span *ngIf="appliedSelectedUsers.length === 0">
+          Todas las cuentas
+        </span>
+
+        <span *ngIf="appliedSelectedUsers.length === 1">
+          1 cuenta
+        </span>
+
+        <span *ngIf="appliedSelectedUsers.length > 1">
+          {{ appliedSelectedUsers.length }} cuentas
+        </span>
+
+      </div>
+
+
+      <div
+        class="context-chip context-chip--search"
+        *ngIf="appliedSearchText">
+
+        <mat-icon>search</mat-icon>
+
+        <span>
+          "{{ appliedSearchText }}"
+        </span>
+
+      </div>
+
     </div>
-  </aside>
+
+
+    <button
+      type="button"
+      class="change-filters-button"
+      (click)="toggleFilters()">
+
+      <mat-icon>tune</mat-icon>
+
+      Modificar filtros
+
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       PANEL DESPLEGABLE DE FILTROS
+  ====================================================== -->
+
+  <div
+    class="filters-panel"
+    *ngIf="filtersOpen">
+
+    <div class="filters-panel-header">
+
+      <div>
+
+        <span class="filters-panel-eyebrow">
+          Personalizar resultados
+        </span>
+
+        <h3>Filtros</h3>
+
+        <p>
+          Ajusta el periodo, las cuentas o busca contenido específico.
+        </p>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="filters-close"
+        aria-label="Cerrar filtros"
+        (click)="closeFilters()">
+
+        <mat-icon>close</mat-icon>
+
+      </button>
+
+    </div>
+
+
+    <!-- CAMPOS -->
+    <div class="filters-grid">
+
+      <!-- FECHAS -->
+      <mat-form-field
+        appearance="outline"
+        class="filter-item filter-item--date">
+
+        <mat-label>Rango de fechas</mat-label>
+
+        <mat-date-range-input [rangePicker]="picker">
+
+          <input
+            matStartDate
+            placeholder="Inicio"
+            [(ngModel)]="filterStartDate">
+
+          <input
+            matEndDate
+            placeholder="Fin"
+            [(ngModel)]="filterEndDate">
+
+        </mat-date-range-input>
+
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="picker">
+        </mat-datepicker-toggle>
+
+        <mat-date-range-picker #picker>
+        </mat-date-range-picker>
+
+      </mat-form-field>
+
+
+      <!-- USUARIOS -->
+      <mat-form-field
+        appearance="outline"
+        class="filter-item">
+
+        <mat-label>Cuentas</mat-label>
+
+        <mat-select
+          [(ngModel)]="filterSelectedUsers"
+          multiple>
+
+          <mat-option
+            *ngFor="let user of users; trackBy: trackByUserId"
+            [value]="user.idTweetUser">
+
+            {{ user.TweetUser }}
+
+          </mat-option>
+
+        </mat-select>
+
+        <mat-hint *ngIf="!loadingUsers">
+          Opcional
+        </mat-hint>
+
+        <mat-hint *ngIf="loadingUsers">
+          Cargando cuentas...
+        </mat-hint>
+
+      </mat-form-field>
+
+
+      <!-- BÚSQUEDA -->
+      <mat-form-field
+        appearance="outline"
+        class="filter-item">
+
+        <mat-label>Buscar contenido</mat-label>
+
+        <mat-icon matPrefix>
+          search
+        </mat-icon>
+
+        <input
+          matInput
+          placeholder="Ej. dólar, elecciones..."
+          [(ngModel)]="filterSearchText"
+          [ngModelOptions]="{ standalone: true }">
+
+      </mat-form-field>
+
+    </div>
+
+
+    <!-- FOOTER FILTROS -->
+    <div class="filters-panel-footer">
+
+      <div class="filters-panel-summary">
+
+        <mat-icon>info</mat-icon>
+
+        <span *ngIf="filterSelectedUsers.length === 0">
+          Se analizarán todas las cuentas disponibles.
+        </span>
+
+        <span *ngIf="filterSelectedUsers.length === 1">
+          Se analizará 1 cuenta seleccionada.
+        </span>
+
+        <span *ngIf="filterSelectedUsers.length > 1">
+          Se analizarán {{ filterSelectedUsers.length }} cuentas seleccionadas.
+        </span>
+
+      </div>
+
+
+      <div class="filters-actions">
+
+        <button
+          type="button"
+          class="filter-action filter-action--clear"
+          (click)="resetFiltros()">
+
+          <mat-icon>restart_alt</mat-icon>
+
+          Limpiar
+
+        </button>
+
+
+        <button
+          type="button"
+          class="filter-action filter-action--apply"
+          (click)="applyAndCloseFilters()">
+
+          <mat-icon>check</mat-icon>
+
+          Aplicar filtros
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
 
+
+<!-- =========================================================
+     CONTENIDO DEL DASHBOARD
+========================================================= -->
+
 <section class="chart-section">
+
   <div class="chart-container">
+
+    <!-- =====================================================
+         PANEL GENERAL
+    ====================================================== -->
 
     <app-todos
       *ngIf="selectedComponent === 'todos'"
@@ -212,6 +619,11 @@
       [searchText]="appliedSearchText"
       [users]="users">
     </app-todos>
+
+
+    <!-- =====================================================
+         POLÍTICA
+    ====================================================== -->
 
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'politica'"
@@ -223,6 +635,11 @@
       [users]="users">
     </app-politica-estadisticas>
 
+
+    <!-- =====================================================
+         ECONOMÍA
+    ====================================================== -->
+
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'economia'"
       categoria="economia"
@@ -232,6 +649,11 @@
       [searchText]="appliedSearchText"
       [users]="users">
     </app-politica-estadisticas>
+
+
+    <!-- =====================================================
+         DEPORTES
+    ====================================================== -->
 
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'deportes'"
@@ -243,6 +665,11 @@
       [users]="users">
     </app-politica-estadisticas>
 
+
+    <!-- =====================================================
+         SEGURIDAD
+    ====================================================== -->
+
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'seguridad'"
       categoria="seguridad"
@@ -252,6 +679,11 @@
       [searchText]="appliedSearchText"
       [users]="users">
     </app-politica-estadisticas>
+
+
+    <!-- =====================================================
+         SOCIEDAD
+    ====================================================== -->
 
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'sociedad'"
@@ -263,6 +695,11 @@
       [users]="users">
     </app-politica-estadisticas>
 
+
+    <!-- =====================================================
+         MEDIO AMBIENTE
+    ====================================================== -->
+
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'ambiente'"
       categoria="ambiente"
@@ -272,6 +709,11 @@
       [searchText]="appliedSearchText"
       [users]="users">
     </app-politica-estadisticas>
+
+
+    <!-- =====================================================
+         SALUD
+    ====================================================== -->
 
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'salud'"
@@ -283,6 +725,11 @@
       [users]="users">
     </app-politica-estadisticas>
 
+
+    <!-- =====================================================
+         EDUCACIÓN
+    ====================================================== -->
+
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'educacion'"
       categoria="educacion"
@@ -292,6 +739,11 @@
       [searchText]="appliedSearchText"
       [users]="users">
     </app-politica-estadisticas>
+
+
+    <!-- =====================================================
+         GESTIONES PÚBLICAS
+    ====================================================== -->
 
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'gestiones'"
@@ -303,6 +755,11 @@
       [users]="users">
     </app-politica-estadisticas>
 
+
+    <!-- =====================================================
+         OTROS
+    ====================================================== -->
+
     <app-politica-estadisticas
       *ngIf="selectedComponent === 'otros'"
       categoria="otros"
@@ -313,6 +770,11 @@
       [users]="users">
     </app-politica-estadisticas>
 
+
+    <!-- =====================================================
+         ENTIDADES
+    ====================================================== -->
+
     <app-estadisticas-enti-personas
       *ngIf="selectedComponent === 'entidades'"
       [startDate]="appliedStartDate"
@@ -322,6 +784,11 @@
       [searchText]="appliedSearchText"
       [users]="users">
     </app-estadisticas-enti-personas>
+
+
+    <!-- =====================================================
+         PERSONAS
+    ====================================================== -->
 
     <app-estadisticas-enti-personas
       *ngIf="selectedComponent === 'personas'"
@@ -334,4 +801,5 @@
     </app-estadisticas-enti-personas>
 
   </div>
+
 </section>

@@ -35,6 +35,17 @@ type IndiceSentItem = {
   total: number;
   indice: number;
 };
+interface TopicEntity {
+  topic_id: number;
+  topic_name: string;
+  entidad: string;
+  total: number;
+}
+
+type TopicEntityType =
+  | 'persona'
+  | 'organizacion'
+  | 'locacion';
 
 @Component({
   selector: 'app-estadisticas-enti-personas',
@@ -55,7 +66,7 @@ export class EstadisticasEntiPersonasComponent implements OnInit, OnChanges {
   // lista de users del combo (vienen del padre)
   @Input() users: users[] = [];
 
-  // ✅ este define el dashboard: 'Persona' o 'Entidad'
+  // Define el contexto del dashboard: 'Persona' o 'Entidad'
   @Input() type_user: string = 'Persona';
 
   @Input() searchText: string = '';
@@ -78,6 +89,16 @@ export class EstadisticasEntiPersonasComponent implements OnInit, OnChanges {
     totalRepliesNegativo = 0;
 totalRepliesNeutro = 0;
 totalRepliesPositivo = 0;
+
+// =========================================================
+// ENTIDADES POR TÓPICO
+// =========================================================
+
+entitiesByTopicPersona: TopicEntity[] = [];
+entitiesByTopicOrganizacion: TopicEntity[] = [];
+entitiesByTopicLocacion: TopicEntity[] = [];
+
+selectedTopicEntityType: TopicEntityType = 'persona';
 
   // ===== Top users list =====
   topUsers: TopUserItem[] = [];
@@ -104,6 +125,249 @@ totalRepliesPositivo = 0;
       borderWidth: 2
     }]
   };
+  // =========================================================
+// TÓPICOS PRINCIPALES
+// =========================================================
+
+topTopicsData: ChartData<'bar'> = {
+  labels: [],
+  datasets: [
+    {
+      label: 'Publicaciones',
+      data: [],
+      backgroundColor: '#6d28d9',
+      borderRadius: 7,
+      borderSkipped: false,
+      barThickness: 22,
+      maxBarThickness: 26
+    }
+  ]
+};
+
+readonly topTopicsOptions: ChartOptions<'bar'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  indexAxis: 'y',
+
+  animation: {
+    duration: 500
+  },
+
+  plugins: {
+    legend: {
+      display: false
+    },
+
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: (context) => {
+          const value = Number(context.raw ?? 0);
+          return `${value.toLocaleString()} publicaciones`;
+        }
+      }
+    }
+  },
+
+  scales: {
+    x: {
+      beginAtZero: true,
+      border: {
+        display: false
+      },
+      grid: {
+        color: 'rgba(15, 23, 42, 0.05)'
+      },
+      ticks: {
+        precision: 0,
+        color: '#64748b'
+      }
+    },
+
+    y: {
+      border: {
+        display: false
+      },
+      grid: {
+        display: false
+      },
+      ticks: {
+        color: '#334155',
+        font: {
+          size: 12,
+          weight: 600
+        }
+      }
+    }
+  }
+};
+// =========================================================
+// EVOLUCIÓN DE TÓPICOS
+// =========================================================
+
+topicsTimelineData: ChartData<'line'> = {
+  labels: [],
+  datasets: []
+};
+
+readonly topicsTimelineOptions: ChartOptions<'line'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+
+  interaction: {
+    mode: 'index',
+    intersect: false
+  },
+
+  plugins: {
+    legend: {
+      display: true,
+      position: 'bottom',
+
+      labels: {
+        usePointStyle: true,
+        pointStyle: 'circle',
+        padding: 18,
+        boxWidth: 8,
+        boxHeight: 8
+      }
+    },
+
+    tooltip: {
+      enabled: true,
+
+      callbacks: {
+        label: (context) => {
+          const value = Number(context.raw ?? 0);
+
+          return `${context.dataset.label}: ${value.toLocaleString()} publicaciones`;
+        }
+      }
+    }
+  },
+
+  scales: {
+    x: {
+      border: {
+        display: false
+      },
+
+      grid: {
+        display: false
+      },
+
+      ticks: {
+        color: '#64748b',
+        maxRotation: 0
+      }
+    },
+
+    y: {
+      beginAtZero: true,
+
+      border: {
+        display: false
+      },
+
+      grid: {
+        color: 'rgba(15, 23, 42, 0.05)'
+      },
+
+      ticks: {
+        precision: 0,
+        color: '#64748b'
+      }
+    }
+  }
+};
+// =========================================================
+// TÓPICOS POR USUARIO
+// =========================================================
+
+topicsByUserData: ChartData<'bar'> = {
+  labels: [],
+  datasets: []
+};
+
+readonly topicsByUserOptions: ChartOptions<'bar'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  indexAxis: 'y',
+
+  interaction: {
+    mode: 'index',
+    intersect: false
+  },
+
+  plugins: {
+    legend: {
+      display: true,
+      position: 'bottom',
+
+      labels: {
+        usePointStyle: true,
+        pointStyle: 'circle',
+        padding: 16,
+        boxWidth: 8,
+        boxHeight: 8
+      }
+    },
+
+    tooltip: {
+      enabled: true,
+
+      callbacks: {
+        label: (context) => {
+          const value = Number(context.raw ?? 0);
+
+          return `${context.dataset.label}: ${value.toLocaleString()} publicaciones`;
+        }
+      }
+    }
+  },
+
+  scales: {
+    x: {
+      beginAtZero: true,
+      stacked: false,
+
+      border: {
+        display: false
+      },
+
+      grid: {
+        color: 'rgba(15, 23, 42, 0.05)'
+      },
+
+      ticks: {
+        precision: 0,
+        color: '#64748b'
+      }
+    },
+
+    y: {
+      stacked: false,
+
+      border: {
+        display: false
+      },
+
+      grid: {
+        display: false
+      },
+
+      ticks: {
+        color: '#334155',
+        font: {
+          size: 12,
+          weight: 600
+        }
+      }
+    }
+  }
+};
+
+
 
   readonly lineOptions: ChartOptions<'line'> = {
     responsive: true,
@@ -297,11 +561,330 @@ totalRepliesPositivo = 0;
     this.totalRepliesNeutro = res.total_replies.neutro ?? 0
     this.totalRepliesPositivo = res.total_replies.positivo ?? 0 
 
-  this.topLocacion = this.normalizeArray(res?.locacion).slice(0, 3);
-  this.topOrganizacion = this.normalizeArray(res?.organizacion).slice(0, 3);
-  this.topPersona = this.normalizeArray(res?.persona).slice(0, 3);
+  this.topLocacion = this.normalizeArray(res?.locacion).slice(0, 10);
+  this.topOrganizacion = this.normalizeArray(res?.organizacion).slice(0, 10);
+  this.topPersona = this.normalizeArray(res?.persona).slice(0, 10);
 
   console.log(res)
+  // =========================================================
+// TÓPICOS PRINCIPALES
+// =========================================================
+
+const topTopics = Array.isArray(res?.top_topics)
+  ? res.top_topics
+  : [];
+
+this.topTopicsData = {
+  labels: topTopics.map((item: any) =>
+    this.truncateTopic(
+      String(item.topic_name || 'Sin nombre'),
+      55
+    )
+  ),
+
+  datasets: [
+    {
+      label: 'Publicaciones',
+
+      data: topTopics.map((item: any) =>
+        Number(item.total || 0)
+      ),
+
+      backgroundColor: '#6d28d9',
+
+      borderRadius: 7,
+      borderSkipped: false,
+
+      barThickness: 22,
+      maxBarThickness: 26
+    }
+  ]
+};
+// =========================================================
+// EVOLUCIÓN DE TÓPICOS
+// =========================================================
+
+const topicTimeline = Array.isArray(res?.topics_timeline)
+  ? res.topics_timeline
+  : [];
+
+// Fechas únicas
+const fechas: string[] = Array.from(
+  new Set<string>(
+    topicTimeline.map(
+      (item: any): string => String(item.fecha)
+    )
+  )
+);
+
+// Orden cronológico
+fechas.sort((a: string, b: string) => {
+  return new Date(a).getTime() - new Date(b).getTime();
+});
+
+// Tópicos únicos
+const topicMap = new Map<
+  number,
+  {
+    topic_id: number;
+    topic_name: string;
+  }
+>();
+
+topicTimeline.forEach((item: any) => {
+
+  const topicId = Number(item.topic_id);
+
+  if (!topicMap.has(topicId)) {
+    topicMap.set(topicId, {
+      topic_id: topicId,
+      topic_name: String(
+        item.topic_name || 'Sin nombre'
+      )
+    });
+  }
+
+});
+
+const timelineTopics = Array.from(
+  topicMap.values()
+);
+
+// Colores de las líneas
+const topicColors = [
+  '#6d28d9',
+  '#2563eb',
+  '#059669',
+  '#ea580c',
+  '#dc2626'
+];
+
+// Construir gráfico
+this.topicsTimelineData = {
+
+  labels: fechas.map((fecha: string) =>
+    this.formatTimelineLabel(fecha)
+  ),
+
+  datasets: timelineTopics.map(
+    (topic, index) => {
+
+      const data = fechas.map(
+        (fecha: string) => {
+
+          const item = topicTimeline.find(
+            (row: any) =>
+              Number(row.topic_id) === topic.topic_id &&
+              String(row.fecha) === fecha
+          );
+
+          return item
+            ? Number(item.total ?? 0)
+            : 0;
+        }
+      );
+
+      const color =
+        topicColors[index % topicColors.length];
+
+      return {
+        label: this.truncateTopic(
+          topic.topic_name,
+          38
+        ),
+
+        data,
+
+        borderColor: color,
+        backgroundColor: color,
+
+        tension: 0.35,
+        fill: false,
+
+        pointRadius: 3,
+        pointHoverRadius: 5,
+
+        borderWidth: 2
+      };
+    }
+  )
+};
+// =========================================================
+// TÓPICOS POR USUARIO
+// =========================================================
+
+const topicsByUser = Array.isArray(res?.topics_by_user)
+  ? res.topics_by_user
+  : [];
+
+// ---------------------------------------------------------
+// Tópicos únicos
+// ---------------------------------------------------------
+
+const topicsMap = new Map<
+  number,
+  {
+    topic_id: number;
+    topic_name: string;
+  }
+>();
+
+topicsByUser.forEach((item: any) => {
+  const topicId = Number(item.topic_id);
+
+  if (!topicsMap.has(topicId)) {
+    topicsMap.set(topicId, {
+      topic_id: topicId,
+      topic_name: String(
+        item.topic_name || 'Sin nombre'
+      )
+    });
+  }
+});
+
+const topics = Array.from(
+  topicsMap.values()
+);
+
+// ---------------------------------------------------------
+// Usuarios únicos
+// ---------------------------------------------------------
+
+const usersMap = new Map<
+  number,
+  {
+    user_id: number;
+    usuario: string;
+  }
+>();
+
+topicsByUser.forEach((item: any) => {
+  const userId = Number(item.user_id);
+
+  if (!usersMap.has(userId)) {
+    usersMap.set(userId, {
+      user_id: userId,
+      usuario: String(
+        item.usuario || 'Sin nombre'
+      )
+    });
+  }
+});
+
+const topicUsers = Array.from(
+  usersMap.values()
+);
+
+// ---------------------------------------------------------
+// Colores
+// ---------------------------------------------------------
+
+const userColors = [
+  '#6d28d9',
+  '#2563eb',
+  '#059669',
+  '#ea580c',
+  '#dc2626',
+  '#0891b2',
+  '#9333ea',
+  '#475569'
+];
+
+// ---------------------------------------------------------
+// Construir gráfico
+// ---------------------------------------------------------
+
+this.topicsByUserData = {
+  labels: topics.map((topic) =>
+    this.truncateTopic(
+      topic.topic_name,
+      45
+    )
+  ),
+
+  datasets: topicUsers.map(
+    (user, index) => {
+
+      const data = topics.map((topic) => {
+        const item = topicsByUser.find(
+          (row: any) =>
+            Number(row.topic_id) === topic.topic_id &&
+            Number(row.user_id) === user.user_id
+        );
+
+        return item
+          ? Number(item.total ?? 0)
+          : 0;
+      });
+
+      return {
+        label: user.usuario,
+        data,
+        backgroundColor:
+          userColors[index % userColors.length],
+
+        borderRadius: 5,
+        borderSkipped: false,
+        barThickness: 9,
+        maxBarThickness: 12
+      };
+    }
+  )
+};
+// =========================================================
+// ENTIDADES POR TÓPICO
+// =========================================================
+
+this.entitiesByTopicPersona = Array.isArray(
+  res?.entities_by_topic_persona
+)
+  ? res.entities_by_topic_persona.map((item: any) => ({
+      topic_id: Number(item.topic_id),
+      topic_name: String(
+        item.topic_name || 'Sin nombre'
+      ),
+      entidad: String(
+        item.entidad || 'Sin nombre'
+      ),
+      total: Number(
+        item.total || 0
+      )
+    }))
+  : [];
+
+this.entitiesByTopicOrganizacion = Array.isArray(
+  res?.entities_by_topic_organizacion
+)
+  ? res.entities_by_topic_organizacion.map((item: any) => ({
+      topic_id: Number(item.topic_id),
+      topic_name: String(
+        item.topic_name || 'Sin nombre'
+      ),
+      entidad: String(
+        item.entidad || 'Sin nombre'
+      ),
+      total: Number(
+        item.total || 0
+      )
+    }))
+  : [];
+
+this.entitiesByTopicLocacion = Array.isArray(
+  res?.entities_by_topic_locacion
+)
+  ? res.entities_by_topic_locacion.map((item: any) => ({
+      topic_id: Number(item.topic_id),
+      topic_name: String(
+        item.topic_name || 'Sin nombre'
+      ),
+      entidad: String(
+        item.entidad || 'Sin nombre'
+      ),
+      total: Number(
+        item.total || 0
+      )
+    }))
+  : [];
   
   // Timeline
   const tl = Array.isArray(res?.time_line)
@@ -351,7 +934,7 @@ totalRepliesPositivo = 0;
       this.totalRepliesNegativo,
       this.totalRepliesNeutro,
       this.totalRepliesPositivo
-    ],
+    ], 
     backgroundColor: [
       NETVORA_PALETTE.sentiment.negativo,
       NETVORA_PALETTE.sentiment.neutro,
@@ -573,8 +1156,86 @@ totalRepliesPositivo = 0;
     const max = Math.max(...this.topUsers.map(x => x.total || 0), 1);
     return Math.round((total / max) * 100);
   }
+  private truncateTopic(
+  text: string,
+  maxLength: number
+): string {
+
+  if (!text) {
+    return 'Sin nombre';
+  }
+
+  return text.length > maxLength
+    ? `${text.substring(0, maxLength)}…`
+    : text;
+}
 
   calcIndiceBar(v: number): number {
     return Math.round(Math.abs(this.normalizeIndiceSigned(v) * 100));
   }
+  get groupedEntitiesByTopic(): {
+  topic_id: number;
+  topic_name: string;
+  total: number;
+  entities: TopicEntity[];
+}[] {
+
+  const grouped = new Map<
+    number,
+    {
+      topic_id: number;
+      topic_name: string;
+      total: number;
+      entities: TopicEntity[];
+    }
+  >();
+
+  this.selectedEntitiesByTopic.forEach((item) => {
+
+    if (!grouped.has(item.topic_id)) {
+      grouped.set(item.topic_id, {
+        topic_id: item.topic_id,
+        topic_name: item.topic_name,
+        total: 0,
+        entities: []
+      });
+    }
+
+    const topic = grouped.get(item.topic_id)!;
+
+    topic.entities.push(item);
+    topic.total += item.total;
+  });
+
+  return Array.from(grouped.values())
+    .map((topic) => ({
+      ...topic,
+
+      // Ordenar entidades de mayor a menor
+      entities: topic.entities.sort(
+        (a, b) => b.total - a.total
+      )
+    }))
+    // Ordenar tópicos de mayor a menor
+    .sort(
+      (a, b) => b.total - a.total
+    );
+}
+
+  get selectedEntitiesByTopic(): TopicEntity[] {
+
+  switch (this.selectedTopicEntityType) {
+
+    case 'organizacion':
+      return this.entitiesByTopicOrganizacion;
+
+    case 'locacion':
+      return this.entitiesByTopicLocacion;
+
+    case 'persona':
+    default:
+      return this.entitiesByTopicPersona;
+  }
+
+}
 }

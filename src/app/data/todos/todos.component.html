@@ -1,203 +1,1729 @@
+
 <section class="dash">
 
-  <!-- Header / acciones -->
-  <div class="header">
-    <div class="title">
-      <h2>Dashboard general</h2>
-      <p class="sub">Vista global: entidades, timeline, sentimientos y categorías.</p>
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
+
+  <header class="dashboard-header">
+
+    <div class="dashboard-heading">
+      <span class="eyebrow">Panorama general</span>
+
+      <h1>Qué está pasando</h1>
+
+      <p>
+        Principales conversaciones, actividad y actores detectados
+        en el período seleccionado.
+      </p>
     </div>
 
-    <div class="actions">
-      <button class="btn" (click)="cargarDatos()" [disabled]="loading">
-        {{ loading ? 'Cargando…' : 'Actualizar' }}
-      </button>
-      <button class="btn ghost" (click)="downloadAllCharts()" [disabled]="loading">
-        Descargar todo
-      </button>
-    </div>
-  </div>
 
-  <div *ngIf="errorMsg" class="alert">
+    <div class="header-actions">
+
+      <button
+        type="button"
+        class="btn"
+        (click)="cargarDatos()"
+        [disabled]="loading">
+
+        <span class="refresh-icon">
+          {{ loading ? '↻' : '↻' }}
+        </span>
+
+        {{ loading ? 'Actualizando…' : 'Actualizar' }}
+
+      </button>
+
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="downloadAllCharts()"
+        [disabled]="loading">
+
+        ↓
+        Descargar gráficos
+
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <!-- =====================================================
+       ERROR
+  ====================================================== -->
+
+  <div
+    *ngIf="errorMsg"
+    class="alert">
+
     {{ errorMsg }}
+
   </div>
 
-  <!-- KPI + Top posts/replies + Top 3 -->
-  <div class="kpi">
-    <div class="kpi-summary">
-      <div class="kpi-main">
-        <div class="kpi-label">Total posts</div>
-        <div class="kpi-value">{{ totalPosts | number }}</div>
-        <div class="kpi-hint">
-          Rango: {{ startDate ? (startDate | date:'yyyy-MM-dd') : '—' }} →
-          {{ endDate ? (endDate | date:'yyyy-MM-dd') : '—' }}
-        </div>
+
+  <!-- =====================================================
+       KPI
+  ====================================================== -->
+
+  <section class="metrics-grid">
+
+    <!-- PUBLICACIONES -->
+    <article class="metric-card">
+
+      <div class="metric-top">
+        <span class="metric-label">Publicaciones</span>
+
+        <span class="metric-icon">
+          <span class="material-icons">article</span>
+        </span>
       </div>
 
-     <div class="topbox compact">
-
-  <div class="top-title">Total Replies</div>
-  <div class="top-big-value">{{ totalReplies | number }}</div>
-
-  <!-- 🔘 Toggle -->
-  <div class="toggle-view">
-    <button (click)="viewModeReplies = 'table'" [class.active]="viewModeReplies === 'table'">
-      Tabla
-    </button>
-    <button (click)="viewModeReplies = 'chart'" [class.active]="viewModeReplies === 'chart'">
-      Gráfico
-    </button>
-  </div>
-
-  <!-- 📊 TABLA -->
-  <div *ngIf="viewModeReplies === 'table'" class="reply-sentiment">
-    <div class="reply-item neg">
-      <span>Negativo</span>
-      <strong>{{ totalRepliesNegativo | number }}</strong>
-    </div>
-    <div class="reply-item neu">
-      <span>Neutro</span>
-      <strong>{{ totalRepliesNeutro | number }}</strong>
-    </div>
-    <div class="reply-item pos">
-      <span>Positivo</span>
-      <strong>{{ totalRepliesPositivo | number }}</strong>
-    </div>
-  </div>
-
-  <!-- 🥧 GRÁFICO -->
-  <div *ngIf="viewModeReplies === 'chart'" class="chart small">
-  <div class="chart-actions">
-    <button class="btn-download" (click)="downloadChart($event)">
-      ⬇
-    </button>
-  </div>
-
-  <div class="chart-wrap replies-chart-wrap">
-    <canvas
-      baseChart
-      [data]="repliesChartData"
-      [type]="'doughnut'"
-      [options]="repliesChartOptions">
-    </canvas>
-  </div>
-</div>
-
-</div>
-    </div>
-
-    <div class="kpi-tops">
-      <div class="topbox">
-        <div class="top-title">Top 3 Locación</div>
-        <ul class="toplist">
-          <li *ngFor="let it of topLocacion; trackBy: trackByEntidad">
-            <span class="name">{{ it.entidad }}</span>
-            <span class="val">{{ it.total | number }}</span>
-          </li>
-        </ul>
+      <div class="metric-value">
+        {{ totalPosts | number }}
       </div>
 
-      <div class="topbox">
-        <div class="top-title">Top 3 Organización</div>
-        <ul class="toplist">
-          <li *ngFor="let it of topOrganizacion; trackBy: trackByEntidad">
-            <span class="name">{{ it.entidad }}</span>
-            <span class="val">{{ it.total | number }}</span>
-          </li>
-        </ul>
+      <div class="metric-footer">
+        En el período seleccionado
       </div>
 
-      <div class="topbox">
-        <div class="top-title">Top 3 Persona</div>
-        <ul class="toplist">
-          <li *ngFor="let it of topPersona; trackBy: trackByEntidad">
-            <span class="name">{{ it.entidad }}</span>
-            <span class="val">{{ it.total | number }}</span>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
+    </article>
 
-  <!-- Timeline -->
-  <div class="card chart">
-    <div class="card-head">
+
+    <!-- COMENTARIOS -->
+    <article class="metric-card">
+
+      <div class="metric-top">
+        <span class="metric-label">Comentarios</span>
+
+        <span class="metric-icon">
+          <span class="material-icons">forum</span>
+        </span>
+      </div>
+
+      <div class="metric-value">
+        {{ totalReplies | number }}
+      </div>
+
+      <div class="metric-footer">
+        Respuestas analizadas
+      </div>
+
+    </article>
+
+
+    <!-- TÓPICOS EMERGENTES -->
+    <article class="metric-card metric-card--accent">
+
+      <div class="metric-top">
+
+        <span class="metric-label">
+          Tópicos emergentes
+        </span>
+
+        <span class="metric-icon metric-icon--accent">
+          <span class="material-icons">trending_up</span>
+        </span>
+
+      </div>
+
+      <div class="metric-value">
+        {{ currentEmergingTopics.length | number }}
+      </div>
+
+      <div class="metric-footer metric-footer--accent">
+        Temas con crecimiento
+      </div>
+
+    </article>
+
+
+    <!-- CUENTAS -->
+    <article class="metric-card">
+
+      <div class="metric-top">
+
+        <span class="metric-label">
+          Cuentas analizadas
+        </span>
+
+        <span class="metric-icon">
+          <span class="material-icons">alternate_email</span>
+        </span>
+
+      </div>
+
+      <div class="metric-value">
+        {{
+          selectedUsers.length > 0
+            ? selectedUsers.length
+            : users.length
+        }}
+      </div>
+
+      <div class="metric-footer">
+        Fuentes incluidas
+      </div>
+
+    </article>
+
+  </section>
+
+
+  <!-- =====================================================
+       QUÉ ESTÁ PASANDO
+  ====================================================== -->
+
+  <section class="section-block">
+
+    <div class="section-heading">
+
       <div>
-        <div class="card-title">Línea de tiempo</div>
-        <div class="card-sub">Posts por día</div>
+
+        <span class="section-eyebrow">
+          AHORA
+        </span>
+
+        <h2>Conversaciones en crecimiento</h2>
+
+        <p>
+          Temas cuya actividad aumentó frente al período inmediatamente anterior.
+        </p>
+
       </div>
-      <button class="iconbtn" (click)="downloadChart($event)" title="Descargar gráfico">
-        ⬇
-      </button>
+
     </div>
 
-    <div class="chart-wrap">
+
+    <!-- TÓPICOS EMERGENTES COMO LISTA -->
+
+    <div
+      class="emerging-list"
+      *ngIf="currentEmergingTopics.length; else noEmergingTopicsList">
+
+
+      <article
+  class="emerging-item emerging-item--clickable"
+  *ngFor="
+    let topic of currentEmergingTopics.slice(0, 6);
+    let i = index
+  "
+  role="button"
+  tabindex="0"
+  (click)="openTopic(topic)"
+  (keydown.enter)="openTopic(topic)"
+  (keydown.space)="openTopic(topic); $event.preventDefault()">
+
+  <!-- POSICIÓN -->
+  <div class="topic-position">
+    {{ formatRank(i) }}
+  </div>
+
+
+  <!-- INFORMACIÓN -->
+  <div class="topic-main">
+
+    <div class="topic-name">
+      {{ topic.topic_name }}
+    </div>
+
+    <div class="topic-meta">
+
+      <span>
+        {{ topic.total_actual | number }} publicaciones
+      </span>
+
+      <span class="meta-separator">·</span>
+
+      <span>
+        período anterior:
+        {{ topic.total_anterior | number }}
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <!-- VARIACIÓN -->
+  <div class="topic-change">
+
+    <div class="topic-trend">
+
+      <span
+        class="trend-badge trend-new"
+        *ngIf="topic.tendencia === 'NUEVO'">
+
+        NUEVO
+
+      </span>
+
+
+      <span
+        class="trend-badge trend-up"
+        *ngIf="
+          topic.tendencia !== 'NUEVO' &&
+          topic.porcentaje != null
+        ">
+
+        ↑ {{ topic.porcentaje | number:'1.0-0' }}%
+
+      </span>
+
+
+      <span
+        class="trend-difference"
+        *ngIf="topic.diferencia">
+
+        +{{ topic.diferencia | number }}
+
+      </span>
+
+    </div>
+
+
+    <span class="topic-open">
+
+      Ver tópico
+
+      <span class="material-icons">
+        arrow_forward
+      </span>
+
+    </span>
+
+  </div>
+
+</article>
+
+    </div>
+
+
+    <ng-template #noEmergingTopicsList>
+
+      <div class="empty-state">
+
+        <span class="material-icons">
+          insights
+        </span>
+
+        <div>
+          <strong>No hay conversaciones emergentes</strong>
+
+          <p>
+            No se detectaron tópicos con crecimiento frente al período anterior.
+          </p>
+        </div>
+
+      </div>
+
+    </ng-template>
+
+  </section>
+
+
+<!-- =====================================================
+     ACTIVIDAD
+====================================================== -->
+
+<section class="section-block activity-section">
+
+  <div class="section-heading">
+
+    <div>
+      <span class="section-eyebrow neutral">
+        ACTIVIDAD
+      </span>
+
+      <h2>Cómo se está moviendo la conversación</h2>
+
+      <p>
+        Evolución del volumen de publicaciones durante el período seleccionado.
+      </p>
+    </div>
+
+  </div>
+
+
+  <!-- ===================================================
+       RESUMEN DE ACTIVIDAD
+  ==================================================== -->
+
+  <div class="activity-summary">
+
+    <!-- TOTAL -->
+    <div class="activity-stat">
+
+      <div class="activity-stat-top">
+        <span class="material-icons">article</span>
+        <span>Volumen</span>
+      </div>
+
+      <strong>
+        {{ activityTotal | number }}
+      </strong>
+
+      <small>
+        publicaciones en el período
+      </small>
+
+    </div>
+
+
+    <!-- PROMEDIO -->
+    <div class="activity-stat">
+
+      <div class="activity-stat-top">
+        <span class="material-icons">query_stats</span>
+        <span>Promedio</span>
+      </div>
+
+      <strong>
+        {{ activityAverage | number }}
+      </strong>
+
+      <small>
+        publicaciones por día
+      </small>
+
+    </div>
+
+
+    <!-- PICO -->
+    <div class="activity-stat activity-stat--peak">
+
+      <div class="activity-stat-top">
+        <span class="material-icons">bolt</span>
+        <span>Pico de actividad</span>
+      </div>
+
+      <strong>
+        {{ activityPeak | number }}
+      </strong>
+
+      <small *ngIf="activityPeakDate">
+        {{ activityPeakDate }}
+      </small>
+
+    </div>
+
+
+    <!-- VARIACIÓN -->
+    <div
+      class="activity-stat"
+      [class.activity-stat--positive]="activityVariationPositive"
+      [class.activity-stat--negative]="activityVariationNegative">
+
+      <div class="activity-stat-top">
+        <span class="material-icons">
+          {{
+            activityVariationPositive
+              ? 'trending_up'
+              : activityVariationNegative
+                ? 'trending_down'
+                : 'trending_flat'
+          }}
+        </span>
+
+        <span>Último movimiento</span>
+      </div>
+
+      <strong>
+        {{ activityVariationText }}
+      </strong>
+
+      <small>
+        frente al día anterior
+      </small>
+
+    </div>
+
+  </div>
+
+
+  <!-- ===================================================
+       GRÁFICO
+  ==================================================== -->
+
+  <div class="activity-chart chart">
+
+    <div class="activity-chart-header">
+
+      <div>
+        <span class="activity-chart-title">
+          Evolución diaria
+        </span>
+
+        <span class="activity-chart-subtitle">
+          Publicaciones detectadas por día
+        </span>
+      </div>
+
+
+      <button
+        type="button"
+        class="iconbtn"
+        (click)="downloadChart($event)"
+        title="Descargar gráfico">
+
+        <span class="material-icons">
+          download
+        </span>
+
+      </button>
+
+    </div>
+
+
+    <div
+      class="chart-wrap chart-wrap--main"
+      *ngIf="timelineData.labels?.length; else noActivity">
+
       <canvas
         baseChart
         [type]="'line'"
         [data]="timelineData"
         [options]="lineOptions">
       </canvas>
+
     </div>
-  </div>
 
-  <!-- Bottom charts -->
-  <div class="grid2">
 
-    <!-- Sentimientos -->
-    <div class="card chart">
-      <div class="card-head">
+    <ng-template #noActivity>
+
+      <div class="empty-state">
+
+        <span class="material-icons">
+          timeline
+        </span>
+
         <div>
-          <div class="card-title">Distribución de Sentimientos</div>
-          <div class="card-sub">Negativo / Neutro / Positivo</div>
+          <strong>No hay actividad disponible</strong>
+
+          <p>
+            No existen publicaciones para el período seleccionado.
+          </p>
         </div>
 
-        <div class="right">
-          <select class="select" [(ngModel)]="sentimentChartType">
-            <option *ngFor="let t of sentimentTypeOptions" [ngValue]="t">
-              {{ t }}
-            </option>
-          </select>
-          <button class="iconbtn" (click)="downloadChart($event)" title="Descargar gráfico">⬇</button>
-        </div>
       </div>
 
-      <div class="chart-wrap">
+    </ng-template>
+
+  </div>
+
+</section>
+
+
+  <!-- =====================================================
+       QUIÉNES DOMINAN
+  ====================================================== -->
+
+  <section class="section-block">
+
+    <div class="section-heading">
+
+      <div>
+
+        <span class="section-eyebrow neutral">
+          ACTORES
+        </span>
+
+        <h2>Quiénes dominan la conversación</h2>
+
+        <p>
+          Personas, organizaciones y lugares más mencionados.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="entities-grid">
+
+  <!-- =====================================================
+       PERSONAS
+  ====================================================== -->
+
+  <article class="entity-panel">
+
+    <header class="entity-panel-header">
+
+      <div class="entity-heading">
+
+        <span class="entity-icon">
+          <span class="material-icons">person</span>
+        </span>
+
+        <div>
+          <span>Personas</span>
+          <small>Más mencionadas</small>
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <div
+      class="entity-ranking"
+      *ngIf="topPersona.length; else noPersonas">
+
+      <div
+        class="entity-row entity-row--visual"
+        *ngFor="
+          let it of topPersona;
+          let i = index;
+          trackBy: trackByEntidad
+        ">
+
+        <span class="entity-position">
+          {{ i + 1 }}
+        </span>
+
+
+        <div class="entity-info">
+
+          <div class="entity-info-top">
+
+            <span
+              class="entity-name"
+              [title]="it.entidad">
+
+              {{ it.entidad }}
+
+            </span>
+
+            <strong class="entity-total">
+              {{ it.total | number }}
+            </strong>
+
+          </div>
+
+
+          <div class="entity-progress">
+
+            <span
+              class="entity-progress-bar"
+              [style.width.%]="
+                getEntityPercent(
+                  topPersona,
+                  it.total
+                )
+              ">
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <ng-template #noPersonas>
+
+      <div class="entity-empty">
+        Sin personas detectadas
+      </div>
+
+    </ng-template>
+
+  </article>
+
+
+  <!-- =====================================================
+       ORGANIZACIONES
+  ====================================================== -->
+
+  <article class="entity-panel">
+
+    <header class="entity-panel-header">
+
+      <div class="entity-heading">
+
+        <span class="entity-icon">
+          <span class="material-icons">domain</span>
+        </span>
+
+        <div>
+          <span>Organizaciones</span>
+          <small>Más mencionadas</small>
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <div
+      class="entity-ranking"
+      *ngIf="topOrganizacion.length; else noOrganizaciones">
+
+      <div
+        class="entity-row entity-row--visual"
+        *ngFor="
+          let it of topOrganizacion;
+          let i = index;
+          trackBy: trackByEntidad
+        ">
+
+        <span class="entity-position">
+          {{ i + 1 }}
+        </span>
+
+
+        <div class="entity-info">
+
+          <div class="entity-info-top">
+
+            <span
+              class="entity-name"
+              [title]="it.entidad">
+
+              {{ it.entidad }}
+
+            </span>
+
+            <strong class="entity-total">
+              {{ it.total | number }}
+            </strong>
+
+          </div>
+
+
+          <div class="entity-progress">
+
+            <span
+              class="entity-progress-bar"
+              [style.width.%]="
+                getEntityPercent(
+                  topOrganizacion,
+                  it.total
+                )
+              ">
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <ng-template #noOrganizaciones>
+
+      <div class="entity-empty">
+        Sin organizaciones detectadas
+      </div>
+
+    </ng-template>
+
+  </article>
+
+
+  <!-- =====================================================
+       LUGARES
+  ====================================================== -->
+
+  <article class="entity-panel">
+
+    <header class="entity-panel-header">
+
+      <div class="entity-heading">
+
+        <span class="entity-icon">
+          <span class="material-icons">location_on</span>
+        </span>
+
+        <div>
+          <span>Lugares</span>
+          <small>Más mencionados</small>
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <div
+      class="entity-ranking"
+      *ngIf="topLocacion.length; else noLugares">
+
+      <div
+        class="entity-row entity-row--visual"
+        *ngFor="
+          let it of topLocacion;
+          let i = index;
+          trackBy: trackByEntidad
+        ">
+
+        <span class="entity-position">
+          {{ i + 1 }}
+        </span>
+
+
+        <div class="entity-info">
+
+          <div class="entity-info-top">
+
+            <span
+              class="entity-name"
+              [title]="it.entidad">
+
+              {{ it.entidad }}
+
+            </span>
+
+            <strong class="entity-total">
+              {{ it.total | number }}
+            </strong>
+
+          </div>
+
+
+          <div class="entity-progress">
+
+            <span
+              class="entity-progress-bar"
+              [style.width.%]="
+                getEntityPercent(
+                  topLocacion,
+                  it.total
+                )
+              ">
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <ng-template #noLugares>
+
+      <div class="entity-empty">
+        Sin lugares detectados
+      </div>
+
+    </ng-template>
+
+  </article>
+
+</div>
+
+  </section>
+
+
+  <!-- =====================================================
+       ANÁLISIS PRINCIPAL
+  ====================================================== -->
+
+  <section class="section-block">
+
+    <div class="section-heading">
+
+      <div>
+
+        <span class="section-eyebrow neutral">
+          ANÁLISIS
+        </span>
+
+        <h2>Entender la conversación</h2>
+
+        <p>
+          Tópicos principales, sentimiento y comportamiento de los comentarios.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <!-- =====================================================
+     RESUMEN DE ANÁLISIS
+====================================================== -->
+
+<div class="analysis-insights">
+
+  <!-- TÓPICO LÍDER -->
+  <div class="analysis-insight analysis-insight--main">
+
+    <div class="analysis-insight-label">
+      <span class="material-icons">local_fire_department</span>
+      Tópico con mayor actividad
+    </div>
+
+    <strong
+      class="analysis-insight-topic"
+      [title]="analysisTopTopic">
+
+      {{ analysisTopTopic || 'Sin datos' }}
+
+    </strong>
+
+    <span
+      class="analysis-insight-value"
+      *ngIf="analysisTopTopic">
+
+      {{ analysisTopTopicTotal | number }}
+      publicaciones
+
+    </span>
+
+  </div>
+
+
+  <!-- SENTIMIENTO GENERAL -->
+  <div class="analysis-insight">
+
+    <div class="analysis-insight-label">
+      <span class="material-icons">sentiment_satisfied</span>
+      Sentimiento de los tópicos
+    </div>
+
+    <div class="sentiment-mini">
+
+      <span class="sentiment-mini-item positive">
+        <strong>{{ analysisPositivePercent }}%</strong>
+        positivo
+      </span>
+
+      <span class="sentiment-mini-item neutral">
+        <strong>{{ analysisNeutralPercent }}%</strong>
+        neutral
+      </span>
+
+      <span class="sentiment-mini-item negative">
+        <strong>{{ analysisNegativePercent }}%</strong>
+        negativo
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <!-- MÁS POSITIVO -->
+  <div class="analysis-insight">
+
+    <div class="analysis-insight-label">
+      <span class="material-icons positive-icon">
+        trending_up
+      </span>
+
+      Mayor proporción positiva
+    </div>
+
+    <strong
+      class="analysis-insight-topic"
+      [title]="analysisMostPositiveTopic">
+
+      {{ analysisMostPositiveTopic || 'Sin datos' }}
+
+    </strong>
+
+  </div>
+
+
+  <!-- MÁS NEGATIVO -->
+  <div class="analysis-insight">
+
+    <div class="analysis-insight-label">
+      <span class="material-icons negative-icon">
+        trending_down
+      </span>
+
+      Mayor proporción negativa
+    </div>
+
+    <strong
+      class="analysis-insight-topic"
+      [title]="analysisMostNegativeTopic">
+
+      {{ analysisMostNegativeTopic || 'Sin datos' }}
+
+    </strong>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     GRÁFICOS
+====================================================== -->
+
+<div class="analysis-grid">
+
+  <!-- TOP TÓPICOS -->
+
+  <article class="analysis-card chart">
+
+    <div class="card-head">
+
+      <div>
+
+        <div class="card-title">
+          Tópicos con mayor actividad
+        </div>
+
+        <div class="card-sub">
+          Temas que concentran más publicaciones
+        </div>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="iconbtn"
+        (click)="downloadChart($event)"
+        title="Descargar gráfico">
+
+        <span class="material-icons">
+          download
+        </span>
+
+      </button>
+
+    </div>
+
+
+    <div
+      class="chart-wrap chart-wrap--analysis"
+      *ngIf="topTopicsData.labels?.length; else noTopics">
+
+      <canvas
+        baseChart
+        [type]="'bar'"
+        [data]="topTopicsData"
+        [options]="topTopicsOptions">
+      </canvas>
+
+    </div>
+
+
+    <ng-template #noTopics>
+
+      <div class="empty-state compact">
+
+        <span class="material-icons">
+          topic
+        </span>
+
+        <div>
+          <strong>No hay tópicos disponibles</strong>
+
+          <p>
+            Cambia el período o las cuentas seleccionadas.
+          </p>
+        </div>
+
+      </div>
+
+    </ng-template>
+
+  </article>
+
+
+  <!-- SENTIMIENTO POR TÓPICO -->
+
+  <article class="analysis-card chart">
+
+    <div class="card-head">
+
+      <div>
+
+        <div class="card-title">
+          Sentimiento por tópico
+        </div>
+
+        <div class="card-sub">
+          Proporción positiva, neutral y negativa
+        </div>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="iconbtn"
+        (click)="downloadChart($event)"
+        title="Descargar gráfico">
+
+        <span class="material-icons">
+          download
+        </span>
+
+      </button>
+
+    </div>
+
+
+    <div
+      class="chart-wrap chart-wrap--analysis"
+      *ngIf="
+        topicSentimentData.labels?.length;
+        else noTopicSentiment
+      ">
+
+      <canvas
+        baseChart
+        [type]="'bar'"
+        [data]="topicSentimentData"
+        [options]="topicSentimentOptions">
+      </canvas>
+
+    </div>
+
+
+    <ng-template #noTopicSentiment>
+
+      <div class="empty-state compact">
+
+        <span class="material-icons">
+          sentiment_neutral
+        </span>
+
+        <div>
+
+          <strong>
+            No hay datos de sentimiento
+          </strong>
+
+          <p>
+            No existe suficiente información en este período.
+          </p>
+
+        </div>
+
+      </div>
+
+    </ng-template>
+
+  </article>
+
+</div>
+
+  </section>
+
+
+  <!-- =====================================================
+     COMENTARIOS
+====================================================== -->
+
+<section class="section-block">
+
+  <div class="section-heading">
+
+    <div>
+
+      <span class="section-eyebrow neutral">
+        COMENTARIOS
+      </span>
+
+      <h2>Reacción de la conversación</h2>
+
+      <p>
+        Cómo están respondiendo las personas a las publicaciones analizadas.
+      </p>
+
+    </div>
+
+
+    <div class="view-switch">
+
+      <button
+        type="button"
+        [class.active]="viewModeReplies === 'table'"
+        (click)="viewModeReplies = 'table'">
+
+        Resumen
+
+      </button>
+
+      <button
+        type="button"
+        [class.active]="viewModeReplies === 'chart'"
+        (click)="viewModeReplies = 'chart'">
+
+        Gráfico
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       RESUMEN GENERAL
+  ====================================================== -->
+
+  <div class="replies-summary">
+
+    <!-- TOTAL -->
+
+    <div class="replies-summary-main">
+
+      <div class="replies-summary-label">
+
+        <span class="material-icons">
+          forum
+        </span>
+
+        Comentarios analizados
+
+      </div>
+
+      <strong>
+        {{ totalReplies | number }}
+      </strong>
+
+      <small>
+        Respuestas capturadas en el período seleccionado
+      </small>
+
+    </div>
+
+
+    <!-- SENTIMIENTO DOMINANTE -->
+
+    <div class="replies-dominant">
+
+      <span>
+        Sentimiento dominante
+      </span>
+
+      <strong>
+        {{ repliesDominantSentiment }}
+      </strong>
+
+      <small *ngIf="repliesDominantPercent > 0">
+        {{ repliesDominantPercent }}% de las respuestas clasificadas
+      </small>
+
+    </div>
+
+
+    <!-- DISTRIBUCIÓN -->
+
+    <div class="replies-distribution">
+
+      <div class="replies-distribution-header">
+
+        <span>Distribución</span>
+
+        <small>
+          100% de respuestas clasificadas
+        </small>
+
+      </div>
+
+
+      <div class="replies-bar">
+
+        <span
+          class="replies-bar-segment negative"
+          [style.width.%]="repliesNegativePercent">
+        </span>
+
+        <span
+          class="replies-bar-segment neutral"
+          [style.width.%]="repliesNeutralPercent">
+        </span>
+
+        <span
+          class="replies-bar-segment positive"
+          [style.width.%]="repliesPositivePercent">
+        </span>
+
+      </div>
+
+
+      <div class="replies-bar-legend">
+
+        <span class="negative">
+          <i></i>
+          Negativo
+          <strong>{{ repliesNegativePercent }}%</strong>
+        </span>
+
+        <span class="neutral">
+          <i></i>
+          Neutral
+          <strong>{{ repliesNeutralPercent }}%</strong>
+        </span>
+
+        <span class="positive">
+          <i></i>
+          Positivo
+          <strong>{{ repliesPositivePercent }}%</strong>
+        </span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       MODO RESUMEN
+  ====================================================== -->
+
+  <div
+    class="reply-breakdown"
+    *ngIf="viewModeReplies === 'table'">
+
+    <div class="reply-breakdown-item negative">
+
+      <div class="reply-breakdown-top">
+
+        <div>
+
+          <span class="reply-status-dot"></span>
+
+          <span class="reply-breakdown-name">
+            Negativos
+          </span>
+
+        </div>
+
+        <strong>
+          {{ totalRepliesNegativo | number }}
+        </strong>
+
+      </div>
+
+      <small>
+        {{ repliesNegativePercent }}% del total clasificado
+      </small>
+
+    </div>
+
+
+    <div class="reply-breakdown-item neutral">
+
+      <div class="reply-breakdown-top">
+
+        <div>
+
+          <span class="reply-status-dot"></span>
+
+          <span class="reply-breakdown-name">
+            Neutrales
+          </span>
+
+        </div>
+
+        <strong>
+          {{ totalRepliesNeutro | number }}
+        </strong>
+
+      </div>
+
+      <small>
+        {{ repliesNeutralPercent }}% del total clasificado
+      </small>
+
+    </div>
+
+
+    <div class="reply-breakdown-item positive">
+
+      <div class="reply-breakdown-top">
+
+        <div>
+
+          <span class="reply-status-dot"></span>
+
+          <span class="reply-breakdown-name">
+            Positivos
+          </span>
+
+        </div>
+
+        <strong>
+          {{ totalRepliesPositivo | number }}
+        </strong>
+
+      </div>
+
+      <small>
+        {{ repliesPositivePercent }}% del total clasificado
+      </small>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       MODO GRÁFICO
+  ====================================================== -->
+
+  <div
+    class="replies-chart-panel chart"
+    *ngIf="viewModeReplies === 'chart'">
+
+    <div class="replies-chart-header">
+
+      <div>
+
+        <span class="card-title">
+          Distribución de comentarios
+        </span>
+
+        <span class="card-sub">
+          Sentimiento de las respuestas analizadas
+        </span>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="iconbtn"
+        (click)="downloadChart($event)"
+        title="Descargar gráfico">
+
+        <span class="material-icons">
+          download
+        </span>
+
+      </button>
+
+    </div>
+
+
+    <div class="replies-chart-content">
+
+      <div class="replies-chart-visual">
+
+        <canvas
+          baseChart
+          [data]="repliesChartData"
+          [type]="'doughnut'"
+          [options]="repliesChartOptions">
+        </canvas>
+
+      </div>
+
+
+      <div class="replies-chart-side">
+
+        <span class="replies-chart-side-label">
+          Total analizado
+        </span>
+
+        <strong>
+          {{ totalReplies | number }}
+        </strong>
+
+        <p>
+          El sentimiento
+          <b>{{ repliesDominantSentiment | lowercase }}</b>
+          representa la mayor parte de las respuestas.
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+ <!-- =====================================================
+     EXPLORAR
+====================================================== -->
+
+<section class="section-block explore-section">
+
+  <div class="section-heading">
+
+    <div>
+
+      <span class="section-eyebrow neutral">
+        EXPLORAR
+      </span>
+
+      <h2>Análisis complementario</h2>
+
+      <p>
+        Profundiza en la evolución y composición general
+        de la conversación.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       EVOLUCIÓN DE TÓPICOS
+  ====================================================== -->
+
+  <article class="explore-main-card chart">
+
+    <div class="card-head">
+
+      <div>
+
+        <div class="explore-card-label">
+          <span class="material-icons">
+            timeline
+          </span>
+
+          EVOLUCIÓN
+        </div>
+
+        <div class="card-title">
+          Evolución de los principales tópicos
+        </div>
+
+        <div class="card-sub">
+          Cómo cambió la actividad de los 5 tópicos
+          con mayor volumen durante el período.
+        </div>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="iconbtn"
+        (click)="downloadChart($event)"
+        title="Descargar gráfico">
+
+        <span class="material-icons">
+          download
+        </span>
+
+      </button>
+
+    </div>
+
+
+    <div
+      class="chart-wrap explore-timeline-chart"
+      *ngIf="
+        topicsTimelineData.datasets.length;
+        else noTopicsTimeline
+      ">
+
+      <canvas
+        baseChart
+        [type]="'line'"
+        [data]="topicsTimelineData"
+        [options]="topicsTimelineOptions">
+      </canvas>
+
+    </div>
+
+
+    <ng-template #noTopicsTimeline>
+
+      <div class="empty-state">
+
+        <span class="material-icons">
+          timeline
+        </span>
+
+        <div>
+
+          <strong>
+            No hay evolución disponible
+          </strong>
+
+          <p>
+            Cambia el período o las cuentas seleccionadas.
+          </p>
+
+        </div>
+
+      </div>
+
+    </ng-template>
+
+  </article>
+
+
+  <!-- =====================================================
+       DISTRIBUCIONES GENERALES
+  ====================================================== -->
+
+  <div class="explore-distributions">
+
+
+    <!-- =================================================
+         SENTIMIENTO GENERAL
+    ================================================== -->
+
+    <article class="explore-secondary-card chart">
+
+      <div class="card-head">
+
+        <div>
+
+          <div class="explore-card-label">
+            <span class="material-icons">
+              sentiment_satisfied
+            </span>
+
+            PERCEPCIÓN
+          </div>
+
+          <div class="card-title">
+            Sentimiento general
+          </div>
+
+          <div class="card-sub">
+            Tono de todas las publicaciones analizadas
+          </div>
+
+        </div>
+
+
+        <div class="card-actions">
+
+          <select
+            class="select select--compact"
+            [(ngModel)]="sentimentChartType">
+
+            <option
+              *ngFor="let t of sentimentTypeOptions"
+              [ngValue]="t">
+
+              {{ t }}
+
+            </option>
+
+          </select>
+
+
+          <button
+            type="button"
+            class="iconbtn"
+            (click)="downloadChart($event)"
+            title="Descargar gráfico">
+
+            <span class="material-icons">
+              download
+            </span>
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="chart-wrap explore-small-chart">
+
         <canvas
           baseChart
           [type]="sentimentChartType"
           [data]="sentimentData"
           [options]="commonCardChartOptions">
         </canvas>
-      </div>
-    </div>
 
-    <!-- Categorías -->
-    <div class="card chart">
+      </div>
+
+    </article>
+
+
+    <!-- =================================================
+         CATEGORÍAS
+    ================================================== -->
+
+    <article class="explore-secondary-card chart">
+
       <div class="card-head">
+
         <div>
-          <div class="card-title">Distribución por Categorías</div>
-          <div class="card-sub">Volumen por tema</div>
+
+          <div class="explore-card-label">
+            <span class="material-icons">
+              category
+            </span>
+
+            COMPOSICIÓN
+          </div>
+
+          <div class="card-title">
+            Categorías
+          </div>
+
+          <div class="card-sub">
+            Cómo se distribuye el volumen entre temas
+          </div>
+
         </div>
 
-        <div class="right">
-          <select class="select" [(ngModel)]="categoriesChartType">
-            <option *ngFor="let t of categoriesTypeOptions" [ngValue]="t">
+
+        <div class="card-actions">
+
+          <select
+            class="select select--compact"
+            [(ngModel)]="categoriesChartType">
+
+            <option
+              *ngFor="let t of categoriesTypeOptions"
+              [ngValue]="t">
+
               {{ t }}
+
             </option>
+
           </select>
-          <button class="iconbtn" (click)="downloadChart($event)" title="Descargar gráfico">⬇</button>
+
+
+          <button
+            type="button"
+            class="iconbtn"
+            (click)="downloadChart($event)"
+            title="Descargar gráfico">
+
+            <span class="material-icons">
+              download
+            </span>
+
+          </button>
+
         </div>
+
       </div>
 
-      <div class="chart-wrap">
+
+      <div class="chart-wrap explore-small-chart">
+
         <canvas
           baseChart
           [type]="categoriesChartType"
           [data]="categoriesData"
           [options]="commonCardChartOptions">
         </canvas>
+
       </div>
-    </div>
+
+    </article>
 
   </div>
+
 </section>
+
+</section>
+

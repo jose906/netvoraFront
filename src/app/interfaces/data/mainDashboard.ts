@@ -1,4 +1,5 @@
 // ---- Tipos base ----
+
 export interface EntityTotal {
   entidad: string;
   total: number;
@@ -10,25 +11,42 @@ export interface TimeLinePoint {
   total: number;
 }
 
+export interface TopicDashboard {
+  topic_id: number;
+  topic_name: string;
+  total: number;
+}
+export interface TopicTimelineItem {
+  fecha: string;
+  topic_id: number;
+  topic_name: string;
+  total: number;
+}
+
+
 // ---- Estructura principal ----
+
 export interface StatsResponse {
+
   locacion: EntityTotal[];
+
   organizacion: EntityTotal[];
+
   persona: EntityTotal[];
 
   posts: {
     total_posts: number;
   };
-  total_replies:{negativo:number,neutro:number,positivo:number,total:number}
+
+  total_replies: {
+    negativo: number;
+    neutro: number;
+    positivo: number;
+    total: number;
+  };
 
   posts_categories: {
     posts_per_category: Record<string, number>;
-    // si quieres más estricto:
-    // posts_per_category: {
-    //   Ambiente: number; Deportes: number; Economia: number; Educacion: number;
-    //   Municipal: number; Otros: number; Politica: number; Salud: number;
-    //   Seguridad: number; Sociedad: number;
-    // };
   };
 
   sentimientos: {
@@ -40,4 +58,27 @@ export interface StatsResponse {
   };
 
   time_line: TimeLinePoint[];
+
+  // NUEVO
+  topics: TopicDashboard[];
+  topics_timeline: TopicTimelineItem[];
+  emerging_topics: EmergingTopicItem[];
+  topic_sentiment: TopicSentimentItem[];
+}
+export interface EmergingTopicItem {
+  topic_id: number;
+  topic_name: string;
+  total_actual: number;
+  total_anterior: number;
+  diferencia: number;
+  porcentaje: number | null;
+  tendencia: 'NUEVO' | 'SUBIO' | 'BAJO' | 'IGUAL';
+}
+export interface TopicSentimentItem {
+  topic_id: number;
+  topic_name: string;
+  positivos: number;
+  neutrales: number;
+  negativos: number;
+  total: number;
 }

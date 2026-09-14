@@ -27,7 +27,14 @@ export class PerfilComponent implements OnInit, OnDestroy {
     profile: false,
     pass: false,
     subscription: false,
+    freeTrial:false
   };
+  freeTrial = {
+  available: false,
+  used: false,
+  hasActiveSubscription: false,
+  loaded: false
+};
 
   msg: Msg = { type: 'ok', text: '' };
 
@@ -83,14 +90,91 @@ export class PerfilComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.loadUserFromFirebase();
-    this.loadRole();
-    this.loadSubscriptionFromApi();
-  }
+  this.loadUserFromFirebase();
+  this.loadRole();
+  this.loadSubscriptionFromApi();
+  this.loadFreeTrialStatus();
+}
 
   ngOnDestroy(): void {
     this.subx.unsubscribe();
   }
+  private loadFreeTrialStatus() {
+
+  const s = this.account.freeTrialStatus().subscribe({
+
+    next: (res) => {
+
+      this.freeTrial.available = res.available;
+      this.freeTrial.used = res.used;
+      this.freeTrial.hasActiveSubscription =
+        res.has_active_subscription;
+
+      this.freeTrial.loaded = true;
+    },
+
+    error: () => {
+
+      this.freeTrial.available = false;
+      this.freeTrial.loaded = true;
+
+    }
+
+  });
+
+  this.subx.add(s);
+}
+activateFreeTrial(): void {
+
+  if (this.loading.freeTrial) {
+    return;
+  }
+
+  if (!this.freeTrial.available) {
+    return;
+  }
+
+  this.loading.freeTrial = true;
+
+  const s = this.account.activateFreeTrial().subscribe({
+
+    next: (res) => {
+
+      this.setMsg(
+        'ok',
+        res.message ||
+        'Tu prueba gratuita de 7 días fue activada.'
+      );
+
+      this.freeTrial.available = false;
+      this.freeTrial.used = true;
+
+      this.loadSubscriptionFromApi();
+      this.loadFreeTrialStatus();
+
+      this.loading.freeTrial = false;
+    },
+
+    error: (err) => {
+
+      const message =
+        err?.error?.error ||
+        'No se pudo activar la prueba gratuita.';
+
+      this.setMsg(
+        'err',
+        message
+      );
+
+      this.loading.freeTrial = false;
+
+      this.loadFreeTrialStatus();
+    }
+
+  });
+
+  this.subx.add(s);
+}
 
   private setMsg(type: Msg['type'], text: string) {
     this.msg = { type, text };

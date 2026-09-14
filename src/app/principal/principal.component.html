@@ -1,168 +1,1346 @@
 <div class="page">
-  <!-- Header -->
+
+  <!-- =======================================================
+       HEADER
+  ======================================================== -->
+
   <header class="topbar">
+
     <div class="brand">
-      <img class="brand-logo" src="icon.png" alt="NetVora" />
-      <div class="brand-text">
-        <h1 class="title">Panel de resumen</h1>
-        <p class="subtitle">Estadísticas rápidas de hoy</p>
+
+      <img
+        class="brand-logo"
+        src="icon.png"
+        alt="NetVora"
+      />
+
+      <div class="brand-copy">
+        <h1>Resumen de hoy</h1>
+
+        <p>
+          Lo más relevante en los medios que estás monitoreando.
+        </p>
       </div>
+
     </div>
 
-    <div class="date">
-      <span class="date-dot" aria-hidden="true"></span>
-      <span class="date-text">{{ todayLabel || '—' }}</span>
+    <div class="topbar-right">
+
+      <div
+        class="monitor-status"
+        *ngIf="users.length"
+      >
+        <span class="status-dot"></span>
+
+        <span>
+          Monitoreo activo
+        </span>
+
+        <strong>
+          {{ users.length }}
+          {{ users.length === 1 ? 'medio' : 'medios' }}
+        </strong>
+      </div>
+
+      <div class="date">
+        {{ todayLabel || '—' }}
+      </div>
+
     </div>
+
   </header>
 
-  <!-- Estado -->
-  <div *ngIf="cargando" class="state">Cargando resumen…</div>
-  <div *ngIf="!cargando && error" class="state state-error">{{ error }}</div>
 
-  <!-- Contenido -->
-  <section *ngIf="!cargando && !error" class="content">
-    <!-- Métricas -->
-    <div class="metrics">
-      <div class="metric">
-        <div class="metric-label">Total de noticias hoy</div>
-        <div class="metric-value">{{ stats.totalHoy }}</div>
-        <div class="metric-hint">Publicaciones detectadas en el día</div>
-      </div>
+  <!-- =======================================================
+       ESTADOS
+  ======================================================== -->
 
-      <div class="metric">
-        <div class="metric-label">Sentimiento (hoy)</div>
+  <div
+    *ngIf="cargando"
+    class="loading-shell"
+  >
 
-        <!-- ✅ ORDENADO: siempre Pos / Neu / Neg -->
-        <div class="sent-grid" role="list" aria-label="Sentimiento hoy">
-          <div class="sent" role="listitem">
-            <div class="sent-k">Positivas</div>
-            <div class="sent-v pos">{{ stats.positivas }}</div>
-          </div>
+    <div class="loading-line loading-line-large"></div>
 
-          <div class="sent" role="listitem">
-            <div class="sent-k">Neutras</div>
-            <div class="sent-v neu">{{ stats.neutras }}</div>
-          </div>
-
-          <div class="sent" role="listitem">
-            <div class="sent-k">Negativas</div>
-            <div class="sent-v neg">{{ stats.negativas }}</div>
-          </div>
-        </div>
-
-        <div class="metric-hint">Conteo de sentimiento en noticias del día</div>
-      </div>
-
-      <div class="metric">
-        <div class="metric-label">Categoría más usada</div>
-        <div class="metric-value metric-text">{{ stats.categoriaTop || '—' }}</div>
-        <div class="metric-hint">Categoría predominante en el periodo</div>
-      </div>
-
-      <div class="metric">
-        <div class="metric-label">Top 3 entidades</div>
-
-        <ol class="rank">
-          <li class="rank-item" *ngFor="let e of top3Entidades; index as i; trackBy: trackByIndex">
-            <span class="rank-n">{{ i + 1 }}</span>
-            <span class="rank-name">{{ e.entidad || '—' }}</span>
-            <span class="rank-val">{{ e.total }}</span>
-          </li>
-        </ol>
-
-        <div class="metric-hint">Entidades más mencionadas</div>
-      </div>
+    <div class="loading-grid">
+      <div class="loading-card"></div>
+      <div class="loading-card"></div>
+      <div class="loading-card"></div>
+      <div class="loading-card"></div>
     </div>
 
-    <!-- ✅ Gráfica más abajo y más grande -->
-    <div class="chart">
-      <div class="chart-head">
-        <div>
-          <h2 class="chart-title">Índice de sentimiento</h2>
-          <p class="chart-subtitle">Últimos 7 días (baseline 0)</p>
+  </div>
+
+
+  <div
+    *ngIf="!cargando && error"
+    class="state state-error"
+  >
+    {{ error }}
+  </div>
+
+
+  <!-- =======================================================
+       CONTENIDO
+  ======================================================== -->
+
+  <main
+    *ngIf="!cargando && !error"
+    class="dashboard"
+  >
+
+
+    <!-- =====================================================
+         HERO
+    ====================================================== -->
+
+    <section class="hero">
+
+      <div class="hero-main">
+
+        <div class="eyebrow">
+          <span class="eyebrow-dot"></span>
+          Ahora mismo
         </div>
 
-        <div class="chart-meta mono">
-          {{ weekDomainMin | number:'1.2-2' }} → {{ weekDomainMax | number:'1.2-2' }}
-        </div>
+        <ng-container *ngIf="temaPrincipal as topic; else heroEmpty">
+
+          <div class="hero-topic-label">
+            Tema con mayor actividad
+          </div>
+
+          <h2 class="hero-title">
+            {{ topic.topic_name }}
+          </h2>
+
+          <div class="hero-details">
+
+            <span
+              class="hero-trend"
+              [ngClass]="{
+                'hero-trend-up': topic.tendencia === 'SUBIO',
+                'hero-trend-down': topic.tendencia === 'BAJO',
+                'hero-trend-new': topic.tendencia === 'NUEVO',
+                'hero-trend-neutral': topic.tendencia === 'IGUAL'
+              }"
+            >
+              <span *ngIf="topic.tendencia === 'SUBIO'">↑</span>
+              <span *ngIf="topic.tendencia === 'BAJO'">↓</span>
+              <span *ngIf="topic.tendencia === 'NUEVO'">●</span>
+
+              {{ heroTrendText }}
+            </span>
+
+            <span class="hero-detail-separator">
+              •
+            </span>
+
+            <span>
+              {{ topic.tweets_hoy | number }}
+              publicaciones hoy
+            </span>
+
+          </div>
+
+          <p class="hero-description">
+            Este es el tema que concentra más actividad entre
+            las publicaciones analizadas durante el día.
+          </p>
+
+          <button
+            type="button"
+            class="hero-action"
+            (click)="irATopico(topic)"
+          >
+            Analizar tema
+
+            <span>→</span>
+          </button>
+
+        </ng-container>
+
+
+        <ng-template #heroEmpty>
+
+          <div class="hero-topic-label">
+            Actividad de hoy
+          </div>
+
+          <h2 class="hero-title">
+            Todavía no hay tópicos disponibles
+          </h2>
+
+          <p class="hero-description">
+            Los principales temas aparecerán aquí cuando se
+            detecte suficiente actividad.
+          </p>
+
+        </ng-template>
+
       </div>
 
-      <div class="chart-wrap">
-        <svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-label="Índice 7 días (barras)">
-          <line class="zero-line" x1="0" [attr.y1]="weekZeroY" x2="100" [attr.y2]="weekZeroY"></line>
+
+      <!-- Pulso -->
+
+      <aside class="pulse-card">
+
+        <div class="pulse-header">
+
+          <div>
+            <span class="section-kicker">
+              Pulso de hoy
+            </span>
+
+            <h3>
+              {{ sentimientoDominante }}
+            </h3>
+          </div>
+
+          <div class="pulse-percent">
+            {{ sentimientoDominantePorcentaje }}%
+          </div>
+
+        </div>
+
+
+        <div class="sentiment-bar">
+
+          <div
+            class="sentiment-segment positive"
+            [style.width.%]="porcentajePositivo"
+          ></div>
+
+          <div
+            class="sentiment-segment neutral"
+            [style.width.%]="porcentajeNeutro"
+          ></div>
+
+          <div
+            class="sentiment-segment negative"
+            [style.width.%]="porcentajeNegativo"
+          ></div>
+
+        </div>
+
+
+        <div class="sentiment-legend">
+
+          <div class="sentiment-legend-item">
+
+            <div class="legend-label">
+              <span class="legend-dot positive"></span>
+              Positivo
+            </div>
+
+            <strong>
+              {{ porcentajePositivo }}%
+            </strong>
+
+          </div>
+
+
+          <div class="sentiment-legend-item">
+
+            <div class="legend-label">
+              <span class="legend-dot neutral"></span>
+              Neutral
+            </div>
+
+            <strong>
+              {{ porcentajeNeutro }}%
+            </strong>
+
+          </div>
+
+
+          <div class="sentiment-legend-item">
+
+            <div class="legend-label">
+              <span class="legend-dot negative"></span>
+              Negativo
+            </div>
+
+            <strong>
+              {{ porcentajeNegativo }}%
+            </strong>
+
+          </div>
+
+        </div>
+
+        <div class="pulse-footer">
+          Basado en
+          <strong>{{ totalSentimientos | number }}</strong>
+          publicaciones clasificadas.
+        </div>
+
+      </aside>
+
+    </section>
+
+
+    <!-- =====================================================
+         KPIs
+    ====================================================== -->
+
+    <section class="kpis">
+
+      <!-- Publicaciones -->
+
+      <article class="kpi-card">
+
+        <div class="kpi-top">
+
+          <span class="kpi-label">
+            Publicaciones hoy
+          </span>
+
+          <span class="kpi-icon">
+            ↗
+          </span>
+
+        </div>
+
+        <div class="kpi-value">
+          {{ stats.totalHoy | number }}
+        </div>
+
+        <p class="kpi-description">
+          Noticias y publicaciones analizadas durante el día.
+        </p>
+
+      </article>
+
+
+      <!-- Tópicos -->
+
+      <article class="kpi-card">
+
+        <div class="kpi-top">
+
+          <span class="kpi-label">
+            Nuevos tópicos
+          </span>
+
+          <span class="kpi-icon accent">
+            +
+          </span>
+
+        </div>
+
+        <div class="kpi-value">
+          {{ nuevosTopicosHoy }}
+        </div>
+
+        <p class="kpi-description">
+          Temas que aparecieron hoy y no registraban actividad ayer.
+        </p>
+
+      </article>
+
+
+      <!-- Categoría -->
+
+      <article class="kpi-card">
+
+        <div class="kpi-top">
+
+          <span class="kpi-label">
+            Categoría con más actividad
+          </span>
+
+          <span class="kpi-icon">
+            #
+          </span>
+
+        </div>
+
+        <div class="kpi-value kpi-value-text">
+          {{ stats.categoriaTop || '—' }}
+        </div>
+
+        <p class="kpi-description">
+          Categoría predominante entre las publicaciones de hoy.
+        </p>
+
+      </article>
+
+
+      <!-- Sentimiento -->
+
+      <article class="kpi-card">
+
+        <div class="kpi-top">
+
+          <span class="kpi-label">
+            Sentimiento dominante
+          </span>
+
+          <span class="kpi-icon">
+            ◎
+          </span>
+
+        </div>
+
+        <div class="kpi-value kpi-value-text">
+          {{ sentimientoDominante }}
+        </div>
+
+        <p class="kpi-description">
+          Representa el
+          <strong>
+            {{ sentimientoDominantePorcentaje }}%
+          </strong>
+          de las publicaciones clasificadas.
+        </p>
+
+      </article>
+
+    </section>
+
+
+    <!-- =====================================================
+         CONTENIDO PRINCIPAL
+    ====================================================== -->
+
+    <section class="main-grid">
+
+
+      <!-- ===================================================
+           TÓPICOS
+      ==================================================== -->
+
+      <article class="panel topics-panel">
+
+        <div class="panel-header">
+
+          <div>
+
+            <span class="section-kicker">
+              Conversación
+            </span>
+
+            <h2>
+              Temas en movimiento
+            </h2>
+
+            <p>
+              Descubre qué conversaciones están concentrando
+              la atención.
+            </p>
+
+          </div>
+
+
+          <div
+            class="topic-tabs"
+            role="tablist"
+          >
+
+            <button
+              type="button"
+              class="topic-tab"
+              [class.active]="activeTopicTab === 'dia'"
+              (click)="cambiarTabTopicos('dia')"
+            >
+              Hoy
+            </button>
+
+            <button
+              type="button"
+              class="topic-tab"
+              [class.active]="activeTopicTab === 'semana'"
+              (click)="cambiarTabTopicos('semana')"
+            >
+              Semana
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="topics-list"
+          *ngIf="topicsActivos.length; else noTopics"
+        >
+
+          <button
+            type="button"
+            class="topic-row"
+            *ngFor="
+              let topic of topicsActivos | slice:0:5;
+              index as i;
+              trackBy: trackByTopic
+            "
+            (click)="irATopico(topic)"
+          >
+
+            <span class="topic-rank">
+              {{ (i + 1).toString().padStart(2, '0') }}
+            </span>
+
+
+            <span class="topic-main">
+
+              <strong>
+                {{ topic.topic_name }}
+              </strong>
+
+              <span class="topic-meta">
+
+                {{ getTopicActual(topic) | number }}
+                publicaciones
+
+                <span>•</span>
+
+                {{ getTopicAnteriorLabel() }}
+                {{ getTopicAnterior(topic) | number }}
+
+              </span>
+
+            </span>
+
+
+            <span class="topic-trend">
+
+              <span
+                *ngIf="topic.tendencia === 'SUBIO'"
+                class="trend-pill trend-up"
+              >
+                ↑
+                {{
+                  topic.porcentaje
+                    ? (topic.porcentaje | number:'1.0-0') + '%'
+                    : 'Subió'
+                }}
+              </span>
+
+
+              <span
+                *ngIf="topic.tendencia === 'BAJO'"
+                class="trend-pill trend-down"
+              >
+                ↓
+                {{
+                  topic.porcentaje
+                    ? (topic.porcentaje | number:'1.0-0') + '%'
+                    : 'Bajó'
+                }}
+              </span>
+
+
+              <span
+                *ngIf="topic.tendencia === 'NUEVO'"
+                class="trend-pill trend-new"
+              >
+                Nuevo
+              </span>
+
+
+              <span
+                *ngIf="topic.tendencia === 'IGUAL'"
+                class="trend-pill trend-same"
+              >
+                Estable
+              </span>
+
+            </span>
+
+
+            <span class="topic-arrow">
+              →
+            </span>
+
+          </button>
+
+        </div>
+
+
+        <ng-template #noTopics>
+
+          <div class="empty-panel">
+
+            <div class="empty-icon">
+              ◌
+            </div>
+
+            <strong>
+              Todavía no hay tópicos disponibles
+            </strong>
+
+            <span>
+              Los temas aparecerán cuando exista suficiente actividad.
+            </span>
+
+          </div>
+
+        </ng-template>
+
+
+        <button
+          *ngIf="topicsActivos.length > 5"
+          type="button"
+          class="panel-link"
+          (click)="abrirTopicos(activeTopicTab)"
+        >
+          Ver todos los tópicos
+
+          <span>→</span>
+        </button>
+
+      </article>
+
+
+      <!-- ===================================================
+           ENTIDADES
+      ==================================================== -->
+
+      <article class="panel entities-panel">
+
+        <div class="panel-header">
+
+          <div>
+
+            <span class="section-kicker">
+              Protagonistas
+            </span>
+
+            <h2>
+              Entidades en foco
+            </h2>
+
+            <p>
+              Personas, instituciones y organizaciones más mencionadas.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="entities-list"
+          *ngIf="topEntidades.length"
+        >
+
+          <div
+            class="entity-row"
+            *ngFor="
+              let entity of topEntidades;
+              index as i;
+              trackBy: trackByIndex
+            "
+          >
+
+            <div class="entity-position">
+              {{ i + 1 }}
+            </div>
+
+
+            <div class="entity-content">
+
+              <div class="entity-info">
+
+                <strong>
+                  {{ entity.entidad }}
+                </strong>
+
+                <span>
+                  {{ entity.total | number }}
+                  menciones
+                </span>
+
+              </div>
+
+
+              <div class="entity-bar-track">
+
+                <div
+                  class="entity-bar"
+                  [style.width.%]="getEntidadWidth(entity.total)"
+                ></div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="empty-panel compact"
+          *ngIf="!topEntidades.length"
+        >
+          No hay entidades disponibles.
+        </div>
+
+
+        <div class="entity-summary">
+
+          <div class="entity-summary-icon">
+            N
+          </div>
+
+          <div>
+
+            <strong>
+              ¿Qué significa?
+            </strong>
+
+            <p>
+              Estas son las entidades que tienen mayor presencia
+              en las publicaciones analizadas hoy.
+            </p>
+
+          </div>
+
+        </div>
+
+      </article>
+
+    </section>
+
+
+    <!-- =====================================================
+         EVOLUCIÓN
+    ====================================================== -->
+
+    <section class="panel evolution-panel">
+
+      <div class="panel-header evolution-header">
+
+        <div>
+
+          <span class="section-kicker">
+            Últimos 7 días
+          </span>
+
+          <h2>
+            Evolución del sentimiento
+          </h2>
+
+          <p>
+            {{ weekTrendDescription }}
+          </p>
+
+        </div>
+
+
+        <div class="evolution-status">
+
+          <span
+            class="evolution-status-dot"
+            [class.status-positive]="weekAvg > 0.1"
+            [class.status-negative]="weekAvg < -0.1"
+          ></span>
+
+          {{ weekStatus }}
+
+        </div>
+
+      </div>
+
+
+      <div
+        class="chart-container"
+        *ngIf="weekBars.length"
+      >
+
+        <svg
+          viewBox="0 0 100 40"
+          preserveAspectRatio="none"
+          aria-label="Evolución del sentimiento durante los últimos 7 días"
+        >
+
+          <line
+            class="zero-line"
+            x1="0"
+            [attr.y1]="weekZeroY"
+            x2="100"
+            [attr.y2]="weekZeroY"
+          ></line>
+
 
           <g class="bars">
-            <ng-container *ngFor="let b of weekBars; trackBy: trackByBar">
+
+            <ng-container
+              *ngFor="
+                let bar of weekBars;
+                trackBy: trackByBar
+              "
+            >
+
               <rect
-                [attr.x]="b.x"
-                [attr.y]="b.y"
-                [attr.width]="b.w"
-                [attr.height]="b.h"
+                [attr.x]="bar.x"
+                [attr.y]="bar.y"
+                [attr.width]="bar.w"
+                [attr.height]="bar.h"
                 [ngClass]="{
-                  'bar-pos': b.cls === 'pos',
-                  'bar-neg': b.cls === 'neg',
-                  'bar-zero': b.cls === 'zero'
+                  'bar-pos': bar.cls === 'pos',
+                  'bar-neg': bar.cls === 'neg',
+                  'bar-zero': bar.cls === 'zero'
                 }"
                 rx="1.2"
                 ry="1.2"
               >
-                <title>{{ b.fecha }} • índice: {{ b.v | number:'1.3-3' }}</title>
+                <title>
+                  {{ bar.fecha }} · índice:
+                  {{ bar.v | number:'1.3-3' }}
+                </title>
               </rect>
+
             </ng-container>
+
           </g>
+
         </svg>
+
+
+        <div class="chart-labels">
+
+          <span
+            *ngFor="
+              let label of weekLabels;
+              trackBy: trackByIndex
+            "
+          >
+            {{ label }}
+          </span>
+
+        </div>
+
       </div>
 
-      <div class="chart-foot">
-        <div class="mono">{{ weekLabels[0] || '—' }}</div>
-        <div class="foot-metrics mono">
-          <span>max {{ weekMax | number:'1.2-2' }}</span>
-          <span>avg {{ weekAvg | number:'1.2-2' }}</span>
-          <span>min {{ weekMin | number:'1.2-2' }}</span>
-        </div>
-        <div class="mono">{{ weekLabels[weekLabels.length - 1] || '—' }}</div>
+
+      <div
+        class="empty-panel"
+        *ngIf="!weekBars.length"
+      >
+        Todavía no hay suficiente información para mostrar la evolución.
       </div>
-    </div>
 
-    <!-- ✅ Para no dejar vacío: resumen inferior limpio -->
-    <div class="bottom">
-      <h3 class="bottom-title">Resumen 7D</h3>
 
-      <div class="rows">
-        <div class="row">
-          <span class="row-k">Promedio del índice</span>
-          <span class="row-v mono">{{ weekAvg | number:'1.3-3' }}</span>
+      <div class="evolution-summary">
+
+        <div>
+
+          <span>
+            Promedio 7D
+          </span>
+
+          <strong>
+            {{ weekAvg | number:'1.2-2' }}
+          </strong>
+
         </div>
 
-        <div class="row">
-          <span class="row-k">Mejor día (máx)</span>
-          <span class="row-v mono">{{ weekMax | number:'1.3-3' }}</span>
+
+        <div>
+
+          <span>
+            Mejor registro
+          </span>
+
+          <strong>
+            {{ weekMax | number:'1.2-2' }}
+          </strong>
+
         </div>
 
-        <div class="row">
-          <span class="row-k">Peor día (mín)</span>
-          <span class="row-v mono">{{ weekMin | number:'1.3-3' }}</span>
+
+        <div>
+
+          <span>
+            Menor registro
+          </span>
+
+          <strong>
+            {{ weekMin | number:'1.2-2' }}
+          </strong>
+
         </div>
 
-        <div class="row subtle">
-          <span class="row-k">Tip</span>
-          <span class="row-v">Pasa el mouse sobre una barra para ver el detalle.</span>
-        </div>
       </div>
-    </div>
-  </section>
+
+    </section>
+
+
+    <!-- =====================================================
+         QUÉ CAMBIÓ
+    ====================================================== -->
+
+    <section class="changes">
+
+      <div class="changes-heading">
+
+        <span class="section-kicker">
+          Señales
+        </span>
+
+        <h2>
+          Qué cambió hoy
+        </h2>
+
+        <p>
+          Las variaciones más relevantes detectadas por NetVora.
+        </p>
+
+      </div>
+
+
+      <div class="changes-grid">
+
+        <article
+          class="change-card"
+          *ngFor="
+            let insight of insights;
+            trackBy: trackByIndex
+          "
+        >
+
+          <div
+            class="change-icon"
+            [ngClass]="{
+              'change-up': insight.icon === 'up',
+              'change-down': insight.icon === 'down',
+              'change-new': insight.icon === 'new',
+              'change-neutral': insight.icon === 'neutral'
+            }"
+          >
+
+            <span *ngIf="insight.icon === 'up'">
+              ↑
+            </span>
+
+            <span *ngIf="insight.icon === 'down'">
+              ↓
+            </span>
+
+            <span *ngIf="insight.icon === 'new'">
+              +
+            </span>
+
+            <span *ngIf="insight.icon === 'neutral'">
+              •
+            </span>
+
+          </div>
+
+
+          <div class="change-copy">
+
+            <strong>
+              {{ insight.title }}
+            </strong>
+
+            <p>
+              {{ insight.description }}
+            </p>
+
+          </div>
+
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <footer class="dashboard-footer">
+
+      <div>
+
+        <span class="footer-status-dot"></span>
+
+        Información correspondiente a
+        <strong>
+          {{ todayLabel || 'hoy' }}
+        </strong>
+
+      </div>
+
+      <div>
+        NetVora · Inteligencia sobre la conversación
+      </div>
+
+    </footer>
+
+  </main>
+
 </div>
 
-<!-- Modal sin usuarios -->
-<div class="modal-overlay" *ngIf="showNoUsersModal">
+
+<!-- =========================================================
+     MODAL SIN USUARIOS
+========================================================= -->
+
+<div
+  class="modal-overlay"
+  *ngIf="showNoUsersModal"
+>
+
   <div class="modal">
-    <h2>No hay usuarios configurados</h2>
-    <p>Para ver la informacion necesitas agregar o activar al menos un medio.</p>
-      <p>Si requieres ayuda o mas informacion te puedes poner en contacto con nosotros a info&#64;netvora.org o a ventas&#64;netvora.org</p> 
+
+    <div class="modal-mark">
+      N
+    </div>
+
+    <h2>
+      No hay medios configurados
+    </h2>
+
+    <p>
+      Para comenzar a ver el análisis necesitas agregar o activar
+      al menos un medio.
+    </p>
+
+    <p class="modal-help">
+      Si necesitas ayuda puedes escribir a
+      info&#64;netvora.org
+      o
+      ventas&#64;netvora.org
+    </p>
+
 
     <div class="modal-actions">
-      <button class="btn-primary" (click)="irAUsuarios()">Ir a configuración</button>
-      <button class="btn-ghost" (click)="showNoUsersModal=false">Cerrar</button>
+
+      <button
+        type="button"
+        class="btn-primary"
+        (click)="irAUsuarios()"
+      >
+        Configurar medios
+      </button>
+
+      <button
+        type="button"
+        class="btn-ghost"
+        (click)="showNoUsersModal = false"
+      >
+        Cerrar
+      </button>
+
     </div>
+
   </div>
+
+</div>
+
+
+<!-- =========================================================
+     MODAL TÓPICOS
+========================================================= -->
+
+<div
+  class="topics-modal-overlay"
+  *ngIf="showTopicsModal"
+  (click)="cerrarTopicos()"
+>
+
+  <div
+    class="topics-modal"
+    (click)="$event.stopPropagation()"
+  >
+
+    <div class="topics-modal-header">
+
+      <div>
+
+        <span class="section-kicker">
+          Conversación
+        </span>
+
+        <h2>
+          {{
+            tipoTopicosModal === 'dia'
+              ? 'Tópicos del día'
+              : 'Tópicos de la semana'
+          }}
+        </h2>
+
+        <p>
+          {{
+            tipoTopicosModal === 'dia'
+              ? 'Actividad y evolución de los principales temas de hoy.'
+              : 'Actividad y evolución de los principales temas de la semana.'
+          }}
+        </p>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="topics-modal-close"
+        (click)="cerrarTopicos()"
+        aria-label="Cerrar"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <!-- DÍA -->
+
+    <div
+      class="topics-modal-list"
+      *ngIf="tipoTopicosModal === 'dia'"
+    >
+
+      <button
+        type="button"
+        class="topics-modal-item"
+        *ngFor="
+          let topic of topicosDia;
+          index as i;
+          trackBy: trackByTopic
+        "
+        (click)="irATopico(topic)"
+      >
+
+        <span class="topics-modal-rank">
+          {{ i + 1 }}
+        </span>
+
+
+        <span class="topics-modal-content">
+
+          <strong class="topics-modal-name">
+            {{ topic.topic_name }}
+          </strong>
+
+
+          <span class="topics-modal-stats">
+
+            <span class="topic-stat">
+
+              <strong>
+                {{ topic.tweets_hoy | number }}
+              </strong>
+
+              <small>
+                Hoy
+              </small>
+
+            </span>
+
+
+            <span class="topic-stat">
+
+              <strong>
+                {{ topic.tweets_ayer | number }}
+              </strong>
+
+              <small>
+                Ayer
+              </small>
+
+            </span>
+
+
+            <span class="topic-stat">
+
+              <strong>
+                {{ topic.diferencia }}
+              </strong>
+
+              <small>
+                Diferencia
+              </small>
+
+            </span>
+
+          </span>
+
+        </span>
+
+
+        <span class="topics-modal-trend">
+
+          <span
+            *ngIf="topic.tendencia === 'SUBIO'"
+            class="trend-pill trend-up"
+          >
+            ↑
+            {{
+              topic.porcentaje
+                ? (topic.porcentaje | number:'1.0-0') + '%'
+                : 'Subió'
+            }}
+          </span>
+
+          <span
+            *ngIf="topic.tendencia === 'BAJO'"
+            class="trend-pill trend-down"
+          >
+            ↓
+            {{
+              topic.porcentaje
+                ? (topic.porcentaje | number:'1.0-0') + '%'
+                : 'Bajó'
+            }}
+          </span>
+
+          <span
+            *ngIf="topic.tendencia === 'NUEVO'"
+            class="trend-pill trend-new"
+          >
+            Nuevo
+          </span>
+
+          <span
+            *ngIf="topic.tendencia === 'IGUAL'"
+            class="trend-pill trend-same"
+          >
+            Estable
+          </span>
+
+        </span>
+
+
+        <span class="modal-topic-arrow">
+          →
+        </span>
+
+      </button>
+
+    </div>
+
+
+    <!-- SEMANA -->
+
+    <div
+      class="topics-modal-list"
+      *ngIf="tipoTopicosModal === 'semana'"
+    >
+
+      <button
+        type="button"
+        class="topics-modal-item"
+        *ngFor="
+          let topic of topicosSemana;
+          index as i;
+          trackBy: trackByTopic
+        "
+        (click)="irATopico(topic)"
+      >
+
+        <span class="topics-modal-rank">
+          {{ i + 1 }}
+        </span>
+
+
+        <span class="topics-modal-content">
+
+          <strong class="topics-modal-name">
+            {{ topic.topic_name }}
+          </strong>
+
+
+          <span class="topics-modal-stats">
+
+            <span class="topic-stat">
+
+              <strong>
+                {{ topic.tweets_actual | number }}
+              </strong>
+
+              <small>
+                Esta semana
+              </small>
+
+            </span>
+
+
+            <span class="topic-stat">
+
+              <strong>
+                {{ topic.tweets_anterior | number }}
+              </strong>
+
+              <small>
+                Semana anterior
+              </small>
+
+            </span>
+
+
+            <span class="topic-stat">
+
+              <strong>
+                {{ topic.diferencia }}
+              </strong>
+
+              <small>
+                Diferencia
+              </small>
+
+            </span>
+
+          </span>
+
+        </span>
+
+
+        <span class="topics-modal-trend">
+
+          <span
+            *ngIf="topic.tendencia === 'SUBIO'"
+            class="trend-pill trend-up"
+          >
+            ↑
+            {{
+              topic.porcentaje
+                ? (topic.porcentaje | number:'1.0-0') + '%'
+                : 'Subió'
+            }}
+          </span>
+
+          <span
+            *ngIf="topic.tendencia === 'BAJO'"
+            class="trend-pill trend-down"
+          >
+            ↓
+            {{
+              topic.porcentaje
+                ? (topic.porcentaje | number:'1.0-0') + '%'
+                : 'Bajó'
+            }}
+          </span>
+
+          <span
+            *ngIf="topic.tendencia === 'NUEVO'"
+            class="trend-pill trend-new"
+          >
+            Nuevo
+          </span>
+
+          <span
+            *ngIf="topic.tendencia === 'IGUAL'"
+            class="trend-pill trend-same"
+          >
+            Estable
+          </span>
+
+        </span>
+
+
+        <span class="modal-topic-arrow">
+          →
+        </span>
+
+      </button>
+
+    </div>
+
+  </div>
+
 </div>

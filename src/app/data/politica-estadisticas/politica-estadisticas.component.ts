@@ -12,7 +12,7 @@ import { ChartData, ChartOptions, ChartType } from 'chart.js';
 import { finalize } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { BaseChartDirective } from 'ng2-charts';
-import { NETVORA_PALETTE,exportCanvasWithWhiteBg } from '../../utils/helpers';
+import { NETVORA_PALETTE, exportCanvasWithWhiteBg } from '../../utils/helpers';
 import { users } from '../../interfaces/users';
 
 type EntItem = { entidad: string; total: number };
@@ -31,6 +31,18 @@ type IndiceSentItem = {
   total: number;
   indice: number; // 0..1
 };
+
+interface TopicEntity {
+  topic_id: number;
+  topic_name: string;
+  entidad: string;
+  total: number;
+}
+
+type TopicEntityType =
+  | 'persona'
+  | 'organizacion'
+  | 'locacion';
 
 
 
@@ -57,10 +69,21 @@ export class PoliticaEstadisticasComponent implements OnChanges, OnDestroy {
   topOrganizacion: EntItem[] = [];
   topPersona: EntItem[] = [];
 
-   totalReplies = 0;
+  totalReplies = 0;
     totalRepliesNegativo = 0;
-totalRepliesNeutro = 0;
-totalRepliesPositivo = 0;
+  totalRepliesNeutro = 0;
+  totalRepliesPositivo = 0;
+// =========================================================
+// ENTIDADES POR TÓPICO
+// =========================================================
+
+entitiesByTopicPersona: TopicEntity[] = [];
+
+entitiesByTopicOrganizacion: TopicEntity[] = [];
+
+entitiesByTopicLocacion: TopicEntity[] = [];
+
+selectedTopicEntityType: TopicEntityType = 'persona';
 
   // ===== Top users list =====
   topUsers: TopUserItem[] = [];
@@ -72,14 +95,14 @@ totalRepliesPositivo = 0;
   // ===== Chart selectors =====
   sentimentChartType: ChartType = 'doughnut';
   readonly sentimentTypeOptions: ChartType[] = ['doughnut', 'pie', 'bar'];
-   viewModeReplies: 'table' | 'chart' = 'table';
+  viewModeReplies: 'table' | 'chart' = 'table';
 
   // ===== Timeline =====
   @ViewChild(BaseChartDirective) timelineChart?: BaseChartDirective;
 
   timelineData: ChartData<'line'> = {
     labels: [],
-    datasets: [{ label: 'Posts por día', data: [],
+    datasets: [{ label: 'Publicaciones', data: [],
        borderColor: NETVORA_PALETTE.timeline.line,
           backgroundColor: NETVORA_PALETTE.timeline.fill,
           pointBackgroundColor: NETVORA_PALETTE.timeline.point,
@@ -92,18 +115,222 @@ totalRepliesPositivo = 0;
 
      }]
   };
+  topTopicsData: ChartData<'bar'> = {
+  labels: [],
+  datasets: [
+    {
+      label: 'Publicaciones',
+      data: [],
+      backgroundColor: '#6d28d9',
+      borderRadius: 7,
+      borderSkipped: false,
+      barThickness: 22,
+      maxBarThickness: 26
+    }
+  ]
+};
+topicsTimelineData: ChartData<'line'> = {
+  labels: [],
+  datasets: []
+};
+readonly topicsTimelineOptions: ChartOptions<'line'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+
+  interaction: {
+    mode: 'index',
+    intersect: false
+  },
+
+  plugins: {
+    legend: {
+      display: true,
+      position: 'bottom',
+      labels: {
+        usePointStyle: true,
+        pointStyle: 'circle',
+        padding: 18,
+        boxWidth: 8,
+        boxHeight: 8
+      }
+    },
+
+    tooltip: {
+      enabled: true,
+
+      callbacks: {
+        label: (context) => {
+          const value = Number(context.raw ?? 0);
+
+          return `${context.dataset.label}: ${value.toLocaleString()} publicaciones`;
+        }
+      }
+    }
+  },
+
+  scales: {
+    x: {
+      border: {
+        display: false
+      },
+
+      grid: {
+        display: false
+      },
+
+      ticks: {
+        color: '#64748b',
+        maxRotation: 0
+      }
+    },
+
+    y: {
+      beginAtZero: true,
+
+      border: {
+        display: false
+      },
+
+      grid: {
+        color: 'rgba(15, 23, 42, 0.05)'
+      },
+
+      ticks: {
+        precision: 0,
+        color: '#64748b'
+      }
+    }
+  }
+};
+topicsByUserData: ChartData<'bar'> = {
+  labels: [],
+  datasets: []
+};
+
+readonly topicsByUserOptions: ChartOptions<'bar'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  indexAxis: 'y',
+
+  interaction: {
+    mode: 'index',
+    intersect: false
+  },
+
+  plugins: {
+    legend: {
+      display: true,
+      position: 'bottom',
+      labels: {
+        usePointStyle: true,
+        pointStyle: 'circle',
+        padding: 18,
+        boxWidth: 8,
+        boxHeight: 8
+      }
+    },
+
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: (context) => {
+          const value = Number(context.raw ?? 0);
+
+          return `${context.dataset.label}: ${value.toLocaleString()} publicaciones`;
+        }
+      }
+    }
+  },
+
+  scales: {
+    x: {
+      beginAtZero: true,
+      stacked: false,
+
+      border: {
+        display: false
+      },
+
+      grid: {
+        color: 'rgba(15, 23, 42, 0.05)'
+      },
+
+      ticks: {
+        precision: 0,
+        color: '#64748b'
+      }
+    },
+
+    y: {
+      stacked: false,
+
+      border: {
+        display: false
+      },
+
+      grid: {
+        display: false
+      },
+
+      ticks: {
+        color: '#334155',
+        font: {
+          size: 12,
+          weight: 600
+        }
+      }
+    }
+  }
+};
 
   readonly lineOptions: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: true }, tooltip: { enabled: true } },
-    scales: { x: { ticks: { maxRotation: 0 } }, y: { beginAtZero: true } }
+    interaction: {
+      mode: 'index',
+      intersect: false
+    },
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        enabled: true
+      }
+    },
+    scales: {
+      x: {
+        border: {
+          display: false
+        },
+        grid: {
+          display: false
+        },
+        ticks: {
+          color: '#64748b',
+          maxRotation: 0
+        }
+      },
+      y: {
+        beginAtZero: true,
+        border: {
+          display: false
+        },
+        grid: {
+          color: 'rgba(15, 23, 42, 0.05)'
+        },
+        ticks: {
+          precision: 0,
+          color: '#64748b'
+        }
+      }
+    }
   };
 
   // ===== Sentimientos (tipo variable) =====
   sentimentData: ChartData = {
     labels: ['Negativo', 'Neutro', 'Positivo'],
-    datasets: [{ label: 'Sentimientos', data: [0, 0, 0] }]
+    datasets: [{ label: 'Publicaciones', data: [0, 0, 0] }]
   };
 
   readonly commonOptions: ChartOptions = {
@@ -123,25 +350,114 @@ totalRepliesPositivo = 0;
     borderWidth: 0
   }]
 };
- readonly repliesChartOptions: ChartOptions<'doughnut'> = {
+readonly topTopicsOptions: ChartOptions<'bar'> = {
   responsive: true,
   maintainAspectRatio: false,
-  cutout: '65%',
-  animation: false,
-  hover: {
-    mode: 'nearest'
+
+  indexAxis: 'y',
+
+  animation: {
+    duration: 500
   },
+
   plugins: {
-    legend: { display: true },
-    tooltip: { enabled: true },
+    legend: {
+      display: false
+    },
+
+    tooltip: {
+      enabled: true,
+
+      callbacks: {
+        label: (context) => {
+          const value = Number(context.raw ?? 0);
+
+          return `${value.toLocaleString()} publicaciones`;
+        }
+      }
+    }
   },
-  elements: {
-    arc: {
-      borderWidth: 0,
-      hoverOffset: 6
+
+  scales: {
+    x: {
+      beginAtZero: true,
+
+      border: {
+        display: false
+      },
+
+      grid: {
+        color: 'rgba(15, 23, 42, 0.05)'
+      },
+
+      ticks: {
+        precision: 0,
+        color: '#64748b'
+      }
+    },
+
+    y: {
+      border: {
+        display: false
+      },
+
+      grid: {
+        display: false
+      },
+
+      ticks: {
+        color: '#334155',
+
+        font: {
+          size: 12,
+          weight: 600
+        }
+      }
     }
   }
 };
+ readonly repliesChartOptions: ChartOptions<'doughnut'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '72%',
+    plugins: {
+      legend: {
+        display: true,
+        position: 'bottom',
+        labels: {
+          usePointStyle: true,
+          pointStyle: 'circle',
+          padding: 16,
+          boxWidth: 8,
+          boxHeight: 8
+        }
+      },
+      tooltip: {
+        enabled: true,
+        callbacks: {
+          label: (context) => {
+            const value = Number(context.raw ?? 0);
+            const total =
+              this.totalRepliesNegativo +
+              this.totalRepliesNeutro +
+              this.totalRepliesPositivo;
+
+            const percent = total > 0
+              ? (value / total) * 100
+              : 0;
+
+            return `${context.label}: ${value.toLocaleString()} (${percent.toFixed(1)}%)`;
+          }
+        }
+      }
+    },
+    elements: {
+      arc: {
+        borderWidth: 0,
+        hoverOffset: 5
+      }
+    }
+  };
 
   // ===== SentVsUser (bar apilado) =====
   sentVsUserData: ChartData<'bar'> = {
@@ -246,12 +562,16 @@ ngOnDestroy(): void {
 }
 
 private getUsersToSend(): string[] {
-  if (this.selectedUsers?.length) {
-    return this.selectedUsers.map(String);
-  }
+    if (this.selectedUsers?.length) {
+      return this.selectedUsers
+        .map(String)
+        .filter(Boolean);
+    }
 
-  return (this.users ?? []).map(u => String(u.idTweetUser));
-}
+    return (this.users ?? [])
+      .map((user) => String(user.idTweetUser))
+      .filter(Boolean);
+  }
 
  
 
@@ -299,7 +619,7 @@ private getUsersToSend(): string[] {
         
         this.mapResponse(res);
       },
-      error: (err) => {
+      error: () => {
        
         this.errorMsg = 'No se pudo cargar el dashboard.';
         this.cdr.markForCheck();
@@ -310,17 +630,17 @@ private getUsersToSend(): string[] {
   private mapResponse(res: any): void {
     // Total posts
     this.totalPosts = res?.total_posts?.total_posts ?? 0;
-    this.totalReplies = res.total_replies.total ?? 0
-    this.totalRepliesNegativo = res.total_replies.negativo ?? 0
-    this.totalRepliesNeutro = res.total_replies.neutro ?? 0
-    this.totalRepliesPositivo = res.total_replies.positivo ?? 0 
+    this.totalReplies = res?.total_replies?.total ?? 0;
+    this.totalRepliesNegativo = res?.total_replies?.negativo ?? 0;
+    this.totalRepliesNeutro = res?.total_replies?.neutro ?? 0;
+    this.totalRepliesPositivo = res?.total_replies?.positivo ?? 0; 
 
    
 
-    // Top 3 entidades
-    this.topLocacion = (res?.locacion ?? []).slice(0, 3);
-    this.topOrganizacion = (res?.organizacion ?? []).slice(0, 3);
-    this.topPersona = (res?.persona ?? []).slice(0, 3);
+    // Entidades principales
+    this.topLocacion = (res?.locacion ?? []).slice(0, 10);
+    this.topOrganizacion = (res?.organizacion ?? []).slice(0, 10);
+    this.topPersona = (res?.persona ?? []).slice(0, 10);
 
     // Timeline (🔥 Fix: UTC + update chart)
     const tl = Array.isArray(res?.time_line) ? res.time_line : [];
@@ -329,7 +649,7 @@ private getUsersToSend(): string[] {
       labels: tl.map((x: any) => this.formatTimelineLabelUTC(x.fecha)),
       datasets: [
         {
-          label: 'Posts por día',
+          label: 'Publicaciones',
           data: tl.map((x: any) => Number(x.total ?? 0)),
           tension: 0.35,
           fill: false,
@@ -359,12 +679,268 @@ private getUsersToSend(): string[] {
   }]
 };
 
+// =========================================================
+// TOP TÓPICOS DE LA CATEGORÍA
+// =========================================================
+
+const topTopics = Array.isArray(res?.top_topics)
+  ? res.top_topics
+  : [];
+
+this.topTopicsData = {
+  labels: topTopics.map((item: any) =>
+    this.truncateTopic(
+      String(item.topic_name || 'Sin nombre'),
+      55
+    )
+  ),
+
+  datasets: [
+    {
+      label: 'Publicaciones',
+      data: topTopics.map((item: any) =>
+        Number(item.total || 0)
+      ),
+      backgroundColor: '#6d28d9',
+      borderRadius: 7,
+      borderSkipped: false,
+      barThickness: 22,
+      maxBarThickness: 26
+    }
+  ]
+};
+// =========================================================
+// EVOLUCIÓN DE TÓPICOS DE LA CATEGORÍA
+// =========================================================
+
+const topicTimeline = Array.isArray(res?.topics_timeline)
+  ? res.topics_timeline
+  : [];
+
+const fechas: string[] = Array.from(
+  new Set<string>(
+    topicTimeline.map((item: any): string =>
+      String(item.fecha)
+    )
+  )
+);
+
+fechas.sort((a: string, b: string) => {
+  return new Date(a).getTime() - new Date(b).getTime();
+});
+
+const topicMap = new Map<
+  number,
+  {
+    topic_id: number;
+    topic_name: string;
+  }
+>();
+
+topicTimeline.forEach((item: any) => {
+  const topicId = Number(item.topic_id);
+
+  if (!topicMap.has(topicId)) {
+    topicMap.set(topicId, {
+      topic_id: topicId,
+      topic_name: String(item.topic_name || 'Sin nombre')
+    });
+  }
+});
+
+const timelineTopics = Array.from(topicMap.values());
+
+const topicColors = [
+  '#6d28d9',
+  '#2563eb',
+  '#059669',
+  '#ea580c',
+  '#dc2626'
+];
+
+this.topicsTimelineData = {
+  labels: fechas.map((fecha: string) =>
+  this.formatTimelineLabelUTC(fecha)
+),
+ 
+
+  datasets: timelineTopics.map((topic, index) => {
+
+    const data = fechas.map((fecha) => {
+
+      const item = topicTimeline.find(
+        (row: any) =>
+          Number(row.topic_id) === topic.topic_id &&
+          String(row.fecha) === fecha
+      );
+
+      return item
+        ? Number(item.total ?? 0)
+        : 0;
+    });
+
+    const color =
+      topicColors[index % topicColors.length];
+
+    return {
+      label: this.truncateTopic(
+        topic.topic_name,
+        38
+      ),
+      data,
+      borderColor: color,
+      backgroundColor: color,
+      tension: 0.35,
+      fill: false,
+      pointRadius: 3,
+      pointHoverRadius: 5,
+      borderWidth: 2
+    };
+  })
+};
+// =========================================================
+// TÓPICOS POR MEDIO / USUARIO
+// =========================================================
+
+const topicsByUser = Array.isArray(res?.topics_by_user)
+  ? res.topics_by_user
+  : [];
+
+// Obtener tópicos únicos
+const topicMapByUser = new Map<number, string>();
+
+topicsByUser.forEach((item: any) => {
+  const topicId = Number(item.topic_id);
+
+  if (!topicMapByUser.has(topicId)) {
+    topicMapByUser.set(
+      topicId,
+      String(item.topic_name || 'Sin nombre')
+    );
+  }
+});
+
+const topics = Array.from(
+  topicMapByUser.entries()
+).map(([topic_id, topic_name]) => ({
+  topic_id,
+  topic_name
+}));
+
+// Obtener usuarios únicos
+const userMap = new Map<string, string>();
+
+topicsByUser.forEach((item: any) => {
+  const userId = String(item.user_id ?? '');
+
+  if (!userMap.has(userId)) {
+    userMap.set(
+      userId,
+      String(item.usuario || 'Sin nombre')
+    );
+  }
+});
+
+const topicUsers = Array.from(
+  userMap.entries()
+).map(([user_id, usuario]) => ({
+  user_id,
+  usuario
+}));
+
+// Colores para los distintos medios/usuarios
+const userColors = [
+  '#6d28d9',
+  '#2563eb',
+  '#059669',
+  '#ea580c',
+  '#dc2626',
+  '#0891b2',
+  '#9333ea',
+  '#4f46e5'
+];
+
+// Construir gráfica
+this.topicsByUserData = {
+  labels: topics.map((topic) =>
+    this.truncateTopic(
+      topic.topic_name,
+      45
+    )
+  ),
+
+  datasets: topicUsers.map((user, index) => {
+
+    const data = topics.map((topic) => {
+
+      const item = topicsByUser.find(
+        (row: any) =>
+          Number(row.topic_id) === topic.topic_id &&
+          String(row.user_id ?? '') === user.user_id
+      );
+
+      return item
+        ? Number(item.total ?? 0)
+        : 0;
+    });
+
+    const color =
+      userColors[index % userColors.length];
+
+    return {
+      label: user.usuario,
+      data,
+      backgroundColor: color,
+      borderColor: color,
+      borderWidth: 0,
+      borderRadius: 4,
+      borderSkipped: false
+    };
+  })
+};
+// =========================================================
+// ENTIDADES POR TÓPICO
+// =========================================================
+
+this.entitiesByTopicPersona = Array.isArray(
+  res?.entities_by_topic_persona
+)
+  ? res.entities_by_topic_persona.map((item: any) => ({
+      topic_id: Number(item.topic_id),
+      topic_name: String(item.topic_name || 'Sin nombre'),
+      entidad: String(item.entidad || 'Sin nombre'),
+      total: Number(item.total || 0)
+    }))
+  : [];
+
+this.entitiesByTopicOrganizacion = Array.isArray(
+  res?.entities_by_topic_organizacion
+)
+  ? res.entities_by_topic_organizacion.map((item: any) => ({
+      topic_id: Number(item.topic_id),
+      topic_name: String(item.topic_name || 'Sin nombre'),
+      entidad: String(item.entidad || 'Sin nombre'),
+      total: Number(item.total || 0)
+    }))
+  : [];
+
+this.entitiesByTopicLocacion = Array.isArray(
+  res?.entities_by_topic_locacion
+)
+  ? res.entities_by_topic_locacion.map((item: any) => ({
+      topic_id: Number(item.topic_id),
+      topic_name: String(item.topic_name || 'Sin nombre'),
+      entidad: String(item.entidad || 'Sin nombre'),
+      total: Number(item.total || 0)
+    }))
+  : [];
+
     // Sentimientos
     const s = res?.sentiment?.posts_per_sentiment ?? {};
     this.sentimentData = {
       labels: ['Negativo', 'Neutro', 'Positivo'],
       datasets: [{
-        label: 'Sentimientos',
+        label: 'Publicaciones',
         data: [Number(s.negativo || 0), Number(s.neutro || 0), Number(s.positivo || 0)],
         backgroundColor: [
         NETVORA_PALETTE.sentiment.negativo,
@@ -481,29 +1057,39 @@ this.indiceSent = [...filtered].sort((a, b) => b.total - a.total);
   }
 
   // ===== Downloads =====
- downloadChart(event: Event) {
-  const button = event.currentTarget as HTMLElement;
-  const panel = button.closest('.panel');
-  const canvas = panel?.querySelector('canvas') as HTMLCanvasElement | null;
-  if (!canvas) return;
+ downloadChart(event: Event): void {
+    const button = event.currentTarget as HTMLElement;
 
-  const link = document.createElement('a');
-  link.href = exportCanvasWithWhiteBg(canvas);
-  link.download = `grafico-${Date.now()}.png`;
-  link.click();
-}
+    const chartContainer = button.closest(
+      '.chart, .analysis-card, .activity-chart, .explore-main-card, .explore-secondary-card, .replies-chart-panel'
+    );
 
-public downloadAllCharts() {
-  const canvases = document.querySelectorAll('.panel canvas') as NodeListOf<HTMLCanvasElement>;
-  if (!canvases.length) return;
+    const canvas = chartContainer?.querySelector(
+      'canvas'
+    ) as HTMLCanvasElement | null;
 
-  canvases.forEach((canvas, index) => {
+    if (!canvas) return;
+
     const link = document.createElement('a');
     link.href = exportCanvasWithWhiteBg(canvas);
-    link.download = `grafico-${index + 1}-${Date.now()}.png`;
+    link.download = `grafico-${Date.now()}.png`;
     link.click();
-  });
-}
+  }
+
+  public downloadAllCharts(): void {
+    const canvases = document.querySelectorAll(
+      '.dash canvas'
+    ) as NodeListOf<HTMLCanvasElement>;
+
+    if (!canvases.length) return;
+
+    canvases.forEach((canvas, index) => {
+      const link = document.createElement('a');
+      link.href = exportCanvasWithWhiteBg(canvas);
+      link.download = `grafico-${index + 1}-${Date.now()}.png`;
+      link.click();
+    });
+  }
   trackByEntidad = (_: number, item: { entidad: string }) => item.entidad;
   trackByUser = (_: number, item: { usuario: string }) => item.usuario;
 
@@ -517,12 +1103,26 @@ public downloadAllCharts() {
 
   // 🔥 Fix: formatear usando UTC para que no “reste un día” en Bolivia (UTC-4)
   private formatTimelineLabelUTC(fecha: string): string {
-    const dt = new Date(fecha);
-    if (Number.isNaN(dt.getTime())) return fecha;
+    if (!fecha) return '';
 
-    const dd = String(dt.getUTCDate()).padStart(2, '0');
-    const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
-    return `${dd}/${mm}`;
+    const cleanDate = fecha.includes('T')
+      ? fecha.split('T')[0]
+      : fecha.split(' ')[0];
+
+    const parts = cleanDate.split('-');
+
+    if (parts.length !== 3) {
+      const dt = new Date(fecha);
+      if (Number.isNaN(dt.getTime())) return fecha;
+
+      const dd = String(dt.getUTCDate()).padStart(2, '0');
+      const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
+      return `${dd}/${mm}`;
+    }
+
+    const [, month, day] = parts;
+
+    return `${day}/${month}`;
   }
   
 
@@ -554,8 +1154,7 @@ loadWordcloud() {
       
 
       if (blob?.type?.includes('application/json')) {
-        blob.text().then(t => console.error('', t));
-        this.wordcloudUrl = null;
+                this.wordcloudUrl = null;
         this.loadingWordcloud = false;
         this.cdr.markForCheck();
         return;
@@ -574,7 +1173,7 @@ loadWordcloud() {
       this.loadingWordcloud = false;
       this.cdr.markForCheck();
     },
-    error: (err) => {
+    error: () => {
       
       this.wordcloudUrl = null;
       this.loadingWordcloud = false;
@@ -604,7 +1203,76 @@ formatIndice(v: number): string {
 }
 
 calcIndiceBar(v: number): number {
-  return Math.round(this.normalizeIndiceSigned(v) * 100);
+  return Math.round(Math.abs(this.normalizeIndiceSigned(v)) * 100);
+}
+private truncateTopic(text: string, maxLength: number): string {
+  if (!text) return 'Sin nombre';
+
+  return text.length > maxLength
+    ? `${text.substring(0, maxLength)}…`
+    : text;
+}
+
+get selectedEntitiesByTopic(): TopicEntity[] {
+
+  switch (this.selectedTopicEntityType) {
+
+    case 'organizacion':
+      return this.entitiesByTopicOrganizacion;
+
+    case 'locacion':
+      return this.entitiesByTopicLocacion;
+
+    case 'persona':
+    default:
+      return this.entitiesByTopicPersona;
+  }
+}
+get groupedEntitiesByTopic(): {
+  topic_id: number;
+  topic_name: string;
+  total: number;
+  entities: TopicEntity[];
+}[] {
+
+  const grouped = new Map<
+    number,
+    {
+      topic_id: number;
+      topic_name: string;
+      total: number;
+      entities: TopicEntity[];
+    }
+  >();
+
+  this.selectedEntitiesByTopic.forEach((item) => {
+
+    if (!grouped.has(item.topic_id)) {
+      grouped.set(item.topic_id, {
+        topic_id: item.topic_id,
+        topic_name: item.topic_name,
+        total: 0,
+        entities: []
+      });
+    }
+
+    const topic = grouped.get(item.topic_id)!;
+
+    topic.entities.push(item);
+    topic.total += item.total;
+  });
+
+  return Array.from(grouped.values())
+    .map((topic) => ({
+      ...topic,
+
+      entities: topic.entities.sort(
+        (a, b) => b.total - a.total
+      )
+    }))
+    .sort(
+      (a, b) => b.total - a.total
+    );
 }
 
 trackByIndiceUser = (_: number, item: UserIndiceItem) => item.TweetUser;

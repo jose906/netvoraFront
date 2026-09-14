@@ -1,27 +1,20 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../services/api.service';
-import { Router } from '@angular/router';
 
 import { NewsItem } from '../interfaces/NewsItem';
 import { users } from '../interfaces/users';
-
+import { AccountService} from '../services/account.service';
+import { AccountMeResponse } from '../interfaces/me';
 import { linkifyText } from '../utils/helpers';
 import { toPng } from 'html-to-image';
-import {
-  AuthzService,
-  UserRole
-} from '../services/authz.service';
+import { AuthzService,UserRole } from '../services/authz.service';
 
-import {
-  AccountService
-} from '../services/account.service';
-
-import {
-  AccountMeResponse
-} from '../interfaces/me';
-
-
-
+interface CategoryOption {
+  label: string;
+  value: string;
+  path: string;
+}
 interface PulseActivity {
   date: string;
   total: number;
@@ -41,12 +34,80 @@ interface PulseData {
   sentiment: PulseSentiment;
   activity_7d: PulseActivity[];
 }
+
+
 @Component({
-  selector: 'app-entidades',
-  templateUrl: './entidades.component.html',
-  styleUrl: './entidades.component.css'
+  selector: 'app-categoria',
+  templateUrl: './categoria.component.html',
+  styleUrl: './categoria.component.css'
 })
-export class EntidadesComponent implements OnInit {
+export class CategoriaComponent implements OnInit {
+
+  // =========================================================
+  // CATEGORÍA
+  // =========================================================
+
+  categoria: string = '';
+  categoriaLabel: string = '';
+  selectedCategoryPath: string = '';
+  pulse: PulseData | null = null;
+cargandoPulse = false;
+errorPulse = '';
+
+
+  categories: CategoryOption[] = [
+    {
+      label: 'Política',
+      value: 'Politica',
+      path: 'politica'
+    },
+    {
+      label: 'Economía',
+      value: 'Economia',
+      path: 'economia'
+    },
+    {
+      label: 'Seguridad',
+      value: 'Seguridad',
+      path: 'seguridad'
+    },
+    {
+      label: 'Deportes',
+      value: 'Deportes',
+      path: 'deportes'
+    },
+    {
+      label: 'Medio Ambiente',
+      value: 'Ambiente',
+      path: 'ambiente'
+    },
+    {
+      label: 'Salud',
+      value: 'Salud',
+      path: 'salud'
+    },
+    {
+      label: 'Sociedad',
+      value: 'Social',
+      path: 'social'
+    },
+    {
+      label: 'Educación',
+      value: 'Educacion',
+      path: 'educacion'
+    },
+    {
+      label: 'Gestiones públicas',
+      value: 'Gestiones',
+      path: 'gestiones'
+    },
+    {
+      label: 'Otros temas',
+      value: 'Otros',
+      path: 'otros'
+    }
+  ];
+
 
   // =========================================================
   // DATOS
@@ -54,13 +115,8 @@ export class EntidadesComponent implements OnInit {
 
   datos: NewsItem[] = [];
 
-  cargando = false;
-  error = '';
-  pulse: PulseData | null = null;
-  cargandoPulse = false;
-  errorPulse = '';
-
-  private usersLoaded = false;
+  cargando: boolean = false;
+  error: string = '';
 
 
   // =========================================================
@@ -70,7 +126,7 @@ export class EntidadesComponent implements OnInit {
   startDate: Date | undefined = new Date();
   endDate: Date | undefined;
 
-  searchText = '';
+  searchText: string = '';
 
   users: users[] = [];
   selectedUsers: string[] = [];
@@ -80,9 +136,9 @@ export class EntidadesComponent implements OnInit {
   // PAGINACIÓN
   // =========================================================
 
-  currentPage = 1;
-  pageSize = 10;
-  hasMore = false;
+  currentPage: number = 1;
+  pageSize: number = 10;
+  hasMore: boolean = false;
 
 
   // =========================================================
@@ -98,18 +154,22 @@ export class EntidadesComponent implements OnInit {
     }
   > = {};
 
+
   // =========================================================
+// PLAN / PERMISOS
+// =========================================================
+
+
+// =========================================================
 // PLAN / ACCESO
 // =========================================================
+
+subscriptionPlan = '';
+subscriptionStatus = '';
 
 accessLoading = true;
 
 currentRole: UserRole = 'viewer';
-
-subscriptionPlan = '';
-
-subscriptionStatus = '';
-
 
   // =========================================================
   // GUARDADOS
@@ -118,175 +178,96 @@ subscriptionStatus = '';
   guardados = new Set<string>();
   savingIds = new Set<string>();
 
-  errorGuardar = '';
+  errorGuardar: string = '';
 
-constructor(
+  private usersLoaded = false;
+
+
+ constructor(
   private apiService: ApiService,
-  private router: Router,
+  private accountService: AccountService,
   private authzService: AuthzService,
-  private accountService: AccountService
+  private route: ActivatedRoute,
+  private router: Router
 ) {}
 
   // =========================================================
   // INIT
   // =========================================================
 
-  ngOnInit(): void {
+ ngOnInit(): void {
+
+  this.route.data.subscribe(data => {
+
+    this.categoria =
+      String(
+        data['categoria'] ?? ''
+      );
+
+    this.categoriaLabel =
+      String(
+        data['categoriaLabel'] ??
+        this.categoria
+      );
+
+    this.selectedCategoryPath =
+      String(
+        data['categoryPath'] ?? ''
+      );
+
+
+    if (
+      this.usersLoaded &&
+      this.categoria
+    ) {
+
+      this.currentPage = 1;
+
+      this.load(
+        this.startDate,
+        this.endDate,
+        this.selectedUsers,
+        1,
+        this.searchText
+      );
+
+      this.loadPulse();
+
+    }
+
+  });
+
 
   this.loadAccess();
 
 }
 
-// =========================================================
-// CUENTA / PLAN / ROL
-// =========================================================
 
-private async loadAccess(): Promise<void> {
+  // =========================================================
+  // CAMBIAR CATEGORÍA
+  // =========================================================
 
-  this.accessLoading = true;
+  cambiarCategoria(): void {
 
-  try {
-
-    if (!this.authzService.isLoaded()) {
-      await this.authzService.refreshMe();
+    if (!this.selectedCategoryPath) {
+      return;
     }
 
-    this.currentRole =
-      this.authzService.role;
-
-  } catch (error) {
-
-    console.error(
-      'Error cargando rol:',
-      error
-    );
-
-    this.currentRole = 'viewer';
-
+    this.router.navigate([
+      '/',
+      this.selectedCategoryPath
+    ]);
   }
 
 
-  this.accountService
-    .me()
-    .subscribe({
-
-      next: (
-        res: AccountMeResponse
-      ) => {
-
-        // ===============================================
-        // ROL
-        // ===============================================
-
-        if (res?.user?.role) {
-
-          const role =
-            res.user.role
-              .toString()
-              .trim()
-              .toLowerCase();
-
-          if (
-            role === 'admin' ||
-            role === 'analista' ||
-            role === 'viewer'
-          ) {
-
-            this.currentRole =
-              role as UserRole;
-
-          }
-
-        }
-
-
-        // ===============================================
-        // PLAN
-        // ===============================================
-
-        const plan =
-          res?.subscription?.plan;
-
-        this.subscriptionPlan =
-          plan?.name
-            ?.toString()
-            .trim() || '';
-
-
-        // ===============================================
-        // STATUS
-        // ===============================================
-
-        this.subscriptionStatus =
-          res?.subscription?.status
-            ?.toString()
-            .trim()
-            .toLowerCase() || '';
-
-
-        this.accessLoading = false;
-
-
-        // ===============================================
-        // CARGA NORMAL
-        // ===============================================
-
-        this.loadUsers();
-
-        this.cargarGuardados();
-
-
-        // Si por alguna razón las publicaciones
-        // ya estaban cargadas
-        if (
-          this.canViewReplies &&
-          this.datos.length > 0
-        ) {
-
-          this.cargarReplies();
-
-        }
-
-      },
-
-
-      error: (error) => {
-
-        console.error(
-          'Error cargando cuenta/plan:',
-          error
-        );
-
-        this.subscriptionPlan = '';
-
-        this.subscriptionStatus = '';
-
-        this.accessLoading = false;
-
-        this.repliesByTweet = {};
-
-
-        // Seguimos mostrando publicaciones,
-        // pero sin análisis de comentarios
-        this.loadUsers();
-
-        this.cargarGuardados();
-
-      }
-
-    });
-
-}
-
-
   // =========================================================
-  // CARGAR ENTIDADES
+  // USUARIOS
   // =========================================================
 
   loadUsers(): void {
 
   this.apiService
-    .getUsers2('Entidad')
+    .getUsers2('Medio')
     .subscribe({
 
       next: (data: users[]) => {
@@ -325,11 +306,13 @@ private async loadAccess(): Promise<void> {
     });
 
 }
+
+
   // =========================================================
   // FILTRAR
   // =========================================================
 
-  filtrar(): void {
+ filtrar(): void {
 
   this.currentPage = 1;
 
@@ -345,47 +328,51 @@ private async loadAccess(): Promise<void> {
 
 }
 
+
   // =========================================================
-  // LIMPIAR FILTROS
+  // LIMPIAR
   // =========================================================
 
   resetFiltros(): void {
 
-    this.startDate = undefined;
-    this.endDate = undefined;
+  this.startDate = undefined;
+  this.endDate = undefined;
+  this.selectedUsers = [];
+  this.searchText = '';
 
-    this.selectedUsers = [];
-    this.searchText = '';
+  this.currentPage = 1;
 
-    this.currentPage = 1;
+  this.load(
+    undefined,
+    undefined,
+    [],
+    1,
+    ''
+  );
 
-    this.load(
-      undefined,
-      undefined,
-      [],
-      1,
-      ''
-    );
+  this.loadPulse();
 
-    this.loadPulse();
+}
+
+loadPulse(): void {
+
+  if (!this.categoria) {
+    return;
   }
-
-
-  loadPulse(): void {
-
- 
 
   this.cargandoPulse = true;
   this.errorPulse = '';
 
   const body: {
-    type: 'Entidad';
+    type: 'Medio';
+    categoria: string;
     startDate?: string;
     endDate?: string;
     users?: string[];
     searchText?: string;
   } = {
-    type: 'Entidad'
+    type: 'Medio',
+    categoria: this.categoria
   };
 
 
@@ -410,7 +397,7 @@ private async loadAccess(): Promise<void> {
 
     body.users = this.selectedUsers.map(String);
 
-  } else if (this.users.length > 0) {
+  } else {
 
     body.users = this.users.map(
       user => String(user.idTweetUser)
@@ -434,36 +421,51 @@ private async loadAccess(): Promise<void> {
   // API
   // =====================================================
 
-  this.apiService.getPulse(body).subscribe({
+  this.apiService
+    .getPulse(body)
+    .subscribe({
 
-    next: (response: any) => {
+      next: (response: any) => {
 
-      this.pulse = response?.pulse ?? null;
+        this.pulse =
+          response?.pulse ?? null;
 
-      this.cargandoPulse = false;
+        this.cargandoPulse = false;
 
-    },
+      },
 
-    error: (err) => {
+      error: (error) => {
 
-      console.error(
-        'Error cargando Pulse:',
-        err
-      );
+        console.error(
+          'Error cargando Pulse:',
+          error
+        );
 
-      this.errorPulse =
-        'No se pudo cargar el pulso de las entidades.';
+        this.errorPulse =
+          'No se pudo cargar el pulso de la conversación.';
 
-      this.pulse = null;
+        this.pulse = null;
 
-      this.cargandoPulse = false;
+        this.cargandoPulse = false;
 
-    }
+      }
 
-  });
+    });
 
 }
+// =========================================================
+// CUENTA / PLAN
+// =========================================================
 
+
+
+
+private inicializarContenido(): void {
+
+  this.loadUsers();
+  this.cargarGuardados();
+
+}
 
   // =========================================================
   // CARGAR PUBLICACIONES
@@ -477,6 +479,15 @@ private async loadAccess(): Promise<void> {
     searchText: string = ''
   ): void {
 
+    if (!this.categoria) {
+
+      this.error =
+        'No se pudo determinar la categoría.';
+
+      return;
+    }
+
+
     this.cargando = true;
     this.error = '';
 
@@ -485,6 +496,7 @@ private async loadAccess(): Promise<void> {
 
 
     const body: {
+      categoria: string;
       startDate?: string;
       endDate?: string;
       users?: string[];
@@ -492,8 +504,12 @@ private async loadAccess(): Promise<void> {
       page: number;
       limit: number;
     } = {
+
+      categoria: this.categoria,
+
       page: pageToLoad,
       limit: this.pageSize
+
     };
 
 
@@ -513,7 +529,7 @@ private async loadAccess(): Promise<void> {
 
 
     // =======================================================
-    // ENTIDADES
+    // MEDIOS
     // =======================================================
 
     if (
@@ -524,7 +540,7 @@ private async loadAccess(): Promise<void> {
       body.users =
         selectedUsers.map(String);
 
-    } else if (this.users.length > 0) {
+    } else {
 
       body.users =
         this.users.map(
@@ -546,17 +562,22 @@ private async loadAccess(): Promise<void> {
       body.searchText = text;
     }
 
-
+    console.log(
+      'Cargando categoría:',
+      this.categoria,
+      'con filtros:',
+      body
+    );
     // =======================================================
     // API
     // =======================================================
 
     this.apiService
-      .getPostsEntidades(body)
+      .getPostsCategoria(body)
       .subscribe({
 
         next: (data: any) => {
-
+          console.log('Datos recibidos de la API:', data);
           this.datos =
             data?.resultado ??
             data?.items ??
@@ -573,24 +594,15 @@ private async loadAccess(): Promise<void> {
             this.datos.length ===
             this.pageSize;
 
-          if (this.canViewReplies) {
+          this.cargarReplies();
 
-  this.cargarReplies();
-
-} else {
-
-  this.repliesByTweet = {};
-
-}
-
-this.cargando = false;
-
+          this.cargando = false;
         },
 
         error: (error) => {
 
           console.error(
-            'Error cargando publicaciones de entidades:',
+            `Error cargando categoría ${this.categoria}:`,
             error
           );
 
@@ -598,11 +610,10 @@ this.cargando = false;
             'No se pudieron cargar las publicaciones.';
 
           this.datos = [];
-          this.repliesByTweet = {};
           this.hasMore = false;
+          this.repliesByTweet = {};
 
           this.cargando = false;
-
         }
 
       });
@@ -613,20 +624,24 @@ this.cargando = false;
   // REPLIES
   // =========================================================
 
-  cargarReplies(): void {
+  // =========================================================
+// REPLIES / COMENTARIOS
+// Solo disponible para PLAN PRO
+// =========================================================
+
+cargarReplies(): void {
 
   // =====================================================
-  // PERMISO
-  // ADMIN O PRO ACTIVO
+  // SOLO PLAN PRO
   // =====================================================
 
-  if (!this.canViewReplies) {
+ if (!this.canViewReplies) {
 
-    this.repliesByTweet = {};
+  this.repliesByTweet = {};
 
-    return;
+  return;
 
-  }
+}
 
 
   // =====================================================
@@ -751,7 +766,6 @@ this.cargando = false;
 
 }
 
-
   getRepliesCounts(
     tweetid: string | number
   ) {
@@ -767,19 +781,17 @@ this.cargando = false;
       }
     );
   }
-
-
   // =========================================================
-  // NETVORA PULSE
-  // Datos reales del período seleccionado
-  // =========================================================
+// RESUMEN VISUAL - NETVORA PULSE
+// Solo usa los datos que ya están cargados
+// =========================================================
 
- get totalPublicaciones(): number {
+get totalPublicaciones(): number {
   return this.pulse?.total_posts ?? 0;
 }
 
 
-get totalEntidades(): number {
+get totalMedios(): number {
   return this.pulse?.total_sources ?? 0;
 }
 
@@ -937,33 +949,19 @@ get normalizedPlan(): string {
       /[\u0300-\u036f]/g,
       ''
     );
-
 }
 
 
 // =========================================================
-// ADMIN
-// =========================================================
-
-get isAdmin(): boolean {
-
-  return (
-    this.currentRole === 'admin'
-  );
-
-}
-
-
-// =========================================================
-// PRO
+// PLAN PRO
 // =========================================================
 
 get isPro(): boolean {
 
   return (
-    this.normalizedPlan === 'pro'
+    this.normalizedPlan === 'pro' &&
+    this.subscriptionIsActive
   );
-
 }
 
 
@@ -985,31 +983,155 @@ get subscriptionIsActive(): boolean {
         ''
       );
 
-
   return (
     status === 'activo' ||
     status === 'activa' ||
     status === 'active'
+  );
+}
+
+// =========================================================
+// ADMIN
+// =========================================================
+
+get isAdmin(): boolean {
+
+  return (
+    this.currentRole === 'admin'
   );
 
 }
 
 
 // =========================================================
-// PERMISO PARA COMENTARIOS
+// PERMISO REPLIES
 // =========================================================
 
 get canViewReplies(): boolean {
 
+  // Admin siempre puede ver comentarios
   if (this.isAdmin) {
     return true;
   }
 
+  // Usuario normal necesita Pro activo
   return (
     this.isPro &&
     this.subscriptionIsActive
   );
 
+}
+// =========================================================
+// CARGAR PLAN / ACCESO
+// =========================================================
+
+private loadAccess(): void {
+
+  this.accessLoading = true;
+
+  this.accountService
+    .me()
+    .subscribe({
+
+      next: (
+        res: AccountMeResponse
+      ) => {
+
+        // ===============================================
+        // PLAN
+        // ===============================================
+
+        // ===============================================
+// ROL
+// ===============================================
+
+if (res?.user?.role) {
+
+  const role =
+    res.user.role
+      .toString()
+      .trim()
+      .toLowerCase();
+
+  if (
+    role === 'admin' ||
+    role === 'analista' ||
+    role === 'viewer'
+  ) {
+
+    this.currentRole =
+      role as UserRole;
+
+  }
+
+}
+
+        const plan =
+          res?.subscription?.plan;
+
+        this.subscriptionPlan =
+          plan?.name
+            ?.toString()
+            .trim() || '';
+
+
+        // ===============================================
+        // STATUS
+        // ===============================================
+
+        this.subscriptionStatus =
+          res?.subscription?.status
+            ?.toString()
+            .trim()
+            .toLowerCase() || '';
+
+
+        this.accessLoading = false;
+
+
+        console.log(
+          'Plan:',
+          this.subscriptionPlan,
+          'Status:',
+          this.subscriptionStatus,
+          'Pro:',
+          this.isPro
+        );
+
+
+        // Ya conocemos el plan.
+        // Ahora podemos cargar el contenido.
+        this.loadUsers();
+
+        this.cargarGuardados();
+
+      },
+
+
+      error: (error) => {
+
+        console.error(
+          'Error cargando cuenta/plan:',
+          error
+        );
+
+        this.subscriptionPlan = '';
+        this.subscriptionStatus = '';
+
+        this.accessLoading = false;
+
+
+        // Aunque falle la consulta del plan,
+        // cargamos las publicaciones,
+        // pero NO habilitamos comentarios Pro.
+
+        this.loadUsers();
+
+        this.cargarGuardados();
+
+      }
+
+    });
 }
 
 
@@ -1073,7 +1195,6 @@ formatPulseDate(date: string): string {
       return;
     }
 
-
     this.load(
       this.startDate,
       this.endDate,
@@ -1090,7 +1211,6 @@ formatPulseDate(date: string): string {
       return;
     }
 
-
     this.load(
       this.startDate,
       this.endDate,
@@ -1098,84 +1218,6 @@ formatPulseDate(date: string): string {
       this.currentPage - 1,
       this.searchText
     );
-  }
-
-
-  // =========================================================
-  // CATEGORÍAS
-  // =========================================================
-
-  private normCat(
-    cat?: string
-  ): string {
-
-    return (
-      cat ||
-      'otros'
-    )
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(
-        /[\u0300-\u036f]/g,
-        ''
-      )
-      .trim();
-  }
-
-
-  categoryClass(
-    cat?: string
-  ): string {
-
-    const c =
-      this.normCat(cat);
-
-
-    if (c.includes('econom')) {
-      return 'cat-economia';
-    }
-
-    if (c.includes('polit')) {
-      return 'cat-politica';
-    }
-
-    if (c.includes('segur')) {
-      return 'cat-seguridad';
-    }
-
-    if (c.includes('deport')) {
-      return 'cat-deportes';
-    }
-
-    if (c.includes('educ')) {
-      return 'cat-educacion';
-    }
-
-    if (c.includes('salud')) {
-      return 'cat-salud';
-    }
-
-    if (
-      c.includes('socied') ||
-      c.includes('social')
-    ) {
-      return 'cat-sociedad';
-    }
-
-    if (
-      c.includes('ambient')
-    ) {
-      return 'cat-ambiente';
-    }
-
-    if (
-      c.includes('gestion')
-    ) {
-      return 'cat-gestiones';
-    }
-
-
-    return 'cat-otros';
   }
 
 
@@ -1190,21 +1232,15 @@ formatPulseDate(date: string): string {
     const id =
       String(item.tweetid);
 
-
-    if (
-      this.savingIds.has(id)
-    ) {
+    if (this.savingIds.has(id)) {
       return;
     }
-
 
     this.errorGuardar = '';
     this.savingIds.add(id);
 
 
-    if (
-      this.guardados.has(id)
-    ) {
+    if (this.guardados.has(id)) {
 
       this.apiService
         .borrarGuardado(id)
@@ -1227,7 +1263,6 @@ formatPulseDate(date: string): string {
           }
 
         });
-
 
       return;
     }
@@ -1270,7 +1305,6 @@ formatPulseDate(date: string): string {
             res?.resultado ??
             [];
 
-
           this.guardados =
             new Set(
               rows.map(
@@ -1291,6 +1325,8 @@ formatPulseDate(date: string): string {
       });
   }
 
+  
+
 
   isGuardado(
     tweetid: string | number
@@ -1303,7 +1339,7 @@ formatPulseDate(date: string): string {
 
 
   // =========================================================
-  // FECHA
+  // FECHAS
   // =========================================================
 
   private toYMD(
@@ -1316,23 +1352,14 @@ formatPulseDate(date: string): string {
     const month =
       String(
         date.getMonth() + 1
-      ).padStart(
-        2,
-        '0'
-      );
+      ).padStart(2, '0');
 
     const day =
       String(
         date.getDate()
-      ).padStart(
-        2,
-        '0'
-      );
+      ).padStart(2, '0');
 
-
-    return (
-      `${year}-${month}-${day}`
-    );
+    return `${year}-${month}-${day}`;
   }
 
 
@@ -1344,29 +1371,19 @@ formatPulseDate(date: string): string {
       return '';
     }
 
-
     let date: Date;
 
-
-    if (
-      value instanceof Date
-    ) {
+    if (value instanceof Date) {
 
       date =
-        new Date(
-          value.getTime()
-        );
+        new Date(value.getTime());
 
     } else {
 
       let raw =
         String(value)
           .trim()
-          .replace(
-            ' ',
-            'T'
-          );
-
+          .replace(' ', 'T');
 
       if (
         !/(?:Z|[+-]\d{2}:?\d{2})$/i
@@ -1375,12 +1392,9 @@ formatPulseDate(date: string): string {
         raw += 'Z';
       }
 
-
-      date =
-        new Date(raw);
+      date = new Date(raw);
 
     }
-
 
     if (
       Number.isNaN(
@@ -1390,30 +1404,16 @@ formatPulseDate(date: string): string {
       return String(value);
     }
 
-
     return new Intl.DateTimeFormat(
       'es-BO',
       {
-        timeZone:
-          'America/La_Paz',
-
-        day:
-          '2-digit',
-
-        month:
-          '2-digit',
-
-        year:
-          'numeric',
-
-        hour:
-          '2-digit',
-
-        minute:
-          '2-digit',
-
-        hour12:
-          false
+        timeZone: 'America/La_Paz',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
       }
     ).format(date);
   }
@@ -1432,25 +1432,6 @@ formatPulseDate(date: string): string {
 
 
   // =========================================================
-  // DETALLE
-  // =========================================================
-
-  irADetalle(
-    datos: NewsItem
-  ): void {
-
-    this.router.navigate(
-      ['/resumen'],
-      {
-        state: {
-          datos
-        }
-      }
-    );
-  }
-
-
-  // =========================================================
   // DESCARGAR
   // =========================================================
 
@@ -1458,11 +1439,6 @@ formatPulseDate(date: string): string {
     cardElement: HTMLElement,
     tweetId: string | number
   ): Promise<void> {
-
-    if (!cardElement) {
-      return;
-    }
-
 
     try {
 
@@ -1477,15 +1453,13 @@ formatPulseDate(date: string): string {
           }
         );
 
-
       const link =
         document.createElement('a');
 
-      link.href =
-        dataUrl;
+      link.href = dataUrl;
 
       link.download =
-        `entidad-${tweetId}.png`;
+        `${this.categoria.toLowerCase()}-${tweetId}.png`;
 
       link.click();
 
@@ -1498,6 +1472,4 @@ formatPulseDate(date: string): string {
 
     }
   }
-
 }
-

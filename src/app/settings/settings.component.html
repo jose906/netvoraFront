@@ -1,240 +1,1007 @@
-<div class="users-page">
+<div class="settings-page">
 
-  <!-- TOAST / ALERTAS -->
-  <div class="toast-wrap" aria-live="polite" aria-atomic="true">
-    <div *ngIf="toast.show" class="toast" [ngClass]="toast.type">
-      <div class="toast-main">
-        <div class="toast-title">{{ toast.title }}</div>
-        <div class="toast-msg">{{ toast.message }}</div>
+  <!-- =====================================================
+       TOAST
+  ====================================================== -->
+
+  <div
+    class="toast-wrap"
+    aria-live="polite"
+  >
+
+    <div
+      *ngIf="toast.show"
+      class="toast"
+      [ngClass]="toast.type"
+    >
+
+      <div class="toast-indicator"></div>
+
+      <div class="toast-content">
+
+        <strong>
+          {{ toast.title }}
+        </strong>
+
+        <span>
+          {{ toast.message }}
+        </span>
+
       </div>
-      <button type="button" class="toast-close" (click)="hideToast()" aria-label="Cerrar alerta">✕</button>
+
+      <button
+        type="button"
+        class="toast-close"
+        (click)="hideToast()"
+      >
+        ×
+      </button>
+
     </div>
+
   </div>
 
-  <!-- HEADER -->
-  <section class="page-hero">
-    <div class="page-hero__content">
-      <span class="hero-chip">Configuración</span>
-      <h1 class="page-title">Gestión de usuarios</h1>
-      <p class="page-subtitle">
-        Administra las cuentas del sistema, sigue usuarios relevantes y agrega nuevos perfiles.
-      </p>
-    </div>
-  </section>
 
-  <div class="two-cols">
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
 
-    <!-- =======================
-         LISTA (IZQUIERDA)
-    ======================== -->
-    <section class="panel panel-list">
-      <header class="panel-head">
-        <div class="head-text">
-          <h2 class="title">Usuarios del sistema</h2>
-          <p class="subtitle">Gestiona seguimiento de cuentas</p>
-        </div>
+  <header class="page-header">
 
-        <div class="panel-badge">
-          {{ filteredUsers().length }} visibles
-        </div>
-      </header>
+    <div class="page-heading">
 
-      <div class="filters" role="tablist" aria-label="Filtro tipo de cuenta">
-        <button type="button"
-          class="chip"
-          [class.is-active]="selectedTipo === 'todos'"
-          (click)="changeTipo('todos')">
-          Todos
-        </button>
-
-        <button type="button"
-          class="chip"
-          [class.is-active]="selectedTipo === 'persona'"
-          (click)="changeTipo('persona')">
-          Personas
-        </button>
-
-        <button type="button"
-          class="chip"
-          [class.is-active]="selectedTipo === 'medio'"
-          (click)="changeTipo('medio')">
-          Medios
-        </button>
-
-        <button type="button"
-          class="chip"
-          [class.is-active]="selectedTipo === 'entidad'"
-          (click)="changeTipo('entidad')">
-          Entidades
-        </button>
+      <div class="breadcrumb">
+        Configuración
+        <span>/</span>
+        Fuentes
       </div>
 
-      <!-- loader -->
-      <div *ngIf="cargando" class="state state-card">
-        <span class="spinner" aria-hidden="true"></span>
+      <div class="heading-row">
+
         <div>
-          <div class="state-title">Cargando usuarios…</div>
-          <div class="state-sub">Espera un momento mientras se actualiza la lista.</div>
-        </div>
-      </div>
 
-      <!-- lista con scroll -->
-      <div class="list-scroll" *ngIf="!cargando && users.length; else emptyState">
-        <div class="list">
-          <article *ngFor="let u of filteredUsers(); trackBy: trackById" class="row">
+          <h1>
+            Fuentes de monitoreo
+          </h1>
 
-            <div class="row-left">
-              <div class="avatar" aria-hidden="true">
-                {{ (u.TweetUser || u.idTweetUser || 'U').toString().charAt(0) }}
-              </div>
+          <p>
+            Controla qué cuentas alimentan el análisis de NetVora.
+          </p>
 
-              <div class="info">
-                <div class="name-row">
-                  <div class="name" [title]="u.TweetUser || ''">
-                    {{ u.TweetUser || 'Sin nombre' }}
-                  </div>
-                  <span class="badge badge-type">{{ (u.tipeUser || u.nameUser || '—') }}</span>
-                </div>
-
-                <div class="meta">
-                  <span class="meta-item">ID: {{ u.idTweetUser }}</span>
-                  <span class="meta-dot">•</span>
-                  <span class="meta-item">
-                    {{ isFollowingTweetUser(u.idTweetUser) ? 'Siguiendo' : 'No seguido' }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <button type="button"
-              class="btn-follow"
-              [class.is-following]="isFollowingTweetUser(u.idTweetUser)"
-              [disabled]="followBusyIds.has(u.idTweetUser)"
-              (click)="toggleFollowTweetUser(u.idTweetUser, u.TweetUser || 'Usuario')">
-
-              <ng-container *ngIf="!isFollowingTweetUser(u.idTweetUser)">
-                <span *ngIf="!followBusyIds.has(u.idTweetUser)">➕ Seguir</span>
-                <span *ngIf="followBusyIds.has(u.idTweetUser)">Procesando…</span>
-              </ng-container>
-
-              <ng-container *ngIf="isFollowingTweetUser(u.idTweetUser)">
-                <span *ngIf="!followBusyIds.has(u.idTweetUser)">✔ Siguiendo</span>
-                <span *ngIf="followBusyIds.has(u.idTweetUser)">Procesando…</span>
-              </ng-container>
-            </button>
-
-          </article>
-        </div>
-      </div>
-
-      <ng-template #emptyState>
-        <div class="empty">
-          <div class="empty-icon">👥</div>
-          <div class="empty-title">No hay usuarios disponibles</div>
-          <div class="empty-sub">Prueba cambiando el filtro o agrega un usuario a la derecha.</div>
-        </div>
-      </ng-template>
-    </section>
-
-    <!-- =======================
-         ADMIN / BUSCAR (DERECHA)
-    ======================== -->
-    <section class="panel panel-admin">
-      <header class="panel-head compact">
-        <div class="head-text">
-          <h2 class="title">Administrar usuarios</h2>
-          <small class="subtitle">Si no encuentras al usuario, puedes agregarlo manualmente.</small>
-          <p class="subtitle">Busca por nombre o ID y agrégalos al sistema</p>
-        </div>
-      </header>
-
-      <div class="admin-box">
-
-        <div class="admin-section">
-          <div class="admin-section__head">
-            <h3 class="section-label">Búsqueda</h3>
-            <p class="section-help">Completa uno de los campos para localizar el usuario.</p>
-          </div>
-
-          <div class="form-grid">
-            <div class="field">
-              <label>Buscar por nombre</label>
-              <input
-                #inputNombre
-                class="input"
-                type="text"
-                placeholder="Ej: juan_perez"
-                (keydown.enter)="buscar(inputNombre.value, inputId.value)" />
-            </div>
-
-            <div class="field">
-              <label>Buscar por ID</label>
-              <input
-                #inputId
-                class="input"
-                type="text"
-                placeholder="Ej: 123"
-                (keydown.enter)="buscar(inputNombre.value, inputId.value)" />
-            </div>
-          </div>
-
-          <div class="actions">
-            <button type="button" class="btn primary" [disabled]="searching" (click)="buscar(inputNombre.value, inputId.value)">
-              <span *ngIf="!searching">Buscar</span>
-              <span *ngIf="searching">Buscando…</span>
-            </button>
-
-            <button type="button" class="btn ghost" (click)="cancelar(inputNombre, inputId)">
-              Limpiar
-            </button>
-          </div>
         </div>
 
-        <div class="admin-divider"></div>
 
-        <div class="admin-section">
-          <div class="admin-section__head">
-            <h3 class="section-label">Clasificación</h3>
-            <p class="section-help">Selecciona el tipo antes de agregar el usuario.</p>
-          </div>
+        <button
+          type="button"
+          class="add-source-button"
+          (click)="openSourceDrawer()"
+        >
 
-          <div class="field">
-            <label>Clasificación</label>
-            <select #selectOpciones class="select">
-              <option value="">Seleccione una opción</option>
-              <option value="medio">Medio</option>
-              <option value="persona">Persona</option>
-              <option value="entidad">Entidad</option>
-            </select>
-          </div>
-        </div>
+          <span class="button-plus">
+            +
+          </span>
 
-        <div class="result" *ngIf="user">
-          <div class="result-head">
-            <div>
-              <h3 class="section-title">Usuario encontrado</h3>
-              <p class="result-subtitle">Verifica la información antes de agregarlo.</p>
-            </div>
-            <span class="badge ok">Listo</span>
-          </div>
+          <span>
+            Agregar fuente
+          </span>
 
-          <ul class="info-list">
-            <li><span class="k">ID TweetUser</span><span class="v">{{ user.id }}</span></li>
-            <li><span class="k">Usuario Twitter</span><span class="v">{{ user.username }}</span></li>
-            <li><span class="k">Nombre</span><span class="v">{{ user.name }}</span></li>
-          </ul>
-        </div>
+          <span
+            class="button-pro"
+            *ngIf="
+              !accessLoading &&
+              !canManageXUsers
+            "
+          >
+            PRO
+          </span>
 
-        <button type="button"
-          class="btn success full add-button"
-          [disabled]="!user || adding"
-          (click)="agregar(user!.username, user!.id, user!.name, selectOpciones.value)">
-          <span *ngIf="!adding">Agregar usuario</span>
-          <span *ngIf="adding">Agregando…</span>
         </button>
 
       </div>
+
+
+      <!-- =================================================
+           STATUS LINE
+      ================================================== -->
+
+      <div class="overview-line">
+
+        <div class="overview-item">
+
+          <span class="live-dot"></span>
+
+          <strong>
+            {{ totalFollowing }}
+          </strong>
+
+          <span>
+            monitoreadas
+          </span>
+
+        </div>
+
+        <span class="overview-divider"></span>
+
+        <div class="overview-item">
+
+          <strong>
+            {{ totalUsers }}
+          </strong>
+
+          <span>
+            disponibles
+          </span>
+
+        </div>
+
+        <span class="overview-divider"></span>
+
+        <div class="overview-item">
+
+          <span>
+            Plan
+          </span>
+
+          <strong class="plan-name">
+            {{
+              accessLoading
+                ? '...'
+                : planDisplayName
+            }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </header>
+
+
+  <!-- =====================================================
+       CONTENT
+  ====================================================== -->
+
+  <main class="sources-panel">
+
+
+    <!-- ===================================================
+         TOOLBAR
+    ==================================================== -->
+
+    <div class="sources-toolbar">
+
+      <div class="search-box">
+
+        <span class="search-icon">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14Zm0-2a9 9 0 1 1 5.65 16l4.18 4.17-1.42 1.42-4.17-4.18A9 9 0 0 1 11 2Z"
+            ></path>
+          </svg>
+        </span>
+
+        <input
+          #searchInput
+          type="text"
+          placeholder="Buscar por nombre, usuario o ID..."
+          (input)="updateSearch(searchInput.value)"
+        />
+
+        <button
+          *ngIf="searchText"
+          type="button"
+          class="clear-search"
+          (click)="clearSearch(searchInput)"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div class="filters">
+
+        <button
+          type="button"
+          class="filter-button"
+          [class.active]="selectedTipo === 'todos'"
+          (click)="changeTipo('todos')"
+        >
+          Todos
+          <span>{{ totalUsers }}</span>
+        </button>
+
+        <button
+          type="button"
+          class="filter-button"
+          [class.active]="selectedTipo === 'medio'"
+          (click)="changeTipo('medio')"
+        >
+          Medios
+          <span>{{ totalMedios }}</span>
+        </button>
+
+        <button
+          type="button"
+          class="filter-button"
+          [class.active]="selectedTipo === 'persona'"
+          (click)="changeTipo('persona')"
+        >
+          Personas
+          <span>{{ totalPersonas }}</span>
+        </button>
+
+        <button
+          type="button"
+          class="filter-button"
+          [class.active]="selectedTipo === 'entidad'"
+          (click)="changeTipo('entidad')"
+        >
+          Entidades
+          <span>{{ totalEntidades }}</span>
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- ===================================================
+         TABLE HEAD
+    ==================================================== -->
+
+    <div
+      class="sources-head"
+      *ngIf="
+        !cargando &&
+        filteredUsers().length
+      "
+    >
+
+      <span>Fuente</span>
+      <span>Tipo</span>
+      <span>Estado</span>
+      <span></span>
+
+    </div>
+
+
+    <!-- ===================================================
+         LOADING
+    ==================================================== -->
+
+    <div
+      class="loading-state"
+      *ngIf="cargando"
+    >
+
+      <span class="spinner"></span>
+
+      <div>
+
+        <strong>
+          Cargando fuentes
+        </strong>
+
+        <p>
+          Estamos preparando las cuentas disponibles.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <!-- ===================================================
+         SOURCES
+    ==================================================== -->
+
+    <div
+      class="sources-list"
+      *ngIf="
+        !cargando &&
+        filteredUsers().length
+      "
+    >
+
+      <article
+        class="source-row"
+        *ngFor="
+          let u of filteredUsers();
+          trackBy: trackById
+        "
+      >
+
+        <!-- CUENTA -->
+
+        <div class="source-identity">
+
+          <div
+            class="source-avatar"
+            [class.active-avatar]="
+              isFollowingTweetUser(
+                u.idTweetUser
+              )
+            "
+          >
+            {{ getInitial(u) }}
+          </div>
+
+          <div class="source-copy">
+
+            <strong
+              [title]="u.TweetUser || ''"
+            >
+              {{ u.TweetUser || 'Sin nombre' }}
+            </strong>
+
+            <div class="source-meta">
+
+              <span
+                *ngIf="u.TweetUser"
+              >
+                {{ '@' +u.TweetUser }}
+              </span>
+
+              <span
+                *ngIf="u.TweetUser"
+                class="meta-dot"
+              >
+                ·
+              </span>
+
+              <span>
+                ID {{ u.idTweetUser }}
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- TIPO -->
+
+        <div class="source-type">
+
+          <span>
+            {{ getUserType(u) }}
+          </span>
+
+        </div>
+
+
+        <!-- ESTADO -->
+
+        <div
+          class="source-status"
+          [class.active]="
+            isFollowingTweetUser(
+              u.idTweetUser
+            )
+          "
+        >
+
+          <span class="status-dot"></span>
+
+          <span>
+            {{
+              isFollowingTweetUser(
+                u.idTweetUser
+              )
+                ? 'Activa'
+                : 'Inactiva'
+            }}
+          </span>
+
+        </div>
+
+
+        <!-- SWITCH -->
+
+        <div class="source-action">
+
+          <button
+            type="button"
+            class="monitor-switch"
+            [class.on]="
+              isFollowingTweetUser(
+                u.idTweetUser
+              )
+            "
+            [class.busy]="
+              isFollowBusy(
+                u.idTweetUser
+              )
+            "
+            [disabled]="
+              isFollowBusy(
+                u.idTweetUser
+              )
+            "
+            (click)="
+              toggleFollowTweetUser(
+                u.idTweetUser,
+                u.TweetUser || 'Usuario'
+              )
+            "
+            [attr.aria-label]="
+              isFollowingTweetUser(
+                u.idTweetUser
+              )
+                ? 'Dejar de monitorear'
+                : 'Monitorear'
+            "
+          >
+
+            <span class="switch-thumb"></span>
+
+          </button>
+
+        </div>
+
+      </article>
+
+    </div>
+
+
+    <!-- ===================================================
+         EMPTY
+    ==================================================== -->
+
+    <div
+      class="empty-state"
+      *ngIf="
+        !cargando &&
+        !filteredUsers().length
+      "
+    >
+
+      <div class="empty-icon">
+
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14Zm0-2a9 9 0 1 1 5.65 16l4.18 4.17-1.42 1.42-4.17-4.18A9 9 0 0 1 11 2Z"
+          ></path>
+        </svg>
+
+      </div>
+
+      <strong>
+        No encontramos fuentes
+      </strong>
+
+      <p>
+        Prueba con otro nombre o cambia el filtro.
+      </p>
+
+      <button
+        *ngIf="searchText"
+        type="button"
+        (click)="clearSearch(searchInput)"
+      >
+        Limpiar búsqueda
+      </button>
+
+    </div>
+
+
+    <!-- ===================================================
+         FOOT
+    ==================================================== -->
+
+    <footer
+      class="sources-footer"
+      *ngIf="
+        !cargando &&
+        filteredUsers().length
+      "
+    >
+
+      <span>
+        Mostrando
+        <strong>
+          {{ filteredUsers().length }}
+        </strong>
+        de
+        <strong>
+          {{ totalUsers }}
+        </strong>
+        fuentes
+      </span>
+
+      <span class="footer-help">
+        Los cambios en el monitoreo se aplican inmediatamente.
+      </span>
+
+    </footer>
+
+  </main>
+
+</div>
+
+
+<!-- =========================================================
+     DRAWER BACKDROP
+========================================================= -->
+
+<div
+  class="drawer-backdrop"
+  *ngIf="sourceDrawerOpen"
+  (click)="closeSourceDrawer()"
+></div>
+
+
+<!-- =========================================================
+     DRAWER
+========================================================= -->
+
+<aside
+  class="source-drawer"
+  [class.open]="sourceDrawerOpen"
+>
+
+
+  <!-- =====================================================
+       DRAWER HEADER
+  ====================================================== -->
+
+  <header class="drawer-header">
+
+    <div>
+
+      <span class="drawer-eyebrow">
+        Nueva fuente
+      </span>
+
+      <h2>
+        Agregar cuenta de X
+      </h2>
+
+    </div>
+
+    <button
+      type="button"
+      class="drawer-close"
+      (click)="closeSourceDrawer()"
+      aria-label="Cerrar"
+    >
+      ×
+    </button>
+
+  </header>
+
+
+  <!-- =====================================================
+       LOADING ACCESS
+  ====================================================== -->
+
+  <div
+    class="drawer-body"
+    *ngIf="
+      sourceDrawerOpen &&
+      accessLoading
+    "
+  >
+
+    <div class="drawer-loading">
+
+      <span class="spinner"></span>
+
+      <div>
+        <strong>
+          Comprobando acceso
+        </strong>
+
+        <p>
+          Estamos revisando tu plan.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       FREE / BASICO
+  ====================================================== -->
+
+  <div
+    class="drawer-body"
+    *ngIf="
+      sourceDrawerOpen &&
+      !accessLoading &&
+      !canManageXUsers
+    "
+  >
+
+    <div class="pro-message">
+
+      <div class="pro-symbol">
+        ✦
+      </div>
+
+      <span class="pro-label">
+        Función Pro
+      </span>
+
+      <h3>
+        Agrega tus propias fuentes a NetVora
+      </h3>
+
+      <p>
+        Con el plan Pro puedes buscar cuentas de X
+        que todavía no estén disponibles y agregarlas
+        directamente a tu monitoreo.
+      </p>
+
+
+      <div class="pro-feature-list">
+
+        <div>
+
+          <span>✓</span>
+
+          <div>
+            <strong>
+              Buscar nuevas cuentas
+            </strong>
+
+            <p>
+              Encuéntralas por usuario o ID de X.
+            </p>
+          </div>
+
+        </div>
+
+
+        <div>
+
+          <span>✓</span>
+
+          <div>
+            <strong>
+              Amplía tus fuentes
+            </strong>
+
+            <p>
+              Incorpora nuevas cuentas al sistema.
+            </p>
+          </div>
+
+        </div>
+
+
+        <div>
+
+          <span>✓</span>
+
+          <div>
+            <strong>
+              Análisis Pro
+            </strong>
+
+            <p>
+              Accede también al análisis de comentarios.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="current-plan-card">
+
+        <span>
+          Tu plan actual
+        </span>
+
+        <strong>
+          {{ planDisplayName }}
+        </strong>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="drawer-secondary-full"
+        (click)="closeSourceDrawer()"
+      >
+        Entendido
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       PRO / ADMIN
+  ====================================================== -->
+
+  <div
+    class="drawer-body"
+    *ngIf="
+      sourceDrawerOpen &&
+      !accessLoading &&
+      canManageXUsers
+    "
+  >
+
+    <section class="drawer-section">
+
+      <span class="step-label">
+        01 · Buscar
+      </span>
+
+      <h3>
+        Encuentra la cuenta
+      </h3>
+
+      <p class="drawer-description">
+        Utiliza el nombre de usuario o el ID de X.
+      </p>
+
+
+      <div class="drawer-field">
+
+        <label>
+          Usuario de X
+        </label>
+
+        <div class="username-input">
+
+          <span>
+            &#64;
+          </span>
+
+          <input
+            #inputNombre
+            type="text"
+            placeholder="nombre_usuario"
+            [disabled]="searching"
+            (keydown.enter)="
+              buscar(
+                inputNombre.value,
+                inputId.value
+              )
+            "
+          />
+
+        </div>
+
+      </div>
+
+
+      <div class="or-divider">
+        <span>o</span>
+      </div>
+
+
+      <div class="drawer-field">
+
+        <label>
+          ID de X
+        </label>
+
+        <input
+          #inputId
+          type="text"
+          placeholder="123456789"
+          [disabled]="searching"
+          (keydown.enter)="
+            buscar(
+              inputNombre.value,
+              inputId.value
+            )
+          "
+        />
+
+      </div>
+
+
+      <div class="drawer-actions">
+
+        <button
+          type="button"
+          class="drawer-primary"
+          [disabled]="searching"
+          (click)="
+            buscar(
+              inputNombre.value,
+              inputId.value
+            )
+          "
+        >
+
+          <ng-container
+            *ngIf="!searching"
+          >
+            Buscar en X
+          </ng-container>
+
+          <ng-container
+            *ngIf="searching"
+          >
+
+            <span class="spinner light small"></span>
+
+            Buscando
+
+          </ng-container>
+
+        </button>
+
+
+        <button
+          type="button"
+          class="drawer-secondary"
+          [disabled]="searching"
+          (click)="
+            cancelarBusqueda(
+              inputNombre,
+              inputId
+            )
+          "
+        >
+          Limpiar
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         RESULT
+    ==================================================== -->
+
+    <section
+      class="found-source"
+      *ngIf="user"
+    >
+
+      <div class="found-head">
+
+        <span class="success-icon">
+          ✓
+        </span>
+
+        <span>
+          Cuenta encontrada
+        </span>
+
+      </div>
+
+
+      <div class="found-profile">
+
+        <div class="found-avatar">
+          {{
+            (user.username || 'U')
+              .charAt(0)
+              .toUpperCase()
+          }}
+        </div>
+
+        <div>
+
+          <strong>
+            {{ user.name || 'Sin nombre' }}
+          </strong>
+
+          <span>
+            {{'&#64;' + user.username }}
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="found-detail">
+
+        <span>
+          ID de X
+        </span>
+
+        <strong>
+          {{ user.id }}
+        </strong>
+
+      </div>
+
+
+      <div class="classification-section">
+
+        <span class="step-label">
+          02 · Clasificar
+        </span>
+
+        <h3>
+          ¿Qué tipo de fuente es?
+        </h3>
+
+        <p>
+          Esto ayuda a organizar los resultados en NetVora.
+        </p>
+
+
+        <div class="type-options">
+
+          <select
+            #selectOpciones
+          >
+
+            <option value="">
+              Selecciona una opción
+            </option>
+
+            <option value="medio">
+              Medio
+            </option>
+
+            <option value="persona">
+              Persona
+            </option>
+
+            <option value="entidad">
+              Entidad
+            </option>
+
+          </select>
+
+        </div>
+   
+
+        <button
+          type="button"
+          class="add-final-button"
+          [disabled]="adding"
+          (click)="
+            agregar(
+              user.username,
+              user.id,
+              user.name,
+              selectOpciones.value
+            )
+          "
+        >
+
+          <ng-container
+            *ngIf="!adding"
+          >
+            Agregar fuente
+          </ng-container>
+
+          <ng-container
+            *ngIf="adding"
+          >
+
+            <span class="spinner small light"></span>
+
+            Agregando
+
+          </ng-container>
+
+        </button>
+
+      </div>
+
     </section>
 
   </div>
-</div>
+
+</aside>

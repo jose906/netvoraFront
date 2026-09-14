@@ -5,6 +5,11 @@ import { NewsItem } from '../interfaces/NewsItem';
 import { users } from '../interfaces/users';
 import { Observable } from 'rxjs';
 import {linkifyText} from '../utils/helpers'
+import { AccountService } from '../services/account.service';
+import { AccountMeResponse } from '../interfaces/me';
+import { UserRole } from '../services/authz.service';
+
+
 type CategoryKey =
   | 'inicio' | 'politica' | 'economia' | 'seguridad' | 'deportes' | 'salud'
   | 'sociedad' | 'educacion' | 'gestion' | 'otros' | 'entidades' | 'personas' | 'ambiente';
@@ -57,6 +62,17 @@ noteDraft: Record<string, string> = {};
 // estados (para deshabilitar botones mientras guarda)
 savingNoteIds = new Set<string>();
 
+// =========================================================
+// ACCESO / PLAN
+// =========================================================
+
+accessLoading = true;
+
+currentRole: UserRole = 'viewer';
+
+subscriptionPlan = '';
+subscriptionStatus = '';
+
 
 
   activeCategory: CategoryKey = 'inicio';
@@ -77,13 +93,116 @@ savingNoteIds = new Set<string>();
     ambiente: (limit, offset) => this.apiService.getGuardados(limit, offset, 'ambiente'),
   };
 
-  constructor(private apiService: ApiService, private router: Router) {}
+ constructor(
+  private apiService: ApiService,
+  private router: Router,
+  private accountService: AccountService
+) {}
 
   ngOnInit(): void {
-    this.loadUsers();
-    this.loadByCategory(this.activeCategory, { resetPage: true });
-    
-  }
+  this.loadAccess();
+}
+
+// =========================================================
+// ACCESO / PLAN
+// =========================================================
+
+private loadAccess(): void {
+
+  this.accessLoading = true;
+
+  this.accountService.me().subscribe({
+
+    next: (res: AccountMeResponse) => {
+
+      // =====================================================
+      // ROL
+      // =====================================================
+
+      if (res?.user?.role) {
+
+        const role = res.user.role
+          .toString()
+          .trim()
+          .toLowerCase();
+
+        if (
+          role === 'admin' ||
+          role === 'analista' ||
+          role === 'viewer'
+        ) {
+          this.currentRole = role as UserRole;
+        }
+      }
+
+
+      // =====================================================
+      // PLAN
+      // =====================================================
+
+      const plan = res?.subscription?.plan;
+
+      this.subscriptionPlan =
+        plan?.name
+          ?.toString()
+          .trim() || '';
+
+
+      this.subscriptionStatus =
+        res?.subscription?.status
+          ?.toString()
+          .trim()
+          .toLowerCase() || '';
+
+
+      this.accessLoading = false;
+
+
+      // =====================================================
+      // CARGA NORMAL
+      // =====================================================
+
+      this.loadUsers();
+
+      this.loadByCategory(
+        this.activeCategory,
+        {
+          resetPage: true
+        }
+      );
+    },
+
+
+    error: (error) => {
+
+      console.error(
+        'Error cargando acceso:',
+        error
+      );
+
+      this.currentRole = 'viewer';
+
+      this.subscriptionPlan = '';
+      this.subscriptionStatus = '';
+
+      this.accessLoading = false;
+
+
+      // La página sigue funcionando,
+      // simplemente sin acceso a comentarios.
+
+      this.loadUsers();
+
+      this.loadByCategory(
+        this.activeCategory,
+        {
+          resetPage: true
+        }
+      );
+    }
+
+  });
+}
 
   loadUsers(): void {
     this.apiService.getUsers('Medio').subscribe({
@@ -163,27 +282,32 @@ this.notesByTweet.clear(); // opcional: para no mezclar páginas
         );
         const tweetIds = this.datos.map(x => x.tweetid);
 
-        this.apiService.getRepliesSummaryMany(tweetIds).subscribe({
-          next: (rows: any[]) => {
-            // Construir mapa tweetid -> counts
-            const map: Record<string, { negativo: number; neutro: number; positivo: number }> = {};
-            
-            for (const r of rows || []) {
-              const key = String(r.tweetid);
-              
-              if (!map[key]) map[key] = { negativo: 0, neutro: 0, positivo: 0 };
+        this.currentPage = page;
 
-              if (r.sentimiento === 'negativo') map[key].negativo = r.total;
-              if (r.sentimiento === 'neutro') map[key].neutro = r.total;
-              if (r.sentimiento === 'positivo') map[key].positivo = r.total;
-              
-            }
-            
+this.guardados = new Set(
+  this.datos.map(d => String(d.tweetid))
+);
 
-            this.repliesByTweet = map;
-          },
-          error: (e) => {}
-        });
+
+// =========================================================
+// COMENTARIOS
+// =========================================================
+
+if (this.canViewReplies) {
+
+  this.cargarReplies();
+
+} else {
+
+  this.repliesByTweet = {};
+
+}
+
+
+this.hasMore =
+  this.datos.length === this.pageSize;
+
+this.cargando = false;
         this.hasMore = (this.datos.length === this.pageSize);
         this.cargando = false;
       },
@@ -194,6 +318,122 @@ this.notesByTweet.clear(); // opcional: para no mezclar páginas
       }
     });
   }
+
+  // =========================================================
+// COMENTARIOS
+// =========================================================
+
+cargarReplies(): void {
+
+  // Free / Básico nunca llegan al endpoint
+  if (!this.canViewReplies) {
+
+    this.repliesByTweet = {};
+
+    return;
+  }
+
+
+  const tweetIds =
+    this.datos.map(
+      item => String(item.tweetid)
+    );
+
+
+  if (tweetIds.length === 0) {
+
+    this.repliesByTweet = {};
+
+    return;
+  }
+
+
+  this.apiService
+    .getRepliesSummaryMany(tweetIds)
+    .subscribe({
+
+      next: (rows: any[]) => {
+
+        const map: Record<
+          string,
+          {
+            negativo: number;
+            neutro: number;
+            positivo: number;
+          }
+        > = {};
+
+
+        for (const row of rows || []) {
+
+          const key =
+            String(row.tweetid);
+
+
+          if (!map[key]) {
+
+            map[key] = {
+              negativo: 0,
+              neutro: 0,
+              positivo: 0
+            };
+
+          }
+
+
+          const sentimiento =
+            String(
+              row.sentimiento ?? ''
+            )
+              .trim()
+              .toLowerCase();
+
+
+          const total =
+            Number(row.total) || 0;
+
+
+          if (
+            sentimiento === 'negativo'
+          ) {
+
+            map[key].negativo =
+              total;
+
+          } else if (
+            sentimiento === 'neutro'
+          ) {
+
+            map[key].neutro =
+              total;
+
+          } else if (
+            sentimiento === 'positivo'
+          ) {
+
+            map[key].positivo =
+              total;
+          }
+        }
+
+
+        this.repliesByTweet =
+          map;
+      },
+
+
+      error: (error) => {
+
+        console.error(
+          'Error cargando comentarios:',
+          error
+        );
+
+        this.repliesByTweet = {};
+      }
+
+    });
+}
   toggleGuardar(item: any) {
 
     const id = item.tweetid.toString();
@@ -263,6 +503,59 @@ hasNote(tweetid: any): boolean {
   const id = this.tid(tweetid);
   const saved = (this.notesByTweet.get(id) ?? '').trim();
   return saved.length > 0;
+}
+// =========================================================
+// PERMISOS
+// =========================================================
+
+get normalizedPlan(): string {
+
+  return (this.subscriptionPlan || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+
+get isAdmin(): boolean {
+  return this.currentRole === 'admin';
+}
+
+
+get subscriptionIsActive(): boolean {
+
+  const status =
+    (this.subscriptionStatus || '')
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+  return (
+    status === 'activo' ||
+    status === 'activa' ||
+    status === 'active'
+  );
+}
+
+
+get isPro(): boolean {
+
+  return (
+    this.normalizedPlan === 'pro' &&
+    this.subscriptionIsActive
+  );
+}
+
+
+get canViewReplies(): boolean {
+
+  if (this.isAdmin) {
+    return true;
+  }
+
+  return this.isPro;
 }
 
 getNote(tweetid: any): string {

@@ -6,10 +6,7 @@ import { HttpClient, HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MenuComponent } from './menu/menu.component';
-import { PoliticaComponent } from './politica/politica.component';
 import { ResumenComponent } from './resumen/resumen.component';
-import { EconomiaComponent } from './economia/economia.component';
-import { SeguridadComponent } from './seguridad/seguridad.component';
 import { EstadisticasComponent } from './estadisticas/estadisticas.component';
 import { MatDatepickerModule } from '@angular/material/datepicker'
 import { MatInputModule } from '@angular/material/input'
@@ -18,8 +15,6 @@ import { FormsModule } from '@angular/forms'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { MatFormFieldModule} from '@angular/material/form-field';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { DeportesComponent } from './deportes/deportes.component';
-import { SocialComponent } from './social/social.component'
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -33,12 +28,8 @@ import { MatCardModule } from '@angular/material/card';
 import { PrincipalComponent } from './principal/principal.component';
 import { AdministradorComponent } from './administrador/administrador.component';
 import { PersonasComponent } from './personas/personas.component';
-import { GestionesComponent } from './gestiones/gestiones.component';
-import { SaludComponent } from './salud/salud.component';
 import path from 'path';
 import { LoginComponent } from './login/login.component';
-import { EducacionComponent } from './educacion/educacion.component';
-import { OtrosComponent } from './otros/otros.component';
 import { environment } from '../environments/environment';
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
@@ -51,12 +42,13 @@ import { CatSelectComponent } from './cat-select/cat-select.component';
 import { RoleGuard } from './core/guards/role.guard';
 import { EstadisticasEntiPersonasComponent } from './data/estadisticas-enti-personas/estadisticas-enti-personas.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { AmbienteComponent } from './ambiente/ambiente.component';
 import { PerfilComponent } from './perfil/perfil.component';
 import { SubscriptionInterceptor } from './core/interceptor/subscription.interceptor';
 import { SubscriptionGuard } from './core/guards/subscription.guard';
 import { GuardarComponent } from './guardar/guardar.component';
 import { SettingsComponent } from './settings/settings.component';
+import { TopicsComponent } from './topics/topics.component';
+import { CategoriaComponent } from './categoria/categoria.component';
 
 
 // Initialize Firebase
@@ -64,27 +56,29 @@ import { SettingsComponent } from './settings/settings.component';
 
 const routes: Routes = [
   { path: '', component: PrincipalComponent, canActivate: [AuthGuard],data: { subscriptionRequired: true } },
-  { path: 'politica', component: PoliticaComponent, canActivate: [AuthGuard] },
-  { path: 'economia', component: EconomiaComponent, canActivate: [AuthGuard] },
+  { path: 'politica', component: CategoriaComponent, canActivate: [AuthGuard], data:{categoria: 'Politica',categoriaLabel: 'Política',categoriaPath: 'politica'} },
+  { path: 'economia', component: CategoriaComponent, canActivate: [AuthGuard], data:{categoria: 'Economia',categoriaLabel: 'Economía',categoriaPath: 'economia'} },
   { path: 'resumen',  component: ResumenComponent},
-  { path: 'seguridad',  component: SeguridadComponent, canActivate: [AuthGuard] },
+  { path: 'seguridad',  component: CategoriaComponent, canActivate: [AuthGuard], data:{categoria: 'Seguridad',categoriaLabel: 'Seguridad',categoriaPath: 'seguridad'} },
   { path: 'estadisticas', component:EstadisticasComponent, canActivate: [AuthGuard] },
-  { path: 'deportes', component:DeportesComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
-  { path: 'social', component:SocialComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
-  { path: 'ambiente', component:AmbienteComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
+  { path: 'deportes', component:CategoriaComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true, categoria: 'Deportes', categoriaLabel: 'Deportes', categoriaPath: 'deportes' }, },
+  { path: 'social', component:CategoriaComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true, categoria: 'Social', categoriaLabel: 'Social', categoriaPath: 'social' } },
+  { path: 'ambiente', component:CategoriaComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true, categoria: 'Ambiente', categoriaLabel: 'Ambiente', categoriaPath: 'ambiente' } },
   { path: 'administrador', component:AdministradorComponent, canActivate: [AuthGuard, RoleGuard], data: { roles: ['admin']},},
   { path: 'personas', component:PersonasComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
-  { path: 'salud', component:SaludComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
-  { path: 'educacion', component:EducacionComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
-  { path: 'otros', component:OtrosComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
-  { path: 'gestiones', component:GestionesComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
+  { path: 'salud', component:CategoriaComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true, categoria: 'Salud', categoriaLabel: 'Salud', categoriaPath: 'salud' } },
+  { path: 'educacion', component:CategoriaComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true, categoria: 'Educacion', categoriaLabel: 'Educación', categoriaPath: 'educacion' } },
+  { path: 'otros', component:CategoriaComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true, categoria: 'Otros', categoriaLabel: 'Otros', categoriaPath: 'otros' } },
+  { path: 'gestiones', component:CategoriaComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true, categoria: 'Gestiones', categoriaLabel: 'Gestiones', categoriaPath: 'gestiones' } },
   { path: 'login', component:LoginComponent},
   { path: 'entidades', component:EntidadesComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
   { path: 'catSelect',component:CatSelectComponent, canActivate: [AuthGuard], data: { roles:["admin"] } },
   { path: 'account', component:PerfilComponent},
   { path:'perfil', component:PerfilComponent, canActivate:[AuthGuard]},
   { path: 'guardar', component: GuardarComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
-  {path: 'settings', component: SettingsComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
+  { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
+  { path: 'topics/:id', component: TopicsComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
+  { path: 'topics', component: TopicsComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } }
   
 
 
@@ -95,30 +89,25 @@ const routes: Routes = [
   declarations: [
     AppComponent,
     MenuComponent,
-    PoliticaComponent,
     ResumenComponent,
-    EconomiaComponent,
-    SeguridadComponent,
+
     EstadisticasComponent,
-    DeportesComponent,
-    SocialComponent,
+  
     TodosComponent,
     PoliticaEstadisticasComponent,
     PrincipalComponent,
     AdministradorComponent,
     PersonasComponent,
-    GestionesComponent,
-    SaludComponent,
+
     LoginComponent,
-    EducacionComponent,
-    OtrosComponent,
     EntidadesComponent,
     CatSelectComponent,
     EstadisticasEntiPersonasComponent,
-    AmbienteComponent,
     PerfilComponent,
     GuardarComponent,
     SettingsComponent,
+    TopicsComponent,
+    CategoriaComponent,
     
   ],
   imports: [

@@ -1,104 +1,500 @@
+<!-- =========================================================
+     NAVEGACIÓN DE CATEGORÍAS
+========================================================= -->
+
 <header class="top-menu">
-  <nav class="menu-items" aria-label="Categorías">
-    <button type="button" (click)="onSelect('inicio')" [class.is-active]="activeCategory === 'inicio'">Inicio</button>
-    <button type="button" (click)="onSelect('politica')" [class.is-active]="activeCategory === 'politica'">Política</button>
-    <button type="button" (click)="onSelect('economia')" [class.is-active]="activeCategory === 'economia'">Economía</button>
-    <button type="button" (click)="onSelect('seguridad')" [class.is-active]="activeCategory === 'seguridad'">Seguridad</button>
-    <button type="button" (click)="onSelect('deportes')" [class.is-active]="activeCategory === 'deportes'">Deportes</button>
-    <button type="button" (click)="onSelect('salud')" [class.is-active]="activeCategory === 'salud'">Salud</button>
-    <button type="button" (click)="onSelect('sociedad')" [class.is-active]="activeCategory === 'sociedad'">Sociedad</button>
-    <button type="button" (click)="onSelect('educacion')" [class.is-active]="activeCategory === 'educacion'">Educación</button>
-    <button type="button" (click)="onSelect('gestion')" [class.is-active]="activeCategory === 'gestion'">Gestiones Públicas</button>
-    <button type="button" (click)="onSelect('ambiente')" [class.is-active]="activeCategory === 'ambiente'">Medio Ambiente</button>
-    <button type="button" (click)="onSelect('otros')" [class.is-active]="activeCategory === 'otros'">Otros</button>
-    <button type="button" (click)="onSelect('entidades')" [class.is-active]="activeCategory === 'entidades'">Entidades Públicas</button>
-    <button type="button" (click)="onSelect('personas')" [class.is-active]="activeCategory === 'personas'">Personas Públicas</button>
-  </nav>
+  <div class="top-menu-inner">
+
+    <div class="category-nav-label">
+      <mat-icon>bookmark</mat-icon>
+      <span>Guardados</span>
+    </div>
+
+    <nav
+      class="menu-items"
+      aria-label="Categorías de publicaciones guardadas"
+    >
+
+      <button
+        type="button"
+        (click)="onSelect('inicio')"
+        [class.is-active]="activeCategory === 'inicio'"
+        [attr.aria-pressed]="activeCategory === 'inicio'"
+      >
+        <mat-icon>apps</mat-icon>
+        <span>Todos</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="onSelect('politica')"
+        [class.is-active]="activeCategory === 'politica'"
+        [attr.aria-pressed]="activeCategory === 'politica'"
+      >
+        <span>Política</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="onSelect('economia')"
+        [class.is-active]="activeCategory === 'economia'"
+        [attr.aria-pressed]="activeCategory === 'economia'"
+      >
+        <span>Economía</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="onSelect('seguridad')"
+        [class.is-active]="activeCategory === 'seguridad'"
+        [attr.aria-pressed]="activeCategory === 'seguridad'"
+      >
+        <span>Seguridad</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="onSelect('deportes')"
+        [class.is-active]="activeCategory === 'deportes'"
+        [attr.aria-pressed]="activeCategory === 'deportes'"
+      >
+        <span>Deportes</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="onSelect('salud')"
+        [class.is-active]="activeCategory === 'salud'"
+        [attr.aria-pressed]="activeCategory === 'salud'"
+      >
+        <span>Salud</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="onSelect('sociedad')"
+        [class.is-active]="activeCategory === 'sociedad'"
+        [attr.aria-pressed]="activeCategory === 'sociedad'"
+      >
+        <span>Sociedad</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="onSelect('educacion')"
+        [class.is-active]="activeCategory === 'educacion'"
+        [attr.aria-pressed]="activeCategory === 'educacion'"
+      >
+        <span>Educación</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="onSelect('gestion')"
+        [class.is-active]="activeCategory === 'gestion'"
+        [attr.aria-pressed]="activeCategory === 'gestion'"
+      >
+        <span>Gestiones Públicas</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="onSelect('ambiente')"
+        [class.is-active]="activeCategory === 'ambiente'"
+        [attr.aria-pressed]="activeCategory === 'ambiente'"
+      >
+        <span>Medio Ambiente</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="onSelect('otros')"
+        [class.is-active]="activeCategory === 'otros'"
+        [attr.aria-pressed]="activeCategory === 'otros'"
+      >
+        <span>Otros</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="onSelect('entidades')"
+        [class.is-active]="activeCategory === 'entidades'"
+        [attr.aria-pressed]="activeCategory === 'entidades'"
+      >
+        <span>Entidades Públicas</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="onSelect('personas')"
+        [class.is-active]="activeCategory === 'personas'"
+        [attr.aria-pressed]="activeCategory === 'personas'"
+      >
+        <span>Personas Públicas</span>
+      </button>
+
+    </nav>
+
+  </div>
 </header>
 
-<div class="page">
+
+<!-- =========================================================
+     PAGE
+========================================================= -->
+
+<main class="page">
+
+  <!-- =======================================================
+       HERO
+  ======================================================== -->
+
   <header class="hero-v3">
-    <div class="hero-content">
-      <div class="brand-row">
-        <span class="live-dot"></span>
-        <span class="category-label">{{ activeCategory | uppercase }}</span>
-      </div>
 
-      <h1 class="hero-title">Publicaciones <span>Guardadas</span></h1>
-      <p class="hero-subtitle">
-        Monitoreo estratégico de tendencias y sentimiento en tiempo real.
-      </p>
-    </div>
-  </header>
+    <div class="hero-main">
 
-  <section class="filters-section">
-    <div class="filters-header">
-      <h3>
-        <mat-icon>tune</mat-icon>
-        <span>Filtros de Búsqueda</span>
-      </h3>
-      <span class="page-indicator">Mostrando resultados de: {{ activeCategory }}</span>
-    </div>
+      <div class="hero-content">
 
-    <div class="filters-row">
-      <mat-form-field appearance="outline" class="filter-item">
-        <mat-label>Rango de fechas</mat-label>
-        <mat-date-range-input [rangePicker]="picker">
-          <input matStartDate placeholder="Inicio" [(ngModel)]="startDate" />
-          <input matEndDate placeholder="Fin" [(ngModel)]="endDate" />
-        </mat-date-range-input>
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-date-range-picker #picker></mat-date-range-picker>
-      </mat-form-field>
+        <div class="brand-row">
+          <span class="hero-icon">
+            <mat-icon>bookmark</mat-icon>
+          </span>
 
-      <mat-form-field appearance="outline" class="filter-item">
-        <mat-label>Seleccionar usuarios</mat-label>
-        <mat-select [(ngModel)]="selectedUsers" multiple>
-          <mat-option *ngFor="let user of users" [value]="user.idTweetUser">
-            {{ user.TweetUser }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-item">
-        <mat-label>Buscar</mat-label>
-        <input matInput [(ngModel)]="searchText" placeholder="Palabra clave..." />
-      </mat-form-field>
-
-      <div class="filter-buttons">
-        <button mat-flat-button class="filter-btn" (click)="filtrar()">
-          <mat-icon>search</mat-icon>
-          <span>Filtrar</span>
-        </button>
-
-        <button mat-stroked-button class="filter-btn filter-btn-secondary" (click)="limpiar()">
-          <mat-icon>refresh</mat-icon>
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <div *ngIf="cargando" class="skeleton-container">
-    <div *ngFor="let i of [1,2,3,4]" class="skeleton-item">
-      <div class="sk-header pulse"></div>
-      <div class="sk-body pulse"></div>
-      <div class="sk-footer pulse"></div>
-    </div>
-  </div>
-
-  <div *ngIf="error" class="state state-error">
-    {{ error }}
-  </div>
-
-  <section *ngIf="!cargando && datos.length" class="news-container">
-    <article *ngFor="let item of datos" class="news-item">
-      <div class="news-header">
-        <div class="news-title-block">
-          <div class="news-title">{{ item.TweetUser }}</div>
-          <span class="news-date">{{ item.created | date:'medium' }}</span>
+          <span class="category-label">
+            Biblioteca personal
+          </span>
         </div>
 
+
+        <h1 class="hero-title">
+          Publicaciones
+          <span>Guardadas</span>
+        </h1>
+
+
+        <p class="hero-subtitle">
+          Organiza, consulta y agrega notas a las publicaciones
+          que quieres conservar para tu análisis.
+        </p>
+
+      </div>
+
+
+      <div class="hero-context">
+
+        <span class="context-label">
+          Vista actual
+        </span>
+
+        <strong>
+          {{ activeCategory === 'inicio' ? 'Todos los guardados' : (activeCategory | titlecase) }}
+        </strong>
+
+        <span class="context-count" *ngIf="!cargando">
+          {{ datos.length }} publicaciones en esta página
+        </span>
+
+      </div>
+
+    </div>
+
+  </header>
+
+
+  <!-- =======================================================
+       FILTROS
+  ======================================================== -->
+
+  <section class="filters-section">
+
+    <div class="filters-header">
+
+      <div class="filters-title">
+
+        <div class="filters-icon">
+          <mat-icon>tune</mat-icon>
+        </div>
+
+        <div>
+          <h2>Filtrar publicaciones</h2>
+
+          <p>
+            Encuentra rápidamente contenido dentro de tus guardados.
+          </p>
+        </div>
+
+      </div>
+
+
+      <div class="filter-context">
+
+        <span class="filter-context-label">
+          Categoría
+        </span>
+
+        <strong>
+          {{ activeCategory === 'inicio' ? 'Todas' : (activeCategory | titlecase) }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="filters-row">
+
+      <!-- FECHAS -->
+
+      <mat-form-field
+        appearance="outline"
+        class="filter-item date-filter"
+      >
+
+        <mat-label>Rango de fechas</mat-label>
+
+        <mat-date-range-input [rangePicker]="picker">
+
+          <input
+            matStartDate
+            placeholder="Inicio"
+            [(ngModel)]="startDate"
+          />
+
+          <input
+            matEndDate
+            placeholder="Fin"
+            [(ngModel)]="endDate"
+          />
+
+        </mat-date-range-input>
+
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="picker"
+        ></mat-datepicker-toggle>
+
+        <mat-date-range-picker
+          #picker
+        ></mat-date-range-picker>
+
+      </mat-form-field>
+
+
+      <!-- USUARIOS -->
+
+      <mat-form-field
+        appearance="outline"
+        class="filter-item user-filter"
+      >
+
+        <mat-label>Usuarios</mat-label>
+
+        <mat-select
+          [(ngModel)]="selectedUsers"
+          multiple
+        >
+
+          <mat-option
+            *ngFor="let user of users"
+            [value]="user.idTweetUser"
+          >
+            {{ user.TweetUser }}
+          </mat-option>
+
+        </mat-select>
+
+      </mat-form-field>
+
+
+      <!-- BÚSQUEDA -->
+
+      <mat-form-field
+        appearance="outline"
+        class="filter-item search-filter"
+      >
+
+        <mat-label>Buscar publicación</mat-label>
+
+        <mat-icon matPrefix>
+          search
+        </mat-icon>
+
+        <input
+          matInput
+          [(ngModel)]="searchText"
+          placeholder="Palabra clave..."
+        />
+
+      </mat-form-field>
+
+
+      <!-- BOTONES -->
+
+      <div class="filter-buttons">
+
+        <button
+          mat-flat-button
+          class="filter-btn filter-btn-primary"
+          (click)="filtrar()"
+        >
+          <mat-icon>search</mat-icon>
+          <span>Buscar</span>
+        </button>
+
+
+        <button
+          mat-stroked-button
+          class="filter-btn filter-btn-secondary"
+          (click)="limpiar()"
+          matTooltip="Limpiar filtros"
+        >
+          <mat-icon>refresh</mat-icon>
+        </button>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       LOADING
+  ======================================================== -->
+
+  <section
+    *ngIf="cargando"
+    class="skeleton-container"
+  >
+
+    <div
+      *ngFor="let i of [1,2,3,4]"
+      class="skeleton-item"
+    >
+
+      <div class="skeleton-top">
+        <div class="sk-avatar pulse"></div>
+
+        <div class="sk-info">
+          <div class="sk-title pulse"></div>
+          <div class="sk-date pulse"></div>
+        </div>
+
+        <div class="sk-chip pulse"></div>
+      </div>
+
+      <div class="sk-body pulse"></div>
+      <div class="sk-body sk-body-short pulse"></div>
+
+      <div class="sk-footer pulse"></div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       ERROR
+  ======================================================== -->
+
+  <div
+    *ngIf="error"
+    class="state state-error"
+  >
+
+    <div class="state-icon">
+      <mat-icon>error_outline</mat-icon>
+    </div>
+
+    <div>
+      <strong>No pudimos cargar tus publicaciones</strong>
+      <span>{{ error }}</span>
+    </div>
+
+  </div>
+
+
+  <!-- =======================================================
+       PUBLICACIONES
+  ======================================================== -->
+
+  <section
+    *ngIf="!cargando && datos.length"
+    class="news-container"
+  >
+
+    <!-- CABECERA LISTADO -->
+
+    <div class="results-header">
+
+      <div>
+
+        <span class="results-eyebrow">
+          Resultados
+        </span>
+
+        <h2>
+          Publicaciones guardadas
+        </h2>
+
+      </div>
+
+
+      <span class="results-count">
+        {{ datos.length }}
+        {{ datos.length === 1 ? 'resultado' : 'resultados' }}
+      </span>
+
+    </div>
+
+
+    <!-- ITEM -->
+
+    <article
+      *ngFor="let item of datos"
+      class="news-item"
+    >
+
+      <!-- CABECERA -->
+
+      <div class="news-header">
+
+        <div class="news-source">
+
+          <div class="source-avatar">
+            {{ item.TweetUser ? item.TweetUser.charAt(0).toUpperCase() : 'N' }}
+          </div>
+
+
+          <div class="news-title-block">
+
+            <div class="news-title">
+              {{ item.TweetUser }}
+            </div>
+
+            <div class="news-subline">
+
+              <span class="news-date">
+                <mat-icon>schedule</mat-icon>
+
+                {{ item.created | date:'medium' }}
+              </span>
+
+              <span class="meta-separator"></span>
+
+              <span class="news-category-mobile">
+                {{ item.categoria }}
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
         <div class="header-right">
+
           <span
             class="status-chip"
             [ngClass]="{
@@ -107,117 +503,417 @@
               'positivo': item.sentimiento === 'positivo'
             }"
           >
+
+            <span class="chip-dot"></span>
+
             {{ item.sentimiento }}
+
           </span>
 
-          <span class="category-chip">{{ item.categoria }}</span>
+
+          <span class="category-chip">
+            {{ item.categoria }}
+          </span>
+
         </div>
+
       </div>
 
-      <p class="news-text" [innerHTML]="formatText(item.text)"></p>
+
+      <!-- CONTENIDO -->
+
+      <div class="news-content">
+
+        <p
+          class="news-text"
+          [innerHTML]="formatText(item.text)"
+        ></p>
+
+      </div>
+
+
+      <!-- MÉTRICAS Y ACCIONES -->
 
       <div class="news-meta">
-        <div class="sentiment-icons">
-          <span class="icon red">
-            Negativo <b>{{ getRepliesCounts(item.tweetid).negativo }}</b>
-          </span>
-          <span class="icon yellow">
-            Neutral <b>{{ getRepliesCounts(item.tweetid).neutro }}</b>
-          </span>
-          <span class="icon green">
-            Positivo <b>{{ getRepliesCounts(item.tweetid).positivo }}</b>
-          </span>
-        </div>
+
+        <!-- ===================================================
+     COMENTARIOS · ADMIN / PRO
+==================================================== -->
+
+<div
+  class="sentiment-group"
+  *ngIf="!accessLoading && canViewReplies"
+>
+
+  <span class="sentiment-label">
+    Comentarios
+  </span>
+
+
+  <div class="sentiment-icons">
+
+    <span class="icon red">
+
+      <span class="sentiment-dot"></span>
+
+      <span>Negativo</span>
+
+      <b>
+        {{ getRepliesCounts(item.tweetid).negativo }}
+      </b>
+
+    </span>
+
+
+    <span class="icon yellow">
+
+      <span class="sentiment-dot"></span>
+
+      <span>Neutral</span>
+
+      <b>
+        {{ getRepliesCounts(item.tweetid).neutro }}
+      </b>
+
+    </span>
+
+
+    <span class="icon green">
+
+      <span class="sentiment-dot"></span>
+
+      <span>Positivo</span>
+
+      <b>
+        {{ getRepliesCounts(item.tweetid).positivo }}
+      </b>
+
+    </span>
+
+  </div>
+
+</div>
+
+
+<!-- ===================================================
+     COMENTARIOS · FREE / BÁSICO
+==================================================== -->
+
+<div
+  class="sentiment-group sentiment-group-locked"
+  *ngIf="!accessLoading && !canViewReplies"
+>
+
+  <div class="comments-lock-icon">
+    <mat-icon>lock</mat-icon>
+  </div>
+
+
+  <div class="comments-lock-copy">
+
+    <div class="comments-lock-top">
+
+      <span class="sentiment-label">
+        Análisis de comentarios
+      </span>
+
+
+      <span class="comments-pro-badge">
+
+        <mat-icon>
+          workspace_premium
+        </mat-icon>
+
+        PRO
+
+      </span>
+
+    </div>
+
+
+    <span class="comments-lock-description">
+      Descubre cómo reaccionan las personas
+      a esta publicación.
+    </span>
+
+  </div>
+
+
+  <div class="sentiment-icons comments-preview">
+
+    <span class="icon red locked">
+      <span class="sentiment-dot"></span>
+      <span>Negativo</span>
+      <b>—</b>
+    </span>
+
+
+    <span class="icon yellow locked">
+      <span class="sentiment-dot"></span>
+      <span>Neutral</span>
+      <b>—</b>
+    </span>
+
+
+    <span class="icon green locked">
+      <span class="sentiment-dot"></span>
+      <span>Positivo</span>
+      <b>—</b>
+    </span>
+
+  </div>
+
+</div>
+
+        
+
 
         <button
           class="btn-save"
+          type="button"
           (click)="toggleGuardar(item)"
           [disabled]="savingIds.has(item.tweetid.toString())"
           [class.saved]="isGuardado(item.tweetid)"
         >
-          {{ isGuardado(item.tweetid) ? 'Guardado' : 'Guardar' }}
+
+          <mat-icon>
+            {{ isGuardado(item.tweetid) ? 'bookmark' : 'bookmark_border' }}
+          </mat-icon>
+
+          <span>
+            {{ isGuardado(item.tweetid) ? 'Guardado' : 'Guardar' }}
+          </span>
+
         </button>
+
       </div>
 
-      <div class="note-wrapper">
-        <div
+
+      <!-- ===================================================
+           NOTA PERSONAL
+      ==================================================== -->
+
+      <div
+        class="note-wrapper"
+        [class.note-saved]="hasNote(item.tweetid)"
+      >
+
+        <button
+          type="button"
           class="note-toggle"
           (click)="toggleNote(item.tweetid)"
           [class.open]="isNoteOpen(item.tweetid)"
           [class.has-note]="hasNote(item.tweetid)"
         >
+
           <div class="note-left">
-            <mat-icon>sticky_note_2</mat-icon>
-            <span>Nota personal</span>
+
+            <span class="note-icon">
+              <mat-icon>
+                {{ hasNote(item.tweetid) ? 'sticky_note_2' : 'note_add' }}
+              </mat-icon>
+            </span>
+
+
+            <div class="note-heading">
+
+              <span>
+                Nota personal
+              </span>
+
+              <small>
+                {{
+                  hasNote(item.tweetid)
+                    ? 'Tienes una nota guardada'
+                    : 'Agrega contexto para recordar por qué guardaste esta publicación'
+                }}
+              </small>
+
+            </div>
+
           </div>
+
 
           <div class="note-right">
-            <span *ngIf="hasNote(item.tweetid)" class="note-indicator">✔ Guardada</span>
+
+            <span
+              *ngIf="hasNote(item.tweetid)"
+              class="note-indicator"
+            >
+              <mat-icon>check_circle</mat-icon>
+              Guardada
+            </span>
+
+
             <mat-icon class="arrow">
-              {{ isNoteOpen(item.tweetid) ? 'expand_less' : 'expand_more' }}
+              {{
+                isNoteOpen(item.tweetid)
+                  ? 'expand_less'
+                  : 'expand_more'
+              }}
             </mat-icon>
+
           </div>
+
+        </button>
+
+
+        <div
+          class="note-content"
+          [class.open]="isNoteOpen(item.tweetid)"
+        >
+
+          <div class="note-inner">
+
+            <mat-form-field
+              appearance="outline"
+              class="note-field"
+            >
+
+              <mat-label>Tu nota</mat-label>
+
+              <textarea
+                matInput
+                rows="3"
+                [(ngModel)]="noteDraft[item.tweetid]"
+                placeholder="Escribe aquí una idea, conclusión o recordatorio..."
+              ></textarea>
+
+            </mat-form-field>
+
+
+            <div class="note-actions">
+
+              <button
+                mat-flat-button
+                class="note-save-btn"
+                (click)="guardarNota(item.tweetid)"
+                [disabled]="
+                  savingNoteIds.has(item.tweetid.toString()) ||
+                  !noteChanged(item.tweetid)
+                "
+              >
+
+                <mat-icon>save</mat-icon>
+
+                {{
+                  hasNote(item.tweetid)
+                    ? 'Guardar cambios'
+                    : 'Agregar nota'
+                }}
+
+              </button>
+
+
+              <button
+                mat-stroked-button
+                class="note-delete-btn"
+                color="warn"
+                (click)="borrarNota(item.tweetid)"
+                [disabled]="!hasNote(item.tweetid)"
+                matTooltip="Eliminar nota"
+              >
+
+                <mat-icon>delete_outline</mat-icon>
+
+                <span>
+                  Eliminar
+                </span>
+
+              </button>
+
+            </div>
+
+          </div>
+
         </div>
 
-        <div class="note-content" [class.open]="isNoteOpen(item.tweetid)">
-          <mat-form-field appearance="outline" class="note-field">
-            <textarea
-              matInput
-              rows="3"
-              [(ngModel)]="noteDraft[item.tweetid]"
-              placeholder="Escribe algo importante..."
-            ></textarea>
-          </mat-form-field>
-
-          <div class="note-actions">
-            <button
-              mat-flat-button
-              (click)="guardarNota(item.tweetid)"
-              [disabled]="savingNoteIds.has(item.tweetid.toString()) || !noteChanged(item.tweetid)"
-            >
-              <mat-icon>save</mat-icon>
-              {{ hasNote(item.tweetid) ? 'Modificar' : 'Agregar' }}
-            </button>
-
-            <button
-              mat-stroked-button
-              color="warn"
-              (click)="borrarNota(item.tweetid)"
-              [disabled]="!hasNote(item.tweetid)"
-            >
-              <mat-icon>delete</mat-icon>
-            </button>
-          </div>
-        </div>
       </div>
+
     </article>
+
   </section>
 
-  <div class="pagination" *ngIf="!cargando && datos.length">
+
+  <!-- =======================================================
+       PAGINACIÓN
+  ======================================================== -->
+
+  <nav
+    class="pagination"
+    *ngIf="!cargando && datos.length"
+    aria-label="Paginación"
+  >
+
     <button
-      mat-flat-button
-      class="pagination-btn"
+      mat-stroked-button
+      class="pagination-btn pagination-prev"
       (click)="loadPreviousPage()"
       [disabled]="currentPage === 1"
     >
-      <mat-icon>arrow_back_ios</mat-icon>
-      Anterior
+
+      <mat-icon>arrow_back</mat-icon>
+
+      <span>
+        Anterior
+      </span>
+
     </button>
 
-    <span class="page-indicator">Página {{ currentPage }}</span>
+
+    <div class="pagination-current">
+
+      <span>
+        Página
+      </span>
+
+      <strong>
+        {{ currentPage }}
+      </strong>
+
+    </div>
+
 
     <button
       mat-flat-button
-      class="pagination-btn"
+      class="pagination-btn pagination-next"
       (click)="loadNextPage()"
       [disabled]="!hasMore"
     >
-      Siguiente
-      <mat-icon>arrow_forward_ios</mat-icon>
+
+      <span>
+        Siguiente
+      </span>
+
+      <mat-icon>arrow_forward</mat-icon>
+
     </button>
+
+  </nav>
+
+
+  <!-- =======================================================
+       VACÍO
+  ======================================================== -->
+
+  <div
+    *ngIf="!cargando && !datos.length && !error"
+    class="empty-state"
+  >
+
+    <div class="empty-icon">
+      <mat-icon>bookmark_border</mat-icon>
+    </div>
+
+    <h3>
+      No hay publicaciones guardadas
+    </h3>
+
+    <p>
+      No encontramos publicaciones para esta categoría
+      o con los criterios seleccionados.
+    </p>
+
   </div>
 
-  <div *ngIf="!cargando && !datos.length && !error" class="state">
-    No se encontraron noticias con estos criterios.
-  </div>
-</div>
+</main>

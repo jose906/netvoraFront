@@ -48,6 +48,7 @@ export class AuthService {
 }
   async getToken(): Promise<string | null> {
     const user = await this.afAuth.currentUser;
+    
     return user ? user.getIdToken() : null;
   }
   async forgotPassword(email: string): Promise<void> {

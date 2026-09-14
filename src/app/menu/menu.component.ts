@@ -11,46 +11,78 @@ import { Router } from '@angular/router';
 })
 export class MenuComponent implements OnInit {
 
-  // ✅ Streams para el footer
+  // =========================================================
+  // USUARIO
+  // =========================================================
+
   userEmail$: Observable<string>;
   userDisplayName$: Observable<string>;
   userInitial$: Observable<string>;
+
+  // =========================================================
+  // SIDEBAR MOBILE
+  // =========================================================
+
+  isSidebarOpen = false;
 
   constructor(
     private authService: AuthService,
     public authz: AuthzService,
     private router: Router
   ) {
-    // 🔹 Ajusta esto según tu AuthService:
-    // Idea: que authService exponga algo como `user$` (Firebase user) o `currentUser$`.
+
     const user$ = (this.authService as any).user$ as Observable<any> | undefined;
 
     if (!user$) {
-      // fallback si no existe user$ (no rompe el menú)
+
       this.userEmail$ = of('');
       this.userDisplayName$ = of('');
       this.userInitial$ = of('U');
+
     } else {
-      this.userEmail$ = user$.pipe(map(u => (u?.email || '').toString()));
-      this.userDisplayName$ = user$.pipe(
-        map(u => (u?.displayName || u?.email || 'Usuario').toString())
+
+      this.userEmail$ = user$.pipe(
+        map(u => (u?.email || '').toString())
       );
+
+      this.userDisplayName$ = user$.pipe(
+        map(u =>
+          (
+            u?.displayName ||
+            u?.email ||
+            'Usuario'
+          ).toString()
+        )
+      );
+
       this.userInitial$ = this.userDisplayName$.pipe(
-        map(name => (name?.trim()?.[0] || 'U').toUpperCase())
+        map(name =>
+          (name?.trim()?.[0] || 'U').toUpperCase()
+        )
       );
     }
   }
 
   async ngOnInit() {
-    // ✅ Si tu AuthzService necesita cargar role desde backend (/api/auth/me), hazlo aquí:
+
+    // Si AuthzService necesita cargar role:
     // await this.authz.loadRole?.();
+
   }
+
+  // =========================================================
+  // AUTH
+  // =========================================================
 
   logout() {
     this.authService.logout();
     window.location.reload();
     this.router.navigate(['/login']);
   }
+
+  // =========================================================
+  // PERMISOS
+  // =========================================================
 
   canAdmin(): boolean {
     return this.authz.hasRole('admin');
@@ -59,9 +91,13 @@ export class MenuComponent implements OnInit {
   canEditCategories(): boolean {
     return this.authz.hasRole('admin', 'analista');
   }
-  isSidebarOpen = false;
 
-toggleSidebar(){
-  this.isSidebarOpen = !this.isSidebarOpen;
-}
+  // =========================================================
+  // MOBILE SIDEBAR
+  // =========================================================
+
+  toggleSidebar() {
+    this.isSidebarOpen = !this.isSidebarOpen;
+  }
+
 }

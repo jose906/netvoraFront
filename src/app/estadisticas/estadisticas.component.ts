@@ -60,24 +60,55 @@ export class EstadisticasComponent implements OnInit {
   ngOnInit(): void {
     this.goToView('todos', 'Panel principal', 'todos');
   } 
+  filtersOpen = false;
 
-  goToView(
-    component: VistaDashboard,
-    categoriaLabel: string,
-    tipo: TipoCuenta = 'Medio'
-  ): void {
-    this.selectedComponent = component;
-    this.selectedCategoria = categoriaLabel;
+toggleFilters(): void {
+  this.filtersOpen = !this.filtersOpen;
+}
 
-    // ✅ resetear filtros al cambiar de categoría
-    this.resetFiltrosInterno();
+closeFilters(): void {
+  this.filtersOpen = false;
+}
 
-    // ✅ como cambió la vista, también actualizamos los filtros aplicados
-    this.syncAppliedFilters();
+applyAndCloseFilters(): void {
+  this.aplicarFechas();
+  this.closeFilters();
+}
 
-    // ✅ cargar usuarios del nuevo tipo
-    this.loadUsers(tipo);
+get activeFiltersCount(): number {
+  let count = 0;
+
+  if (this.filterEndDate) {
+    count++;
   }
+
+  if (this.filterSelectedUsers.length > 0) {
+    count++;
+  }
+
+  if (this.filterSearchText.trim()) {
+    count++;
+  }
+
+  return count;
+}
+
+ goToView(
+  component: VistaDashboard,
+  categoriaLabel: string,
+  tipo: TipoCuenta = 'Medio'
+): void {
+
+  this.selectedComponent = component;
+  this.selectedCategoria = categoriaLabel;
+
+  this.filtersOpen = false;
+
+  this.resetFiltrosInterno();
+  this.syncAppliedFilters();
+
+  this.loadUsers(tipo);
+}
 
   loadUsers(tipo: TipoCuenta): void {
     let tipoFinal: TipoCuenta = tipo;

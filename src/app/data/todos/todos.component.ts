@@ -1,4 +1,4 @@
-import {Component,Input,ChangeDetectionStrategy,ChangeDetectorRef,SimpleChanges, OnChanges} from '@angular/core';
+import {Component,Input,ChangeDetectionStrategy,ChangeDetectorRef,SimpleChanges, OnChanges, OnInit} from '@angular/core';
 import { finalize } from 'rxjs/operators';
 import { ChartData, ChartOptions, ChartType } from 'chart.js';
 import { ApiService } from '../../services/api.service';
@@ -6,6 +6,9 @@ import { StatsResponse,EmergingTopicItem } from '../../interfaces/data/mainDashb
 import { NETVORA_PALETTE,exportCanvasWithWhiteBg } from '../../utils/helpers';
 import { users } from '../../interfaces/users';
 import { Router } from '@angular/router';
+import { AuthzService, UserRole } from '../../services/authz.service';
+import { AccountService } from '../../services/account.service';
+import { AccountMeResponse } from '../../interfaces/me';
 
 type EntItem = { entidad: string; total: number };
 
@@ -15,7 +18,7 @@ type EntItem = { entidad: string; total: number };
   styleUrls: ['./todos.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TodosComponent implements OnChanges {
+export class TodosComponent implements OnChanges, OnInit {
   @Input() startDate!: Date | null;
   @Input() endDate!: Date | null;
   @Input() selectedUsers: string[] = [];
@@ -24,6 +27,18 @@ export class TodosComponent implements OnChanges {
 
   loading = false;
   errorMsg = '';
+  // =========================================================
+// ACCESO A COMENTARIOS
+// =========================================================
+
+accessLoading = true;
+
+currentRole: UserRole = 'viewer';
+
+subscriptionPlan = '';
+subscriptionStatus = '';
+
+canViewReplies = false;
 
   // ======= KPI =======
   totalPosts = 0;
@@ -640,8 +655,13 @@ readonly emergingTopicsOptions: ChartOptions<'bar'> = {
 constructor(
   private api: ApiService,
   private cdr: ChangeDetectorRef,
-  private router: Router
+  private router: Router,
+  private authz: AuthzService,
+  private accountService: AccountService
 ) {}
+ngOnInit(): void {
+  this.loadAccess();
+}
   ngOnChanges(changes: SimpleChanges): void {
   const startChanged = !!changes['startDate'];
   const endChanged = !!changes['endDate'];
@@ -661,6 +681,84 @@ constructor(
   if (startChanged || endChanged || usersChanged || selChanged || searchChanged) {
     this.cargarDatos();
   }
+}
+
+// =========================================================
+// ACCESO PRO / ADMIN A COMENTARIOS
+// =========================================================
+
+private loadAccess(): void {
+
+  this.accessLoading = true;
+
+  this.accountService.me().subscribe({
+
+    next: (response: AccountMeResponse) => {
+
+      const user = response?.user;
+      const subscription = response?.subscription;
+
+      this.currentRole =
+        (user?.role as UserRole) || 'viewer';
+
+      this.subscriptionPlan =
+        String(
+          subscription?.plan || ''
+        )
+          .trim()
+          .toLowerCase();
+
+      this.subscriptionStatus =
+        String(
+          subscription?.status || ''
+        )
+          .trim()
+          .toLowerCase();
+
+
+      // ADMIN SIEMPRE PUEDE VER
+
+      if (this.currentRole === 'admin') {
+
+        this.canViewReplies = true;
+
+      } else {
+
+        // USUARIO NORMAL:
+        // SOLO PRO ACTIVO
+
+        this.canViewReplies =
+          this.subscriptionPlan === 'pro' &&
+          this.subscriptionStatus === 'activo';
+
+      }
+
+
+      this.accessLoading = false;
+
+      this.cdr.markForCheck();
+
+    },
+
+
+    error: () => {
+
+      this.currentRole = 'viewer';
+
+      this.subscriptionPlan = '';
+
+      this.subscriptionStatus = '';
+
+      this.canViewReplies = false;
+
+      this.accessLoading = false;
+
+      this.cdr.markForCheck();
+
+    }
+
+  });
+
 }
 
  public cargarDatos(): void {

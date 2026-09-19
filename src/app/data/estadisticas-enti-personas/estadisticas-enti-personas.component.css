@@ -9,21 +9,37 @@
   display: block;
 
   --bg: #f6f7f9;
+
   --surface: #ffffff;
+
   --surface-soft: rgba(255, 255, 255, 0.62);
+
   --text: #0f172a;
+
   --text-soft: #334155;
+
   --muted: #64748b;
+
   --line: rgba(15, 23, 42, 0.08);
+
   --line-strong: rgba(15, 23, 42, 0.13);
+
   --accent: #6d28d9;
+
   --accent-soft: rgba(109, 40, 217, 0.07);
+
   --accent-soft-2: rgba(109, 40, 217, 0.12);
+
   --green: #16a34a;
+
   --green-soft: rgba(22, 163, 74, 0.08);
+
   --red: #dc2626;
+
   --red-soft: rgba(220, 38, 38, 0.07);
+
   --neutral-soft: rgba(100, 116, 139, 0.08);
+
   --radius: 14px;
 
   background: var(--bg);
@@ -58,6 +74,8 @@
 
 
 
+
+
 /* =========================================================
 
    CONTENEDOR
@@ -77,6 +95,8 @@
   overflow-x: hidden;
 
 }
+
+
 
 
 
@@ -162,6 +182,8 @@
 
 
 
+
+
 /* =========================================================
 
    HEADER ACTIONS
@@ -212,7 +234,7 @@
 
   transition:
 
-  background* 0.15s ease,
+background* 0.15s ease,
 
     border-color 0.15s ease,
 
@@ -254,6 +276,8 @@
 
 
 
+
+
 /* =========================================================
 
    ALERT
@@ -279,6 +303,8 @@
   font-weight: 550;
 
 }
+
+
 
 
 
@@ -430,6 +456,8 @@
 
 
 
+
+
 /* =========================================================
 
    SECCIONES
@@ -482,7 +510,7 @@
 
 }
 
-.section-eyebrow\.neutral {
+.section-eyebrow\\.neutral {
 
   color: var(--muted);
 
@@ -520,6 +548,8 @@
 
 
 
+
+
 /* =========================================================
 
    GENERIC CARD
@@ -551,6 +581,8 @@
   padding: 17px 18px;
 
 }
+
+
 
 
 
@@ -619,6 +651,8 @@
   flex-shrink: 0;
 
 }
+
+
 
 
 
@@ -704,6 +738,8 @@
 
 
 
+
+
 /* =========================================================
 
    SELECT
@@ -749,6 +785,8 @@
     0 0 0 2px rgba(109, 40, 217, 0.07);
 
 }
+
+
 
 
 
@@ -810,6 +848,8 @@
 
 
 
+
+
 /* =========================================================
 
    TÓPICOS PRINCIPALES
@@ -833,6 +873,8 @@
   margin-top: 6px;
 
 }
+
+
 
 
 
@@ -897,6 +939,8 @@
   font-size: 10.5px;
 
 }
+
+
 
 
 
@@ -1146,6 +1190,8 @@
 
 
 
+
+
 /* =========================================================
 
    ANÁLISIS
@@ -1163,6 +1209,8 @@
   gap: 14px;
 
 }
+
+
 
 
 
@@ -1239,6 +1287,8 @@ background* 0.12s ease,
     0 1px 3px rgba(15, 23, 42, 0.08);
 
 }
+
+
 
 
 
@@ -1372,6 +1422,8 @@ background* 0.12s ease,
 
 
 
+
+
 /* =========================================================
 
    BREAKDOWN COMENTARIOS
@@ -1481,6 +1533,8 @@ background* 0.12s ease,
   font-variant-numeric: tabular-nums;
 
 }
+
+
 
 
 
@@ -1600,6 +1654,8 @@ background* 0.12s ease,
 
 
 
+
+
 /* =========================================================
 
    EXPLORAR
@@ -1627,6 +1683,8 @@ background* 0.12s ease,
   margin-top: 0;
 
 }
+
+
 
 
 
@@ -1666,6 +1724,8 @@ background* 0.12s ease,
 
 
 
+
+
 /* =========================================================
 
    EVOLUCIÓN TÓPICOS
@@ -1681,6 +1741,8 @@ background* 0.12s ease,
   margin-top: 14px;
 
 }
+
+
 
 
 
@@ -1954,6 +2016,8 @@ background* 0.12s ease,
 
 
 
+
+
 /* =========================================================
 
    EXPLORAR DISTRIBUCIONES
@@ -1991,6 +2055,8 @@ background* 0.12s ease,
   margin-top: 12px;
 
 }
+
+
 
 
 
@@ -2132,6 +2198,8 @@ background* 0.12s ease,
 
 
 
+
+
 /* =========================================================
 
    TABLA
@@ -2230,7 +2298,6 @@ background* 0.12s ease,
 
   -webkit-box-orient: vertical;
 
-  -webkit-line-clamp: 2;
 
 }
 
@@ -2308,6 +2375,8 @@ background* 0.12s ease,
 
 
 
+
+
 /* =========================================================
 
    MONO
@@ -2319,6 +2388,8 @@ background* 0.12s ease,
   font-variant-numeric: tabular-nums;
 
 }
+
+
 
 
 
@@ -2420,6 +2491,8 @@ background* 0.12s ease,
 
 
 
+
+
 /* =========================================================
 
    EMPTY STATES
@@ -2496,6 +2569,8 @@ background* 0.12s ease,
 
 
 
+
+
 /* =========================================================
 
    TABLET GRANDE
@@ -2559,6 +2634,8 @@ background* 0.12s ease,
   }
 
 }
+
+
 
 
 
@@ -2647,6 +2724,8 @@ background* 0.12s ease,
   }
 
 }
+
+
 
 
 
@@ -2864,6 +2943,8 @@ background* 0.12s ease,
 
 
 
+
+
 /* =========================================================
 
    MOBILE PEQUEÑO
@@ -2956,4 +3037,229 @@ background* 0.12s ease,
 
   }
 
+}
+/* =========================================================
+   COMENTARIOS — ACCESO PRO / ADMIN
+========================================================= */
+
+.metric-card--locked {
+  position: relative;
+}
+
+.metric-value--muted {
+  color: var(--muted);
+}
+
+.metric-locked-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+}
+
+.metric-locked-value .material-icons {
+  font-size: 16px;
+}
+
+.comments-access-loading {
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.35);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 550;
+}
+
+.comments-access-loading .material-icons {
+  color: var(--accent);
+  font-size: 18px;
+}
+
+.dashboard-pro-lock {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  align-items: center;
+  gap: 28px;
+  overflow: hidden;
+  min-height: 170px;
+  padding: 24px;
+  border: 1px solid rgba(109, 40, 217, 0.16);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(109, 40, 217, 0.055),
+      rgba(109, 40, 217, 0.015)
+    );
+}
+
+.dashboard-pro-lock::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 180px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+.dashboard-pro-lock-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  min-width: 0;
+}
+
+.dashboard-pro-lock-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border: 1px solid rgba(109, 40, 217, 0.14);
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.dashboard-pro-lock-icon .material-icons {
+  font-size: 19px;
+}
+
+.dashboard-pro-lock-copy {
+  min-width: 0;
+}
+
+.dashboard-pro-lock-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.dashboard-pro-lock-kicker {
+  color: var(--accent);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dashboard-pro-badge {
+  height: 21px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.dashboard-pro-lock-copy h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.dashboard-pro-lock-copy p {
+  max-width: 650px;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.dashboard-pro-preview {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.62);
+  opacity: 0.68;
+}
+
+.dashboard-pro-preview-row {
+  min-height: 37px;
+  display: grid;
+  grid-template-columns: 7px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.dashboard-pro-preview-row + .dashboard-pro-preview-row {
+  border-top: 1px solid var(--line);
+}
+
+.dashboard-pro-preview-row strong {
+  color: var(--text-soft);
+  font-size: 10px;
+}
+
+.preview-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.preview-dot.negative {
+  background: var(--red);
+}
+
+.preview-dot.neutral {
+  background: #94a3b8;
+}
+
+.preview-dot.positive {
+  background: var(--green);
+}
+
+@media (max-width: 800px) {
+  .dashboard-pro-lock {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-pro-preview {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .dashboard-pro-lock {
+    min-height: 0;
+    padding: 18px;
+  }
+
+  .dashboard-pro-lock-main {
+    gap: 11px;
+  }
+
+  .dashboard-pro-lock-icon {
+    width: 35px;
+    height: 35px;
+  }
+
+  .dashboard-pro-lock-copy h3 {
+    font-size: 14px;
+  }
 }

@@ -14,6 +14,8 @@ import { ApiService } from '../../services/api.service';
 import { BaseChartDirective } from 'ng2-charts';
 import { NETVORA_PALETTE, exportCanvasWithWhiteBg } from '../../utils/helpers';
 import { users } from '../../interfaces/users';
+import { AuthzService, UserRole } from '../../services/authz.service';
+import { AccountService } from '../../services/account.service';
 
 type EntItem = { entidad: string; total: number };
 type TopUserItem = { usuario: string; total: number };
@@ -532,10 +534,78 @@ userIndiceChartOptions: ChartOptions<'bar'> = {
 
 
 
+  // ===== Acceso a comentarios =====
+  accessLoading = true;
+  currentRole: UserRole = 'viewer';
+  subscriptionPlan = '';
+  subscriptionStatus = '';
+
+  get canViewReplies(): boolean {
+    if (this.currentRole === 'admin') {
+      return true;
+    }
+
+    return (
+      this.subscriptionStatus === 'activo' &&
+      this.subscriptionPlan.trim().toLowerCase() === 'pro'
+    );
+  }
+
   constructor(
     private apiService: ApiService,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef,
+    private authzService: AuthzService,
+    private accountService: AccountService
+  ) {
+    this.loadAccess();
+  }
+
+  private loadAccess(): void {
+  this.accessLoading = true;
+
+  this.accountService.me().subscribe({
+    next: (res: any) => {
+      const role = String(
+        res?.user?.role || 'viewer'
+      ).toLowerCase();
+
+      this.currentRole =
+        role === 'admin'
+          ? 'admin'
+          : 'viewer';
+
+      this.subscriptionPlan = String(
+        res?.subscription?.plan?.name ??
+        res?.subscription?.plan ??
+        ''
+      )
+        .trim()
+        .toLowerCase();
+
+      this.subscriptionStatus = String(
+        res?.subscription?.status ?? ''
+      )
+        .trim()
+        .toLowerCase();
+
+      this.accessLoading = false;
+
+      this.cdr.markForCheck();
+    },
+
+    error: () => {
+      this.currentRole = 'viewer';
+
+      this.subscriptionPlan = '';
+
+      this.subscriptionStatus = '';
+
+      this.accessLoading = false;
+
+      this.cdr.markForCheck();
+    }
+  });
+}
 
   ngOnChanges(changes: SimpleChanges): void {
   if (!this.startDate) return;

@@ -59,6 +59,7 @@
 }
 
 
+
 /* =========================================================
 
    CONTENEDOR
@@ -76,6 +77,7 @@
   box-sizing: border-box;
 
 }
+
 
 
 /* =========================================================
@@ -151,6 +153,7 @@
   font-weight: 450;
 
 }
+
 
 
 /* =========================================================
@@ -240,6 +243,7 @@ background .15s ease,
 }
 
 
+
 /* =========================================================
 
    ALERTA
@@ -265,6 +269,7 @@ background .15s ease,
   font-weight: 550;
 
 }
+
 
 
 /* =========================================================
@@ -412,6 +417,7 @@ background .15s ease,
 }
 
 
+
 /* =========================================================
 
    SECCIONES
@@ -458,7 +464,7 @@ background .15s ease,
 
 }
 
-.section-eyebrow.neutral {
+.section-eyebrow\.neutral {
 
   color: var(--muted);
 
@@ -491,6 +497,7 @@ background .15s ease,
   line-height: 1.45;
 
 }
+
 
 
 /* =========================================================
@@ -630,6 +637,7 @@ background .15s ease,
 }
 
 
+
 /* =========================================================
 
    TÓPICO CLICKEABLE
@@ -675,6 +683,7 @@ background .14s ease,
   color: var(--accent);
 
 }
+
 
 
 /* =========================================================
@@ -784,6 +793,7 @@ background .14s ease,
   font-variant-numeric: tabular-nums;
 
 }
+
 
 
 /* =========================================================
@@ -965,6 +975,7 @@ background .14s ease,
 }
 
 
+
 /* =========================================================
 
    CARDS DE ANÁLISIS
@@ -1010,6 +1021,7 @@ background .14s ease,
   margin-bottom: 14px;
 
 }
+
 
 
 /* =========================================================
@@ -1065,6 +1077,7 @@ background .14s ease,
   gap: 7px;
 
 }
+
 
 
 /* =========================================================
@@ -1144,6 +1157,7 @@ background .12s ease,
 }
 
 
+
 /* =========================================================
 
    GRÁFICOS
@@ -1213,6 +1227,7 @@ background .12s ease,
   min-height: 300px;
 
 }
+
 
 
 /* =========================================================
@@ -1464,6 +1479,7 @@ background .12s ease,
 }
 
 
+
 /* =========================================================
 
    ESTADOS VACÍOS
@@ -1545,6 +1561,7 @@ background .12s ease,
 }
 
 
+
 /* =========================================================
 
    TABLET
@@ -1586,6 +1603,7 @@ background .12s ease,
   }
 
 }
+
 
 
 /* =========================================================
@@ -1667,6 +1685,7 @@ background .12s ease,
 }
 
 
+
 /* =========================================================
 
    MOBILE
@@ -1734,6 +1753,7 @@ background .12s ease,
   }
 
 
+
   /* KPI */
 
   .metrics-grid {
@@ -1777,6 +1797,7 @@ background .12s ease,
   }
 
 
+
   /* SECCIONES */
 
   .section-block {
@@ -1800,6 +1821,7 @@ background .12s ease,
     font-size: 16px;
 
   }
+
 
 
   /* TÓPICOS */
@@ -1857,6 +1879,7 @@ background .12s ease,
   }
 
 
+
   /* COMENTARIOS */
 
   .reply-sentiment {
@@ -1870,6 +1893,7 @@ background .12s ease,
     padding: 10px;
 
   }
+
 
 
   /* GRÁFICOS */
@@ -1903,6 +1927,7 @@ background .12s ease,
   }
 
 }
+
 
 
 /* =========================================================
@@ -2046,6 +2071,7 @@ background .12s ease,
 }
 
 
+
 /* ===== PICO ===== */
 
 .activity-stat--peak::before {
@@ -2075,6 +2101,7 @@ background .12s ease,
 }
 
 
+
 /* ===== VARIACIÓN ===== */
 
 .activity-stat--positive strong,
@@ -2092,6 +2119,7 @@ background .12s ease,
   color: #dc2626;
 
 }
+
 
 
 /* =========================================================
@@ -2157,6 +2185,7 @@ background .12s ease,
 }
 
 
+
 /* ===== GRÁFICO ===== */
 
 .activity-chart .chart-wrap--main {
@@ -2168,6 +2197,7 @@ background .12s ease,
   margin-top: 4px;
 
 }
+
 
 
 /* =========================================================
@@ -2197,6 +2227,7 @@ background .12s ease,
   }
 
 }
+
 
 
 /* =========================================================
@@ -2252,6 +2283,7 @@ background .12s ease,
   }
 
 }
+
 
 
 /* =========================================================
@@ -2325,6 +2357,7 @@ background .12s ease,
   border-radius: 14px;
 
 }
+
 
 
 /* =========================================================
@@ -2412,6 +2445,7 @@ background .12s ease,
 }
 
 
+
 /* =========================================================
 
    RANKING
@@ -2457,6 +2491,7 @@ background .12s ease,
 }
 
 
+
 /* =========================================================
 
    POSICIÓN
@@ -2486,6 +2521,7 @@ background .12s ease,
 }
 
 
+
 /* PRIMER PUESTO */
 
 .entity-row--visual:first-child .entity-position {
@@ -2495,6 +2531,7 @@ background .12s ease,
   color: var(--accent, #6d28d9);
 
 }
+
 
 
 /* =========================================================
@@ -2556,6 +2593,7 @@ background .12s ease,
 }
 
 
+
 /* =========================================================
 
    BARRA RELATIVA
@@ -2593,6 +2631,7 @@ background .12s ease,
 }
 
 
+
 /* PRIMER PUESTO MÁS DESTACADO */
 
 .entity-row--visual:first-child .entity-progress-bar {
@@ -2600,6 +2639,7 @@ background .12s ease,
   background: var(--accent, #6d28d9);
 
 }
+
 
 
 /* =========================================================
@@ -2623,6 +2663,7 @@ background 0.16s ease,
   background: rgba(15, 23, 42, 0.018);
 
 }
+
 
 
 /* =========================================================
@@ -2650,6 +2691,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    TABLET
@@ -2671,6 +2713,7 @@ background 0.16s ease,
   }
 
 }
+
 
 
 /* =========================================================
@@ -2728,6 +2771,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    INSIGHT
@@ -2759,6 +2803,7 @@ background 0.16s ease,
   border-right: 0;
 
 }
+
 
 
 /* =========================================================
@@ -2802,6 +2847,7 @@ background 0.16s ease,
   border-radius: 0 0 4px 4px;
 
 }
+
 
 
 /* =========================================================
@@ -2849,6 +2895,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    NOMBRE DEL TÓPICO
@@ -2890,6 +2937,7 @@ background 0.16s ease,
   font-variant-numeric: tabular-nums;
 
 }
+
 
 
 /* =========================================================
@@ -2961,6 +3009,7 @@ background 0.16s ease,
 }
 
 
+
 /* POSITIVO */
 
 .sentiment-mini-item.positive::before {
@@ -2976,6 +3025,7 @@ background 0.16s ease,
 }
 
 
+
 /* NEUTRAL */
 
 .sentiment-mini-item.neutral::before {
@@ -2983,6 +3033,7 @@ background 0.16s ease,
   background: #94a3b8;
 
 }
+
 
 
 /* NEGATIVO */
@@ -2998,6 +3049,7 @@ background 0.16s ease,
   color: #dc2626;
 
 }
+
 
 
 /* =========================================================
@@ -3017,6 +3069,7 @@ background 0.16s ease,
   color: #dc2626;
 
 }
+
 
 
 /* =========================================================
@@ -3064,6 +3117,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    TABLET
@@ -3093,6 +3147,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    TABLET PEQUEÑA
@@ -3116,6 +3171,7 @@ background 0.16s ease,
   }
 
 }
+
 
 
 /* =========================================================
@@ -3203,6 +3259,7 @@ background 0.16s ease,
   overflow: hidden;
 
 }
+
 
 
 /* =========================================================
@@ -3316,6 +3373,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    SENTIMIENTO DOMINANTE
@@ -3375,6 +3433,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    DISTRIBUCIÓN
@@ -3428,6 +3487,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    BARRA 100%
@@ -3477,6 +3537,7 @@ background 0.16s ease,
   background: #16a34a;
 
 }
+
 
 
 /* =========================================================
@@ -3556,6 +3617,7 @@ background 0.16s ease,
   background: #16a34a;
 
 }
+
 
 
 /* =========================================================
@@ -3665,6 +3727,7 @@ background 0.16s ease,
 }
 
 
+
 /* NEGATIVO */
 
 .reply-breakdown-item.negative
@@ -3674,6 +3737,7 @@ background 0.16s ease,
   background: #dc2626;
 
 }
+
 
 
 /* NEUTRAL */
@@ -3687,6 +3751,7 @@ background 0.16s ease,
 }
 
 
+
 /* POSITIVO */
 
 .reply-breakdown-item.positive
@@ -3696,6 +3761,7 @@ background 0.16s ease,
   background: #16a34a;
 
 }
+
 
 
 /* =========================================================
@@ -3775,6 +3841,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    CONTEXTO DEL GRÁFICO
@@ -3844,6 +3911,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    TABLET
@@ -3873,6 +3941,7 @@ background 0.16s ease,
   }
 
 }
+
 
 
 /* =========================================================
@@ -3938,6 +4007,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    MOBILE PEQUEÑO
@@ -3981,6 +4051,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    GRÁFICO PRINCIPAL — EVOLUCIÓN
@@ -4004,6 +4075,7 @@ background 0.16s ease,
   border-radius: 14px;
 
 }
+
 
 
 /* =========================================================
@@ -4041,6 +4113,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    TIMELINE
@@ -4066,6 +4139,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    DISTRIBUCIONES SECUNDARIAS
@@ -4085,6 +4159,7 @@ background 0.16s ease,
   margin-top: 14px;
 
 }
+
 
 
 /* =========================================================
@@ -4114,6 +4189,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    GRÁFICOS SECUNDARIOS
@@ -4137,6 +4213,7 @@ background 0.16s ease,
   height: 100% !important;
 
 }
+
 
 
 /* =========================================================
@@ -4188,6 +4265,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    ACCIONES
@@ -4205,6 +4283,7 @@ background 0.16s ease,
   flex-shrink: 0;
 
 }
+
 
 
 /* =========================================================
@@ -4246,6 +4325,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    EMPTY STATE
@@ -4259,6 +4339,7 @@ background 0.16s ease,
   margin-top: 12px;
 
 }
+
 
 
 /* =========================================================
@@ -4292,6 +4373,7 @@ background 0.16s ease,
   }
 
 }
+
 
 
 /* =========================================================
@@ -4345,6 +4427,7 @@ background 0.16s ease,
 }
 
 
+
 /* =========================================================
 
    MOBILE PEQUEÑO
@@ -4371,4 +4454,254 @@ background 0.16s ease,
 
   }
 
+}
+/* =========================================================
+   COMENTARIOS — ACCESO PRO / ADMIN
+========================================================= */
+
+.metric-card--locked {
+  position: relative;
+}
+
+.metric-value--muted {
+  color: var(--muted);
+}
+
+.metric-locked-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 750;
+  letter-spacing: .04em;
+}
+
+.metric-locked-value .material-icons {
+  font-size: 16px;
+}
+
+
+/* =========================================================
+   VERIFICACIÓN DE ACCESO
+========================================================= */
+
+.comments-access-loading {
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, .35);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 550;
+}
+
+.comments-access-loading .material-icons {
+  color: var(--accent);
+  font-size: 18px;
+}
+
+
+/* =========================================================
+   BLOQUEO PRO
+========================================================= */
+
+.dashboard-pro-lock {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  align-items: center;
+  gap: 28px;
+  overflow: hidden;
+  min-height: 170px;
+  padding: 24px;
+  border: 1px solid rgba(109, 40, 217, .16);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(109, 40, 217, .055),
+      rgba(109, 40, 217, .015)
+    );
+}
+
+.dashboard-pro-lock::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 180px;
+  height: 2px;
+  background:
+    linear-gradient(
+      90deg,
+      var(--accent),
+      transparent
+    );
+}
+
+.dashboard-pro-lock-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  min-width: 0;
+}
+
+.dashboard-pro-lock-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border: 1px solid rgba(109, 40, 217, .14);
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.dashboard-pro-lock-icon .material-icons {
+  font-size: 19px;
+}
+
+.dashboard-pro-lock-copy {
+  min-width: 0;
+}
+
+.dashboard-pro-lock-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.dashboard-pro-lock-kicker {
+  color: var(--accent);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.dashboard-pro-badge {
+  height: 21px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.dashboard-pro-lock-copy h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+
+.dashboard-pro-lock-copy p {
+  max-width: 650px;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+
+/* =========================================================
+   PREVIEW BLOQUEADO
+========================================================= */
+
+.dashboard-pro-preview {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .62);
+  opacity: .68;
+}
+
+.dashboard-pro-preview-row {
+  min-height: 37px;
+  display: grid;
+  grid-template-columns: 7px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.dashboard-pro-preview-row + .dashboard-pro-preview-row {
+  border-top: 1px solid var(--line);
+}
+
+.dashboard-pro-preview-row strong {
+  color: var(--text-soft);
+  font-size: 10px;
+}
+
+.preview-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.preview-dot.negative {
+  background: var(--red);
+}
+
+.preview-dot.neutral {
+  background: #94a3b8;
+}
+
+.preview-dot.positive {
+  background: var(--green);
+}
+
+
+/* =========================================================
+   RESPONSIVE — ACCESO PRO
+========================================================= */
+
+@media (max-width: 800px) {
+  .dashboard-pro-lock {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-pro-preview {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .dashboard-pro-lock {
+    min-height: 0;
+    padding: 18px;
+  }
+
+  .dashboard-pro-lock-main {
+    gap: 11px;
+  }
+
+  .dashboard-pro-lock-icon {
+    width: 35px;
+    height: 35px;
+  }
+
+  .dashboard-pro-lock-copy h3 {
+    font-size: 14px;
+  }
 }

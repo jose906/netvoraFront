@@ -16,6 +16,7 @@ import { BaseChartDirective } from 'ng2-charts';
 
 import { NETVORA_PALETTE, exportCanvasWithWhiteBg } from '../../utils/helpers';
 import { users } from '../../interfaces/users';
+import { AccountService } from '../../services/account.service';
 
 type EntItem = { entidad: string; total: number };
 type TopUserItem = { usuario: string; total: number };
@@ -476,14 +477,83 @@ readonly topicsByUserOptions: ChartOptions<'bar'> = {
 
   indiceSent: IndiceSentItem[] = [];
 
+  // =========================================================
+  // ACCESO A COMENTARIOS — PRO / ADMIN
+  // =========================================================
+
+  accessLoading = true;
+  currentRole = 'viewer';
+  subscriptionPlan = '';
+  subscriptionStatus = '';
+
+  get canViewReplies(): boolean {
+    if (this.currentRole === 'admin') {
+      return true;
+    }
+
+    return (
+      this.subscriptionStatus === 'activo' &&
+      this.subscriptionPlan === 'pro'
+    );
+  }
+
   constructor(
     private apiService: ApiService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private accountService: AccountService
   ) {}
 
   ngOnInit(): void {
+    this.loadAccess();
+
     // NO fuerces aquí; el padre a veces aún no mandó users.
     // Deja que ngOnChanges dispare cuando estén listos.
+  }
+
+  private loadAccess(): void {
+    this.accessLoading = true;
+
+    this.accountService.me().subscribe({
+      next: (res: any) => {
+        const role = String(
+          res?.user?.role || 'viewer'
+        )
+          .trim()
+          .toLowerCase();
+
+        // No usamos UserRole aquí para evitar incompatibilidades
+        // con roles backend como "usuario".
+        this.currentRole =
+          role === 'admin'
+            ? 'admin'
+            : 'viewer';
+
+        this.subscriptionPlan = String(
+          res?.subscription?.plan?.name ??
+          res?.subscription?.plan ??
+          ''
+        )
+          .trim()
+          .toLowerCase();
+
+        this.subscriptionStatus = String(
+          res?.subscription?.status ?? ''
+        )
+          .trim()
+          .toLowerCase();
+
+        this.accessLoading = false;
+        this.cdr.markForCheck();
+      },
+
+      error: () => {
+        this.currentRole = 'viewer';
+        this.subscriptionPlan = '';
+        this.subscriptionStatus = '';
+        this.accessLoading = false;
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -556,10 +626,10 @@ readonly topicsByUserOptions: ChartOptions<'bar'> = {
   private mapResponse(res: any): void {
   this.totalPosts = res?.total_posts?.total_posts ?? res?.total_posts ?? 0;
 
-  this.totalReplies = res.total_replies.total ?? 0
-    this.totalRepliesNegativo = res.total_replies.negativo ?? 0
-    this.totalRepliesNeutro = res.total_replies.neutro ?? 0
-    this.totalRepliesPositivo = res.total_replies.positivo ?? 0 
+  this.totalReplies = res?.total_replies?.total ?? 0;
+  this.totalRepliesNegativo = res?.total_replies?.negativo ?? 0;
+  this.totalRepliesNeutro = res?.total_replies?.neutro ?? 0;
+  this.totalRepliesPositivo = res?.total_replies?.positivo ?? 0;
 
   this.topLocacion = this.normalizeArray(res?.locacion).slice(0, 10);
   this.topOrganizacion = this.normalizeArray(res?.organizacion).slice(0, 10);

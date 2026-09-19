@@ -93,8 +93,10 @@
     </article>
 
 
-    <!-- COMENTARIOS -->
-    <article class="metric-card">
+    <!-- COMENTARIOS — PRO / ADMIN -->
+    <article
+      class="metric-card"
+      [class.metric-card--locked]="!accessLoading && !canViewReplies">
 
       <div class="metric-top">
         <span class="metric-label">Comentarios</span>
@@ -104,13 +106,45 @@
         </span>
       </div>
 
-      <div class="metric-value">
-        {{ totalReplies | number }}
-      </div>
+      <!-- CON ACCESO -->
+      <ng-container *ngIf="!accessLoading && canViewReplies">
 
-      <div class="metric-footer">
-        Respuestas analizadas
-      </div>
+        <div class="metric-value">
+          {{ totalReplies | number }}
+        </div>
+
+        <div class="metric-footer">
+          Respuestas analizadas
+        </div>
+
+      </ng-container>
+
+      <!-- VERIFICANDO ACCESO -->
+      <ng-container *ngIf="accessLoading">
+
+        <div class="metric-value metric-value--muted">
+          —
+        </div>
+
+        <div class="metric-footer">
+          Verificando acceso…
+        </div>
+
+      </ng-container>
+
+      <!-- BLOQUEADO -->
+      <ng-container *ngIf="!accessLoading && !canViewReplies">
+
+        <div class="metric-locked-value">
+          <span class="material-icons">lock</span>
+          PRO
+        </div>
+
+        <div class="metric-footer metric-footer--accent">
+          Disponible con NetVora Pro
+        </div>
+
+      </ng-container>
 
     </article>
 
@@ -1119,12 +1153,18 @@
 
 
   <!-- =====================================================
-     COMENTARIOS
+     COMENTARIOS — PRO / ADMIN
 ====================================================== -->
 
-<section class="section-block">
+<section class="section-block comments-section">
 
-  <div class="section-heading">
+  <!-- =====================================================
+       USUARIO CON ACCESO
+  ====================================================== -->
+
+  <ng-container *ngIf="!accessLoading && canViewReplies">
+
+<div class="section-heading">
 
     <div>
 
@@ -1443,6 +1483,96 @@
 
   </div>
 
+  </ng-container>
+
+
+  <!-- =====================================================
+       VERIFICANDO ACCESO
+  ====================================================== -->
+
+  <div
+    class="comments-access-loading"
+    *ngIf="accessLoading">
+
+    <span class="material-icons">
+      hourglass_top
+    </span>
+
+    <span>
+      Verificando acceso a comentarios…
+    </span>
+
+  </div>
+
+
+  <!-- =====================================================
+       BLOQUEADO — FREE / BÁSICO
+  ====================================================== -->
+
+  <div
+    class="dashboard-pro-lock"
+    *ngIf="!accessLoading && !canViewReplies">
+
+    <div class="dashboard-pro-lock-main">
+
+      <div class="dashboard-pro-lock-icon">
+        <span class="material-icons">lock</span>
+      </div>
+
+      <div class="dashboard-pro-lock-copy">
+
+        <div class="dashboard-pro-lock-top">
+
+          <span class="dashboard-pro-lock-kicker">
+            ANÁLISIS DE COMENTARIOS
+          </span>
+
+          <span class="dashboard-pro-badge">
+            PRO
+          </span>
+
+        </div>
+
+        <h3>
+          Descubre cómo está reaccionando la audiencia
+        </h3>
+
+        <p>
+          Analiza el sentimiento de los comentarios, identifica la reacción
+          dominante y compara respuestas positivas, neutrales y negativas.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div
+      class="dashboard-pro-preview"
+      aria-hidden="true">
+
+      <div class="dashboard-pro-preview-row">
+        <span class="preview-dot negative"></span>
+        <span>Negativos</span>
+        <strong>—</strong>
+      </div>
+
+      <div class="dashboard-pro-preview-row">
+        <span class="preview-dot neutral"></span>
+        <span>Neutrales</span>
+        <strong>—</strong>
+      </div>
+
+      <div class="dashboard-pro-preview-row">
+        <span class="preview-dot positive"></span>
+        <span>Positivos</span>
+        <strong>—</strong>
+      </div>
+
+    </div>
+
+  </div>
+
 </section>
 
 
@@ -1726,4 +1856,3 @@
 </section>
 
 </section>
-

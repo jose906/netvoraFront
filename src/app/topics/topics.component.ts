@@ -1,17 +1,52 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from '../services/api.service';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { TopicItem, TopicOption } from '../interfaces/NewsItem';
+import { ApiService } from '../services/api.service';
+
+import {
+  TopicItem,
+  TopicOption
+} from '../interfaces/NewsItem';
+
 import { users } from '../interfaces/users';
 
 import { linkifyText } from '../utils/helpers';
 import { toPng } from 'html-to-image';
-import { AuthService} from '../services/auth.service';
+
 import { AccountService } from '../services/account.service';
 import { AccountMeResponse } from '../interfaces/me';
-import { AuthzService, UserRole } from '../services/authz.service';
 
+import {
+  AuthzService,
+  UserRole
+} from '../services/authz.service';
+
+
+// =========================================================
+// PULSE
+// =========================================================
+
+interface PulseActivity {
+  date: string;
+  total: number;
+}
+
+
+interface PulseSentiment {
+  positivo: number;
+  neutro: number;
+  negativo: number;
+}
+
+
+interface PulseData {
+  total_posts: number;
+  total_sources: number;
+  total_comments: number;
+  dominant_sentiment: string;
+  sentiment: PulseSentiment;
+  activity_7d: PulseActivity[];
+}
 
 
 @Component({
@@ -20,6 +55,7 @@ import { AuthzService, UserRole } from '../services/authz.service';
   styleUrl: './topics.component.css'
 })
 export class TopicsComponent implements OnInit {
+
 
   // =========================================================
   // DATOS
@@ -42,17 +78,31 @@ export class TopicsComponent implements OnInit {
 
 
   // =========================================================
+  // PULSE
+  // =========================================================
+
+  pulse: PulseData | null = null;
+
+  cargandoPulse: boolean = false;
+  errorPulse: string = '';
+
+
+  // =========================================================
   // FILTROS
   // =========================================================
 
-  // Igual que Social:
-  // al entrar muestra inicialmente publicaciones de hoy.
+  /*
+   * Al entrar mostramos inicialmente
+   * publicaciones del día actual.
+   */
   startDate: Date | undefined = new Date();
+
   endDate: Date | undefined;
 
   searchText: string = '';
 
   users: users[] = [];
+
   selectedUsers: string[] = [];
 
 
@@ -61,20 +111,23 @@ export class TopicsComponent implements OnInit {
   // =========================================================
 
   currentPage: number = 1;
+
   pageSize: number = 10;
+
   hasMore: boolean = false;
 
+
   // =========================================================
-// ACCESO / PLAN
-// =========================================================
+  // ACCESO / PLAN
+  // =========================================================
 
-accessLoading: boolean = true;
+  accessLoading: boolean = true;
 
-currentRole: UserRole = 'viewer';
+  currentRole: UserRole = 'viewer';
 
-subscriptionPlan: string = '';
+  subscriptionPlan: string = '';
 
-subscriptionStatus: string = '';
+  subscriptionStatus: string = '';
 
 
   // =========================================================
@@ -90,16 +143,22 @@ subscriptionStatus: string = '';
     }
   > = {};
 
-  loadingReplies: Record<string, boolean> = {};
+
+  loadingReplies: Record<
+    string,
+    boolean
+  > = {};
 
 
   // =========================================================
   // GUARDADOS
   // =========================================================
 
-  guardados = new Set<string>();
+  guardados =
+    new Set<string>();
 
-  savingIds = new Set<string>();
+  savingIds =
+    new Set<string>();
 
   errorGuardar: string = '';
 
@@ -108,13 +167,13 @@ subscriptionStatus: string = '';
   // CONSTRUCTOR
   // =========================================================
 
- constructor(
-  private apiService: ApiService,
-  private router: Router,
-  private route: ActivatedRoute,
-  private authzService: AuthzService,
-  private accountService: AccountService
-) {}
+  constructor(
+    private apiService: ApiService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private authzService: AuthzService,
+    private accountService: AccountService
+  ) {}
 
 
   // =========================================================
@@ -123,104 +182,138 @@ subscriptionStatus: string = '';
 
   ngOnInit(): void {
 
-    /*
-     * 1.
-     * Primero intentamos obtener el tópico enviado
-     * desde Principal mediante history.state.
-     */
+    const navigationState =
+      history.state;
 
-    const navigationState = history.state;
 
-    if (navigationState?.topic_id) {
+    // =======================================================
+    // TÓPICO DESDE HISTORY.STATE
+    // =======================================================
 
-      this.topicId = Number(
-        navigationState.topic_id
-      );
+    if (
+      navigationState?.topic_id
+    ) {
+
+      this.topicId =
+        Number(
+          navigationState.topic_id
+        );
 
     }
 
-    if (navigationState?.topic_name) {
+
+    if (
+      navigationState?.topic_name
+    ) {
 
       this.topicName =
-        navigationState.topic_name;
+        String(
+          navigationState.topic_name
+        );
 
     }
 
-    // Recuperar filtros enviados desde el dashboard.
-    // Esto mantiene exactamente el mismo universo de análisis
-    // al entrar desde un tópico emergente.
-    if (navigationState?.startDate) {
+
+    // =======================================================
+    // FILTROS DESDE DASHBOARD
+    // =======================================================
+
+    if (
+      navigationState?.startDate
+    ) {
+
       this.startDate =
         this.parseNavigationDate(
           navigationState.startDate
         );
+
     }
 
-    if (navigationState?.endDate) {
+
+    if (
+      navigationState?.endDate
+    ) {
+
       this.endDate =
         this.parseNavigationDate(
           navigationState.endDate
         );
+
     }
+
 
     if (
       Array.isArray(
-        navigationState?.selectedUsers
+        navigationState
+          ?.selectedUsers
       )
     ) {
+
       this.selectedUsers =
-        navigationState.selectedUsers
+        navigationState
+          .selectedUsers
           .map(
             (id: unknown) =>
               String(id)
           )
           .filter(Boolean);
+
     }
+
 
     if (
-      typeof navigationState?.searchText ===
+      typeof navigationState
+        ?.searchText ===
       'string'
     ) {
+
       this.searchText =
-        navigationState.searchText;
+        navigationState
+          .searchText;
+
     }
 
 
-    /*
-     * 2.
-     * Si recargamos la página, history.state puede
-     * no contener el tópico.
-     *
-     * Entonces lo obtenemos desde:
-     *
-     * /topics/53
-     */
+    // =======================================================
+    // TÓPICO DESDE URL
+    // =======================================================
 
     if (!this.topicId) {
 
       const routeId =
-        this.route.snapshot.paramMap.get(
-          'topic_id'
-        );
+        this.route
+          .snapshot
+          .paramMap
+          .get(
+            'topic_id'
+          );
+
 
       if (routeId) {
 
-        this.topicId =
+        const parsed =
           Number(routeId);
+
+
+        if (
+          Number.isFinite(parsed) &&
+          parsed > 0
+        ) {
+
+          this.topicId =
+            parsed;
+
+        }
 
       }
 
     }
 
 
-    /*
-     * 3.
-     * Cargamos:
-     *
-     * - usuarios
-     * - lista de tópicos
-     * - guardados
-     */
+    // =======================================================
+    // CARGAS INICIALES
+    // =======================================================
+
     this.loadAccess();
 
     this.loadUsers();
@@ -231,196 +324,169 @@ subscriptionStatus: string = '';
 
   }
 
+
   // =========================================================
-// ACCESO / PLAN
-// =========================================================
+  // ACCESO / PLAN
+  // =========================================================
 
-private async loadAccess(): Promise<void> {
+  private async loadAccess(): Promise<void> {
 
-  this.accessLoading = true;
-
-  try {
-
-    if (!this.authzService.isLoaded()) {
-
-      await this.authzService.refreshMe();
-
-    }
-
-    this.currentRole =
-      this.authzService.role;
-
-  }
-
-  catch (error) {
-
-    console.error(
-      'Error cargando rol:',
-      error
-    );
-
-    this.currentRole = 'viewer';
-
-  }
+    this.accessLoading = true;
 
 
-  this.accountService
-    .me()
-    .subscribe({
+    try {
 
-      next: (
-        res: AccountMeResponse
-      ) => {
+      if (
+        !this.authzService
+          .isLoaded()
+      ) {
 
-        // =================================================
-        // ROL
-        // =================================================
-
-        if (res?.user?.role) {
-
-          const role =
-            res.user.role
-              .toString()
-              .trim()
-              .toLowerCase();
-
-
-          if (
-            role === 'admin' ||
-            role === 'analista' ||
-            role === 'viewer'
-          ) {
-
-            this.currentRole =
-              role as UserRole;
-
-          }
-
-        }
-
-
-        // =================================================
-        // PLAN
-        // =================================================
-
-        const plan =
-          res?.subscription?.plan;
-
-
-        this.subscriptionPlan =
-          plan?.name
-            ?.toString()
-            .trim() || '';
-
-
-        // =================================================
-        // ESTADO
-        // =================================================
-
-        this.subscriptionStatus =
-          res?.subscription?.status
-            ?.toString()
-            .trim()
-            .toLowerCase() || '';
-
-
-        this.accessLoading = false;
-
-
-        // =================================================
-        // SI ES PRO / ADMIN Y YA TENEMOS PUBLICACIONES
-        // CARGAMOS LOS REPLIES
-        // =================================================
-
-        if (
-          this.canViewReplies &&
-          this.datos.length > 0
-        ) {
-
-          this.cargarReplies();
-
-        }
-
-      },
-
-
-      error: (error) => {
-
-        console.error(
-          'Error cargando plan:',
-          error
-        );
-
-        this.subscriptionPlan = '';
-
-        this.subscriptionStatus = '';
-
-        this.accessLoading = false;
-
-        this.repliesByTweet = {};
+        await this.authzService
+          .refreshMe();
 
       }
 
-    });
 
-}
+      this.currentRole =
+        this.authzService.role;
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'Error cargando rol:',
+        error
+      );
 
 
-// =========================================================
-// PLAN NORMALIZADO
-// =========================================================
+      this.currentRole =
+        'viewer';
 
-get normalizedPlan(): string {
+    }
 
-  return (
-    this.subscriptionPlan || ''
-  )
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(
-      /[\u0300-\u036f]/g,
+
+    this.accountService
+      .me()
+      .subscribe({
+
+        next: (
+          res: AccountMeResponse
+        ) => {
+
+
+          // ===============================================
+          // ROL
+          // ===============================================
+
+          if (
+            res?.user?.role
+          ) {
+
+            const role =
+              res.user.role
+                .toString()
+                .trim()
+                .toLowerCase();
+
+
+            if (
+              role === 'admin' ||
+              role === 'analista' ||
+              role === 'viewer'
+            ) {
+
+              this.currentRole =
+                role as UserRole;
+
+            }
+
+          }
+
+
+          // ===============================================
+          // PLAN
+          // ===============================================
+
+          const plan =
+            res?.subscription?.plan;
+
+
+          this.subscriptionPlan =
+            plan?.name
+              ?.toString()
+              .trim() ||
+            '';
+
+
+          // ===============================================
+          // ESTADO
+          // ===============================================
+
+          this.subscriptionStatus =
+            res?.subscription?.status
+              ?.toString()
+              .trim()
+              .toLowerCase() ||
+            '';
+
+
+          this.accessLoading =
+            false;
+
+
+          // ===============================================
+          // CARGAR REPLIES SI YA HAY POSTS
+          // ===============================================
+
+          if (
+            this.canViewReplies &&
+            this.datos.length > 0
+          ) {
+
+            this.cargarReplies();
+
+          }
+
+        },
+
+
+        error: (error) => {
+
+          console.error(
+            'Error cargando plan:',
+            error
+          );
+
+
+          this.subscriptionPlan =
+            '';
+
+          this.subscriptionStatus =
+            '';
+
+          this.accessLoading =
+            false;
+
+          this.repliesByTweet =
+            {};
+
+        }
+
+      });
+
+  }
+
+
+  // =========================================================
+  // PLAN NORMALIZADO
+  // =========================================================
+
+  get normalizedPlan(): string {
+
+    return (
+      this.subscriptionPlan ||
       ''
-    );
-
-}
-
-
-// =========================================================
-// ADMIN
-// =========================================================
-
-get isAdmin(): boolean {
-
-  return (
-    this.currentRole === 'admin'
-  );
-
-}
-
-
-// =========================================================
-// PRO
-// =========================================================
-
-get isPro(): boolean {
-
-  return (
-    this.normalizedPlan === 'pro'
-  );
-
-}
-
-
-// =========================================================
-// SUSCRIPCIÓN ACTIVA
-// =========================================================
-
-get subscriptionIsActive(): boolean {
-
-  const status =
-    (
-      this.subscriptionStatus || ''
     )
       .trim()
       .toLowerCase()
@@ -430,44 +496,94 @@ get subscriptionIsActive(): boolean {
         ''
       );
 
-
-  return (
-    status === 'activo' ||
-    status === 'activa' ||
-    status === 'active'
-  );
-
-}
+  }
 
 
-// =========================================================
-// PERMISO PARA VER REPLIES
-// =========================================================
+  // =========================================================
+  // ADMIN
+  // =========================================================
 
-get canViewReplies(): boolean {
+  get isAdmin(): boolean {
 
-  /*
-   * Admin tiene acceso total.
-   */
-
-  if (this.isAdmin) {
-
-    return true;
+    return (
+      this.currentRole ===
+      'admin'
+    );
 
   }
 
 
-  /*
-   * Usuarios normales:
-   * Pro + suscripción activa.
-   */
+  // =========================================================
+  // PRO
+  // =========================================================
 
-  return (
-    this.isPro &&
-    this.subscriptionIsActive
-  );
+  get isPro(): boolean {
 
-}
+    return (
+      this.normalizedPlan ===
+      'pro'
+    );
+
+  }
+
+
+  // =========================================================
+  // SUSCRIPCIÓN ACTIVA
+  // =========================================================
+
+  get subscriptionIsActive(): boolean {
+
+    const status =
+      (
+        this.subscriptionStatus ||
+        ''
+      )
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(
+          /[\u0300-\u036f]/g,
+          ''
+        );
+
+
+    return (
+      status === 'activo' ||
+      status === 'activa' ||
+      status === 'active'
+    );
+
+  }
+
+
+  // =========================================================
+  // PERMISO REPLIES
+  // =========================================================
+
+  get canViewReplies(): boolean {
+
+    /*
+     * Admin siempre puede ver.
+     */
+    if (
+      this.isAdmin
+    ) {
+
+      return true;
+
+    }
+
+
+    /*
+     * Usuario normal:
+     * Pro + suscripción activa.
+     */
+    return (
+      this.isPro &&
+      this.subscriptionIsActive
+    );
+
+  }
 
 
   // =========================================================
@@ -477,7 +593,9 @@ get canViewReplies(): boolean {
   loadUsers(): void {
 
     this.apiService
-      .getUsers2('Medio')
+      .getUsers2(
+        'Medio'
+      )
       .subscribe({
 
         next: (data) => {
@@ -488,16 +606,9 @@ get canViewReplies(): boolean {
               : [];
 
 
-          /*
-           * Si venimos desde Principal y ya tenemos
-           * topicId, hacemos la primera carga.
-           *
-           * Igual que Social:
-           * - fecha de hoy
-           * - todos los medios
-           */
-
-          if (this.topicId) {
+          if (
+            this.topicId
+          ) {
 
             this.load(
               this.startDate,
@@ -506,6 +617,9 @@ get canViewReplies(): boolean {
               1,
               this.searchText
             );
+
+
+            this.loadPulse();
 
           }
 
@@ -519,15 +633,19 @@ get canViewReplies(): boolean {
             error
           );
 
-          this.users = [];
+
+          this.users =
+            [];
 
 
           /*
-           * Aunque fallen los usuarios,
-           * intentamos cargar el tópico.
+           * Aunque falle la carga
+           * de medios, intentamos
+           * cargar el tópico.
            */
-
-          if (this.topicId) {
+          if (
+            this.topicId
+          ) {
 
             this.load(
               this.startDate,
@@ -536,6 +654,9 @@ get canViewReplies(): boolean {
               1,
               this.searchText
             );
+
+
+            this.loadPulse();
 
           }
 
@@ -556,7 +677,9 @@ get canViewReplies(): boolean {
       .getTopics()
       .subscribe({
 
-        next: (data: TopicOption[]) => {
+        next: (
+          data: TopicOption[]
+        ) => {
 
           this.topics =
             Array.isArray(data)
@@ -565,14 +688,9 @@ get canViewReplies(): boolean {
 
 
           /*
-           * Si tenemos topicId pero no topicName
-           * buscamos el nombre en la lista.
-           *
-           * Esto ocurre, por ejemplo, al recargar:
-           *
-           * /topics/53
+           * Si recargamos /topics/:id,
+           * buscamos el nombre.
            */
-
           if (
             this.topicId &&
             !this.topicName
@@ -581,9 +699,14 @@ get canViewReplies(): boolean {
             const selected =
               this.topics.find(
                 topic =>
-                  Number(topic.topic_id) ===
-                  Number(this.topicId)
+                  Number(
+                    topic.topic_id
+                  ) ===
+                  Number(
+                    this.topicId
+                  )
               );
+
 
             if (selected) {
 
@@ -604,7 +727,9 @@ get canViewReplies(): boolean {
             error
           );
 
-          this.topics = [];
+
+          this.topics =
+            [];
 
         }
 
@@ -619,38 +744,50 @@ get canViewReplies(): boolean {
 
   cambiarTopico(): void {
 
-    if (!this.topicId) {
+    if (
+      !this.topicId
+    ) {
+
       return;
+
     }
 
 
     const selected =
       this.topics.find(
         topic =>
-          Number(topic.topic_id) ===
-          Number(this.topicId)
+          Number(
+            topic.topic_id
+          ) ===
+          Number(
+            this.topicId
+          )
       );
 
 
     this.topicName =
-      selected?.topic_name ?? '';
+      selected?.topic_name ??
+      '';
+
+
+    this.currentPage =
+      1;
 
 
     /*
-     * Cada cambio de tópico vuelve
-     * a la página 1.
+     * Limpiamos el Pulse anterior
+     * mientras se carga el nuevo.
      */
+    this.pulse =
+      null;
 
-    this.currentPage = 1;
+    this.errorPulse =
+      '';
 
 
-    /*
-     * Actualizamos la URL.
-     *
-     * Ejemplo:
-     * /topics/53
-     * /topics/175
-     */
+    // =======================================================
+    // ACTUALIZAR URL
+    // =======================================================
 
     this.router.navigate(
       [
@@ -658,28 +795,47 @@ get canViewReplies(): boolean {
         this.topicId
       ],
       {
+
         replaceUrl: true,
+
         state: {
-          topic_id: this.topicId,
-          topic_name: this.topicName,
-          startDate: this.startDate
-            ? this.toYMD(this.startDate)
-            : null,
-          endDate: this.endDate
-            ? this.toYMD(this.endDate)
-            : null,
+
+          topic_id:
+            this.topicId,
+
+          topic_name:
+            this.topicName,
+
+          startDate:
+            this.startDate
+              ? this.toYMD(
+                  this.startDate
+                )
+              : null,
+
+          endDate:
+            this.endDate
+              ? this.toYMD(
+                  this.endDate
+                )
+              : null,
+
           selectedUsers: [
             ...this.selectedUsers
           ],
-          searchText: this.searchText
+
+          searchText:
+            this.searchText
+
         }
+
       }
     );
 
 
-    /*
-     * Conservamos los filtros actuales.
-     */
+    // =======================================================
+    // RECARGAR
+    // =======================================================
 
     this.load(
       this.startDate,
@@ -688,6 +844,9 @@ get canViewReplies(): boolean {
       1,
       this.searchText
     );
+
+
+    this.loadPulse();
 
   }
 
@@ -698,7 +857,9 @@ get canViewReplies(): boolean {
 
   filtrar(): void {
 
-    if (!this.topicId) {
+    if (
+      !this.topicId
+    ) {
 
       this.error =
         'Selecciona un tópico.';
@@ -708,7 +869,8 @@ get canViewReplies(): boolean {
     }
 
 
-    this.currentPage = 1;
+    this.currentPage =
+      1;
 
 
     this.load(
@@ -718,6 +880,9 @@ get canViewReplies(): boolean {
       1,
       this.searchText
     );
+
+
+    this.loadPulse();
 
   }
 
@@ -729,25 +894,30 @@ get canViewReplies(): boolean {
   resetFiltros(): void {
 
     /*
-     * Limpiamos los filtros.
-     *
-     * IMPORTANTE:
-     * NO limpiamos topicId.
-     * NO limpiamos topicName.
+     * Conservamos:
+     * topicId
+     * topicName
      */
 
-    this.startDate = undefined;
+    this.startDate =
+      undefined;
 
-    this.endDate = undefined;
+    this.endDate =
+      undefined;
 
-    this.selectedUsers = [];
+    this.selectedUsers =
+      [];
 
-    this.searchText = '';
+    this.searchText =
+      '';
 
-    this.currentPage = 1;
+    this.currentPage =
+      1;
 
 
-    if (this.topicId) {
+    if (
+      this.topicId
+    ) {
 
       this.load(
         undefined,
@@ -757,7 +927,183 @@ get canViewReplies(): boolean {
         ''
       );
 
+
+      this.loadPulse();
+
     }
+
+  }
+
+
+  // =========================================================
+  // PULSE DEL TÓPICO
+  // =========================================================
+
+  loadPulse(): void {
+
+    if (
+      !this.topicId
+    ) {
+
+      this.pulse =
+        null;
+
+      return;
+
+    }
+
+
+    this.cargandoPulse =
+      true;
+
+    this.errorPulse =
+      '';
+
+
+    const body: {
+
+      topicId: number;
+
+      startDate?: string;
+
+      endDate?: string;
+
+      users?: string[];
+
+      searchText?: string;
+
+    } = {
+
+      topicId:
+        this.topicId
+
+    };
+
+
+    // =======================================================
+    // FECHA INICIAL
+    // =======================================================
+
+    if (
+      this.startDate
+    ) {
+
+      body.startDate =
+        this.toYMD(
+          this.startDate
+        );
+
+    }
+
+
+    // =======================================================
+    // FECHA FINAL
+    // =======================================================
+
+    if (
+      this.endDate
+    ) {
+
+      body.endDate =
+        this.toYMD(
+          this.endDate
+        );
+
+    }
+
+
+    // =======================================================
+    // MEDIOS
+    // =======================================================
+
+    if (
+      this.selectedUsers &&
+      this.selectedUsers.length > 0
+    ) {
+
+      body.users =
+        this.selectedUsers
+          .map(String);
+
+    }
+
+    else {
+
+      body.users =
+        this.users.map(
+          user =>
+            String(
+              user.idTweetUser
+            )
+        );
+
+    }
+
+
+    // =======================================================
+    // TEXTO
+    // =======================================================
+
+    const text =
+      this.searchText
+        .trim();
+
+
+    if (text) {
+
+      body.searchText =
+        text;
+
+    }
+
+
+    // =======================================================
+    // API
+    // =======================================================
+
+    this.apiService
+      .getTopicPulse(
+        body
+      )
+      .subscribe({
+
+        next: (
+          response: any
+        ) => {
+
+          this.pulse =
+            response?.pulse ??
+            null;
+
+
+          this.cargandoPulse =
+            false;
+
+        },
+
+
+        error: (error) => {
+
+          console.error(
+            'Error cargando Pulse del tópico:',
+            error
+          );
+
+
+          this.errorPulse =
+            'No se pudo cargar el pulso del tópico.';
+
+
+          this.pulse =
+            null;
+
+
+          this.cargandoPulse =
+            false;
+
+        }
+
+      });
 
   }
 
@@ -774,7 +1120,9 @@ get canViewReplies(): boolean {
     searchText: string = ''
   ): void {
 
-    if (!this.topicId) {
+    if (
+      !this.topicId
+    ) {
 
       this.error =
         'Selecciona un tópico.';
@@ -784,20 +1132,18 @@ get canViewReplies(): boolean {
     }
 
 
-    this.cargando = true;
+    this.cargando =
+      true;
 
-    this.error = '';
+    this.error =
+      '';
 
-    this.datos = [];
+    this.datos =
+      [];
 
-    this.repliesByTweet = {};
+    this.repliesByTweet =
+      {};
 
-
-    /*
-     * BODY
-     *
-     * El backend debe recibir topic_id.
-     */
 
     const body: {
 
@@ -817,11 +1163,14 @@ get canViewReplies(): boolean {
 
     } = {
 
-      topicId: this.topicId,
+      topicId:
+        this.topicId,
 
-      page: pageToLoad,
+      page:
+        pageToLoad,
 
-      limit: this.pageSize
+      limit:
+        this.pageSize
 
     };
 
@@ -830,20 +1179,30 @@ get canViewReplies(): boolean {
     // FECHAS
     // =======================================================
 
-    if (startDate) {
+    if (
+      startDate
+    ) {
 
       body.startDate =
-        this.toYMD(startDate);
+        this.toYMD(
+          startDate
+        );
 
     }
 
 
-    if (endDate) {
+    if (
+      endDate
+    ) {
 
       body.endDate =
-        this.toYMD(endDate);
+        this.toYMD(
+          endDate
+        );
 
     }
+
+
     // =======================================================
     // USUARIOS
     // =======================================================
@@ -853,16 +1212,21 @@ get canViewReplies(): boolean {
       selectedUsers.length > 0
     ) {
 
-      body.users = selectedUsers
+      body.users =
+        selectedUsers
+          .map(String);
 
     }
 
     else {
 
-     body.users =
-  this.users.map(
-    user => String(user.idTweetUser)
-  );
+      body.users =
+        this.users.map(
+          user =>
+            String(
+              user.idTweetUser
+            )
+        );
 
     }
 
@@ -872,7 +1236,9 @@ get canViewReplies(): boolean {
     // =======================================================
 
     const text =
-      searchText?.trim();
+      searchText
+        ?.trim();
+
 
     if (text) {
 
@@ -887,16 +1253,27 @@ get canViewReplies(): boolean {
     // =======================================================
 
     this.apiService
-      .getTopic(body)
+      .getTopic(
+        body
+      )
       .subscribe({
 
-        next: (data: any) => {
-          console.log('Data received from API:', data);
+        next: (
+          data: any
+        ) => {
 
 
-          if (Array.isArray(data)) {
-            
-            this.datos = data;
+          // ===============================================
+          // NORMALIZAR RESPUESTA
+          // ===============================================
+
+          if (
+            Array.isArray(data)
+          ) {
+
+            this.datos =
+              data;
+
 
             this.currentPage =
               pageToLoad;
@@ -911,6 +1288,7 @@ get canViewReplies(): boolean {
               data?.data ??
               [];
 
+
             this.currentPage =
               Number(
                 data?.page ??
@@ -920,9 +1298,9 @@ get canViewReplies(): boolean {
           }
 
 
-          // =================================================
+          // ===============================================
           // NOMBRE DEL TÓPICO
-          // =================================================
+          // ===============================================
 
           if (
             this.datos.length > 0 &&
@@ -936,37 +1314,37 @@ get canViewReplies(): boolean {
           }
 
 
-          // =================================================
+          // ===============================================
           // PAGINACIÓN
-          // =================================================
-
-          /*
-           * Si llegaron exactamente 10,
-           * asumimos que puede existir
-           * una página siguiente.
-           */
+          // ===============================================
 
           this.hasMore =
             this.datos.length ===
             this.pageSize;
 
 
-          // =================================================
+          // ===============================================
           // REPLIES
-          // =================================================
-          if (this.canViewReplies) {
+          // ===============================================
+
+          if (
+            this.canViewReplies
+          ) {
 
             this.cargarReplies();
 
           }
+
           else {
 
-            this.repliesByTweet = {};
+            this.repliesByTweet =
+              {};
 
           }
 
 
-this.cargando = false;
+          this.cargando =
+            false;
 
         },
 
@@ -983,13 +1361,17 @@ this.cargando = false;
             'No se pudieron cargar las publicaciones.';
 
 
-          this.datos = [];
+          this.datos =
+            [];
 
-          this.hasMore = false;
+          this.hasMore =
+            false;
 
-          this.repliesByTweet = {};
+          this.repliesByTweet =
+            {};
 
-          this.cargando = false;
+          this.cargando =
+            false;
 
         }
 
@@ -999,180 +1381,587 @@ this.cargando = false;
 
 
   // =========================================================
-// REPLIES
-// =========================================================
+  // REPLIES
+  // =========================================================
 
-cargarReplies(): void {
+  cargarReplies(): void {
 
-  // =======================================================
-  // CONTROL DE PLAN
-  // =======================================================
+    // =======================================================
+    // CONTROL DE PLAN
+    // =======================================================
 
-  if (!this.canViewReplies) {
+    if (
+      !this.canViewReplies
+    ) {
 
-    this.repliesByTweet = {};
+      this.repliesByTweet =
+        {};
 
-    return;
+      return;
 
-  }
-
-
-  // =======================================================
-  // IDS
-  // =======================================================
-
-  const tweetIds =
-    this.datos.map(
-      item =>
-        String(item.tweetid)
-    );
+    }
 
 
-  if (
-    tweetIds.length === 0
-  ) {
+    // =======================================================
+    // IDS
+    // =======================================================
 
-    this.repliesByTweet = {};
-
-    return;
-
-  }
-
-
-  // =======================================================
-  // API
-  // =======================================================
-
-  this.apiService
-    .getRepliesSummaryMany(
-      tweetIds
-    )
-    .subscribe({
-
-      next: (
-        rows: any[]
-      ) => {
-
-        const map: Record<
-          string,
-          {
-            negativo: number;
-            neutro: number;
-            positivo: number;
-          }
-        > = {};
+    const tweetIds =
+      this.datos.map(
+        item =>
+          String(
+            item.tweetid
+          )
+      );
 
 
-        for (
-          const row of
-          rows || []
-        ) {
+    if (
+      tweetIds.length === 0
+    ) {
 
-          const key =
-            String(
-              row.tweetid
-            );
+      this.repliesByTweet =
+        {};
 
+      return;
 
-          if (!map[key]) {
-
-            map[key] = {
-
-              negativo: 0,
-
-              neutro: 0,
-
-              positivo: 0
-
-            };
-
-          }
+    }
 
 
-          const sentimiento =
-            String(
-              row.sentimiento ?? ''
-            )
-              .trim()
-              .toLowerCase();
+    // =======================================================
+    // API
+    // =======================================================
+
+    this.apiService
+      .getRepliesSummaryMany(
+        tweetIds
+      )
+      .subscribe({
+
+        next: (
+          rows: any[]
+        ) => {
+
+          const map: Record<
+            string,
+            {
+              negativo: number;
+              neutro: number;
+              positivo: number;
+            }
+          > = {};
 
 
-          const total =
-            Number(
-              row.total
-            ) || 0;
-
-
-          if (
-            sentimiento ===
-            'negativo'
+          for (
+            const row of
+            rows || []
           ) {
 
-            map[key].negativo =
-              total;
+            const key =
+              String(
+                row.tweetid
+              );
+
+
+            if (
+              !map[key]
+            ) {
+
+              map[key] = {
+
+                negativo: 0,
+
+                neutro: 0,
+
+                positivo: 0
+
+              };
+
+            }
+
+
+            const sentimiento =
+              String(
+                row.sentimiento ??
+                ''
+              )
+                .trim()
+                .toLowerCase();
+
+
+            const total =
+              Number(
+                row.total
+              ) ||
+              0;
+
+
+            if (
+              sentimiento ===
+              'negativo'
+            ) {
+
+              map[key].negativo =
+                total;
+
+            }
+
+
+            else if (
+              sentimiento ===
+              'neutro'
+            ) {
+
+              map[key].neutro =
+                total;
+
+            }
+
+
+            else if (
+              sentimiento ===
+              'positivo'
+            ) {
+
+              map[key].positivo =
+                total;
+
+            }
 
           }
 
 
-          else if (
-            sentimiento ===
-            'neutro'
-          ) {
+          this.repliesByTweet =
+            map;
 
-            map[key].neutro =
-              total;
-
-          }
+        },
 
 
-          else if (
-            sentimiento ===
-            'positivo'
-          ) {
+        error: (error) => {
 
-            map[key].positivo =
-              total;
+          console.error(
+            'Error cargando replies:',
+            error
+          );
 
-          }
+
+          this.repliesByTweet =
+            {};
 
         }
 
+      });
 
-        this.repliesByTweet =
-          map;
-
-      },
+  }
 
 
-      error: (error) => {
-
-        console.error(
-          'Error cargando replies:',
-          error
-        );
-
-        this.repliesByTweet = {};
-
-      }
-
-    });
-
-}
-
+  // =========================================================
+  // CONTADORES DE REPLIES
+  // =========================================================
 
   getRepliesCounts(
     tweetid: string | number
-  ) {
+  ): {
+    negativo: number;
+    neutro: number;
+    positivo: number;
+  } {
 
     return (
+
       this.repliesByTweet[
-        String(tweetid)
+        String(
+          tweetid
+        )
       ] ??
+
       {
         negativo: 0,
         neutro: 0,
         positivo: 0
       }
+
+    );
+
+  }
+
+
+  // =========================================================
+  // PULSE - PUBLICACIONES
+  // =========================================================
+
+  get totalPublicaciones(): number {
+
+    return (
+      this.pulse?.total_posts ??
+      0
+    );
+
+  }
+
+
+  // =========================================================
+  // PULSE - FUENTES
+  // =========================================================
+
+  get totalFuentes(): number {
+
+    return (
+      this.pulse?.total_sources ??
+      0
+    );
+
+  }
+
+
+  // =========================================================
+  // PULSE - COMENTARIOS
+  // =========================================================
+
+  get totalComentarios(): number {
+
+    return (
+      this.pulse?.total_comments ??
+      0
+    );
+
+  }
+
+
+  // =========================================================
+  // PULSE - POSITIVOS
+  // =========================================================
+
+  get positivos(): number {
+
+    return (
+      this.pulse
+        ?.sentiment
+        ?.positivo ??
+      0
+    );
+
+  }
+
+
+  // =========================================================
+  // PULSE - NEUTROS
+  // =========================================================
+
+  get neutros(): number {
+
+    return (
+      this.pulse
+        ?.sentiment
+        ?.neutro ??
+      0
+    );
+
+  }
+
+
+  // =========================================================
+  // PULSE - NEGATIVOS
+  // =========================================================
+
+  get negativos(): number {
+
+    return (
+      this.pulse
+        ?.sentiment
+        ?.negativo ??
+      0
+    );
+
+  }
+
+
+  // =========================================================
+  // TOTAL SENTIMIENTOS
+  // =========================================================
+
+  get totalSentimientos(): number {
+
+    return (
+      this.positivos +
+      this.neutros +
+      this.negativos
+    );
+
+  }
+
+
+  // =========================================================
+  // % POSITIVO
+  // =========================================================
+
+  get porcentajePositivo(): number {
+
+    if (
+      !this.totalSentimientos
+    ) {
+
+      return 0;
+
+    }
+
+
+    return Math.round(
+      (
+        this.positivos /
+        this.totalSentimientos
+      ) *
+      100
+    );
+
+  }
+
+
+  // =========================================================
+  // % NEUTRO
+  // =========================================================
+
+  get porcentajeNeutro(): number {
+
+    if (
+      !this.totalSentimientos
+    ) {
+
+      return 0;
+
+    }
+
+
+    return Math.round(
+      (
+        this.neutros /
+        this.totalSentimientos
+      ) *
+      100
+    );
+
+  }
+
+
+  // =========================================================
+  // % NEGATIVO
+  // =========================================================
+
+  get porcentajeNegativo(): number {
+
+    if (
+      !this.totalSentimientos
+    ) {
+
+      return 0;
+
+    }
+
+
+    return Math.round(
+      (
+        this.negativos /
+        this.totalSentimientos
+      ) *
+      100
+    );
+
+  }
+
+
+  // =========================================================
+  // SENTIMIENTO DOMINANTE
+  // =========================================================
+
+  get sentimientoDominante(): string {
+
+    const value =
+      this.pulse
+        ?.dominant_sentiment;
+
+
+    if (
+      !value ||
+      value
+        .toLowerCase() ===
+        'sin datos'
+    ) {
+
+      return 'Sin datos';
+
+    }
+
+
+    return (
+      value
+        .charAt(0)
+        .toUpperCase() +
+      value.slice(1)
+    );
+
+  }
+
+
+  // =========================================================
+  // ACTIVIDAD PULSE
+  // =========================================================
+
+  get pulseActivity(): PulseActivity[] {
+
+    return (
+      this.pulse
+        ?.activity_7d ??
+      []
+    );
+
+  }
+
+
+  // =========================================================
+  // MÁXIMO PULSE
+  // =========================================================
+
+  get pulseMax(): number {
+
+    if (
+      !this.pulseActivity.length
+    ) {
+
+      return 0;
+
+    }
+
+
+    return Math.max(
+      ...this.pulseActivity.map(
+        item =>
+          Number(
+            item.total
+          ) ||
+          0
+      )
+    );
+
+  }
+
+
+  // =========================================================
+  // TOTAL 7 DÍAS
+  // =========================================================
+
+  get pulseTotal7d(): number {
+
+    return this.pulseActivity
+      .reduce(
+        (
+          total,
+          item
+        ) =>
+          total +
+          (
+            Number(
+              item.total
+            ) ||
+            0
+          ),
+        0
+      );
+
+  }
+
+
+  // =========================================================
+  // PROMEDIO 7 DÍAS
+  // =========================================================
+
+  get pulseAverage7d(): number {
+
+    if (
+      !this.pulseActivity.length
+    ) {
+
+      return 0;
+
+    }
+
+
+    return Math.round(
+      this.pulseTotal7d /
+      this.pulseActivity.length
+    );
+
+  }
+
+
+  // =========================================================
+  // ALTURA DE BARRA
+  // =========================================================
+
+  getPulseHeight(
+    total: number
+  ): number {
+
+    const value =
+      Number(total) ||
+      0;
+
+
+    if (
+      value <= 0 ||
+      this.pulseMax <= 0
+    ) {
+
+      return 0;
+
+    }
+
+
+    return Math.max(
+      8,
+      Math.round(
+        (
+          value /
+          this.pulseMax
+        ) *
+        100
+      )
+    );
+
+  }
+
+
+  // =========================================================
+  // FECHA DEL PULSE
+  // =========================================================
+
+  formatPulseDate(
+    value: string
+  ): string {
+
+    if (
+      !value
+    ) {
+
+      return '';
+
+    }
+
+
+    const parts =
+      String(value)
+        .split('-');
+
+
+    if (
+      parts.length !== 3
+    ) {
+
+      return value;
+
+    }
+
+
+    return (
+      `${parts[2]}/${parts[1]}`
     );
 
   }
@@ -1184,19 +1973,26 @@ cargarReplies(): void {
 
   loadNextPage(): void {
 
-    if (!this.hasMore) {
+    if (
+      !this.hasMore ||
+      this.cargando
+    ) {
+
       return;
+
     }
 
 
-    this.currentPage++;
+    const nextPage =
+      this.currentPage +
+      1;
 
 
     this.load(
       this.startDate,
       this.endDate,
       this.selectedUsers,
-      this.currentPage,
+      nextPage,
       this.searchText
     );
 
@@ -1210,20 +2006,25 @@ cargarReplies(): void {
   loadPreviousPage(): void {
 
     if (
-      this.currentPage <= 1
+      this.currentPage <= 1 ||
+      this.cargando
     ) {
+
       return;
+
     }
 
 
-    this.currentPage--;
+    const previousPage =
+      this.currentPage -
+      1;
 
 
     this.load(
       this.startDate,
       this.endDate,
       this.selectedUsers,
-      this.currentPage,
+      previousPage,
       this.searchText
     );
 
@@ -1239,11 +2040,13 @@ cargarReplies(): void {
   ): void {
 
     const id =
-      item.tweetid.toString();
+      item.tweetid
+        .toString();
 
 
     if (
-      this.savingIds.has(id)
+      this.savingIds
+        .has(id)
     ) {
 
       return;
@@ -1251,28 +2054,35 @@ cargarReplies(): void {
     }
 
 
-    this.errorGuardar = '';
+    this.errorGuardar =
+      '';
 
-    this.savingIds.add(id);
+    this.savingIds
+      .add(id);
 
 
     // =======================================================
-    // BORRAR GUARDADO
+    // BORRAR
     // =======================================================
 
     if (
-      this.guardados.has(id)
+      this.guardados
+        .has(id)
     ) {
 
       this.apiService
-        .borrarGuardado(id)
+        .borrarGuardado(
+          id
+        )
         .subscribe({
 
           next: () => {
 
-            this.guardados.delete(id);
+            this.guardados
+              .delete(id);
 
-            this.savingIds.delete(id);
+            this.savingIds
+              .delete(id);
 
           },
 
@@ -1282,7 +2092,9 @@ cargarReplies(): void {
             this.errorGuardar =
               'No se pudo quitar de guardados.';
 
-            this.savingIds.delete(id);
+
+            this.savingIds
+              .delete(id);
 
           }
 
@@ -1299,14 +2111,18 @@ cargarReplies(): void {
     // =======================================================
 
     this.apiService
-      .guardarTweet(id)
+      .guardarTweet(
+        id
+      )
       .subscribe({
 
         next: () => {
 
-          this.guardados.add(id);
+          this.guardados
+            .add(id);
 
-          this.savingIds.delete(id);
+          this.savingIds
+            .delete(id);
 
         },
 
@@ -1316,7 +2132,9 @@ cargarReplies(): void {
           this.errorGuardar =
             'No se pudo guardar.';
 
-          this.savingIds.delete(id);
+
+          this.savingIds
+            .delete(id);
 
         }
 
@@ -1335,7 +2153,9 @@ cargarReplies(): void {
       .getGuardados()
       .subscribe({
 
-        next: (res: any) => {
+        next: (
+          res: any
+        ) => {
 
           const rows =
             res?.items ??
@@ -1376,21 +2196,30 @@ cargarReplies(): void {
     tweetid: any
   ): boolean {
 
-    return this.guardados.has(
-      tweetid.toString()
-    );
+    if (
+      tweetid === null ||
+      tweetid === undefined
+    ) {
+
+      return false;
+
+    }
+
+
+    return this.guardados
+      .has(
+        String(
+          tweetid
+        )
+      );
 
   }
 
 
   // =========================================================
-  // FECHAS / ZONA HORARIA
+  // DATE -> YYYY-MM-DD
   // =========================================================
 
-  /**
-   * Convierte una fecha del datepicker a YYYY-MM-DD usando
-   * componentes locales. Evita que JSON/UTC cambie el día.
-   */
   private toYMD(
     date: Date
   ): string {
@@ -1398,34 +2227,55 @@ cargarReplies(): void {
     const year =
       date.getFullYear();
 
+
     const month =
       String(
-        date.getMonth() + 1
-      ).padStart(2, '0');
+        date.getMonth() +
+        1
+      )
+        .padStart(
+          2,
+          '0'
+        );
+
 
     const day =
       String(
         date.getDate()
-      ).padStart(2, '0');
+      )
+        .padStart(
+          2,
+          '0'
+        );
 
-    return `${year}-${month}-${day}`;
+
+    return (
+      `${year}-${month}-${day}`
+    );
 
   }
 
 
-  /**
-   * Recupera fechas enviadas por navigation state sin permitir
-   * que el navegador cambie el día por zona horaria.
-   */
+  // =========================================================
+  // RECUPERAR FECHA DE NAVIGATION STATE
+  // =========================================================
+
   private parseNavigationDate(
     value: unknown
   ): Date | undefined {
 
-    if (!value) {
+    if (
+      !value
+    ) {
+
       return undefined;
+
     }
 
-    if (value instanceof Date) {
+
+    if (
+      value instanceof Date
+    ) {
 
       return Number.isNaN(
         value.getTime()
@@ -1437,21 +2287,33 @@ cargarReplies(): void {
 
     }
 
-    if (typeof value === 'string') {
+
+    if (
+      typeof value ===
+      'string'
+    ) {
 
       const ymd =
         value.match(
           /^(\d{4})-(\d{2})-(\d{2})$/
         );
 
+
       if (ymd) {
 
         const date =
           new Date(
-            Number(ymd[1]),
-            Number(ymd[2]) - 1,
-            Number(ymd[3])
+            Number(
+              ymd[1]
+            ),
+            Number(
+              ymd[2]
+            ) - 1,
+            Number(
+              ymd[3]
+            )
           );
+
 
         return Number.isNaN(
           date.getTime()
@@ -1461,8 +2323,12 @@ cargarReplies(): void {
 
       }
 
+
       const date =
-        new Date(value);
+        new Date(
+          value
+        );
+
 
       return Number.isNaN(
         date.getTime()
@@ -1472,30 +2338,35 @@ cargarReplies(): void {
 
     }
 
+
     return undefined;
 
   }
 
 
-  /**
-   * Muestra las fechas de publicaciones siempre en Bolivia.
-   *
-   * IMPORTANTE:
-   * Los timestamps sin Z ni offset se consideran UTC porque
-   * los timestamps provenientes de X normalmente llegan en UTC.
-   * Luego se convierten a America/La_Paz (UTC-4).
-   */
+  // =========================================================
+  // FECHA BOLIVIA
+  // =========================================================
+
   formatBoliviaDate(
     value: unknown
   ): string {
 
-    if (!value) {
+    if (
+      !value
+    ) {
+
       return '';
+
     }
+
 
     let date: Date;
 
-    if (value instanceof Date) {
+
+    if (
+      value instanceof Date
+    ) {
 
       date =
         new Date(
@@ -1507,58 +2378,107 @@ cargarReplies(): void {
     else {
 
       let raw =
-        String(value)
+        String(
+          value
+        )
           .trim();
 
-      if (!raw) {
+
+      if (
+        !raw
+      ) {
+
         return '';
+
       }
 
-      // MySQL suele devolver:
-      // 2026-09-09 23:10:00
-      // Lo convertimos a formato ISO.
+
+      /*
+       * MySQL:
+       * 2026-09-09 23:10:00
+       *
+       * ->
+       *
+       * 2026-09-09T23:10:00
+       */
       raw =
         raw.replace(
           ' ',
           'T'
         );
 
+
       const hasTimezone =
         /(?:Z|[+-]\d{2}:?\d{2})$/i
           .test(raw);
 
-      // Si el backend no envía zona, asumimos UTC.
-      // Evita el típico desfase de 4 horas al mostrarlo en Bolivia.
-      if (!hasTimezone) {
-        raw += 'Z';
+
+      /*
+       * Si no viene timezone,
+       * asumimos UTC porque
+       * los timestamps de X
+       * normalmente llegan UTC.
+       */
+      if (
+        !hasTimezone
+      ) {
+
+        raw +=
+          'Z';
+
       }
 
+
       date =
-        new Date(raw);
+        new Date(
+          raw
+        );
 
     }
+
 
     if (
       Number.isNaN(
         date.getTime()
       )
     ) {
-      return String(value);
+
+      return String(
+        value
+      );
+
     }
+
 
     return new Intl.DateTimeFormat(
       'es-BO',
       {
+
         timeZone:
           'America/La_Paz',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
+
+        day:
+          '2-digit',
+
+        month:
+          '2-digit',
+
+        year:
+          'numeric',
+
+        hour:
+          '2-digit',
+
+        minute:
+          '2-digit',
+
+        hour12:
+          false
+
       }
-    ).format(date);
+    ).format(
+      date
+    );
 
   }
 
@@ -1579,7 +2499,7 @@ cargarReplies(): void {
 
 
   // =========================================================
-  // DESCARGAR CARD COMO PNG
+  // DESCARGAR CARD
   // =========================================================
 
   async downloadCard(
@@ -1589,8 +2509,12 @@ cargarReplies(): void {
 
     try {
 
-      if (!cardElement) {
+      if (
+        !cardElement
+      ) {
+
         return;
+
       }
 
 
@@ -1598,11 +2522,19 @@ cargarReplies(): void {
         await toPng(
           cardElement,
           {
-            cacheBust: true,
-            pixelRatio: 2,
+
+            cacheBust:
+              true,
+
+            pixelRatio:
+              2,
+
             backgroundColor:
               '#ffffff',
-            skipFonts: true
+
+            skipFonts:
+              true
+
           }
         );
 

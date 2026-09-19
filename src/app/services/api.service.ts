@@ -57,6 +57,24 @@ getPulse(body: {type: 'Medio' | 'Entidad' | 'Persona';categoria?: string;startDa
     { headers }
   );
 }
+getTopicPulse(body: {
+  topicId: number;
+  startDate?: string;
+  endDate?: string;
+  users?: string[];
+  searchText?: string;
+}): Observable<PulseResponse> {
+
+  const headers = new HttpHeaders({
+    'Content-Type': 'application/json'
+  });
+
+  return this.http.post<PulseResponse>(
+    this.apiUrl + 'topic_pulse',
+    body,
+    { headers }
+  );
+}
   getPostsAmbiente(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<NewsData[]>(this.apiUrl+'ambiente',body,{headers});

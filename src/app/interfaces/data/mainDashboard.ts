@@ -64,7 +64,25 @@ export interface StatsResponse {
   topics_timeline: TopicTimelineItem[];
   emerging_topics: EmergingTopicItem[];
   topic_sentiment: TopicSentimentItem[];
+  posts_by_media?: {id: string;usuario: string;total: number;}[];
+  media_total_posts:number;
+
+ comparison?: {
+  period: {
+    current_start: string;
+    current_end: string;
+    previous_start: string;
+    previous_end: string;
+  };
+
+  posts: {
+    current: number;
+    previous: number;
+    change: number | null;
+  };
+};
 }
+
 export interface EmergingTopicItem {
   topic_id: number;
   topic_name: string;

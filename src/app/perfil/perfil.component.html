@@ -411,7 +411,7 @@
                     aria-hidden="true"
                   >
                     <path
-                      d="M12 2a5 5 0 0 0-4.9 6H5a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-8a3 3 0 0 0-3-3h-2.1A5 5 0 0 0 12 2Zm0 2a3 3 0 0 1 3 3c0 .35-.06.69-.17 1H9.17A3 3 0 0 1 12 4Zm7 16H5a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1Z"
+                      d="M12 2a5 5 0 0 0-4.9 6H5a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-8a3 3 0 0 0-3-3h-2.1A5 5 0 0 0 12 2Zm0 2a3 3 0 0 1 3 3c0 .35-.06.69-.17 1H9.17A3 3 0 0 1 12 4Zm7 16H5a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8Z"
                     ></path>
                   </svg>
 
@@ -515,7 +515,7 @@
                       aria-hidden="true"
                     >
                       <path
-                        d="M17 8h-1V6a4 4 0 0 0-8 0v2H7a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-8a3 3 0 0 0-3-3ZM10 6a2 2 0 1 1 4 0v2h-4V6Zm8 13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v8Z"
+                        d="M17 8h-1V6a4 4 0 0 0-8 0v2H7a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-8a3 3 0 0 0-3-3ZM10 6a2 2 0 1 1 4 0v2h-4V6Zm8 13a1 1 0 0 1-1 1H7a1 1 0 0 1 1-1v-8a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v8Z"
                       ></path>
                     </svg>
 
@@ -622,6 +622,7 @@
 
       <section class="subscription-card">
 
+
         <!-- LOADING -->
 
         <div
@@ -669,13 +670,19 @@
                   [class.active]="sub.status === 'activa'"
                   [class.warning]="sub.status !== 'activa'"
                 >
+
                   <span class="status-dot"></span>
 
                   {{
                     sub.status === 'activa'
                       ? 'Activa'
-                      : sub.status
+                      : sub.status === 'vencida'
+                        ? 'Vencida'
+                        : sub.status === 'suspendida'
+                          ? 'Suspendida'
+                          : 'Sin plan'
                   }}
+
                 </span>
 
               </div>
@@ -806,7 +813,11 @@
             <div>
 
               <span>
-                Próxima fecha importante
+                {{
+                  sub.status === 'vencida'
+                    ? 'La suscripción venció el'
+                    : 'Próxima fecha importante'
+                }}
               </span>
 
               <strong>
@@ -816,118 +827,135 @@
             </div>
 
           </div>
+
+
           <!-- =================================================
-     PRUEBA GRATUITA
-================================================== -->
+               RENOVACIÓN
+          ================================================== -->
 
-<div
-  class="free-trial-box"
-  *ngIf="
-    freeTrial.loaded &&
-    freeTrial.available
-  "
->
-
-  <div class="free-trial-icon">
-
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path
-        d="M12 2 15 8l6 .9-4.5 4.4 1.1 6.2L12 16.6 6.4 19.5l1.1-6.2L3 8.9 9 8l3-6Zm0 4.5-1.65 3.35-3.7.54 2.68 2.61-.63 3.69L12 14.95l3.3 1.74-.63-3.69 2.68-2.61-3.7-.54L12 6.5Z"
-      ></path>
-    </svg>
-
-  </div>
+          <div
+            class="renewal-message"
+            *ngIf="sub.status === 'vencida'"
+          >
+            Para renovar tu suscripción, escribe a
+            <strong>ventas&#64;netvora.com</strong>
+          </div>
 
 
-  <div class="free-trial-content">
+          <!-- =================================================
+               PRUEBA GRATUITA
+          ================================================== -->
 
-    <span class="free-trial-label">
-      Disponible para tu cuenta
-    </span>
+          <div
+            class="free-trial-box"
+            *ngIf="
+              freeTrial.loaded &&
+              freeTrial.available
+            "
+          >
 
-    <h3>
-      Prueba NetVora gratis
-    </h3>
+            <div class="free-trial-icon">
 
-    <p>
-      Activa 7 días gratuitos con todas las funciones
-      incluidas en el plan Básico.
-    </p>
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 2 15 8l6 .9-4.5 4.4 1.1 6.2L12 16.6 6.4 19.5l1.1-6.2L3 8.9 9 8l3-6Zm0 4.5-1.65 3.35-3.7.54 2.68 2.61-.63 3.69L12 14.95l3.3 1.74-.63-3.69 2.68-2.61-3.7-.54L12 6.5Z"
+                ></path>
+              </svg>
 
-
-    <div class="free-trial-benefits">
-
-      <span>
-        ✓ Sin costo
-      </span>
-
-      <span>
-        ✓ 7 días
-      </span>
-
-      <span>
-        ✓ Sin tarjeta
-      </span>
-
-    </div>
+            </div>
 
 
-    <button
-      type="button"
-      class="free-trial-button"
-      [disabled]="loading.freeTrial"
-      (click)="activateFreeTrial()"
-    >
+            <div class="free-trial-content">
 
-      <ng-container *ngIf="!loading.freeTrial">
+              <span class="free-trial-label">
+                Disponible para tu cuenta
+              </span>
 
-        Activar 7 días gratis
+              <h3>
+                Prueba NetVora gratis
+              </h3>
 
-      </ng-container>
+              <p>
+                Activa 7 días gratuitos con todas las funciones
+                incluidas en el plan Básico.
+              </p>
 
 
-      <ng-container *ngIf="loading.freeTrial">
+              <div class="free-trial-benefits">
 
-        <span class="spinner light small"></span>
+                <span>
+                  ✓ Sin costo
+                </span>
 
-        Activando...
+                <span>
+                  ✓ 7 días
+                </span>
 
-      </ng-container>
+                <span>
+                  ✓ Sin tarjeta
+                </span>
 
-    </button>
+              </div>
 
-  </div>
 
-</div>
-<div
-  class="free-trial-used"
-  *ngIf="
-    freeTrial.loaded &&
-    freeTrial.used &&
-    sub.status === 'sin_plan'
-  "
->
+              <button
+                type="button"
+                class="free-trial-button"
+                [disabled]="loading.freeTrial"
+                (click)="activateFreeTrial()"
+              >
 
-  <span class="free-trial-used-icon">
-    ✓
-  </span>
+                <ng-container *ngIf="!loading.freeTrial">
+                  Activar 7 días gratis
+                </ng-container>
 
-  <div>
 
-    <strong>
-      Prueba gratuita utilizada
-    </strong>
+                <ng-container *ngIf="loading.freeTrial">
 
-    <p>
-      Ya utilizaste los 7 días gratuitos disponibles para esta cuenta.
-    </p>
+                  <span class="spinner light small"></span>
 
-  </div>
+                  Activando...
 
-</div>
+                </ng-container>
+
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <!-- PRUEBA GRATUITA YA UTILIZADA -->
+
+          <div
+            class="free-trial-used"
+            *ngIf="
+              freeTrial.loaded &&
+              freeTrial.used &&
+              sub.status === 'sin_plan'
+            "
+          >
+
+            <span class="free-trial-used-icon">
+              ✓
+            </span>
+
+            <div>
+
+              <strong>
+                Prueba gratuita utilizada
+              </strong>
+
+              <p>
+                Ya utilizaste los 7 días gratuitos disponibles para esta cuenta.
+              </p>
+
+            </div>
+
+          </div>
 
         </ng-container>
 

@@ -102,9 +102,43 @@
         {{ totalPosts | number }}
       </div>
 
-      <div class="metric-footer">
-        En el período seleccionado
-      </div>
+      <div class="kpi-footer">
+
+  <!-- Hay comparación normal -->
+  <ng-container *ngIf="postsChange !== null">
+
+    <span
+      class="kpi-change"
+      [class.kpi-change-up]="postsChange > 0"
+      [class.kpi-change-down]="postsChange < 0"
+      [class.kpi-change-neutral]="postsChange === 0"
+    >
+      <span *ngIf="postsChange > 0">↑</span>
+      <span *ngIf="postsChange < 0">↓</span>
+
+      {{ Math.abs(postsChange) | number:'1.1-1' }}%
+    </span>
+
+    <span class="kpi-compare-text">
+      vs. período anterior
+    </span>
+
+  </ng-container>
+
+  <!-- No se puede calcular porcentaje porque anterior = 0 -->
+  <ng-container *ngIf="postsChange === null">
+
+    <span class="kpi-change kpi-change-neutral">
+      —
+    </span>
+
+    <span class="kpi-compare-text">
+      Sin base de comparación
+    </span>
+
+  </ng-container>
+
+</div>
 
     </article>
 
@@ -748,102 +782,128 @@
        MEDIOS
   ====================================================== -->
 
-  <section class="section-block">
+  <section class="section-block media-section">
 
     <div class="section-heading">
-
       <div>
-
-        <span class="section-eyebrow neutral">
-          MEDIOS
-        </span>
-
-        <h2>
-          Quién está impulsando la conversación
-        </h2>
-
+        <span class="section-eyebrow neutral">MEDIOS</span>
+        <h2>Quién está impulsando la conversación</h2>
         <p>
-          Participación de los medios dentro de los principales tópicos.
+          Volumen y participación de los medios dentro de
+          {{ categoria || 'esta categoría' }}.
         </p>
-
       </div>
-
     </div>
 
+    <div class="media-overview-grid">
 
-    <article class="analysis-card chart">
-
-      <div class="card-head">
-
-        <div>
-
-          <div class="card-title">
-            Tópicos por medio
-          </div>
-
-          <div class="card-sub">
-            Distribución de los principales temas entre las fuentes analizadas
-          </div>
-
-        </div>
-
-
-        <button
-          type="button"
-          class="iconbtn"
-          (click)="downloadChart($event)"
-          title="Descargar gráfico">
-
-          <span class="material-icons">
-            download
-          </span>
-
-        </button>
-
-      </div>
-
-
-      <div
-        class="chart-wrap chart-wrap--large"
-        *ngIf="topicsByUserData.datasets.length; else noTopicsByUser">
-
-        <canvas
-          baseChart
-          [type]="'bar'"
-          [data]="topicsByUserData"
-          [options]="topicsByUserOptions">
-        </canvas>
-
-      </div>
-
-
-      <ng-template #noTopicsByUser>
-
-        <div class="empty-state">
-
-          <span class="material-icons">
-            alternate_email
-          </span>
-
+      <!-- PUBLICACIONES POR MEDIO -->
+      <article class="analysis-card chart media-publications-card">
+        <div class="card-head">
           <div>
-
-            <strong>
-              No hay datos suficientes
-            </strong>
-
-            <p>
-              No se encontraron publicaciones suficientes
-              para comparar los tópicos entre los medios.
-            </p>
-
+            <div class="card-title">Publicaciones por medio</div>
+            <div class="card-sub">Top 10 medios por volumen de publicaciones</div>
           </div>
-
+          <button type="button" class="iconbtn" (click)="downloadChart($event)" title="Descargar gráfico">
+            <span class="material-icons">download</span>
+          </button>
         </div>
 
-      </ng-template>
+        <div class="chart-wrap chart-wrap--media" *ngIf="postsByMedia.length; else noPostsByMedia">
+          <canvas
+            baseChart
+            [type]="'bar'"
+            [data]="postsByMediaChartData"
+            [options]="postsByMediaChartOptions">
+          </canvas>
+        </div>
 
-    </article>
+        <ng-template #noPostsByMedia>
+          <div class="empty-state">
+            <span class="material-icons">alternate_email</span>
+            <div>
+              <strong>No hay datos de medios</strong>
+              <p>No se encontraron publicaciones de medios para esta categoría en el período seleccionado.</p>
+            </div>
+          </div>
+        </ng-template>
+      </article>
 
+      <!-- SHARE OF VOICE -->
+      <article class="analysis-card share-of-voice-card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Share of Voice</div>
+            <div class="card-sub">Concentración de publicaciones entre los medios</div>
+          </div>
+          <span class="metric-icon"><span class="material-icons">campaign</span></span>
+        </div>
+
+        <div class="empty-state" *ngIf="!postsByMedia.length">
+          <span class="material-icons">pie_chart</span>
+          <div>
+            <strong>Sin datos suficientes</strong>
+            <p>No hay publicaciones de medios para calcular participación en este período.</p>
+          </div>
+        </div>
+
+        <div class="share-of-voice-content" *ngIf="postsByMedia.length">
+          <div class="share-leader">
+            <div class="share-leader-top">
+              <div>
+                <span class="share-label">MEDIO LÍDER</span>
+                <div class="share-leader-name" [title]="mediaLeader">{{ mediaLeader || '—' }}</div>
+              </div>
+              <div class="share-leader-percentage">{{ mediaLeaderShare | number:'1.1-1' }}%</div>
+            </div>
+
+            <div class="share-progress">
+              <div class="share-progress-fill" [style.width.%]="mediaLeaderShare > 100 ? 100 : mediaLeaderShare"></div>
+            </div>
+
+            <div class="share-leader-footer">
+              <span>{{ mediaLeaderPosts | number }} publicaciones</span>
+              <span>del total analizado</span>
+            </div>
+          </div>
+
+          <div class="share-metrics-grid">
+            <div class="share-metric-item">
+              <div class="share-metric-icon"><span class="material-icons">filter_3</span></div>
+              <div class="share-metric-content">
+                <span class="share-metric-label">Top 3 medios</span>
+                <strong class="share-metric-value">{{ mediaTop3Share | number:'1.1-1' }}%</strong>
+                <small>de las publicaciones</small>
+              </div>
+            </div>
+
+            <div class="share-metric-item">
+              <div class="share-metric-icon"><span class="material-icons">leaderboard</span></div>
+              <div class="share-metric-content">
+                <span class="share-metric-label">Top 5 medios</span>
+                <strong class="share-metric-value">{{ mediaTop5Share | number:'1.1-1' }}%</strong>
+                <small>de las publicaciones</small>
+              </div>
+            </div>
+
+            <div class="share-metric-item share-metric-item--full">
+              <div class="share-metric-icon"><span class="material-icons">article</span></div>
+              <div class="share-metric-content">
+                <span class="share-metric-label">Publicaciones de medios</span>
+                <strong class="share-metric-value">{{ mediaTotalPosts | number }}</strong>
+                <small>en el período seleccionado</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="share-note">
+            <span class="material-icons">info</span>
+            <p>El Share of Voice representa qué proporción de las publicaciones de esta categoría corresponde a los medios con mayor actividad.</p>
+          </div>
+        </div>
+      </article>
+
+    </div>
   </section>
 
 
@@ -1978,4 +2038,3 @@
   </section>
 
 </section>
-

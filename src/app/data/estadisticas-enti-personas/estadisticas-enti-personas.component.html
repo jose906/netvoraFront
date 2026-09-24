@@ -103,9 +103,42 @@
         {{ totalPosts | number }}
       </div>
 
-      <div class="metric-footer">
-        En el período seleccionado
-      </div>
+      <div class="metric-footer metric-footer--comparison">
+
+  <ng-container *ngIf="postsChange !== null">
+
+    <span
+      class="metric-change"
+      [class.metric-change--up]="postsChange > 0"
+      [class.metric-change--down]="postsChange < 0"
+      [class.metric-change--neutral]="postsChange === 0"
+    >
+      <span *ngIf="postsChange > 0">↑</span>
+      <span *ngIf="postsChange < 0">↓</span>
+
+      {{ Math.abs(postsChange) | number:'1.1-1' }}%
+    </span>
+
+    <span class="metric-compare-text">
+      vs. período anterior
+    </span>
+
+  </ng-container>
+
+
+  <ng-container *ngIf="postsChange === null">
+
+    <span class="metric-change metric-change--neutral">
+      —
+    </span>
+
+    <span class="metric-compare-text">
+      Sin base de comparación
+    </span>
+
+  </ng-container>
+
+</div>
 
     </article>
 
@@ -199,7 +232,7 @@
     </article>
 
 
-    <!-- CUENTAS -->
+      <!-- CUENTAS -->
 
     <article class="metric-card">
 
@@ -748,44 +781,54 @@
 
 
   <!-- =====================================================
-       CUENTAS
-  ====================================================== -->
+     CUENTAS — PUBLICACIONES + SHARE OF VOICE
+====================================================== -->
 
-  <section class="section-block">
+<section class="section-block accounts-section">
 
-    <div class="section-heading">
+  <div class="section-heading">
 
-      <div>
+    <div>
 
-        <span class="section-eyebrow neutral">
-          CUENTAS
-        </span>
+      <span class="section-eyebrow neutral">
+        {{ type_user === 'Persona' ? 'PERSONAS' : 'ENTIDADES' }}
+      </span>
 
-        <h2>
-          Quién está impulsando la conversación
-        </h2>
+      <h2>
+        Quién está impulsando la conversación
+      </h2>
 
-        <p>
-          Participación de los cuentas dentro de los principales tópicos.
-        </p>
-
-      </div>
+      <p>
+        Volumen y participación de
+        {{ type_user === 'Persona' ? 'las personas' : 'las entidades' }}
+        analizadas durante el período seleccionado.
+      </p>
 
     </div>
 
+  </div>
 
-    <article class="analysis-card chart">
+
+  <div class="accounts-overview-grid">
+
+    <!-- =================================================
+         PUBLICACIONES POR CUENTA
+    ================================================== -->
+
+    <article class="analysis-card chart account-publications-card">
 
       <div class="card-head">
 
         <div>
 
           <div class="card-title">
-            Tópicos por medio
+            Publicaciones por cuenta
           </div>
 
           <div class="card-sub">
-            Distribución de los principales temas entre las fuentes analizadas
+            Top 10
+            {{ type_user === 'Persona' ? 'personas' : 'entidades' }}
+            por volumen de publicaciones
           </div>
 
         </div>
@@ -807,20 +850,20 @@
 
 
       <div
-        class="chart-wrap chart-wrap--large"
-        *ngIf="topicsByUserData.datasets.length; else noTopicsByUser">
+        class="chart-wrap chart-wrap--accounts"
+        *ngIf="postsByAccount.length; else noPostsByAccount">
 
         <canvas
           baseChart
           [type]="'bar'"
-          [data]="topicsByUserData"
-          [options]="topicsByUserOptions">
+          [data]="postsByAccountChartData"
+          [options]="postsByAccountChartOptions">
         </canvas>
 
       </div>
 
 
-      <ng-template #noTopicsByUser>
+      <ng-template #noPostsByAccount>
 
         <div class="empty-state">
 
@@ -831,12 +874,13 @@
           <div>
 
             <strong>
-              No hay datos suficientes
+              No hay datos de cuentas
             </strong>
 
             <p>
-              No se encontraron publicaciones suficientes
-              para comparar los tópicos entre los cuentas.
+              No se encontraron publicaciones de
+              {{ type_user === 'Persona' ? 'personas' : 'entidades' }}
+              para el período seleccionado.
             </p>
 
           </div>
@@ -847,8 +891,277 @@
 
     </article>
 
-  </section>
 
+    <!-- =================================================
+         SHARE OF VOICE
+    ================================================== -->
+
+    <article class="analysis-card account-share-card">
+
+      <div class="card-head">
+
+        <div>
+
+          <div class="card-title">
+            Share of Voice
+          </div>
+
+          <div class="card-sub">
+            Concentración de publicaciones entre
+            {{ type_user === 'Persona' ? 'las personas' : 'las entidades' }}
+          </div>
+
+        </div>
+
+
+        <span class="metric-icon">
+
+          <span class="material-icons">
+            campaign
+          </span>
+
+        </span>
+
+      </div>
+
+
+      <!-- SIN DATOS -->
+
+      <div
+        class="empty-state"
+        *ngIf="!postsByAccount.length">
+
+        <span class="material-icons">
+          pie_chart
+        </span>
+
+        <div>
+
+          <strong>
+            Sin datos suficientes
+          </strong>
+
+          <p>
+            No hay publicaciones suficientes para calcular
+            la participación de las cuentas.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- CON DATOS -->
+
+      <div
+        class="account-share-content"
+        *ngIf="postsByAccount.length">
+
+
+        <!-- CUENTA LÍDER -->
+
+        <div class="account-share-leader">
+
+          <div class="account-share-leader-top">
+
+            <div>
+
+              <span class="account-share-label">
+                {{ type_user === 'Persona' ? 'PERSONA LÍDER' : 'ENTIDAD LÍDER' }}
+              </span>
+
+              <div
+                class="account-share-leader-name"
+                [title]="accountLeader">
+
+                {{ accountLeader || '—' }}
+
+              </div>
+
+            </div>
+
+
+            <div class="account-share-leader-percentage">
+
+              {{ accountLeaderShare | number:'1.1-1' }}%
+
+            </div>
+
+          </div>
+
+
+          <div class="account-share-progress">
+
+            <div
+              class="account-share-progress-fill"
+              [style.width.%]="
+                accountLeaderShare > 100
+                  ? 100
+                  : accountLeaderShare
+              ">
+            </div>
+
+          </div>
+
+
+          <div class="account-share-leader-footer">
+
+            <span>
+              {{ accountLeaderPosts | number }}
+              publicaciones
+            </span>
+
+            <span>
+              del total analizado
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <!-- MÉTRICAS -->
+
+        <div class="account-share-metrics-grid">
+
+
+          <!-- TOP 3 -->
+
+          <div class="account-share-metric-item">
+
+            <div class="account-share-metric-icon">
+
+              <span class="material-icons">
+                filter_3
+              </span>
+
+            </div>
+
+
+            <div class="account-share-metric-content">
+
+              <span class="account-share-metric-label">
+                Top 3
+                {{ type_user === 'Persona' ? 'personas' : 'entidades' }}
+              </span>
+
+              <strong class="account-share-metric-value">
+
+                {{ accountTop3Share | number:'1.1-1' }}%
+
+              </strong>
+
+              <small>
+                de las publicaciones
+              </small>
+
+            </div>
+
+          </div>
+
+
+          <!-- TOP 5 -->
+
+          <div class="account-share-metric-item">
+
+            <div class="account-share-metric-icon">
+
+              <span class="material-icons">
+                leaderboard
+              </span>
+
+            </div>
+
+
+            <div class="account-share-metric-content">
+
+              <span class="account-share-metric-label">
+                Top 5
+                {{ type_user === 'Persona' ? 'personas' : 'entidades' }}
+              </span>
+
+              <strong class="account-share-metric-value">
+
+                {{ accountTop5Share | number:'1.1-1' }}%
+
+              </strong>
+
+              <small>
+                de las publicaciones
+              </small>
+
+            </div>
+
+          </div>
+
+
+          <!-- TOTAL -->
+
+          <div
+            class="
+              account-share-metric-item
+              account-share-metric-item--full
+            ">
+
+            <div class="account-share-metric-icon">
+
+              <span class="material-icons">
+                article
+              </span>
+
+            </div>
+
+
+            <div class="account-share-metric-content">
+
+              <span class="account-share-metric-label">
+
+                Publicaciones de
+                {{ type_user === 'Persona' ? 'personas' : 'entidades' }}
+
+              </span>
+
+              <strong class="account-share-metric-value">
+
+                {{ accountTotalPosts | number }}
+
+              </strong>
+
+              <small>
+                en el período seleccionado
+              </small>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- EXPLICACIÓN -->
+
+        <div class="account-share-note">
+
+          <span class="material-icons">
+            info
+          </span>
+
+          <p>
+            El Share of Voice representa qué proporción de las
+            publicaciones corresponde a las
+            {{ type_user === 'Persona' ? 'personas' : 'entidades' }}
+            con mayor actividad.
+          </p>
+
+        </div>
+
+      </div>
+
+    </article>
+
+  </div>
+
+</section>
 
   <!-- =====================================================
        ANÁLISIS

@@ -4705,3 +4705,366 @@ background 0.16s ease,
     font-size: 14px;
   }
 }
+/* =========================================================
+   PUBLICACIONES POR MEDIO
+========================================================= */
+
+.media-section {
+  margin-top: 4px;
+}
+
+
+/* Tarjeta principal */
+
+.media-card {
+  width: 100%;
+}
+
+
+/* Gráfico */
+
+.media-chart {
+  position: relative;
+
+  width: 100%;
+
+  height: 390px;
+  min-height: 390px;
+
+  margin-top: 10px;
+
+  overflow: hidden;
+}
+
+
+.media-chart canvas {
+  display: block;
+
+  width: 100% !important;
+  height: 100% !important;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .media-chart {
+    height: 370px;
+    min-height: 370px;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 560px) {
+
+  .media-card {
+    padding: 14px;
+  }
+
+  .media-chart {
+    height: 350px;
+    min-height: 350px;
+  }
+
+}
+/* =========================================================
+   SHARE OF VOICE / CONCENTRACIÓN DE MEDIOS
+========================================================= */
+
+.media-insights {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr 1fr 1fr;
+
+  margin: 4px 0 18px;
+
+  border: 1px solid var(--line);
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.45);
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   ITEM
+========================================================= */
+
+.media-insight {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  min-width: 0;
+  min-height: 92px;
+
+  padding: 15px 18px;
+
+  border-right: 1px solid var(--line);
+}
+
+.media-insight:last-child {
+  border-right: 0;
+}
+
+
+/* =========================================================
+   MEDIO LÍDER
+========================================================= */
+
+.media-insight--leader {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(109, 40, 217, 0.05),
+      rgba(109, 40, 217, 0.01)
+    );
+}
+
+.media-insight--leader::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 18px;
+  right: 18px;
+
+  height: 2px;
+
+  border-radius: 0 0 4px 4px;
+
+  background: var(--accent);
+}
+
+
+/* =========================================================
+   LABEL
+========================================================= */
+
+.media-insight-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-bottom: 7px;
+
+  color: var(--muted);
+
+  font-size: 9.5px;
+  font-weight: 650;
+
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+}
+
+.media-insight-label .material-icons {
+  color: var(--accent);
+  font-size: 15px;
+}
+
+
+/* =========================================================
+   MEDIO PRINCIPAL
+========================================================= */
+
+.media-insight-main {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  min-width: 0;
+}
+
+.media-insight-main strong {
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: var(--text);
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.media-insight-main span {
+  flex-shrink: 0;
+
+  color: var(--accent);
+
+  font-size: 18px;
+  font-weight: 750;
+
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* =========================================================
+   VALORES
+========================================================= */
+
+.media-insight-value {
+  display: block;
+
+  color: var(--text);
+
+  font-size: 21px;
+  line-height: 1.1;
+
+  font-weight: 730;
+  letter-spacing: -0.025em;
+
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* =========================================================
+   TEXTO SECUNDARIO
+========================================================= */
+
+.media-insight small {
+  display: block;
+
+  margin-top: 5px;
+
+  color: var(--muted);
+
+  font-size: 9.5px;
+  line-height: 1.35;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .media-insights {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .media-insight:nth-child(2) {
+    border-right: 0;
+  }
+
+  .media-insight:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--line);
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 560px) {
+
+  .media-insights {
+    grid-template-columns: 1fr;
+  }
+
+  .media-insight {
+    min-height: 78px;
+
+    padding: 13px 14px;
+
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .media-insight:last-child {
+    border-bottom: 0;
+  }
+
+  .media-insight-main {
+    justify-content: flex-start;
+  }
+
+  .media-insight-main span {
+    font-size: 16px;
+  }
+
+  .media-insight-value {
+    font-size: 18px;
+  }
+
+}
+/* =========================================================
+   KPI — COMPARACIÓN CON PERÍODO ANTERIOR
+========================================================= */
+
+.kpi-comparison {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.kpi-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+
+  padding: 4px 8px;
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-change .material-icons {
+  font-size: 14px;
+}
+
+
+/* SUBIÓ */
+
+.kpi-change.positive {
+  color: #15803d;
+  background: rgba(22, 163, 74, 0.09);
+}
+
+
+/* BAJÓ */
+
+.kpi-change.negative {
+  color: #b91c1c;
+  background: rgba(220, 38, 38, 0.08);
+}
+
+
+/* SIN CAMBIO */
+
+.kpi-change.neutral {
+  color: #64748b;
+  background: rgba(100, 116, 139, 0.09);
+}
+
+
+/* TEXTO */
+
+.kpi-comparison-text {
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 500;
+}

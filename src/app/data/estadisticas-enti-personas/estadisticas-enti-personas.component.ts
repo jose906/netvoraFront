@@ -82,6 +82,32 @@ export class EstadisticasEntiPersonasComponent implements OnInit, OnChanges {
 
   // ===== KPI =====
   totalPosts = 0;
+  // ===== Comparación con período anterior =====
+postsChange: number | null = null;
+
+previousPosts = 0;
+
+previousPeriodStart = '';
+previousPeriodEnd = '';
+// =========================================================
+// PUBLICACIONES POR CUENTA + SHARE OF VOICE
+// =========================================================
+
+postsByAccount: Array<{
+  usuario: string;
+  total: number;
+}> = [];
+
+accountTotalPosts = 0;
+
+accountLeader = '';
+accountLeaderPosts = 0;
+accountLeaderShare = 0;
+
+accountTop3Share = 0;
+accountTop5Share = 0;
+
+readonly Math = Math;
   topLocacion: EntItem[] = [];
   topOrganizacion: EntItem[] = [];
   topPersona: EntItem[] = [];
@@ -198,6 +224,66 @@ readonly topTopicsOptions: ChartOptions<'bar'> = {
           size: 12,
           weight: 600
         }
+      }
+    }
+  }
+};
+postsByAccountChartData: ChartData<'bar'> = {
+  labels: [],
+  datasets: [
+    {
+      label: 'Publicaciones',
+      data: []
+    }
+  ]
+};
+
+readonly postsByAccountChartOptions: ChartOptions<'bar'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+
+  indexAxis: 'y',
+
+  plugins: {
+    legend: {
+      display: false
+    },
+
+    tooltip: {
+      callbacks: {
+        label: (context) => {
+
+          const value = Number(
+            context.raw ?? 0
+          );
+
+          const share =
+            this.accountTotalPosts > 0
+              ? (value / this.accountTotalPosts) * 100
+              : 0;
+
+          return `${value.toLocaleString()} publicaciones · ${share.toFixed(1)}%`;
+        }
+      }
+    }
+  },
+
+  scales: {
+    x: {
+      beginAtZero: true,
+
+      ticks: {
+        precision: 0
+      },
+
+      grid: {
+        display: false
+      }
+    },
+
+    y: {
+      grid: {
+        display: false
       }
     }
   }
@@ -635,7 +721,117 @@ readonly topicsByUserOptions: ChartOptions<'bar'> = {
   this.topOrganizacion = this.normalizeArray(res?.organizacion).slice(0, 10);
   this.topPersona = this.normalizeArray(res?.persona).slice(0, 10);
 
-  console.log(res)
+  
+  // =========================================================
+// PUBLICACIONES POR CUENTA + SHARE OF VOICE
+// =========================================================
+
+this.postsByAccount = Array.isArray(
+  res?.posts_by_account
+)
+  ? res.posts_by_account.map((item: any) => ({
+      usuario: String(
+        item?.usuario ?? ''
+      ),
+
+      total: Number(
+        item?.total ?? 0
+      )
+    }))
+  : [];
+
+
+this.accountTotalPosts = Number(
+  res?.account_total_posts ?? 0
+);
+
+
+// =========================================================
+// CUENTA LÍDER
+// =========================================================
+
+const accountLeader =
+  this.postsByAccount[0];
+
+this.accountLeader =
+  accountLeader?.usuario ?? '';
+
+this.accountLeaderPosts =
+  accountLeader?.total ?? 0;
+
+this.accountLeaderShare =
+  this.accountTotalPosts > 0
+    ? (
+        this.accountLeaderPosts /
+        this.accountTotalPosts
+      ) * 100
+    : 0;
+
+
+// =========================================================
+// CONCENTRACIÓN TOP 3
+// =========================================================
+
+const accountTop3Total =
+  this.postsByAccount
+    .slice(0, 3)
+    .reduce(
+      (sum, item) =>
+        sum + item.total,
+      0
+    );
+
+this.accountTop3Share =
+  this.accountTotalPosts > 0
+    ? (
+        accountTop3Total /
+        this.accountTotalPosts
+      ) * 100
+    : 0;
+
+
+// =========================================================
+// CONCENTRACIÓN TOP 5
+// =========================================================
+
+const accountTop5Total =
+  this.postsByAccount
+    .slice(0, 5)
+    .reduce(
+      (sum, item) =>
+        sum + item.total,
+      0
+    );
+
+this.accountTop5Share =
+  this.accountTotalPosts > 0
+    ? (
+        accountTop5Total /
+        this.accountTotalPosts
+      ) * 100
+    : 0;
+
+
+// =========================================================
+// GRÁFICO — PUBLICACIONES POR CUENTA
+// =========================================================
+
+this.postsByAccountChartData = {
+
+  labels: this.postsByAccount.map(
+    item => item.usuario
+  ),
+
+  datasets: [
+    {
+      label: 'Publicaciones',
+
+      data: this.postsByAccount.map(
+        item => item.total
+      )
+    }
+  ]
+};
   // =========================================================
 // TÓPICOS PRINCIPALES
 // =========================================================
@@ -686,6 +882,27 @@ const fechas: string[] = Array.from(
     )
   )
 );
+// =====================================================
+// COMPARACIÓN DE PUBLICACIONES
+// =====================================================
+
+this.postsChange =
+  res?.comparison?.posts?.change ?? null;
+
+this.previousPosts =
+  Number(
+    res?.comparison?.posts?.previous ?? 0
+  );
+
+this.previousPeriodStart =
+  String(
+    res?.comparison?.period?.previous_start ?? ''
+  );
+
+this.previousPeriodEnd =
+  String(
+    res?.comparison?.period?.previous_end ?? ''
+  );
 
 // Orden cronológico
 fechas.sort((a: string, b: string) => {

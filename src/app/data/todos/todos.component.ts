@@ -11,6 +11,11 @@ import { AccountService } from '../../services/account.service';
 import { AccountMeResponse } from '../../interfaces/me';
 
 type EntItem = { entidad: string; total: number };
+type MediaPostItem = {
+  id: string;
+  usuario: string;
+  total: number;
+};
 
 @Component({
   selector: 'app-todos',
@@ -30,7 +35,7 @@ export class TodosComponent implements OnChanges, OnInit {
   // =========================================================
 // ACCESO A COMENTARIOS
 // =========================================================
-
+readonly Math = Math;
 accessLoading = true;
 
 currentRole: UserRole = 'viewer';
@@ -75,6 +80,51 @@ analysisNeutralPercent = 0;
   topLocacion: EntItem[] = [];
   topOrganizacion: EntItem[] = [];
   topPersona: EntItem[] = [];
+
+  // =========================================================
+// COMPARACIÓN CON PERÍODO ANTERIOR
+// =========================================================
+
+postsChange: number | null = null;
+previousPosts = 0;
+
+previousPeriodStart = '';
+previousPeriodEnd = '';
+
+  // =========================================================
+// PUBLICACIONES POR MEDIO
+// =========================================================
+
+postsByMedia: MediaPostItem[] = [];
+// =========================================================
+// SHARE OF VOICE
+// =========================================================
+
+mediaTotalPosts = 0;
+
+topMediaName = '—';
+topMediaPosts = 0;
+topMediaShare = 0;
+
+top3MediaShare = 0;
+top5MediaShare = 0;
+
+media_total_posts?: number;
+
+postsByMediaData: ChartData<'bar'> = {
+  labels: [],
+  datasets: [
+    {
+      label: 'Publicaciones',
+      data: [],
+      backgroundColor: NETVORA_PALETTE.accent,
+      borderRadius: 7,
+      borderSkipped: false,
+      barThickness: 22,
+      maxBarThickness: 26
+    }
+  ]
+};
 
   // ======= Chart selectors =======
   sentimentChartType: ChartType = 'doughnut';
@@ -130,6 +180,98 @@ analysisNeutralPercent = 0;
       }
     ]
   };
+  readonly postsByMediaOptions: ChartOptions<'bar'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+
+  indexAxis: 'y',
+
+  animation: {
+    duration: 500
+  },
+
+  interaction: {
+    mode: 'nearest',
+    intersect: false
+  },
+
+  plugins: {
+    legend: {
+      display: false
+    },
+
+    tooltip: {
+      enabled: true,
+
+      callbacks: {
+        label: (context) => {
+          const value = Number(context.raw || 0);
+
+          const percentage =
+  this.mediaTotalPosts > 0
+    ? (value / this.mediaTotalPosts) * 100
+    : 0;
+
+          return [
+        `${value.toLocaleString()} publicaciones`,
+        `${percentage.toFixed(1)}% del volumen de medios`
+      ];
+        }
+      }
+    }
+  },
+
+  scales: {
+    x: {
+      beginAtZero: true,
+
+      border: {
+        display: false
+      },
+
+      grid: {
+        color: 'rgba(15, 23, 42, 0.05)'
+      },
+
+      ticks: {
+        precision: 0,
+        color: '#64748b',
+
+        callback: (value) =>
+          Number(value).toLocaleString()
+      }
+    },
+
+    y: {
+      border: {
+        display: false
+      },
+
+      grid: {
+        display: false
+      },
+
+      ticks: {
+        color: '#334155',
+
+        font: {
+          size: 12,
+          weight: 600
+        },
+
+        callback: (_value, index) => {
+          const media = this.postsByMedia[index];
+
+          if (!media) {
+            return '';
+          }
+
+          return `@${media.usuario}`;
+        }
+      }
+    }
+  }
+};
   // =========================================================
 // EVOLUCIÓN DE TÓPICOS
 // =========================================================
@@ -831,6 +973,139 @@ const repliesSentimentTotal =
   this.totalRepliesNegativo +
   this.totalRepliesNeutro +
   this.totalRepliesPositivo;
+  // =========================================================
+// PUBLICACIONES POR MEDIO
+// =========================================================
+
+const postsByMedia = Array.isArray(res?.posts_by_media)
+  ? res.posts_by_media
+  : [];
+
+this.postsByMedia = postsByMedia
+  .map((item: any) => ({
+    id: String(item.id ?? ''),
+    usuario: String(item.usuario ?? 'Sin nombre'),
+    total: Number(item.total ?? 0)
+  }))
+  .sort((a, b) => b.total - a.total)
+  .slice(0, 10);
+
+
+this.postsByMediaData = {
+
+  labels: this.postsByMedia.map(
+    item => `@${item.usuario}`
+  ),
+
+  datasets: [
+    {
+      label: 'Publicaciones',
+
+      data: this.postsByMedia.map(
+        item => item.total
+      ),
+
+      backgroundColor: NETVORA_PALETTE.accent,
+
+      borderRadius: 7,
+      borderSkipped: false,
+
+      barThickness: 22,
+      maxBarThickness: 26
+    }
+  ]
+
+};
+// =========================================================
+// SHARE OF VOICE
+// =========================================================
+
+// =========================================================
+// TOTAL REAL DE PUBLICACIONES DE MEDIOS
+// =========================================================
+
+this.mediaTotalPosts = Number(
+  res?.media_total_posts ?? 0
+);
+
+
+// Medio con mayor volumen
+
+const topMedia = this.postsByMedia[0];
+
+if (topMedia) {
+
+  this.topMediaName = `@${topMedia.usuario}`;
+
+  this.topMediaPosts = topMedia.total;
+
+  this.topMediaShare =
+    this.mediaTotalPosts > 0
+      ? (topMedia.total / this.mediaTotalPosts) * 100
+      : 0;
+
+} else {
+
+  this.topMediaName = '—';
+  this.topMediaPosts = 0;
+  this.topMediaShare = 0;
+
+}
+
+
+// Concentración Top 3
+
+const top3Total = this.postsByMedia
+  .slice(0, 3)
+  .reduce(
+    (sum, item) => sum + item.total,
+    0
+  );
+
+this.top3MediaShare =
+  this.mediaTotalPosts > 0
+    ? (top3Total / this.mediaTotalPosts) * 100
+    : 0;
+
+
+// Concentración Top 5
+
+const top5Total = this.postsByMedia
+  .slice(0, 5)
+  .reduce(
+    (sum, item) => sum + item.total,
+    0
+  );
+
+this.top5MediaShare =
+  this.mediaTotalPosts > 0
+    ? (top5Total / this.mediaTotalPosts) * 100
+    : 0;
+
+// =========================================================
+// COMPARACIÓN CON PERÍODO ANTERIOR
+// =========================================================
+// =========================================================
+// COMPARACIÓN CON PERÍODO ANTERIOR
+// =========================================================
+
+const comparison = res?.comparison;
+
+this.postsChange =
+  comparison?.posts?.change !== undefined
+    ? comparison.posts.change
+    : null;
+
+this.previousPosts = Number(
+  comparison?.posts?.previous ?? 0
+);
+
+this.previousPeriodStart =
+  comparison?.period?.previous_start ?? '';
+
+this.previousPeriodEnd =
+  comparison?.period?.previous_end ?? '';
+
 
 
 if (repliesSentimentTotal > 0) {
@@ -898,7 +1173,7 @@ if (repliesSentimentTotal > 0) {
 
 }
 
-    console.log(res)
+  
    
     
     // Top 3 (tomas los primeros 3 del array ya ordenado)
@@ -1692,6 +1967,9 @@ getEntityPercent(
     4,
     Math.round((Number(total || 0) / max) * 100)
   );
+}
+abs(value: number): number {
+  return Math.abs(value);
 }
 formatRank(index: number): string {
   return String(index + 1).padStart(2, '0');

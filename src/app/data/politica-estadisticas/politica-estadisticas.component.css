@@ -3199,4 +3199,362 @@ background 0.12s ease,
     font-size: 14px;
   }
 }
+/* =========================================================
+   KPI — comparación con período anterior
+   ========================================================= */
+
+.kpi-footer {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.kpi-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+
+  padding: 3px 8px;
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* Subió */
+.kpi-change-up {
+  color: #15803d;
+  background: rgba(34, 197, 94, 0.10);
+}
+
+/* Bajó */
+.kpi-change-down {
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.10);
+}
+
+/* Sin cambio / sin comparación */
+.kpi-change-neutral {
+  color: #64748b;
+  background: rgba(100, 116, 139, 0.10);
+}
+
+.kpi-compare-text {
+  color: var(--muted, #64748b);
+  font-size: 12px;
+  font-weight: 500;
+}
+/* =========================================================
+   MEDIOS — PUBLICACIONES + SHARE OF VOICE
+   ========================================================= */
+
+.media-section {
+  min-width: 0;
+}
+
+.media-overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.85fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+
+/* =========================================================
+   PUBLICACIONES POR MEDIO
+   ========================================================= */
+
+.media-publications-card {
+  min-width: 0;
+}
+
+.chart-wrap--media {
+  position: relative;
+  width: 100%;
+  height: 390px;
+  min-height: 390px;
+}
+
+
+/* =========================================================
+   SHARE OF VOICE
+   ========================================================= */
+
+.share-of-voice-card {
+  min-width: 0;
+}
+
+.share-of-voice-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 4px;
+}
+
+
+/* =========================================================
+   MEDIO LÍDER
+   ========================================================= */
+
+.share-leader {
+  padding: 18px;
+  border: 1px solid var(--line, #e5e7eb);
+  border-radius: 16px;
+  background: var(--surface, #ffffff);
+}
+
+.share-leader-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.share-label {
+  display: block;
+  margin-bottom: 6px;
+
+  color: var(--muted, #64748b);
+
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.share-leader-name {
+  max-width: 230px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: var(--text, #0f172a);
+
+  font-size: 18px;
+  font-weight: 750;
+}
+
+.share-leader-percentage {
+  flex: 0 0 auto;
+
+  color: var(--text, #0f172a);
+
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+
+/* Barra */
+
+.share-progress {
+  width: 100%;
+  height: 7px;
+
+  margin-top: 16px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: #eef2f6;
+}
+
+.share-progress-fill {
+  height: 100%;
+
+  border-radius: inherit;
+
+  background: var(--accent, #111827);
+
+  transition: width 0.35s ease;
+}
+
+
+.share-leader-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+
+  margin-top: 9px;
+
+  color: var(--muted, #64748b);
+
+  font-size: 12px;
+}
+
+.share-leader-footer span:first-child {
+  color: var(--text, #0f172a);
+  font-weight: 650;
+}
+
+
+/* =========================================================
+   MÉTRICAS SHARE OF VOICE
+   ========================================================= */
+
+.share-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.share-metric-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  min-width: 0;
+  padding: 14px;
+
+  border: 1px solid var(--line, #e5e7eb);
+  border-radius: 14px;
+
+  background: var(--surface, #ffffff);
+}
+
+.share-metric-item--full {
+  grid-column: 1 / -1;
+}
+
+.share-metric-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+
+  border-radius: 11px;
+
+  background: #f1f5f9;
+  color: var(--text, #0f172a);
+}
+
+.share-metric-icon .material-icons {
+  font-size: 19px;
+}
+
+.share-metric-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.share-metric-label {
+  color: var(--muted, #64748b);
+
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.share-metric-value {
+  margin-top: 2px;
+
+  color: var(--text, #0f172a);
+
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.share-metric-content small {
+  margin-top: 2px;
+
+  color: var(--muted, #64748b);
+
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   NOTA
+   ========================================================= */
+
+.share-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  padding: 11px 12px;
+
+  border-radius: 12px;
+
+  background: #f8fafc;
+
+  color: var(--muted, #64748b);
+}
+
+.share-note .material-icons {
+  flex: 0 0 auto;
+
+  margin-top: 1px;
+
+  font-size: 16px;
+}
+
+.share-note p {
+  margin: 0;
+
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1050px) {
+
+  .media-overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-wrap--media {
+    height: 380px;
+  }
+
+}
+
+
+@media (max-width: 640px) {
+
+  .chart-wrap--media {
+    height: 420px;
+    min-height: 420px;
+  }
+
+  .share-leader {
+    padding: 15px;
+  }
+
+  .share-leader-name {
+    max-width: 170px;
+    font-size: 16px;
+  }
+
+  .share-leader-percentage {
+    font-size: 24px;
+  }
+
+  .share-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .share-metric-item--full {
+    grid-column: auto;
+  }
+
+  .share-leader-footer {
+    flex-direction: column;
+    gap: 3px;
+  }
+
+}
 

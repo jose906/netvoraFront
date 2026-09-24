@@ -124,6 +124,7 @@ export class PerfilComponent implements OnInit, OnDestroy {
 
   this.subx.add(s);
 }
+
 activateFreeTrial(): void {
 
   if (this.loading.freeTrial) {

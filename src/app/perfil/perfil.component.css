@@ -2168,3 +2168,21 @@
 
   color: #64748b;
 }
+.renewal-message {
+  margin-top: 16px;
+  padding: 12px 14px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+
+  background: #f8fafc;
+
+  font-size: 13px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.renewal-message strong {
+  color: #111827;
+  font-weight: 700;
+}

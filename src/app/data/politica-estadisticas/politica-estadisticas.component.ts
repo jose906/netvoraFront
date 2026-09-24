@@ -16,6 +16,7 @@ import { NETVORA_PALETTE, exportCanvasWithWhiteBg } from '../../utils/helpers';
 import { users } from '../../interfaces/users';
 import { AuthzService, UserRole } from '../../services/authz.service';
 import { AccountService } from '../../services/account.service';
+import { response } from 'express';
 
 type EntItem = { entidad: string; total: number };
 type TopUserItem = { usuario: string; total: number };
@@ -67,7 +68,15 @@ export class PoliticaEstadisticasComponent implements OnChanges, OnDestroy {
 
   // ===== KPI =====
   totalPosts = 0;
-  topLocacion: EntItem[] = [];
+
+// Comparación con período anterior
+postsChange: number | null = null;
+previousPosts = 0;
+previousPeriodStart = '';
+previousPeriodEnd = '';
+readonly Math = Math;
+
+topLocacion: EntItem[] = [];
   topOrganizacion: EntItem[] = [];
   topPersona: EntItem[] = [];
 
@@ -92,6 +101,18 @@ selectedTopicEntityType: TopicEntityType = 'persona';
 
   // ===== Extra: Índice por usuario =====
   userIndice: UserIndiceItem[] = [];
+
+  // ===== Share of Voice por medio =====
+postsByMedia: Array<{ usuario: string; total: number }> = [];
+
+mediaTotalPosts = 0;
+
+mediaLeader = '';
+mediaLeaderPosts = 0;
+mediaLeaderShare = 0;
+
+mediaTop3Share = 0;
+mediaTop5Share = 0;
 
 
   // ===== Chart selectors =====
@@ -134,6 +155,61 @@ selectedTopicEntityType: TopicEntityType = 'persona';
 topicsTimelineData: ChartData<'line'> = {
   labels: [],
   datasets: []
+};
+// ===== Publicaciones por medio =====
+postsByMediaChartData: ChartData<'bar'> = {
+  labels: [],
+  datasets: [
+    {
+      label: 'Publicaciones',
+      data: []
+    }
+  ]
+};
+
+postsByMediaChartOptions: ChartOptions<'bar'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+
+  indexAxis: 'y',
+
+  plugins: {
+    legend: {
+      display: false
+    },
+
+    tooltip: {
+      callbacks: {
+        label: (context) => {
+          const value = Number(context.raw ?? 0);
+
+          const share = this.mediaTotalPosts > 0
+            ? (value / this.mediaTotalPosts) * 100
+            : 0;
+
+          return `${value.toLocaleString()} publicaciones · ${share.toFixed(1)}%`;
+        }
+      }
+    }
+  },
+
+  scales: {
+    x: {
+      beginAtZero: true,
+      ticks: {
+        precision: 0
+      },
+      grid: {
+        display: false
+      }
+    },
+
+    y: {
+      grid: {
+        display: false
+      }
+    }
+  }
 };
 readonly topicsTimelineOptions: ChartOptions<'line'> = {
   responsive: true,
@@ -698,12 +774,27 @@ private getUsersToSend(): string[] {
 }
 
   private mapResponse(res: any): void {
+
+  
     // Total posts
     this.totalPosts = res?.total_posts?.total_posts ?? 0;
     this.totalReplies = res?.total_replies?.total ?? 0;
     this.totalRepliesNegativo = res?.total_replies?.negativo ?? 0;
     this.totalRepliesNeutro = res?.total_replies?.neutro ?? 0;
     this.totalRepliesPositivo = res?.total_replies?.positivo ?? 0; 
+
+    // Comparación de publicaciones
+    this.postsChange =
+      res?.comparison?.posts?.change ?? null;
+
+    this.previousPosts =
+      Number(res?.comparison?.posts?.previous ?? 0);
+
+    this.previousPeriodStart =
+      String(res?.comparison?.period?.previous_start ?? '');
+
+    this.previousPeriodEnd =
+      String(res?.comparison?.period?.previous_end ?? '');
 
    
 
@@ -1107,6 +1198,73 @@ this.userIndiceChartData = {
       backgroundColor: NETVORA_PALETTE.indice.positivo,
       borderRadius: 8,
       borderWidth: 0
+    }
+  ]
+};
+// =====================================================
+// SHARE OF VOICE POR MEDIO
+// =====================================================
+
+this.postsByMedia = Array.isArray(res?.posts_by_media)
+  ? res.posts_by_media.map((item: any) => ({
+      usuario: String(item?.usuario ?? ''),
+      total: Number(item?.total ?? 0)
+    }))
+  : [];
+
+this.mediaTotalPosts = Number(
+  res?.media_total_posts ?? 0
+);
+
+// Medio líder
+const leader = this.postsByMedia[0];
+
+this.mediaLeader = leader?.usuario ?? '';
+this.mediaLeaderPosts = leader?.total ?? 0;
+
+this.mediaLeaderShare = this.mediaTotalPosts > 0
+  ? (this.mediaLeaderPosts / this.mediaTotalPosts) * 100
+  : 0;
+
+// Concentración Top 3
+const top3Total = this.postsByMedia
+  .slice(0, 3)
+  .reduce(
+    (sum, item) => sum + item.total,
+    0
+  );
+
+this.mediaTop3Share = this.mediaTotalPosts > 0
+  ? (top3Total / this.mediaTotalPosts) * 100
+  : 0;
+
+// Concentración Top 5
+const top5Total = this.postsByMedia
+  .slice(0, 5)
+  .reduce(
+    (sum, item) => sum + item.total,
+    0
+  );
+
+this.mediaTop5Share = this.mediaTotalPosts > 0
+  ? (top5Total / this.mediaTotalPosts) * 100
+  : 0;
+  // =====================================================
+// GRÁFICA — PUBLICACIONES POR MEDIO
+// =====================================================
+
+this.postsByMediaChartData = {
+  labels: this.postsByMedia.map(
+    item => item.usuario
+  ),
+
+  datasets: [
+    {
+      label: 'Publicaciones',
+
+      data: this.postsByMedia.map(
+        item => item.total
+      )
     }
   ]
 };

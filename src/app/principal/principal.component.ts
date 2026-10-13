@@ -171,7 +171,7 @@ export class PrincipalComponent implements OnInit {
       .subscribe({
 
         next: (res: HomePageResponse) => {
-
+          console.log(res)
           const daily = res?.daily;
 
           this.todayLabel = daily?.fecha ?? '';

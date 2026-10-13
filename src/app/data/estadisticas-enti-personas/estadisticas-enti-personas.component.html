@@ -391,7 +391,7 @@
         </h2>
 
         <p>
-          Evolución diaria del volumen de publicaciones.
+          Evolución del volumen de publicaciones según el intervalo seleccionado.
         </p>
 
       </div>
@@ -406,15 +406,29 @@
         <div>
 
           <span class="activity-chart-title">
-            Evolución diaria
+            Evolución de publicaciones
           </span>
 
           <span class="activity-chart-subtitle">
-            Publicaciones detectadas por día
+            {{ timelineInterval === '1d' ? 'Publicaciones por día' : 'Publicaciones por intervalo horario' }}
           </span>
 
         </div>
 
+
+        <label class="timeline-interval-picker">
+          <span>Intervalo</span>
+          <select
+            class="select"
+            [ngModel]="timelineInterval"
+            (ngModelChange)="onTimelineIntervalChange($event)"
+            [disabled]="loading"
+            aria-label="Intervalo del gráfico de actividad">
+            <option *ngFor="let option of timelineIntervals" [ngValue]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </label>
 
         <button
           type="button"

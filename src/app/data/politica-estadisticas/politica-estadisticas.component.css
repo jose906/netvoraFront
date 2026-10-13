@@ -3557,4 +3557,8 @@ background 0.12s ease,
   }
 
 }
+.timeline-granularity-label { font-size: 12px; color: #64748b; margin-left: auto; }
+.timeline-granularity-select { min-height: 34px; min-width: 105px; padding: 5px 8px; border: 1px solid #dbe1ea; border-radius: 8px; background: #fff; color: #334155; }
+@media (max-width: 640px) { .activity-chart-header { flex-wrap: wrap; gap: 10px; } .timeline-granularity-label { margin-left: 0; } }
+
 

@@ -389,7 +389,7 @@
         </h2>
 
         <p>
-          Evolución diaria del volumen de publicaciones.
+          Evolución del volumen de publicaciones según el intervalo seleccionado.
         </p>
 
       </div>
@@ -404,15 +404,26 @@
         <div>
 
           <span class="activity-chart-title">
-            Evolución diaria
+            Evolución de publicaciones
           </span>
 
           <span class="activity-chart-subtitle">
-            Publicaciones detectadas por día
+            {{ timelineInterval === '1d' ? 'Publicaciones por día' : 'Publicaciones por intervalo de ' + timelineInterval }}
           </span>
 
         </div>
 
+
+        <label class="timeline-granularity-label" for="categoryTimelineInterval">Intervalo</label>
+        <select
+          id="categoryTimelineInterval"
+          class="select timeline-granularity-select"
+          [ngModel]="timelineInterval"
+          (ngModelChange)="onTimelineIntervalChange($event)">
+          <option *ngFor="let item of timelineIntervals" [ngValue]="item.value">
+            {{ item.label }}
+          </option>
+        </select>
 
         <button
           type="button"

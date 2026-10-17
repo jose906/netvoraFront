@@ -30,9 +30,6 @@ export class ApiService {
   constructor(private http: HttpClient) { }
 
 
-  getPosts(): Observable<JsonData[]> {
-    return this.http.get<JsonData[]>(`${this.apiUrl+'politica'}`);
-  }
   getAllPosts(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<NewsData[]>(`${this.apiUrl+'tweets'}`,body,{headers});
@@ -75,16 +72,8 @@ getTopicPulse(body: {
     { headers }
   );
 }
-  getPostsAmbiente(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<NewsData[]>(this.apiUrl+'ambiente',body,{headers});
-  }
 
 
-  getPostsEco(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<NewsData[]>(this.apiUrl+'economia',body,{headers});
-  }
   
 getRepliesSummaryMany(tweetIds: any[]) {
   return this.http.post<any[]>(`${this.apiUrl}get_sentimient`,{ idTweet: tweetIds } // ✅ lista
@@ -92,26 +81,7 @@ getRepliesSummaryMany(tweetIds: any[]) {
 }
 
   
-  getPostsSegu(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<NewsData[]>(this.apiUrl+'seguridad',body,{headers});
-  }
-  getPostsDeport(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<NewsData[]>(this.apiUrl+'deportes',body,{headers});
-  }
-  getPostsSocial(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<NewsData[]>(this.apiUrl+'social',body,{headers});
-  }
-  getPostsEduca(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<NewsData[]>(this.apiUrl+'educacion',body,{headers});
-  }
-   getPostsOtros(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<NewsData[]>(this.apiUrl+'otros',body,{headers});
-  }
+
   
   getResumen(dato:{url:string}):Observable<any[]>{
   

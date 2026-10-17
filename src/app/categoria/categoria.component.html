@@ -1,56 +1,34 @@
+
 <div class="page">
 
-  <!-- =====================================================
-       NETVORA SIGNAL
-  ====================================================== -->
-
+  <!-- ENCABEZADO -->
   <header class="signal-hero">
-
     <div class="signal-hero-top">
 
       <div class="signal-heading">
-
         <div class="signal-context">
-
           <span class="signal-mark">
             <span class="signal-wave"></span>
           </span>
-
-          <span class="signal-context-label">
-            NETVORA SIGNAL
-          </span>
-
+          <span class="signal-context-label">NETVORA SIGNAL</span>
           <span class="signal-separator"></span>
-
           <span class="signal-live">
             <span class="signal-live-dot"></span>
             En monitoreo
           </span>
-
         </div>
 
-
-        <h1>
-          {{ categoriaLabel }}
-        </h1>
+        <h1>{{ categoriaLabel }}</h1>
 
         <p class="signal-description">
           Sigue las publicaciones, actividad y reacción
           alrededor de {{ categoriaLabel }}.
         </p>
-
       </div>
 
-
-      <!-- =================================================
-           SELECTOR DE CATEGORÍA
-      ================================================== -->
-
+      <!-- Selector de categoría: se conserva -->
       <div class="hero-category-switch">
-
-        <span class="hero-category-label">
-          EXPLORANDO
-        </span>
+        <span class="hero-category-label">EXPLORANDO</span>
 
         <mat-form-field
           appearance="outline"
@@ -64,118 +42,70 @@
             <mat-option
               *ngFor="let category of categories"
               [value]="category.path">
-
               {{ category.label }}
-
             </mat-option>
 
           </mat-select>
-
         </mat-form-field>
-
       </div>
-
     </div>
 
-
-    <!-- =====================================================
-         NETVORA PULSE
-    ====================================================== -->
-
+    <!-- RESUMEN DEL MONITOREO -->
     <section class="signal-pulse">
 
-      <!-- RESUMEN -->
-
       <div class="pulse-summary">
-
         <div class="pulse-section-head">
-
           <div>
-
-            <span class="pulse-kicker">
-              NETVORA PULSE
-            </span>
-
-            <h2>
-              Estado de la conversación
-            </h2>
-
+            <span class="pulse-kicker">NETVORA PULSE</span>
+            <h2>Estado de la conversación</h2>
           </div>
 
           <span
             *ngIf="cargandoPulse"
             class="pulse-loading">
-
             Actualizando…
-
           </span>
-
         </div>
-
 
         <div class="pulse-metrics">
 
-          <!-- PUBLICACIONES -->
-
           <div class="pulse-metric">
-
             <span class="pulse-metric-label">
               PUBLICACIONES
             </span>
-
             <strong class="pulse-metric-value">
               {{ totalPublicaciones }}
             </strong>
-
             <span class="pulse-metric-caption">
               en el período
             </span>
-
           </div>
 
-
-          <!-- MEDIOS -->
-
           <div class="pulse-metric">
-
             <span class="pulse-metric-label">
               MEDIOS
             </span>
-
             <strong class="pulse-metric-value">
               {{ totalMedios }}
             </strong>
-
             <span class="pulse-metric-caption">
               participando
             </span>
-
           </div>
 
-
-          <!-- COMENTARIOS -->
-
           <div class="pulse-metric">
-
             <span class="pulse-metric-label">
               COMENTARIOS
             </span>
-
             <strong class="pulse-metric-value">
               {{ totalComentarios }}
             </strong>
-
             <span class="pulse-metric-caption">
               detectados
             </span>
-
           </div>
 
-
-          <!-- TONO -->
-
           <div class="pulse-metric">
-
             <span class="pulse-metric-label">
               TONO DOMINANTE
             </span>
@@ -183,66 +113,36 @@
             <strong
               class="pulse-metric-value pulse-tone"
               [ngClass]="{
-                'positive':
-                  sentimientoDominante.toLowerCase() === 'positivo',
-
-                'negative':
-                  sentimientoDominante.toLowerCase() === 'negativo',
-
-                'neutral':
-                  sentimientoDominante.toLowerCase() === 'neutro'
+                'positive': sentimientoDominante.toLowerCase() === 'positivo',
+                'negative': sentimientoDominante.toLowerCase() === 'negativo',
+                'neutral': sentimientoDominante.toLowerCase() === 'neutro'
               }">
-
               {{ sentimientoDominante }}
-
             </strong>
 
             <span class="pulse-metric-caption">
               en publicaciones
             </span>
-
           </div>
 
         </div>
-
       </div>
 
-
-      <!-- =================================================
-           ACTIVIDAD 7 DÍAS
-      ================================================== -->
-
+      <!-- ACTIVIDAD 7 DÍAS -->
       <div class="pulse-activity">
-
         <div class="pulse-block-head">
-
           <div>
-
             <span class="pulse-block-kicker">
               PULSO · 7 DÍAS
             </span>
-
-            <h3>
-              Actividad de la conversación
-            </h3>
-
+            <h3>Actividad de la conversación</h3>
           </div>
-
 
           <div class="pulse-average">
-
-            <strong>
-              {{ pulseAverage7d }}
-            </strong>
-
-            <span>
-              promedio diario
-            </span>
-
+            <strong>{{ pulseAverage7d }}</strong>
+            <span>promedio diario</span>
           </div>
-
         </div>
-
 
         <div
           class="pulse-chart"
@@ -257,203 +157,118 @@
             </span>
 
             <div class="pulse-bar-track">
-
               <div
                 class="pulse-bar"
                 [style.height.%]="getPulseHeight(item.total)">
               </div>
-
             </div>
 
             <span class="pulse-bar-date">
               {{ formatPulseDate(item.date) }}
             </span>
-
           </div>
-
         </div>
-
 
         <div
           class="pulse-chart-empty"
           *ngIf="pulseActivity.length === 0">
-
           Sin actividad registrada en los últimos 7 días.
-
         </div>
-
       </div>
 
-
-      <!-- =================================================
-           SENTIMIENTO
-      ================================================== -->
-
+      <!-- SENTIMIENTO GENERAL -->
       <div class="pulse-sentiment">
-
         <div class="pulse-block-head">
-
           <div>
-
-            <span class="pulse-block-kicker">
-              TONO
-            </span>
-
-            <h3>
-              Sentimiento
-            </h3>
-
+            <span class="pulse-block-kicker">TONO</span>
+            <h3>Sentimiento</h3>
           </div>
-
         </div>
 
-
-        <!-- POSITIVO -->
-
         <div class="sentiment-row">
-
           <div class="sentiment-row-top">
-
             <span class="sentiment-name">
-
               <span class="sentiment-dot positive"></span>
-
               Positivo
-
             </span>
-
-            <strong>
-              {{ porcentajePositivo }}%
-            </strong>
-
+            <strong>{{ porcentajePositivo }}%</strong>
           </div>
 
           <div class="sentiment-track">
-
             <div
               class="sentiment-fill positive"
               [style.width.%]="porcentajePositivo">
             </div>
-
           </div>
 
           <span class="sentiment-count">
             {{ positivos }} publicaciones
           </span>
-
         </div>
 
-
-        <!-- NEUTRO -->
-
         <div class="sentiment-row">
-
           <div class="sentiment-row-top">
-
             <span class="sentiment-name">
-
               <span class="sentiment-dot neutral"></span>
-
               Neutro
-
             </span>
-
-            <strong>
-              {{ porcentajeNeutro }}%
-            </strong>
-
+            <strong>{{ porcentajeNeutro }}%</strong>
           </div>
 
           <div class="sentiment-track">
-
             <div
               class="sentiment-fill neutral"
               [style.width.%]="porcentajeNeutro">
             </div>
-
           </div>
 
           <span class="sentiment-count">
             {{ neutros }} publicaciones
           </span>
-
         </div>
 
-
-        <!-- NEGATIVO -->
-
         <div class="sentiment-row">
-
           <div class="sentiment-row-top">
-
             <span class="sentiment-name">
-
               <span class="sentiment-dot negative"></span>
-
               Negativo
-
             </span>
-
-            <strong>
-              {{ porcentajeNegativo }}%
-            </strong>
-
+            <strong>{{ porcentajeNegativo }}%</strong>
           </div>
 
           <div class="sentiment-track">
-
             <div
               class="sentiment-fill negative"
               [style.width.%]="porcentajeNegativo">
             </div>
-
           </div>
 
           <span class="sentiment-count">
             {{ negativos }} publicaciones
           </span>
-
         </div>
-
       </div>
-
-
-      <!-- ERROR PULSE -->
 
       <div
         *ngIf="!cargandoPulse && errorPulse"
         class="pulse-error">
-
         {{ errorPulse }}
-
       </div>
 
     </section>
-
   </header>
 
-
-  <!-- =====================================================
-       FILTROS
-  ====================================================== -->
-
+  <!-- FILTROS -->
   <section class="category-controls">
-
     <div class="filters">
-
-      <!-- FECHA -->
 
       <mat-form-field
         appearance="outline"
         class="filter-date">
 
-        <mat-label>
-          Fechas
-        </mat-label>
+        <mat-label>Fechas</mat-label>
 
-        <mat-date-range-input
-          [rangePicker]="picker">
-
+        <mat-date-range-input [rangePicker]="picker">
           <input
             matStartDate
             placeholder="Inicio"
@@ -465,7 +280,6 @@
             placeholder="Fin"
             [(ngModel)]="endDate"
             [ngModelOptions]="{ standalone: true }">
-
         </mat-date-range-input>
 
         <mat-datepicker-toggle
@@ -473,22 +287,15 @@
           [for]="picker">
         </mat-datepicker-toggle>
 
-        <mat-date-range-picker
-          #picker>
+        <mat-date-range-picker #picker>
         </mat-date-range-picker>
-
       </mat-form-field>
-
-
-      <!-- MEDIOS -->
 
       <mat-form-field
         appearance="outline"
         class="filter-users">
 
-        <mat-label>
-          Medios
-        </mat-label>
+        <mat-label>Medios</mat-label>
 
         <mat-select
           [(ngModel)]="selectedUsers"
@@ -498,25 +305,17 @@
           <mat-option
             *ngFor="let user of users"
             [value]="user.idTweetUser.toString()">
-
             {{ user.TweetUser }}
-
           </mat-option>
 
         </mat-select>
-
       </mat-form-field>
-
-
-      <!-- BÚSQUEDA -->
 
       <mat-form-field
         appearance="outline"
         class="filter-search">
 
-        <mat-label>
-          Buscar
-        </mat-label>
+        <mat-label>Buscar</mat-label>
 
         <input
           matInput
@@ -530,137 +329,83 @@
           matSuffix
           mat-icon-button
           type="button"
+          aria-label="Borrar búsqueda"
           (click)="searchText = ''">
 
-          <mat-icon>
-            close
-          </mat-icon>
-
+          <mat-icon>close</mat-icon>
         </button>
-
       </mat-form-field>
 
-
-      <!-- ACCIONES -->
-
       <div class="filter-actions">
-
         <button
           type="button"
           class="btn btn-primary"
           [disabled]="cargando"
           (click)="filtrar()">
-
           Aplicar
-
         </button>
-
 
         <button
           type="button"
           class="btn btn-ghost"
           [disabled]="cargando"
           (click)="resetFiltros()">
-
           Limpiar
-
         </button>
-
       </div>
 
     </div>
-
   </section>
 
-
-  <!-- =====================================================
-       ERRORES
-  ====================================================== -->
-
+  <!-- ERRORES -->
   <div
     *ngIf="error"
-    class="feedback feedback-error">
+    class="feedback feedback-error"
+    role="alert">
 
-    <mat-icon>
-      error_outline
-    </mat-icon>
-
-    <span>
-      {{ error }}
-    </span>
-
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ error }}</span>
   </div>
-
 
   <div
     *ngIf="errorGuardar"
-    class="feedback feedback-error">
+    class="feedback feedback-error"
+    role="alert">
 
-    <mat-icon>
-      bookmark_remove
-    </mat-icon>
-
-    <span>
-      {{ errorGuardar }}
-    </span>
-
+    <mat-icon>bookmark_remove</mat-icon>
+    <span>{{ errorGuardar }}</span>
   </div>
 
-
-  <!-- =====================================================
-       LOADING
-  ====================================================== -->
-
+  <!-- CARGANDO -->
   <section
     *ngIf="cargando"
-    class="loading-state">
+    class="loading-state"
+    aria-label="Cargando publicaciones">
 
     <div
       *ngFor="let i of [1,2,3]"
       class="skeleton-card">
 
       <div class="skeleton skeleton-small"></div>
-
       <div class="skeleton skeleton-title"></div>
-
       <div class="skeleton skeleton-line"></div>
-
       <div class="skeleton skeleton-line"></div>
-
       <div class="skeleton skeleton-line short"></div>
-
     </div>
-
   </section>
 
-
-  <!-- =====================================================
-       EMPTY
-  ====================================================== -->
-
+  <!-- SIN RESULTADOS -->
   <section
-    *ngIf="
-      !cargando &&
-      !error &&
-      datos.length === 0
-    "
+    *ngIf="!cargando && !error && datos.length === 0"
     class="empty-state">
 
     <div class="empty-icon">
-
-      <mat-icon>
-        search_off
-      </mat-icon>
-
+      <mat-icon>search_off</mat-icon>
     </div>
 
-    <span class="empty-kicker">
-      SIN RESULTADOS
-    </span>
+    <span class="empty-kicker">SIN RESULTADOS</span>
 
-    <h2>
-      No encontramos publicaciones
-    </h2>
+    <h2>No encontramos publicaciones</h2>
 
     <p>
       No hay publicaciones de {{ categoriaLabel }}
@@ -671,393 +416,194 @@
       type="button"
       class="btn btn-ghost"
       (click)="resetFiltros()">
-
       Limpiar filtros
-
     </button>
-
   </section>
 
-
-  <!-- =====================================================
-       RESULTADOS
-  ====================================================== -->
-
+  <!-- RESULTADOS -->
   <section
-    *ngIf="
-      !cargando &&
-      datos.length > 0
-    "
+    *ngIf="!cargando && datos.length > 0"
     class="results">
 
     <div class="results-header">
-
-      <div>
-
-        <span class="results-kicker">
-          ACTIVIDAD
-        </span>
-
-        <h2>
-          {{ categoriaLabel }}
-        </h2>
-
-        <p>
-          Publicaciones relacionadas con esta categoría.
-        </p>
-
-      </div>
-
+     
 
       <div class="results-page">
-
-        <span>
-          Página
-        </span>
-
-        <strong>
-          {{ currentPage }}
-        </strong>
-
+        <span>Página</span>
+        <strong>{{ currentPage }}</strong>
       </div>
-
     </div>
 
-
-    <!-- ===================================================
-         PUBLICACIONES
-    ==================================================== -->
-
+    <!-- PUBLICACIONES -->
     <article
       *ngFor="let item of datos"
       class="news-card"
       #cardRef>
 
-      <!-- HEADER -->
-
       <header class="news-card-header">
 
         <div class="news-source">
-
           <div class="source-avatar">
-
-            {{
-              (item.TweetUser || 'F')
-                .charAt(0)
-                .toUpperCase()
-            }}
-
+            {{ (item.TweetUser || 'F').charAt(0).toUpperCase() }}
           </div>
 
-
           <div class="source-copy">
-
             <strong class="source-name">
-
-              {{
-                item.TweetUser ||
-                'Fuente'
-              }}
-
+              {{ item.TweetUser || 'Fuente' }}
             </strong>
-
 
             <span
               *ngIf="item.created"
               class="source-date">
-
-              {{
-                formatBoliviaDate(
-                  item.created
-                )
-              }}
-
+              {{ formatBoliviaDate(item.created) }}
             </span>
-
           </div>
-
         </div>
 
-
+        <!-- Sin etiqueta repetida de categoría -->
         <div class="news-actions">
-
-          <!-- CATEGORÍA -->
-
-          <span class="category-chip">
-            {{ categoriaLabel }}
-          </span>
-
-
-          <!-- SENTIMIENTO -->
 
           <span
             *ngIf="item.sentimiento"
             class="sentiment-chip"
             [ngClass]="{
-              'positive':
-                item.sentimiento === 'positivo',
-
-              'negative':
-                item.sentimiento === 'negativo',
-
-              'neutral':
-                item.sentimiento === 'neutro'
+              'positive': item.sentimiento === 'positivo',
+              'negative': item.sentimiento === 'negativo',
+              'neutral': item.sentimiento === 'neutro'
             }">
 
             <span class="sentiment-chip-dot"></span>
-
             {{ item.sentimiento }}
-
           </span>
-
-
-          <!-- GUARDAR -->
 
           <button
             mat-icon-button
+            type="button"
             class="icon-action"
+            aria-label="Guardar publicación"
             [class.active]="isGuardado(item.tweetid)"
-            [disabled]="
-              savingIds.has(
-                item.tweetid.toString()
-              )
-            "
+            [disabled]="savingIds.has(item.tweetid.toString())"
             (click)="toggleGuardar(item)">
 
             <mat-icon>
-
-              {{
-                isGuardado(item.tweetid)
-                  ? 'bookmark'
-                  : 'bookmark_border'
-              }}
-
+              {{ isGuardado(item.tweetid)
+                ? 'bookmark'
+                : 'bookmark_border' }}
             </mat-icon>
-
           </button>
-
-
-          <!-- DESCARGAR -->
 
           <button
             mat-icon-button
+            type="button"
             class="icon-action"
-            (click)="
-              downloadCard(
-                cardRef,
-                item.tweetid
-              )
-            ">
+            aria-label="Descargar publicación"
+            (click)="downloadCard(cardRef, item.tweetid)">
 
-            <mat-icon>
-              download
-            </mat-icon>
-
+            <mat-icon>download</mat-icon>
           </button>
 
         </div>
-
       </header>
 
-
-      <!-- =================================================
-           TEXTO
-      ================================================== -->
-
+      <!-- CONTENIDO -->
       <div
         class="news-text"
         [innerHTML]="formatText(item.text)">
       </div>
 
-
-      <!-- =================================================
-           ENTIDADES DETECTADAS
-      ================================================== -->
-
+      <!-- ENTIDADES -->
       <div
-        *ngIf="
-          item.persona ||
-          item.organizacion ||
-          item.lugar
-        "
+        *ngIf="item.persona || item.organizacion || item.lugar"
         class="entities-block">
 
-        <span class="entities-label">
-          MENCIONADOS
-        </span>
-
+        <span class="entities-label">MENCIONADOS</span>
 
         <div class="entities">
-
           <span
             *ngIf="item.persona"
             class="entity">
-
-            <mat-icon>
-              person
-            </mat-icon>
-
+            <mat-icon>person</mat-icon>
             {{ item.persona }}
-
           </span>
-
 
           <span
             *ngIf="item.organizacion"
             class="entity">
-
-            <mat-icon>
-              business
-            </mat-icon>
-
+            <mat-icon>business</mat-icon>
             {{ item.organizacion }}
-
           </span>
-
 
           <span
             *ngIf="item.lugar"
             class="entity">
-
-            <mat-icon>
-              location_on
-            </mat-icon>
-
+            <mat-icon>location_on</mat-icon>
             {{ item.lugar }}
-
           </span>
-
         </div>
-
       </div>
 
-
-      <!-- =================================================
-           CONVERSACIÓN PRO / ADMIN
-      ================================================== -->
-
+      <!-- CONVERSACIÓN: PRO / ADMIN -->
       <ng-container
-        *ngIf="
-          !accessLoading &&
-          canViewReplies
-        ">
+        *ngIf="!accessLoading && canViewReplies">
 
         <div
           class="conversation-summary"
-          *ngIf="
-            getRepliesCounts(
-              item.tweetid
-            ) as replies
-          ">
+          *ngIf="getRepliesCounts(item.tweetid) as replies">
 
           <div class="conversation-head">
-
             <div>
-
               <span class="conversation-kicker">
                 CONVERSACIÓN
               </span>
-
-              <h3>
-                Reacción de la audiencia
-              </h3>
-
+              <h3>Reacción de la audiencia</h3>
             </div>
 
-
             <span class="conversation-total">
-
               {{
                 replies.positivo +
                 replies.neutro +
                 replies.negativo
               }}
-
               comentarios
-
             </span>
-
           </div>
-
 
           <div class="conversation-stats">
 
-            <!-- POSITIVO -->
-
             <div class="conversation-stat positive">
-
               <span class="conversation-stat-label">
-
                 <span class="conversation-dot"></span>
-
                 Positivos
-
               </span>
-
-              <strong>
-                {{ replies.positivo }}
-              </strong>
-
+              <strong>{{ replies.positivo }}</strong>
             </div>
-
-
-            <!-- NEUTRO -->
 
             <div class="conversation-stat neutral">
-
               <span class="conversation-stat-label">
-
                 <span class="conversation-dot"></span>
-
                 Neutros
-
               </span>
-
-              <strong>
-                {{ replies.neutro }}
-              </strong>
-
+              <strong>{{ replies.neutro }}</strong>
             </div>
 
-
-            <!-- NEGATIVO -->
-
             <div class="conversation-stat negative">
-
               <span class="conversation-stat-label">
-
                 <span class="conversation-dot"></span>
-
                 Negativos
-
               </span>
-
-              <strong>
-                {{ replies.negativo }}
-              </strong>
-
+              <strong>{{ replies.negativo }}</strong>
             </div>
 
           </div>
-
         </div>
-
       </ng-container>
 
-
-      <!-- =================================================
-           CONVERSACIÓN BLOQUEADA
-      ================================================== -->
-
+      <!-- ANÁLISIS BLOQUEADO -->
       <div
-        *ngIf="
-          !accessLoading &&
-          !canViewReplies
-        "
+        *ngIf="!accessLoading && !canViewReplies"
         class="conversation-locked">
 
         <div class="locked-copy">
-
           <span class="locked-kicker">
             ANÁLISIS DE COMENTARIOS
           </span>
@@ -1070,35 +616,23 @@
             Analiza el sentimiento de los comentarios
             y detecta cómo evoluciona la conversación.
           </p>
-
         </div>
-
 
         <div
           class="locked-preview"
           aria-hidden="true">
-
           <span></span>
           <span></span>
           <span></span>
-
         </div>
 
-
-        <span class="pro-badge">
-          PRO
-        </span>
-
+        <span class="pro-badge">PRO</span>
       </div>
 
     </article>
 
-
-    <!-- ===================================================
-         PAGINACIÓN
-    ==================================================== -->
-
-    <nav class="pagination">
+    <!-- PAGINACIÓN -->
+    <nav class="pagination" aria-label="Páginas de publicaciones">
 
       <button
         type="button"
@@ -1106,27 +640,14 @@
         [disabled]="currentPage <= 1"
         (click)="loadPreviousPage()">
 
-        <mat-icon>
-          chevron_left
-        </mat-icon>
-
+        <mat-icon>chevron_left</mat-icon>
         Anterior
-
       </button>
 
-
       <div class="pagination-current">
-
-        <span>
-          PÁGINA
-        </span>
-
-        <strong>
-          {{ currentPage }}
-        </strong>
-
+        <span>PÁGINA</span>
+        <strong>{{ currentPage }}</strong>
       </div>
-
 
       <button
         type="button"
@@ -1135,15 +656,10 @@
         (click)="loadNextPage()">
 
         Siguiente
-
-        <mat-icon>
-          chevron_right
-        </mat-icon>
-
+        <mat-icon>chevron_right</mat-icon>
       </button>
 
     </nav>
 
   </section>
-
 </div>

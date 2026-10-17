@@ -1,244 +1,599 @@
+
+<!-- ==========================================
+     MENÚ DE CATEGORÍAS
+=========================================== -->
+
 <header class="top-menu">
-  <nav class="menu-items" aria-label="Categorías">
-    <button
-      type="button"
-      (click)="onSelect('inicio')"
-      [class.is-active]="activeCategory === 'inicio'">
-      Inicio
-    </button>
+  <nav class="menu-items" aria-label="Secciones de monitoreo">
 
     <button
+      *ngFor="let category of categoryTabs; trackBy: trackByCategory"
       type="button"
-      (click)="onSelect('politica')"
-      [class.is-active]="activeCategory === 'politica'">
-      Política
+      [class.is-active]="activeCategory === category.key"
+      [attr.aria-pressed]="activeCategory === category.key"
+      [disabled]="guardandoCambio"
+      (click)="onSelect(category.key)">
+
+      {{ category.label }}
     </button>
 
-    <button
-      type="button"
-      (click)="onSelect('economia')"
-      [class.is-active]="activeCategory === 'economia'">
-      Economía
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('seguridad')"
-      [class.is-active]="activeCategory === 'seguridad'">
-      Seguridad
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('deportes')"
-      [class.is-active]="activeCategory === 'deportes'">
-      Deportes
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('salud')"
-      [class.is-active]="activeCategory === 'salud'">
-      Salud
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('sociedad')"
-      [class.is-active]="activeCategory === 'sociedad'">
-      Sociedad
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('educacion')"
-      [class.is-active]="activeCategory === 'educacion'">
-      Educación
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('gestion')"
-      [class.is-active]="activeCategory === 'gestion'">
-      Gestiones Públicas
-    </button>
-    <button
-      type="button"
-      (click)="onSelect('ambiente')"
-      [class.is-active]="activeCategory === 'ambiente'">
-      Medio Ambiente
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('otros')"
-      [class.is-active]="activeCategory === 'otros'">
-      Otros
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('entidades')"
-      [class.is-active]="activeCategory === 'entidades'">
-      Entidades Públicas
-    </button>
-
-    <button
-      type="button"
-      (click)="onSelect('personas')"
-      [class.is-active]="activeCategory === 'personas'">
-      Personas Públicas
-    </button>
   </nav>
 </header>
 
 <div class="page">
-  <!-- Filtros -->
-  <section class="filters-section">
-    <div class="filters-header">
-      <h3>
-        <mat-icon>tune</mat-icon>
-        Filtros
-      </h3>
 
-      <span class="page-indicator">Categoría: {{ activeCategory }}</span>
+  <!-- ========================================
+       ENCABEZADO
+  ========================================= -->
+
+  <section class="admin-heading">
+    <div>
+      <span class="section-kicker">
+        NETVORA · ADMINISTRACIÓN
+      </span>
+
+      <h1>Revisión de publicaciones</h1>
+
+      <p>
+        Consulta, verifica y corrige la clasificación
+        de las publicaciones monitoreadas.
+      </p>
+    </div>
+
+    <div class="current-context">
+      <span>EXPLORANDO</span>
+      <strong>{{ activeOption.label }}</strong>
+    </div>
+  </section>
+
+  <!-- ========================================
+       FILTROS
+  ========================================= -->
+
+  <section class="filters-section">
+
+    <div class="filters-header">
+      <div>
+        <span class="section-kicker">CONSULTA</span>
+        <h2>Filtros de publicaciones</h2>
+      </div>
+
+      <span
+        class="filter-loading"
+        *ngIf="cargandoUsuarios">
+        Cargando cuentas…
+      </span>
     </div>
 
     <div class="filters-row">
-      <mat-form-field appearance="outline" class="filter-item">
+
+      <!-- FECHAS -->
+      <mat-form-field
+        appearance="outline"
+        class="filter-item">
+
         <mat-label>Rango de fechas</mat-label>
+
         <mat-date-range-input [rangePicker]="picker">
-          <input matStartDate placeholder="Inicio" [(ngModel)]="startDate" />
-          <input matEndDate placeholder="Fin" [(ngModel)]="endDate" />
+
+          <input
+            matStartDate
+            placeholder="Desde"
+            [(ngModel)]="startDate">
+
+          <input
+            matEndDate
+            placeholder="Hasta"
+            [(ngModel)]="endDate">
+
         </mat-date-range-input>
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-date-range-picker #picker></mat-date-range-picker>
+
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="picker">
+        </mat-datepicker-toggle>
+
+        <mat-date-range-picker #picker>
+        </mat-date-range-picker>
+
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="filter-item">
-        <mat-label>Seleccionar usuarios</mat-label>
-        <mat-select [(ngModel)]="selectedUsers" multiple>
-          <mat-option *ngFor="let user of users" [value]="user.idTweetUser">
+      <!-- CUENTAS -->
+      <mat-form-field
+        appearance="outline"
+        class="filter-item">
+
+        <mat-label>
+          {{ activeOption.accountType === 'Medio'
+            ? 'Medios'
+            : activeOption.accountType === 'Entidad'
+              ? 'Entidades'
+              : 'Personas' }}
+        </mat-label>
+
+        <mat-select
+          [(ngModel)]="selectedUsers"
+          [disabled]="cargandoUsuarios"
+          multiple>
+
+          <mat-option
+            *ngFor="let user of users"
+            [value]="user.idTweetUser.toString()">
+
             {{ user.TweetUser }}
+
           </mat-option>
+
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="filter-item">
-        <mat-label>Buscar</mat-label>
-        <input matInput [(ngModel)]="searchText" placeholder="Texto de búsqueda" />
+      <!-- BÚSQUEDA -->
+      <mat-form-field
+        appearance="outline"
+        class="filter-item filter-search">
+
+        <mat-label>Buscar publicaciones</mat-label>
+
+        <input
+          matInput
+          [(ngModel)]="searchText"
+          (keyup.enter)="filtrar()"
+          placeholder="Palabra, persona, institución...">
+
+        <button
+          *ngIf="searchText"
+          matSuffix
+          mat-icon-button
+          type="button"
+          aria-label="Borrar búsqueda"
+          (click)="searchText = ''">
+
+          <mat-icon>close</mat-icon>
+        </button>
       </mat-form-field>
 
+      <!-- BOTONES -->
       <div class="filter-buttons">
-        <button mat-flat-button color="primary" class="filter-btn" (click)="filtrar()">
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="cargando || cargandoUsuarios || guardandoCambio"
+          (click)="filtrar()">
           <mat-icon>search</mat-icon>
-          Filtrar
+          Aplicar
         </button>
 
-        <button mat-stroked-button class="filter-btn" (click)="limpiar()">
-          <mat-icon>refresh</mat-icon>
+        <button
+          type="button"
+          class="btn btn-ghost"
+          [disabled]="cargando || cargandoUsuarios || guardandoCambio"
+          (click)="limpiar()">
           Limpiar
         </button>
+
       </div>
+
     </div>
   </section>
 
-  <!-- Estado -->
-  <div *ngIf="cargando" class="state">⏳ Cargando noticias...</div>
-  <div *ngIf="error" class="state state-error">{{ error }}</div>
+  <!-- ========================================
+       AVISOS
+  ========================================= -->
 
-  <!-- Lista -->
-  <section *ngIf="!cargando && datos.length" class="news-container">
-    <article *ngFor="let item of datos" class="news-item">
+  <div
+    class="notice notice-error"
+    *ngIf="error"
+    role="alert">
+    {{ error }}
+  </div>
 
-      <div class="news-header">
-        <div class="news-title">{{ item.TweetUser }}</div>
+  <div
+    class="notice notice-warning"
+    *ngIf="errorUsuarios"
+    role="status">
+    {{ errorUsuarios }}
+  </div>
 
-        <!-- ✅ Pills derecha: sentimiento + categoría -->
-        <div class="chips-right">
-          <span
-            class="status-chip"
-            [ngClass]="{
-              negativo: item.sentimiento === 'negativo',
-              neutral: item.sentimiento === 'neutro',
-              positivo: item.sentimiento === 'positivo'
-            }"
-          >
-            {{ item.sentimiento }}
-          </span>
+  <div
+    class="notice notice-success"
+    *ngIf="avisoExito"
+    role="status">
 
-          <!-- ✅ NUEVO: pill de categoría -->
-          <span class="category-chip">
-            {{ item.categoria }}
-          </span>
-        </div>
-      </div>
+    <mat-icon>check_circle_outline</mat-icon>
+    {{ avisoExito }}
+  </div>
 
-      <p class="news-text">{{ item.text }}</p>
+  <!-- ========================================
+       CARGANDO
+  ========================================= -->
 
-      <div class="news-meta">
-        <span class="news-date">{{ item.created | date: 'mediumDate' }}</span>
+  <section
+    class="loading-state"
+    *ngIf="cargando">
 
-        <div class="sentiment-icons">
-          <span class="icon">😡 <b>0</b></span>
-          <span class="icon">😐 <b>0</b></span>
-          <span class="icon">😊 <b>0</b></span>
-        </div>
-      </div>
+    <div class="loading-spinner"></div>
 
-      <!-- Acciones por categoría -->
-      <div class="news-actions">
-        <button type="button" (click)="accion(item.tweetid, 'Politica', item.categoria,item.text)">Política</button>
-        <button type="button" (click)="accion(item.tweetid, 'Economia', item.categoria,item.text)">Economía</button>
-        <button type="button" (click)="accion(item.tweetid, 'Seguridad', item.categoria,item.text)">Seguridad</button>
-        <button type="button" (click)="accion(item.tweetid, 'Deportes', item.categoria,item.text)">Deportes</button>
-        <button type="button" (click)="accion(item.tweetid, 'Salud', item.categoria,item.text)">Salud</button>
-        <button type="button" (click)="accion(item.tweetid, 'Sociedad', item.categoria,item.text)">Sociedad</button>
-        <button type="button" (click)="accion(item.tweetid, 'Educacion', item.categoria,item.text)">Educación</button>
-        <button type="button" (click)="accion(item.tweetid, 'Ambiente', item.categoria,item.text)">Medio Ambiente</button>
-        <button type="button" (click)="accion(item.tweetid, 'Gestion', item.categoria,item.text)">Gestión</button>
-        <button type="button" (click)="accion(item.tweetid, 'Otros', item.categoria,item.text)">Otros</button>
-      </div>
+    <div>
+      <strong>Consultando publicaciones</strong>
+      <p>Cargando resultados de {{ activeOption.label }}…</p>
+    </div>
 
-      <!-- ✅ NUEVO: acciones por sentimiento -->
-      <div class="sentiment-actions">
-        <button type="button" class="sbtn pos" (click)="accionsentiment(item.tweetid, 'positivo', item.sentimiento,item.text)">Positivo</button>
-        <button type="button" class="sbtn neu" (click)="accionsentiment(item.tweetid, 'neutro', item.sentimiento,item.text)">Neutro</button>
-        <button type="button" class="sbtn neg" (click)="accionsentiment(item.tweetid, 'negativo', item.sentimiento,item.text)">Negativo</button>
-      </div>
-
-    </article>
   </section>
 
-  <!-- Paginación -->
-  <div class="pagination" *ngIf="!cargando && datos.length">
+  <!-- ========================================
+       SIN RESULTADOS
+  ========================================= -->
+
+  <section
+    class="empty-state"
+    *ngIf="!cargando && !error && datos.length === 0">
+
+    <div class="empty-symbol">
+      <mat-icon>search_off</mat-icon>
+    </div>
+
+    <h2>No encontramos publicaciones</h2>
+
+    <p>
+      No hay resultados para esta sección con
+      los filtros seleccionados.
+    </p>
+
     <button
-      mat-flat-button
-      color="primary"
-      class="pagination-btn prev"
-      (click)="loadPreviousPage()"
-      [disabled]="currentPage === 1"
-    >
-      <mat-icon>arrow_back_ios_new</mat-icon>
-      Anterior
+      type="button"
+      class="btn btn-ghost"
+      (click)="limpiar()">
+      Limpiar filtros
     </button>
 
-    <span class="page-indicator">Página {{ currentPage }}</span>
+  </section>
+
+  <!-- ========================================
+       RESULTADOS
+  ========================================= -->
+
+  <section
+    class="results"
+    *ngIf="!cargando && datos.length > 0">
+
+    <div class="results-header">
+
+      <div>
+        <span class="section-kicker">
+          RESULTADOS
+        </span>
+
+        <h2>{{ activeOption.label }}</h2>
+
+        <p>
+          {{ datos.length }} publicaciones mostradas
+          en esta página.
+        </p>
+      </div>
+
+      <div class="results-page">
+        <span>PÁGINA</span>
+        <strong>{{ currentPage }}</strong>
+      </div>
+
+    </div>
+
+    <!-- ======================================
+         FEED DE PUBLICACIONES
+    ======================================= -->
+
+    <article
+      class="news-item"
+      *ngFor="let item of datos; trackBy: trackByTweet">
+
+      <!-- CABECERA -->
+      <header class="news-header">
+
+        <div class="news-source">
+
+          <div class="source-avatar">
+            {{ (item.TweetUser || '?').charAt(0).toUpperCase() }}
+          </div>
+
+          <div class="source-copy">
+
+            <strong class="news-title">
+              {{ item.TweetUser || 'Fuente desconocida' }}
+            </strong>
+
+            <span class="news-date">
+              {{ formatBoliviaDate(item.created) }}
+            </span>
+
+          </div>
+        </div>
+
+        <!-- CLASIFICACIÓN ACTUAL -->
+        <div class="chips-right">
+
+          <span class="category-chip">
+            {{ item.categoria || 'Sin categoría' }}
+          </span>
+
+          <span
+            class="status-chip"
+            [class.positivo]="item.sentimiento?.toLowerCase() === 'positivo'"
+            [class.negativo]="item.sentimiento?.toLowerCase() === 'negativo'"
+            [class.neutral]="item.sentimiento?.toLowerCase() === 'neutro'">
+
+            <span class="status-dot"></span>
+
+            {{ item.sentimiento || 'Sin sentimiento' }}
+          </span>
+
+        </div>
+
+      </header>
+
+      <!-- TEXTO -->
+      <div class="news-text">
+        {{ item.text }}
+      </div>
+
+      <!-- ====================================
+           CONTROLES DE CORRECCIÓN
+      ===================================== -->
+
+      <div class="review-toolbar">
+
+        <span class="review-caption">
+          CORRECCIÓN MANUAL
+        </span>
+
+        <div class="review-actions">
+
+          <button
+            type="button"
+            class="review-button"
+            [class.is-selected]="editorAbierto(item, 'categoria')"
+            [attr.aria-expanded]="editorAbierto(item, 'categoria')"
+            [disabled]="guardandoCambio"
+            (click)="toggleEditor(item, 'categoria')">
+
+            <mat-icon>sell</mat-icon>
+            Cambiar categoría
+            <mat-icon class="expand-icon">
+              expand_more
+            </mat-icon>
+          </button>
+
+          <button
+            type="button"
+            class="review-button"
+            [class.is-selected]="editorAbierto(item, 'sentimiento')"
+            [attr.aria-expanded]="editorAbierto(item, 'sentimiento')"
+            [disabled]="guardandoCambio"
+            (click)="toggleEditor(item, 'sentimiento')">
+
+            <mat-icon>sentiment_satisfied_alt</mat-icon>
+            Cambiar sentimiento
+            <mat-icon class="expand-icon">
+              expand_more
+            </mat-icon>
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- ====================================
+           EDITOR DE CATEGORÍA
+      ===================================== -->
+
+      <section
+        class="edit-panel"
+        *ngIf="editorAbierto(item, 'categoria')">
+
+        <div class="edit-panel-header">
+          <div>
+            <strong>Seleccionar categoría correcta</strong>
+
+            <p>
+              Categoría actual:
+              {{ item.categoria || 'Sin categoría' }}
+            </p>
+          </div>
+        </div>
+
+        <div class="edit-options">
+
+          <button
+            type="button"
+            *ngFor="let category of correctionCategories"
+            class="edit-option"
+            [class.is-current]="esCategoriaActual(item, category.value)"
+            [disabled]="esCategoriaActual(item, category.value) || guardandoCambio"
+            (click)="abrirCambioCategoria(item, category)">
+
+            {{ category.label }}
+
+            <mat-icon
+              *ngIf="esCategoriaActual(item, category.value)">
+              check
+            </mat-icon>
+          </button>
+
+        </div>
+      </section>
+
+      <!-- ====================================
+           EDITOR DE SENTIMIENTO
+      ===================================== -->
+
+      <section
+        class="edit-panel"
+        *ngIf="editorAbierto(item, 'sentimiento')">
+
+        <div class="edit-panel-header">
+          <div>
+            <strong>Seleccionar sentimiento correcto</strong>
+
+            <p>
+              Sentimiento actual:
+              {{ item.sentimiento || 'Sin sentimiento' }}
+            </p>
+          </div>
+        </div>
+
+        <div class="edit-options">
+
+          <button
+            type="button"
+            *ngFor="let sentiment of correctionSentiments"
+            class="edit-option"
+            [class.is-current]="esSentimientoActual(item, sentiment.value)"
+            [disabled]="esSentimientoActual(item, sentiment.value) || guardandoCambio"
+            (click)="abrirCambioSentimiento(item, sentiment)">
+
+            {{ sentiment.label }}
+
+            <mat-icon
+              *ngIf="esSentimientoActual(item, sentiment.value)">
+              check
+            </mat-icon>
+          </button>
+
+        </div>
+
+      </section>
+
+    </article>
+
+  </section>
+
+  <!-- ========================================
+       PAGINACIÓN
+  ========================================= -->
+
+  <nav
+    class="pagination"
+    *ngIf="!cargando && datos.length > 0"
+    aria-label="Paginación">
 
     <button
-      mat-flat-button
-      color="primary"
-      class="pagination-btn next"
-      (click)="loadNextPage()"
-      [disabled]="!hasMore"
-    >
-      Siguiente
-      <mat-icon>arrow_forward_ios</mat-icon>
+      type="button"
+      class="pagination-button"
+      [disabled]="currentPage <= 1 || guardandoCambio"
+      (click)="loadPreviousPage()">
+      ← Anterior
     </button>
-  </div>
 
-  <!-- Sin resultados -->
-  <div *ngIf="!cargando && !datos.length && !error" class="state">
-    No hay noticias disponibles para los filtros seleccionados.
-  </div>
+    <div class="pagination-current">
+      <span>PÁGINA</span>
+      <strong>{{ currentPage }}</strong>
+    </div>
+
+    <button
+      type="button"
+      class="pagination-button"
+      [disabled]="!hasMore || guardandoCambio"
+      (click)="loadNextPage()">
+      Siguiente →
+    </button>
+
+  </nav>
+
 </div>
+
+<!-- ==========================================
+     CONFIRMACIÓN DE CAMBIO
+     Dialog nativo: Escape, foco y modal real.
+=========================================== -->
+
+<dialog
+  #confirmationDialog
+  class="confirmation-dialog"
+  aria-labelledby="confirmation-title"
+  aria-describedby="confirmation-description"
+  (cancel)="onDialogCancel($event)">
+
+  <ng-container *ngIf="pendingChange as change">
+
+    <div class="confirmation-content">
+
+      <div class="confirmation-icon">
+        <mat-icon>edit_note</mat-icon>
+      </div>
+
+      <span class="section-kicker">
+        VERIFICAR MODIFICACIÓN
+      </span>
+
+      <h2 id="confirmation-title">
+        ¿Confirmar cambio de
+        {{ change.kind === 'categoria'
+          ? 'categoría'
+          : 'sentimiento' }}?
+      </h2>
+
+      <p
+        id="confirmation-description"
+        class="confirmation-description">
+
+        Se actualizará la clasificación
+        de esta publicación.
+
+      </p>
+
+      <div class="change-comparison">
+
+        <div>
+          <span>VALOR ACTUAL</span>
+          <strong>
+            {{ change.previous || 'Sin clasificar' }}
+          </strong>
+        </div>
+
+        <mat-icon>arrow_forward</mat-icon>
+
+        <div>
+          <span>NUEVO VALOR</span>
+          <strong class="new-value">
+            {{ change.label }}
+          </strong>
+        </div>
+
+      </div>
+
+      <div
+        *ngIf="errorGuardado"
+        class="notice notice-error"
+        role="alert">
+        {{ errorGuardado }}
+      </div>
+
+      <div class="confirmation-actions">
+
+        <button
+          type="button"
+          class="btn btn-ghost"
+          [disabled]="guardandoCambio"
+          (click)="cancelarConfirmacion()">
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="guardandoCambio"
+          (click)="confirmarCambio()">
+
+          {{
+            guardandoCambio
+              ? 'Guardando…'
+              : 'Confirmar cambio'
+          }}
+        </button>
+
+      </div>
+
+    </div>
+
+  </ng-container>
+</dialog>

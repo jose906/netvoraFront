@@ -318,9 +318,9 @@
 
           <span
             class="status-chip"
-            [class.positivo]="item.sentimiento?.toLowerCase() === 'positivo'"
-            [class.negativo]="item.sentimiento?.toLowerCase() === 'negativo'"
-            [class.neutral]="item.sentimiento?.toLowerCase() === 'neutro'">
+            [class.positivo]="item.sentimiento === 'positivo'"
+            [class.negativo]="item.sentimiento === 'negativo'"
+            [class.neutral]="item.sentimiento === 'neutro'">
 
             <span class="status-dot"></span>
 

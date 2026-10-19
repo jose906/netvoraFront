@@ -1,193 +1,151 @@
 
 <section class="dash">
 
-  <!-- =====================================================
-       HEADER
-  ====================================================== -->
-
+  <!-- HEADER -->
   <header class="dashboard-header">
-
-    <div class="dashboard-heading">
-
-      <span class="eyebrow">
-        CATEGORÍA
-      </span>
-
-      <h1>
-        {{ categoria || 'Categoría' }}
-      </h1>
-
-      <p>
-        Principales conversaciones, actividad, actores y medios
-        relacionados con esta categoría.
-      </p>
-
-    </div>
-
+  
 
     <div class="header-actions">
-
       <button
         type="button"
         class="btn"
         (click)="cargarDatos()"
-        [disabled]="loading">
+        [disabled]="cargandoDashboard">
 
-        <span class="material-icons">
+        <span
+          class="material-icons"
+          [class.nv-rotating]="cargandoDashboard">
           refresh
         </span>
 
-        {{ loading ? 'Actualizando…' : 'Actualizar' }}
-
+        {{ cargandoDashboard ? 'Actualizando…' : 'Actualizar' }}
       </button>
-
 
       <button
         type="button"
         class="btn btn-secondary"
         (click)="downloadAllCharts()"
-        [disabled]="loading">
+        [disabled]="cargandoDashboard">
 
-        <span class="material-icons">
-          download
-        </span>
-
+        <span class="material-icons">download</span>
         Descargar gráficos
-
       </button>
-
     </div>
-
   </header>
 
-
-  <!-- =====================================================
-       ERROR
-  ====================================================== -->
-
+  <!-- CARGA GENERAL -->
   <div
-    *ngIf="errorMsg"
-    class="alert">
+    class="nv-global-loading"
+    *ngIf="cargandoDashboard"
+    role="status"
+    aria-live="polite">
 
-    {{ errorMsg }}
+    <span class="nv-loader" aria-hidden="true"></span>
+    <span>Actualizando los datos de la categoría...</span>
 
+    <span class="nv-loading-track" aria-hidden="true">
+      <span></span>
+    </span>
   </div>
 
+  <!-- ERROR -->
+  <div *ngIf="errorMsg" class="alert">
+    {{ errorMsg }}
+  </div>
 
-  <!-- =====================================================
-       KPIs
-  ====================================================== -->
+  <!-- ============================================== -->
+  <!-- KPIS -->
+  <!-- ============================================== -->
 
   <section class="metrics-grid">
 
     <!-- PUBLICACIONES -->
-
     <article class="metric-card">
-
       <div class="metric-top">
-
-        <span class="metric-label">
-          Publicaciones
-        </span>
-
+        <span class="metric-label">Publicaciones</span>
         <span class="metric-icon">
-          <span class="material-icons">
-            article
-          </span>
+          <span class="material-icons">article</span>
         </span>
-
       </div>
 
-      <div class="metric-value">
+      <div class="metric-value" *ngIf="!loadingResumen">
         {{ totalPosts | number }}
       </div>
 
-      <div class="kpi-footer">
+      <div class="nv-comment-loading" *ngIf="loadingResumen">
+        <span class="nv-loader" aria-hidden="true"></span>
+        Cargando...
+      </div>
 
-  <!-- Hay comparación normal -->
-  <ng-container *ngIf="postsChange !== null">
+      <div class="kpi-footer" *ngIf="!loadingResumen">
 
-    <span
-      class="kpi-change"
-      [class.kpi-change-up]="postsChange > 0"
-      [class.kpi-change-down]="postsChange < 0"
-      [class.kpi-change-neutral]="postsChange === 0"
-    >
-      <span *ngIf="postsChange > 0">↑</span>
-      <span *ngIf="postsChange < 0">↓</span>
+        <ng-container *ngIf="postsChange !== null">
+          <span
+            class="kpi-change"
+            [class.kpi-change-up]="postsChange > 0"
+            [class.kpi-change-down]="postsChange < 0"
+            [class.kpi-change-neutral]="postsChange === 0">
 
-      {{ Math.abs(postsChange) | number:'1.1-1' }}%
-    </span>
+            <span *ngIf="postsChange > 0">↑</span>
+            <span *ngIf="postsChange < 0">↓</span>
 
-    <span class="kpi-compare-text">
-      vs. período anterior
-    </span>
+            {{ Math.abs(postsChange) | number:'1.1-1' }}%
+          </span>
 
-  </ng-container>
+          <span class="kpi-compare-text">
+            vs. período anterior
+          </span>
+        </ng-container>
 
-  <!-- No se puede calcular porcentaje porque anterior = 0 -->
-  <ng-container *ngIf="postsChange === null">
-
-    <span class="kpi-change kpi-change-neutral">
-      —
-    </span>
-
-    <span class="kpi-compare-text">
-      Sin base de comparación
-    </span>
-
-  </ng-container>
-
-</div>
-
+        <ng-container *ngIf="postsChange === null">
+          <span class="kpi-change kpi-change-neutral">—</span>
+          <span class="kpi-compare-text">
+            Sin base de comparación
+          </span>
+        </ng-container>
+      </div>
     </article>
 
-    <!-- COMENTARIOS — PRO / ADMIN -->
-
+    <!-- COMENTARIOS PRO -->
     <article
       class="metric-card"
       [class.metric-card--locked]="!accessLoading && !canViewReplies">
 
       <div class="metric-top">
-
-        <span class="metric-label">
-          Comentarios
-        </span>
-
+        <span class="metric-label">Comentarios</span>
         <span class="metric-icon">
-          <span class="material-icons">
-            forum
-          </span>
+          <span class="material-icons">forum</span>
         </span>
-
       </div>
 
       <ng-container *ngIf="!accessLoading && canViewReplies">
 
-        <div class="metric-value">
+        <div
+          class="metric-value"
+          *ngIf="!cargandoVistaComentarios">
           {{ totalReplies | number }}
+        </div>
+
+        <div
+          class="nv-comment-loading"
+          *ngIf="cargandoVistaComentarios">
+          <span class="nv-loader" aria-hidden="true"></span>
+          Cargando...
         </div>
 
         <div class="metric-footer">
           Respuestas analizadas
         </div>
-
       </ng-container>
 
       <ng-container *ngIf="accessLoading">
-
-        <div class="metric-value metric-value--muted">
-          —
-        </div>
-
+        <div class="metric-value metric-value--muted">—</div>
         <div class="metric-footer">
           Verificando acceso…
         </div>
-
       </ng-container>
 
       <ng-container *ngIf="!accessLoading && !canViewReplies">
-
         <div class="metric-locked-value">
           <span class="material-icons">lock</span>
           PRO
@@ -196,57 +154,43 @@
         <div class="metric-footer metric-footer--accent">
           Disponible con NetVora Pro
         </div>
-
       </ng-container>
-
     </article>
 
-
     <!-- TÓPICOS -->
-
     <article class="metric-card metric-card--accent">
-
       <div class="metric-top">
-
         <span class="metric-label">
           Tópicos principales
         </span>
 
         <span class="metric-icon metric-icon--accent">
-          <span class="material-icons">
-            topic
-          </span>
+          <span class="material-icons">topic</span>
         </span>
-
       </div>
 
-      <div class="metric-value">
+      <div class="metric-value" *ngIf="!loadingTopicos">
         {{ topTopicsData.labels?.length || 0 }}
+      </div>
+
+      <div class="nv-comment-loading" *ngIf="loadingTopicos">
+        <span class="nv-loader" aria-hidden="true"></span>
+        Cargando...
       </div>
 
       <div class="metric-footer metric-footer--accent">
         Conversaciones identificadas
       </div>
-
     </article>
 
-
     <!-- MEDIOS -->
-
     <article class="metric-card">
-
       <div class="metric-top">
-
-        <span class="metric-label">
-          Medios analizados
-        </span>
+        <span class="metric-label">Medios analizados</span>
 
         <span class="metric-icon">
-          <span class="material-icons">
-            alternate_email
-          </span>
+          <span class="material-icons">alternate_email</span>
         </span>
-
       </div>
 
       <div class="metric-value">
@@ -260,46 +204,41 @@
       <div class="metric-footer">
         Fuentes incluidas
       </div>
-
     </article>
-
   </section>
 
-
-  <!-- =====================================================
-       TÓPICOS PRINCIPALES
-  ====================================================== -->
+  <!-- ============================================== -->
+  <!-- TÓPICOS PRINCIPALES -->
+  <!-- ============================================== -->
 
   <section class="section-block topics-section">
-
     <div class="section-heading">
-
       <div>
-
-        <span class="section-eyebrow">
-          TÓPICOS
-        </span>
-
+        <span class="section-eyebrow">TÓPICOS</span>
         <h2>
-          Principales conversaciones de {{ categoria || 'esta categoría' }}
+          Principales conversaciones de
+          {{ categoria || 'esta categoría' }}
         </h2>
-
         <p>
           Temas que concentran el mayor volumen de publicaciones
           en el período seleccionado.
         </p>
-
       </div>
-
     </div>
 
+    <div
+      class="nv-section-loading"
+      *ngIf="loadingTopicos"
+      role="status"
+      aria-live="polite">
+
+      <span class="nv-loader" aria-hidden="true"></span>
+      <span>Cargando tópicos principales...</span>
+    </div>
 
     <article class="analysis-card chart">
-
       <div class="card-head">
-
         <div>
-
           <div class="card-title">
             Tópicos con mayor actividad
           </div>
@@ -307,24 +246,16 @@
           <div class="card-sub">
             Ranking de conversaciones según su volumen de publicaciones
           </div>
-
         </div>
-
 
         <button
           type="button"
           class="iconbtn"
           (click)="downloadChart($event)"
           title="Descargar gráfico">
-
-          <span class="material-icons">
-            download
-          </span>
-
+          <span class="material-icons">download</span>
         </button>
-
       </div>
-
 
       <div
         class="chart-wrap chart-wrap--large"
@@ -336,91 +267,89 @@
           [data]="topTopicsData"
           [options]="topTopicsOptions">
         </canvas>
-
       </div>
 
-
       <ng-template #noTopTopics>
+        <div class="nv-empty-loading" *ngIf="loadingTopicos">
+          <span class="nv-loader" aria-hidden="true"></span>
+          <span>Cargando resultados...</span>
+        </div>
 
-        <div class="empty-state">
-
-          <span class="material-icons">
-            topic
-          </span>
-
+        <div class="empty-state" *ngIf="!loadingTopicos">
+          <span class="material-icons">topic</span>
           <div>
-
-            <strong>
-              No hay tópicos disponibles
-            </strong>
-
+            <strong>No hay tópicos disponibles</strong>
             <p>
               No se encontraron conversaciones para esta categoría
               en el período seleccionado.
             </p>
-
           </div>
-
         </div>
-
       </ng-template>
-
     </article>
-
   </section>
 
-
-  <!-- =====================================================
-       ACTIVIDAD
-  ====================================================== -->
+  <!-- ============================================== -->
+  <!-- ACTIVIDAD -->
+  <!-- ============================================== -->
 
   <section class="section-block activity-section">
-
     <div class="section-heading">
-
       <div>
-
-        <span class="section-eyebrow neutral">
-          ACTIVIDAD
-        </span>
-
+        <span class="section-eyebrow neutral">ACTIVIDAD</span>
         <h2>
-          Cómo se está moviendo {{ categoria || 'esta categoría' }}
+          Cómo se está moviendo
+          {{ categoria || 'esta categoría' }}
         </h2>
-
         <p>
-          Evolución del volumen de publicaciones según el intervalo seleccionado.
+          Evolución del volumen de publicaciones según
+          el intervalo seleccionado.
         </p>
-
       </div>
-
     </div>
 
+    <div
+      class="nv-section-loading"
+      *ngIf="loadingTimeline"
+      role="status"
+      aria-live="polite">
+
+      <span class="nv-loader" aria-hidden="true"></span>
+      <span>Preparando la línea de tiempo...</span>
+    </div>
 
     <article class="activity-chart chart">
-
       <div class="activity-chart-header">
-
         <div>
-
           <span class="activity-chart-title">
             Evolución de publicaciones
           </span>
 
           <span class="activity-chart-subtitle">
-            {{ timelineInterval === '1d' ? 'Publicaciones por día' : 'Publicaciones por intervalo de ' + timelineInterval }}
+            {{
+              timelineInterval === '1d'
+                ? 'Publicaciones por día'
+                : 'Publicaciones por intervalo de ' + timelineInterval
+            }}
           </span>
-
         </div>
 
+        <label
+          class="timeline-granularity-label"
+          for="categoryTimelineInterval">
+          Intervalo
+        </label>
 
-        <label class="timeline-granularity-label" for="categoryTimelineInterval">Intervalo</label>
         <select
           id="categoryTimelineInterval"
           class="select timeline-granularity-select"
           [ngModel]="timelineInterval"
+          [disabled]="loadingTimeline"
           (ngModelChange)="onTimelineIntervalChange($event)">
-          <option *ngFor="let item of timelineIntervals" [ngValue]="item.value">
+
+          <option
+            *ngFor="let item of timelineIntervals"
+            [ngValue]="item.value">
             {{ item.label }}
           </option>
         </select>
@@ -430,15 +359,9 @@
           class="iconbtn"
           (click)="downloadChart($event)"
           title="Descargar gráfico">
-
-          <span class="material-icons">
-            download
-          </span>
-
+          <span class="material-icons">download</span>
         </button>
-
       </div>
-
 
       <div
         class="chart-wrap chart-wrap--main"
@@ -450,91 +373,72 @@
           [data]="timelineData"
           [options]="lineOptions">
         </canvas>
-
       </div>
 
-
       <ng-template #noTimeline>
+        <div class="nv-empty-loading" *ngIf="loadingTimeline">
+          <span class="nv-loader" aria-hidden="true"></span>
+          <span>Cargando resultados...</span>
+        </div>
 
-        <div class="empty-state">
-
-          <span class="material-icons">
-            timeline
-          </span>
-
+        <div class="empty-state" *ngIf="!loadingTimeline">
+          <span class="material-icons">timeline</span>
           <div>
-
-            <strong>
-              No hay actividad disponible
-            </strong>
-
+            <strong>No hay actividad disponible</strong>
             <p>
               No existen publicaciones para este período.
             </p>
-
           </div>
-
         </div>
-
       </ng-template>
-
     </article>
-
   </section>
 
-
-  <!-- =====================================================
-       ACTORES
-  ====================================================== -->
+  <!-- ============================================== -->
+  <!-- ACTORES -->
+  <!-- ============================================== -->
 
   <section class="section-block">
-
     <div class="section-heading">
-
       <div>
-
-        <span class="section-eyebrow neutral">
-          ACTORES
-        </span>
-
+        <span class="section-eyebrow neutral">ACTORES</span>
         <h2>
           Quiénes aparecen en {{ categoria || 'esta categoría' }}
         </h2>
-
         <p>
           Personas, organizaciones y lugares más mencionados.
         </p>
-
       </div>
-
     </div>
 
+    <div
+      class="nv-section-loading"
+      *ngIf="loadingEntidades"
+      role="status"
+      aria-live="polite">
+
+      <span class="nv-loader" aria-hidden="true"></span>
+      <span>
+        Identificando personas, organizaciones y lugares...
+      </span>
+    </div>
 
     <div class="entities-grid">
 
       <!-- PERSONAS -->
-
       <article class="entity-panel">
-
         <header class="entity-panel-header">
-
           <div class="entity-heading">
-
             <span class="entity-icon">
-              <span class="material-icons">
-                person
-              </span>
+              <span class="material-icons">person</span>
             </span>
 
             <div>
               <span>Personas</span>
               <small>Más mencionadas</small>
             </div>
-
           </div>
-
         </header>
-
 
         <div
           class="entity-ranking"
@@ -552,28 +456,20 @@
               {{ i + 1 }}
             </span>
 
-
             <div class="entity-info">
-
               <div class="entity-info-top">
-
                 <span
                   class="entity-name"
                   [title]="it.entidad">
-
                   {{ it.entidad }}
-
                 </span>
 
                 <strong class="entity-total">
                   {{ it.total | number }}
                 </strong>
-
               </div>
 
-
               <div class="entity-progress">
-
                 <span
                   class="entity-progress-bar"
                   [style.width.%]="
@@ -582,50 +478,37 @@
                       : 0
                   ">
                 </span>
-
               </div>
-
             </div>
-
           </div>
-
         </div>
 
-
         <ng-template #noPersons>
-
-          <div class="entity-empty">
-            Sin personas detectadas
+          <div class="nv-empty-loading" *ngIf="loadingEntidades">
+            <span class="nv-loader" aria-hidden="true"></span>
+            <span>Cargando resultados...</span>
           </div>
 
+          <div class="entity-empty" *ngIf="!loadingEntidades">
+            Sin personas detectadas
+          </div>
         </ng-template>
-
       </article>
 
-
       <!-- ORGANIZACIONES -->
-
       <article class="entity-panel">
-
         <header class="entity-panel-header">
-
           <div class="entity-heading">
-
             <span class="entity-icon">
-              <span class="material-icons">
-                domain
-              </span>
+              <span class="material-icons">domain</span>
             </span>
 
             <div>
               <span>Organizaciones</span>
               <small>Más mencionadas</small>
             </div>
-
           </div>
-
         </header>
-
 
         <div
           class="entity-ranking"
@@ -643,28 +526,20 @@
               {{ i + 1 }}
             </span>
 
-
             <div class="entity-info">
-
               <div class="entity-info-top">
-
                 <span
                   class="entity-name"
                   [title]="it.entidad">
-
                   {{ it.entidad }}
-
                 </span>
 
                 <strong class="entity-total">
                   {{ it.total | number }}
                 </strong>
-
               </div>
 
-
               <div class="entity-progress">
-
                 <span
                   class="entity-progress-bar"
                   [style.width.%]="
@@ -673,50 +548,37 @@
                       : 0
                   ">
                 </span>
-
               </div>
-
             </div>
-
           </div>
-
         </div>
 
-
         <ng-template #noOrganizations>
-
-          <div class="entity-empty">
-            Sin organizaciones detectadas
+          <div class="nv-empty-loading" *ngIf="loadingEntidades">
+            <span class="nv-loader" aria-hidden="true"></span>
+            <span>Cargando resultados...</span>
           </div>
 
+          <div class="entity-empty" *ngIf="!loadingEntidades">
+            Sin organizaciones detectadas
+          </div>
         </ng-template>
-
       </article>
 
-
       <!-- LUGARES -->
-
       <article class="entity-panel">
-
         <header class="entity-panel-header">
-
           <div class="entity-heading">
-
             <span class="entity-icon">
-              <span class="material-icons">
-                location_on
-              </span>
+              <span class="material-icons">location_on</span>
             </span>
 
             <div>
               <span>Lugares</span>
               <small>Más mencionados</small>
             </div>
-
           </div>
-
         </header>
-
 
         <div
           class="entity-ranking"
@@ -734,28 +596,20 @@
               {{ i + 1 }}
             </span>
 
-
             <div class="entity-info">
-
               <div class="entity-info-top">
-
                 <span
                   class="entity-name"
                   [title]="it.entidad">
-
                   {{ it.entidad }}
-
                 </span>
 
                 <strong class="entity-total">
                   {{ it.total | number }}
                 </strong>
-
               </div>
 
-
               <div class="entity-progress">
-
                 <span
                   class="entity-progress-bar"
                   [style.width.%]="
@@ -764,37 +618,30 @@
                       : 0
                   ">
                 </span>
-
               </div>
-
             </div>
-
           </div>
-
         </div>
 
-
         <ng-template #noLocations>
-
-          <div class="entity-empty">
-            Sin lugares detectados
+          <div class="nv-empty-loading" *ngIf="loadingEntidades">
+            <span class="nv-loader" aria-hidden="true"></span>
+            <span>Cargando resultados...</span>
           </div>
 
+          <div class="entity-empty" *ngIf="!loadingEntidades">
+            Sin lugares detectados
+          </div>
         </ng-template>
-
       </article>
-
     </div>
-
   </section>
 
-
-  <!-- =====================================================
-       MEDIOS
-  ====================================================== -->
+  <!-- ============================================== -->
+  <!-- MEDIOS -->
+  <!-- ============================================== -->
 
   <section class="section-block media-section">
-
     <div class="section-heading">
       <div>
         <span class="section-eyebrow neutral">MEDIOS</span>
@@ -806,21 +653,44 @@
       </div>
     </div>
 
+    <div
+      class="nv-section-loading"
+      *ngIf="loadingFuentes"
+      role="status"
+      aria-live="polite">
+
+      <span class="nv-loader" aria-hidden="true"></span>
+      <span>Calculando participación de los medios...</span>
+    </div>
+
     <div class="media-overview-grid">
 
       <!-- PUBLICACIONES POR MEDIO -->
       <article class="analysis-card chart media-publications-card">
         <div class="card-head">
           <div>
-            <div class="card-title">Publicaciones por medio</div>
-            <div class="card-sub">Top 10 medios por volumen de publicaciones</div>
+            <div class="card-title">
+              Publicaciones por medio
+            </div>
+
+            <div class="card-sub">
+              Top 10 medios por volumen de publicaciones
+            </div>
           </div>
-          <button type="button" class="iconbtn" (click)="downloadChart($event)" title="Descargar gráfico">
+
+          <button
+            type="button"
+            class="iconbtn"
+            (click)="downloadChart($event)"
+            title="Descargar gráfico">
             <span class="material-icons">download</span>
           </button>
         </div>
 
-        <div class="chart-wrap chart-wrap--media" *ngIf="postsByMedia.length; else noPostsByMedia">
+        <div
+          class="chart-wrap chart-wrap--media"
+          *ngIf="postsByMedia.length; else noPostsByMedia">
+
           <canvas
             baseChart
             [type]="'bar'"
@@ -830,11 +700,19 @@
         </div>
 
         <ng-template #noPostsByMedia>
-          <div class="empty-state">
+          <div class="nv-empty-loading" *ngIf="loadingFuentes">
+            <span class="nv-loader" aria-hidden="true"></span>
+            <span>Cargando resultados...</span>
+          </div>
+
+          <div class="empty-state" *ngIf="!loadingFuentes">
             <span class="material-icons">alternate_email</span>
             <div>
               <strong>No hay datos de medios</strong>
-              <p>No se encontraron publicaciones de medios para esta categoría en el período seleccionado.</p>
+              <p>
+                No se encontraron publicaciones de medios para esta
+                categoría en el período seleccionado.
+              </p>
             </div>
           </div>
         </ng-template>
@@ -845,63 +723,124 @@
         <div class="card-head">
           <div>
             <div class="card-title">Share of Voice</div>
-            <div class="card-sub">Concentración de publicaciones entre los medios</div>
+            <div class="card-sub">
+              Concentración de publicaciones entre los medios
+            </div>
           </div>
-          <span class="metric-icon"><span class="material-icons">campaign</span></span>
+
+          <span class="metric-icon">
+            <span class="material-icons">campaign</span>
+          </span>
         </div>
 
-        <div class="empty-state" *ngIf="!postsByMedia.length">
+        <div
+          class="nv-empty-loading"
+          *ngIf="loadingFuentes && !postsByMedia.length">
+
+          <span class="nv-loader" aria-hidden="true"></span>
+          <span>Calculando Share of Voice...</span>
+        </div>
+
+        <div
+          class="empty-state"
+          *ngIf="!postsByMedia.length && !loadingFuentes">
+
           <span class="material-icons">pie_chart</span>
           <div>
             <strong>Sin datos suficientes</strong>
-            <p>No hay publicaciones de medios para calcular participación en este período.</p>
+            <p>
+              No hay publicaciones de medios para calcular
+              participación en este período.
+            </p>
           </div>
         </div>
 
-        <div class="share-of-voice-content" *ngIf="postsByMedia.length">
+        <div
+          class="share-of-voice-content"
+          *ngIf="postsByMedia.length">
+
           <div class="share-leader">
             <div class="share-leader-top">
               <div>
                 <span class="share-label">MEDIO LÍDER</span>
-                <div class="share-leader-name" [title]="mediaLeader">{{ mediaLeader || '—' }}</div>
+
+                <div
+                  class="share-leader-name"
+                  [title]="mediaLeader">
+                  {{ mediaLeader || '—' }}
+                </div>
               </div>
-              <div class="share-leader-percentage">{{ mediaLeaderShare | number:'1.1-1' }}%</div>
+
+              <div class="share-leader-percentage">
+                {{ mediaLeaderShare | number:'1.1-1' }}%
+              </div>
             </div>
 
             <div class="share-progress">
-              <div class="share-progress-fill" [style.width.%]="mediaLeaderShare > 100 ? 100 : mediaLeaderShare"></div>
+              <div
+                class="share-progress-fill"
+                [style.width.%]="
+                  mediaLeaderShare > 100
+                    ? 100
+                    : mediaLeaderShare
+                ">
+              </div>
             </div>
 
             <div class="share-leader-footer">
-              <span>{{ mediaLeaderPosts | number }} publicaciones</span>
+              <span>
+                {{ mediaLeaderPosts | number }} publicaciones
+              </span>
               <span>del total analizado</span>
             </div>
           </div>
 
           <div class="share-metrics-grid">
+
             <div class="share-metric-item">
-              <div class="share-metric-icon"><span class="material-icons">filter_3</span></div>
+              <div class="share-metric-icon">
+                <span class="material-icons">filter_3</span>
+              </div>
+
               <div class="share-metric-content">
-                <span class="share-metric-label">Top 3 medios</span>
-                <strong class="share-metric-value">{{ mediaTop3Share | number:'1.1-1' }}%</strong>
+                <span class="share-metric-label">
+                  Top 3 medios
+                </span>
+                <strong class="share-metric-value">
+                  {{ mediaTop3Share | number:'1.1-1' }}%
+                </strong>
                 <small>de las publicaciones</small>
               </div>
             </div>
 
             <div class="share-metric-item">
-              <div class="share-metric-icon"><span class="material-icons">leaderboard</span></div>
+              <div class="share-metric-icon">
+                <span class="material-icons">leaderboard</span>
+              </div>
+
               <div class="share-metric-content">
-                <span class="share-metric-label">Top 5 medios</span>
-                <strong class="share-metric-value">{{ mediaTop5Share | number:'1.1-1' }}%</strong>
+                <span class="share-metric-label">
+                  Top 5 medios
+                </span>
+                <strong class="share-metric-value">
+                  {{ mediaTop5Share | number:'1.1-1' }}%
+                </strong>
                 <small>de las publicaciones</small>
               </div>
             </div>
 
             <div class="share-metric-item share-metric-item--full">
-              <div class="share-metric-icon"><span class="material-icons">article</span></div>
+              <div class="share-metric-icon">
+                <span class="material-icons">article</span>
+              </div>
+
               <div class="share-metric-content">
-                <span class="share-metric-label">Publicaciones de medios</span>
-                <strong class="share-metric-value">{{ mediaTotalPosts | number }}</strong>
+                <span class="share-metric-label">
+                  Publicaciones de medios
+                </span>
+                <strong class="share-metric-value">
+                  {{ mediaTotalPosts | number }}
+                </strong>
                 <small>en el período seleccionado</small>
               </div>
             </div>
@@ -909,7 +848,11 @@
 
           <div class="share-note">
             <span class="material-icons">info</span>
-            <p>El Share of Voice representa qué proporción de las publicaciones de esta categoría corresponde a los medios con mayor actividad.</p>
+            <p>
+              El Share of Voice representa qué proporción de las
+              publicaciones de esta categoría corresponde a los
+              medios con mayor actividad.
+            </p>
           </div>
         </div>
       </article>
@@ -917,57 +860,44 @@
     </div>
   </section>
 
-
-  <!-- =====================================================
-       ANÁLISIS
-  ====================================================== -->
+  <!-- ============================================== -->
+  <!-- ANÁLISIS DE SENTIMIENTO -->
+  <!-- ============================================== -->
 
   <section class="section-block">
-
     <div class="section-heading">
-
       <div>
-
-        <span class="section-eyebrow neutral">
-          ANÁLISIS
-        </span>
-
-        <h2>
-          Entender la conversación
-        </h2>
-
+        <span class="section-eyebrow neutral">ANÁLISIS</span>
+        <h2>Entender la conversación</h2>
         <p>
           Sentimiento general y diferencias entre los medios analizados.
         </p>
-
       </div>
-
     </div>
 
+    <div
+      class="nv-section-loading"
+      *ngIf="loadingResumen"
+      role="status"
+      aria-live="polite">
+
+      <span class="nv-loader" aria-hidden="true"></span>
+      <span>Analizando sentimiento general y por medio...</span>
+    </div>
 
     <div class="analysis-grid">
 
       <!-- SENTIMIENTO GENERAL -->
-
       <article class="analysis-card chart">
-
         <div class="card-head">
-
           <div>
-
-            <div class="card-title">
-              Sentimiento general
-            </div>
-
+            <div class="card-title">Sentimiento general</div>
             <div class="card-sub">
               Distribución positiva, neutral y negativa
             </div>
-
           </div>
 
-
           <div class="card-actions">
-
             <select
               class="select"
               [(ngModel)]="sentimentChartType">
@@ -975,32 +905,30 @@
               <option
                 *ngFor="let t of sentimentTypeOptions"
                 [ngValue]="t">
-
                 {{ t }}
-
               </option>
-
             </select>
-
 
             <button
               type="button"
               class="iconbtn"
               (click)="downloadChart($event)"
               title="Descargar gráfico">
-
-              <span class="material-icons">
-                download
-              </span>
-
+              <span class="material-icons">download</span>
             </button>
-
           </div>
-
         </div>
 
+        <div
+          class="nv-empty-loading"
+          *ngIf="loadingResumen">
+          <span class="nv-loader" aria-hidden="true"></span>
+          <span>Cargando datos...</span>
+        </div>
 
-        <div class="chart-wrap chart-wrap--analysis">
+        <div
+          class="chart-wrap chart-wrap--analysis"
+          *ngIf="!loadingResumen">
 
           <canvas
             baseChart
@@ -1008,47 +936,38 @@
             [data]="sentimentData"
             [options]="commonOptions">
           </canvas>
-
         </div>
-
       </article>
 
-
       <!-- SENTIMIENTO POR MEDIO -->
-
       <article class="analysis-card chart">
-
         <div class="card-head">
-
           <div>
-
-            <div class="card-title">
-              Sentimiento por medio
-            </div>
-
+            <div class="card-title">Sentimiento por medio</div>
             <div class="card-sub">
               Cómo cambia el tono entre las distintas fuentes
             </div>
-
           </div>
-
 
           <button
             type="button"
             class="iconbtn"
             (click)="downloadChart($event)"
             title="Descargar gráfico">
-
-            <span class="material-icons">
-              download
-            </span>
-
+            <span class="material-icons">download</span>
           </button>
-
         </div>
 
+        <div
+          class="nv-empty-loading"
+          *ngIf="loadingResumen">
+          <span class="nv-loader" aria-hidden="true"></span>
+          <span>Cargando datos...</span>
+        </div>
 
-        <div class="chart-wrap chart-wrap--analysis">
+        <div
+          class="chart-wrap chart-wrap--analysis"
+          *ngIf="!loadingResumen">
 
           <canvas
             baseChart
@@ -1056,296 +975,209 @@
             [data]="sentVsUserData"
             [options]="sentVsUserOptions">
           </canvas>
-
         </div>
-
       </article>
 
     </div>
-
   </section>
 
-
-  <!-- =====================================================
-       COMENTARIOS
-  ====================================================== -->
+  <!-- ============================================== -->
+  <!-- COMENTARIOS -->
+  <!-- ============================================== -->
 
   <section class="section-block comments-section">
 
-    <!-- =====================================================
-         USUARIO CON ACCESO
-    ====================================================== -->
-
     <ng-container *ngIf="!accessLoading && canViewReplies">
 
-<div class="section-heading">
-
-      <div>
-
-        <span class="section-eyebrow neutral">
-          COMENTARIOS
-        </span>
-
-        <h2>
-          Reacción de la conversación
-        </h2>
-
-        <p>
-          Cómo están respondiendo las personas a las publicaciones
-          de {{ categoria || 'esta categoría' }}.
-        </p>
-
-      </div>
-
-
-      <div class="view-switch">
-
-        <button
-          type="button"
-          [class.active]="viewModeReplies === 'table'"
-          (click)="viewModeReplies = 'table'">
-
-          Resumen
-
-        </button>
-
-        <button
-          type="button"
-          [class.active]="viewModeReplies === 'chart'"
-          (click)="viewModeReplies = 'chart'">
-
-          Gráfico
-
-        </button>
-
-      </div>
-
-    </div>
-
-
-    <!-- RESUMEN -->
-
-    <div
-      class="replies-summary"
-      *ngIf="viewModeReplies === 'table'">
-
-      <div class="replies-summary-main">
-
-        <div class="replies-summary-label">
-
-          <span class="material-icons">
-            forum
-          </span>
-
-          Comentarios analizados
-
-        </div>
-
-        <strong>
-          {{ totalReplies | number }}
-        </strong>
-
-        <small>
-          Respuestas capturadas en el período seleccionado
-        </small>
-
-      </div>
-
-
-      <div class="reply-breakdown">
-
-        <div class="reply-breakdown-item negative">
-
-          <div class="reply-breakdown-top">
-
-            <div>
-
-              <span class="reply-status-dot"></span>
-
-              <span class="reply-breakdown-name">
-                Negativos
-              </span>
-
-            </div>
-
-            <strong>
-              {{ totalRepliesNegativo | number }}
-            </strong>
-
-          </div>
-
-        </div>
-
-
-        <div class="reply-breakdown-item neutral">
-
-          <div class="reply-breakdown-top">
-
-            <div>
-
-              <span class="reply-status-dot"></span>
-
-              <span class="reply-breakdown-name">
-                Neutrales
-              </span>
-
-            </div>
-
-            <strong>
-              {{ totalRepliesNeutro | number }}
-            </strong>
-
-          </div>
-
-        </div>
-
-
-        <div class="reply-breakdown-item positive">
-
-          <div class="reply-breakdown-top">
-
-            <div>
-
-              <span class="reply-status-dot"></span>
-
-              <span class="reply-breakdown-name">
-                Positivos
-              </span>
-
-            </div>
-
-            <strong>
-              {{ totalRepliesPositivo | number }}
-            </strong>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <!-- GRÁFICO -->
-
-    <div
-      class="replies-chart-panel chart"
-      *ngIf="viewModeReplies === 'chart'">
-
-      <div class="replies-chart-header">
-
+      <div class="section-heading">
         <div>
-
-          <span class="card-title">
-            Distribución de comentarios
-          </span>
-
-          <span class="card-sub">
-            Sentimiento de las respuestas analizadas
-          </span>
-
-        </div>
-
-
-        <button
-          type="button"
-          class="iconbtn"
-          (click)="downloadChart($event)"
-          title="Descargar gráfico">
-
-          <span class="material-icons">
-            download
-          </span>
-
-        </button>
-
-      </div>
-
-
-      <div class="replies-chart-content">
-
-        <div class="replies-chart-visual">
-
-          <canvas
-            baseChart
-            [data]="repliesChartData"
-            [type]="'doughnut'"
-            [options]="repliesChartOptions">
-          </canvas>
-
-        </div>
-
-
-        <div class="replies-chart-side">
-
-          <span class="replies-chart-side-label">
-            Total analizado
-          </span>
-
-          <strong>
-            {{ totalReplies | number }}
-          </strong>
-
+          <span class="section-eyebrow neutral">COMENTARIOS</span>
+          <h2>Reacción de la conversación</h2>
           <p>
-            Distribución del sentimiento detectado
-            entre las respuestas analizadas.
+            Cómo están respondiendo las personas a las publicaciones
+            de {{ categoria || 'esta categoría' }}.
           </p>
-
         </div>
 
+        <div class="view-switch">
+          <button
+            type="button"
+            [class.active]="viewModeReplies === 'table'"
+            (click)="viewModeReplies = 'table'">
+            Resumen
+          </button>
+
+          <button
+            type="button"
+            [class.active]="viewModeReplies === 'chart'"
+            (click)="viewModeReplies = 'chart'">
+            Gráfico
+          </button>
+        </div>
       </div>
 
-    </div>
+      <div
+        class="nv-section-loading"
+        *ngIf="cargandoVistaComentarios"
+        role="status"
+        aria-live="polite">
+
+        <span class="nv-loader" aria-hidden="true"></span>
+        <span>Analizando comentarios...</span>
+      </div>
+
+      <div
+        class="alert"
+        *ngIf="errorsPorSeccion['comentarios']">
+        {{ errorsPorSeccion['comentarios'] }}
+      </div>
+
+      <!-- RESUMEN -->
+      <div
+        class="replies-summary"
+        *ngIf="
+          !cargandoVistaComentarios &&
+          viewModeReplies === 'table'
+        ">
+
+        <div class="replies-summary-main">
+          <div class="replies-summary-label">
+            <span class="material-icons">forum</span>
+            Comentarios analizados
+          </div>
+
+          <strong>{{ totalReplies | number }}</strong>
+          <small>
+            Respuestas capturadas en el período seleccionado
+          </small>
+        </div>
+
+        <div class="reply-breakdown">
+
+          <div class="reply-breakdown-item negative">
+            <div class="reply-breakdown-top">
+              <div>
+                <span class="reply-status-dot"></span>
+                <span class="reply-breakdown-name">
+                  Negativos
+                </span>
+              </div>
+              <strong>
+                {{ totalRepliesNegativo | number }}
+              </strong>
+            </div>
+          </div>
+
+          <div class="reply-breakdown-item neutral">
+            <div class="reply-breakdown-top">
+              <div>
+                <span class="reply-status-dot"></span>
+                <span class="reply-breakdown-name">
+                  Neutrales
+                </span>
+              </div>
+              <strong>
+                {{ totalRepliesNeutro | number }}
+              </strong>
+            </div>
+          </div>
+
+          <div class="reply-breakdown-item positive">
+            <div class="reply-breakdown-top">
+              <div>
+                <span class="reply-status-dot"></span>
+                <span class="reply-breakdown-name">
+                  Positivos
+                </span>
+              </div>
+              <strong>
+                {{ totalRepliesPositivo | number }}
+              </strong>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- GRÁFICO -->
+      <div
+        class="replies-chart-panel chart"
+        *ngIf="
+          !cargandoVistaComentarios &&
+          viewModeReplies === 'chart'
+        ">
+
+        <div class="replies-chart-header">
+          <div>
+            <span class="card-title">
+              Distribución de comentarios
+            </span>
+            <span class="card-sub">
+              Sentimiento de las respuestas analizadas
+            </span>
+          </div>
+
+          <button
+            type="button"
+            class="iconbtn"
+            (click)="downloadChart($event)"
+            title="Descargar gráfico">
+            <span class="material-icons">download</span>
+          </button>
+        </div>
+
+        <div class="replies-chart-content">
+          <div class="replies-chart-visual">
+            <canvas
+              baseChart
+              [data]="repliesChartData"
+              [type]="'doughnut'"
+              [options]="repliesChartOptions">
+            </canvas>
+          </div>
+
+          <div class="replies-chart-side">
+            <span class="replies-chart-side-label">
+              Total analizado
+            </span>
+
+            <strong>{{ totalReplies | number }}</strong>
+            <p>
+              Distribución del sentimiento detectado
+              entre las respuestas analizadas.
+            </p>
+          </div>
+        </div>
+      </div>
 
     </ng-container>
 
-
-    <!-- =====================================================
-         VERIFICANDO ACCESO
-    ====================================================== -->
-
+    <!-- VERIFICANDO ACCESO -->
     <div
       class="comments-access-loading"
       *ngIf="accessLoading">
 
-      <span class="material-icons">
-        hourglass_top
-      </span>
-
-      <span>
-        Verificando acceso a comentarios…
-      </span>
-
+      <span class="material-icons">hourglass_top</span>
+      <span>Verificando acceso a comentarios…</span>
     </div>
 
-
-    <!-- =====================================================
-         BLOQUEADO — FREE / BÁSICO
-    ====================================================== -->
-
+    <!-- BLOQUEADO -->
     <div
       class="dashboard-pro-lock"
       *ngIf="!accessLoading && !canViewReplies">
 
       <div class="dashboard-pro-lock-main">
-
         <div class="dashboard-pro-lock-icon">
           <span class="material-icons">lock</span>
         </div>
 
         <div class="dashboard-pro-lock-copy">
-
           <div class="dashboard-pro-lock-top">
-
             <span class="dashboard-pro-lock-kicker">
               ANÁLISIS DE COMENTARIOS
             </span>
 
-            <span class="dashboard-pro-badge">
-              PRO
-            </span>
-
+            <span class="dashboard-pro-badge">PRO</span>
           </div>
 
           <h3>
@@ -1353,14 +1185,12 @@
           </h3>
 
           <p>
-            Analiza el sentimiento de los comentarios, identifica la reacción
-            dominante y compara respuestas positivas, neutrales y negativas.
+            Analiza el sentimiento de los comentarios,
+            identifica la reacción dominante y compara respuestas
+            positivas, neutrales y negativas.
           </p>
-
         </div>
-
       </div>
-
 
       <div
         class="dashboard-pro-preview"
@@ -1383,144 +1213,190 @@
           <span>Positivos</span>
           <strong>—</strong>
         </div>
-
       </div>
-
     </div>
 
   </section>
 
-
-  <!-- =====================================================
-       EXPLORAR
-  ====================================================== -->
+  <!-- ============================================== -->
+  <!-- ANÁLISIS COMPLEMENTARIO -->
+  <!-- ============================================== -->
 
   <section class="section-block explore-section">
-
     <div class="section-heading">
-
       <div>
-
-        <span class="section-eyebrow neutral">
-          EXPLORAR
-        </span>
-
-        <h2>
-          Análisis complementario
-        </h2>
-
+        <span class="section-eyebrow neutral">EXPLORAR</span>
+        <h2>Análisis complementario</h2>
         <p>
           Profundiza en la evolución, entidades y comportamiento
           de los medios dentro de esta categoría.
         </p>
+      </div>
+    </div>
 
+    <!-- EVOLUCIÓN DE TÓPICOS -->
+    <div
+      class="nv-section-loading"
+      *ngIf="loadingTopicos"
+      role="status">
+      <span class="nv-loader" aria-hidden="true"></span>
+      <span>Cargando evolución de tópicos...</span>
+    </div>
+
+    
+<!-- EVOLUCIÓN DE TÓPICOS -->
+
+<article class="explore-main-card chart">
+
+  <div class="card-head">
+
+    <div>
+      <div class="explore-card-label">
+        <span class="material-icons">timeline</span>
+        EVOLUCIÓN
+      </div>
+
+      <div class="card-title">
+        Evolución de los principales tópicos
+      </div>
+
+      <div class="card-sub">
+        Evolución de los 5 tópicos principales de
+        {{ categoria || 'esta categoría' }}
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="iconbtn"
+      (click)="downloadChart($event)"
+      title="Descargar gráfico">
+      <span class="material-icons">download</span>
+    </button>
+
+  </div>
+
+  <!-- SELECTOR DE INTERVALOS INDEPENDIENTE -->
+
+  <div
+    class="timeline-interval-selector"
+    style="display:flex; gap:8px; flex-wrap:wrap; margin:16px 0;">
+
+    <button
+      *ngFor="let interval of timelineIntervals"
+      type="button"
+      class="iconbtn"
+      [class.is-active]="topicTimelineInterval === interval.value"
+      [disabled]="loadingTopicos"
+      [attr.aria-pressed]="topicTimelineInterval === interval.value"
+      (click)="onTopicTimelineIntervalChange(interval.value)">
+
+      {{ interval.label }}
+
+    </button>
+
+  </div>
+
+  <!-- ESTADO DE CARGA -->
+
+  <div
+    class="nv-section-loading"
+    *ngIf="loadingTopicos || loadingTopicTimeline"
+    role="status">
+
+    <span
+      class="nv-loader"
+      aria-hidden="true">
+    </span>
+
+    <span>
+      Cargando evolución de tópicos...
+    </span>
+
+  </div>
+
+  <!-- ERROR DE CONSULTA -->
+
+  <div
+    class="empty-state"
+    *ngIf="errorsPorSeccion['topics_timeline']">
+
+    <span class="material-icons">error_outline</span>
+
+    <div>
+      <strong>No se pudo cargar la evolución</strong>
+      <p>
+        {{ errorsPorSeccion['topics_timeline'] }}
+      </p>
+    </div>
+
+  </div>
+
+  <!-- GRÁFICA -->
+
+  <div
+    class="chart-wrap explore-timeline-chart"
+    *ngIf="
+      !loadingTopicTimeline &&
+      !errorsPorSeccion['topics_timeline'] &&
+      topicsTimelineData.datasets.length;
+      else noTopicsTimeline
+    ">
+
+    <canvas
+      baseChart
+      [type]="'line'"
+      [data]="topicsTimelineData"
+      [options]="topicsTimelineOptions">
+    </canvas>
+
+  </div>
+
+  <!-- SIN DATOS -->
+
+  <ng-template #noTopicsTimeline>
+
+    <div
+      class="empty-state"
+      *ngIf="
+        !loadingTopicos &&
+        !loadingTopicTimeline &&
+        !errorsPorSeccion['topics_timeline']
+      ">
+
+      <span class="material-icons">timeline</span>
+
+      <div>
+        <strong>No hay evolución disponible</strong>
+        <p>
+          Cambia el período o las cuentas seleccionadas.
+        </p>
       </div>
 
     </div>
 
+  </ng-template>
 
-    <!-- EVOLUCIÓN DE TÓPICOS -->
-
-    <article class="explore-main-card chart">
-
-      <div class="card-head">
-
-        <div>
-
-          <div class="explore-card-label">
-
-            <span class="material-icons">
-              timeline
-            </span>
-
-            EVOLUCIÓN
-
-          </div>
-
-          <div class="card-title">
-            Evolución de los principales tópicos
-          </div>
-
-          <div class="card-sub">
-            Cambios diarios en la actividad de los 5 tópicos
-            principales de {{ categoria || 'esta categoría' }}
-          </div>
-
-        </div>
-
-
-        <button
-          type="button"
-          class="iconbtn"
-          (click)="downloadChart($event)"
-          title="Descargar gráfico">
-
-          <span class="material-icons">
-            download
-          </span>
-
-        </button>
-
-      </div>
-
-
-      <div
-        class="chart-wrap explore-timeline-chart"
-        *ngIf="topicsTimelineData.datasets.length; else noTopicsTimeline">
-
-        <canvas
-          baseChart
-          [type]="'line'"
-          [data]="topicsTimelineData"
-          [options]="topicsTimelineOptions">
-        </canvas>
-
-      </div>
-
-
-      <ng-template #noTopicsTimeline>
-
-        <div class="empty-state">
-
-          <span class="material-icons">
-            timeline
-          </span>
-
-          <div>
-
-            <strong>
-              No hay evolución disponible
-            </strong>
-
-            <p>
-              Cambia el período o las cuentas seleccionadas.
-            </p>
-
-          </div>
-
-        </div>
-
-      </ng-template>
-
-    </article>
+</article>
 
 
     <!-- ENTIDADES POR TÓPICO -->
+    <div
+      class="nv-section-loading"
+      *ngIf="loadingCruces"
+      role="status"
+      aria-live="polite">
+
+      <span class="nv-loader" aria-hidden="true"></span>
+      <span>Relacionando las entidades con los tópicos...</span>
+    </div>
 
     <article class="explore-main-card">
-
       <div class="card-head">
-
         <div>
-
           <div class="explore-card-label">
-
-            <span class="material-icons">
-              account_tree
-            </span>
-
+            <span class="material-icons">account_tree</span>
             RELACIONES
-
           </div>
 
           <div class="card-title">
@@ -1531,101 +1407,81 @@
             Personas, organizaciones y lugares relacionados
             con las principales conversaciones.
           </div>
-
         </div>
 
-
         <div class="entity-topic-toggle">
-
           <button
             type="button"
             [class.active]="selectedTopicEntityType === 'persona'"
             (click)="selectedTopicEntityType = 'persona'">
-
             Personas
-
           </button>
 
           <button
             type="button"
             [class.active]="selectedTopicEntityType === 'organizacion'"
             (click)="selectedTopicEntityType = 'organizacion'">
-
             Organizaciones
-
           </button>
 
           <button
             type="button"
             [class.active]="selectedTopicEntityType === 'locacion'"
             (click)="selectedTopicEntityType = 'locacion'">
-
             Lugares
-
           </button>
-
         </div>
-
       </div>
-
 
       <div
         class="topic-entities-grid"
-        *ngIf="groupedEntitiesByTopic.length; else noTopicEntities">
+        *ngIf="
+          groupedEntitiesByTopic.length;
+          else noTopicEntities
+        ">
 
         <article
           class="topic-entity-card"
           *ngFor="let topic of groupedEntitiesByTopic">
 
           <div class="topic-entity-header">
-
             <div
               class="topic-entity-title"
               [title]="topic.topic_name">
-
               {{ topic.topic_name }}
-
             </div>
 
             <div class="topic-entity-total">
               {{ topic.total | number }}
             </div>
-
           </div>
 
-
           <div class="topic-entity-list">
-
             <div
               class="topic-entity-row"
-              *ngFor="let entity of topic.entities; let i = index">
+              *ngFor="
+                let entity of topic.entities;
+                let i = index
+              ">
 
               <div class="topic-entity-rank">
                 {{ i + 1 }}
               </div>
 
-
               <div class="topic-entity-content">
-
                 <div class="topic-entity-line">
-
                   <span
                     class="topic-entity-name"
                     [title]="entity.entidad">
-
                     {{ entity.entidad }}
-
                   </span>
 
                   <span class="topic-entity-value">
                     {{ entity.total | number }}
                   </span>
-
                 </div>
 
-
                 <div class="topic-entity-bar">
-
                   <div
                     class="topic-entity-bar-fill"
                     [style.width.%]="
@@ -1634,68 +1490,50 @@
                         : 0
                     ">
                   </div>
-
                 </div>
-
               </div>
-
             </div>
-
           </div>
-
         </article>
-
       </div>
 
-
       <ng-template #noTopicEntities>
+        <div class="nv-empty-loading" *ngIf="loadingCruces">
+          <span class="nv-loader" aria-hidden="true"></span>
+          <span>Cargando resultados...</span>
+        </div>
 
-        <div class="empty-state">
-
-          <span class="material-icons">
-            account_tree
-          </span>
-
+        <div class="empty-state" *ngIf="!loadingCruces">
+          <span class="material-icons">account_tree</span>
           <div>
-
-            <strong>
-              No hay entidades relacionadas
-            </strong>
-
+            <strong>No hay entidades relacionadas</strong>
             <p>
               No se encontraron relaciones suficientes
               para los tópicos de este período.
             </p>
-
           </div>
-
         </div>
-
       </ng-template>
-
     </article>
 
-
-    <!-- ANÁLISIS DE MEDIOS -->
+    <!-- ÍNDICE Y MEDIOS MÁS ACTIVOS -->
+    <div
+      class="nv-section-loading"
+      *ngIf="loadingResumen"
+      role="status">
+      <span class="nv-loader" aria-hidden="true"></span>
+      <span>Calculando índices de sentimiento...</span>
+    </div>
 
     <div class="explore-distributions">
 
-      <!-- ÍNDICE -->
-
+      <!-- ÍNDICE DE SENTIMIENTO -->
       <article class="explore-secondary-card chart">
-
         <div class="card-head">
-
           <div>
-
             <div class="explore-card-label">
-
-              <span class="material-icons">
-                analytics
-              </span>
-
+              <span class="material-icons">analytics</span>
               MEDIOS
-
             </div>
 
             <div class="card-title">
@@ -1705,51 +1543,40 @@
             <div class="card-sub">
               Comparación del comportamiento de las principales fuentes
             </div>
-
           </div>
-
 
           <button
             type="button"
             class="iconbtn"
             (click)="downloadChart($event)"
             title="Descargar gráfico">
-
-            <span class="material-icons">
-              download
-            </span>
-
+            <span class="material-icons">download</span>
           </button>
-
         </div>
 
+        <div
+          class="nv-empty-loading"
+          *ngIf="loadingResumen">
+          <span class="nv-loader" aria-hidden="true"></span>
+          <span>Calculando índice...</span>
+        </div>
 
         <div
-          *ngIf="!userIndice.length"
-          class="empty-state compact">
+          class="empty-state compact"
+          *ngIf="!loadingResumen && !userIndice.length">
 
-          <span class="material-icons">
-            analytics
-          </span>
-
+          <span class="material-icons">analytics</span>
           <div>
-
-            <strong>
-              Sin datos
-            </strong>
-
+            <strong>Sin datos</strong>
             <p>
               No hay información suficiente para calcular el índice.
             </p>
-
           </div>
-
         </div>
 
-
         <div
-          *ngIf="userIndice.length"
-          class="chart-wrap explore-small-chart">
+          class="chart-wrap explore-small-chart"
+          *ngIf="!loadingResumen && userIndice.length">
 
           <canvas
             baseChart
@@ -1757,28 +1584,16 @@
             [data]="userIndiceChartData"
             [options]="userIndiceChartOptions">
           </canvas>
-
         </div>
-
       </article>
 
-
       <!-- TOP MEDIOS -->
-
       <article class="explore-secondary-card">
-
         <div class="card-head">
-
           <div>
-
             <div class="explore-card-label">
-
-              <span class="material-icons">
-                leaderboard
-              </span>
-
+              <span class="material-icons">leaderboard</span>
               ACTIVIDAD
-
             </div>
 
             <div class="card-title">
@@ -1788,28 +1603,30 @@
             <div class="card-sub">
               Fuentes con mayor volumen de publicaciones
             </div>
-
           </div>
-
         </div>
 
+        <div
+          class="nv-empty-loading"
+          *ngIf="loadingFuentes">
+          <span class="nv-loader" aria-hidden="true"></span>
+          <span>Cargando medios más activos...</span>
+        </div>
 
-        <ol class="user-list">
-
+        <ol class="user-list" *ngIf="!loadingFuentes">
           <li
-            *ngFor="let u of topUsers; trackBy: trackByUser">
+            *ngFor="
+              let u of topUsers;
+              trackBy: trackByUser
+            ">
 
             <div class="u-left">
-
               <span class="u-name">
                 {{ u.usuario }}
               </span>
-
             </div>
 
-
             <div class="u-right">
-
               <span class="u-val mono">
                 {{ u.total | number }}
               </span>
@@ -1818,34 +1635,19 @@
                 class="u-bar"
                 [style.width.%]="calcUserBar(u.total)">
               </span>
-
             </div>
-
           </li>
-
         </ol>
-
       </article>
-
     </div>
 
-
     <!-- DETALLE DEL ÍNDICE -->
-
     <article class="explore-main-card">
-
       <div class="card-head">
-
         <div>
-
           <div class="explore-card-label">
-
-            <span class="material-icons">
-              table_chart
-            </span>
-
+            <span class="material-icons">table_chart</span>
             DETALLE
-
           </div>
 
           <div class="card-title">
@@ -1855,63 +1657,40 @@
           <div class="card-sub">
             Distribución positiva, negativa, volumen total e índice
           </div>
-
         </div>
-
       </div>
 
+      <div
+        class="nv-empty-loading"
+        *ngIf="loadingResumen">
+        <span class="nv-loader" aria-hidden="true"></span>
+        <span>Preparando detalle por medio...</span>
+      </div>
 
       <div
-        *ngIf="!userIndice.length"
-        class="empty-state compact">
+        class="empty-state compact"
+        *ngIf="!loadingResumen && !userIndice.length">
 
-        <span class="material-icons">
-          table_chart
-        </span>
-
+        <span class="material-icons">table_chart</span>
         <div>
-
-          <strong>
-            Sin datos
-          </strong>
-
+          <strong>Sin datos</strong>
           <p>
             No hay información disponible para este período.
           </p>
-
         </div>
-
       </div>
 
-
       <div
-        *ngIf="userIndice.length"
-        class="table compact">
+        class="table compact"
+        *ngIf="!loadingResumen && userIndice.length">
 
         <div class="t-head">
-
-          <span>
-            Medio
-          </span>
-
-          <span class="t-num">
-            Pos
-          </span>
-
-          <span class="t-num">
-            Neg
-          </span>
-
-          <span class="t-num">
-            Total
-          </span>
-
-          <span class="t-num">
-            Índice
-          </span>
-
+          <span>Medio</span>
+          <span class="t-num">Pos</span>
+          <span class="t-num">Neg</span>
+          <span class="t-num">Total</span>
+          <span class="t-num">Índice</span>
         </div>
-
 
         <div
           class="t-row"
@@ -1923,9 +1702,7 @@
           <div
             class="t-user multiline"
             [title]="it.TweetUser">
-
             {{ it.TweetUser }}
-
           </div>
 
           <div class="t-num mono">
@@ -1941,7 +1718,6 @@
           </div>
 
           <div class="t-ind">
-
             <span class="t-ind-val mono">
               {{ formatIndice(it.indice) }}
             </span>
@@ -1950,32 +1726,18 @@
               class="t-ind-bar"
               [style.width.%]="calcIndiceBar(it.indice)">
             </span>
-
           </div>
-
         </div>
-
       </div>
-
     </article>
 
-
-    <!-- WORDCLOUD -->
-
+    <!-- NUBE DE PALABRAS -->
     <article class="explore-main-card">
-
       <div class="card-head">
-
         <div>
-
           <div class="explore-card-label">
-
-            <span class="material-icons">
-              text_fields
-            </span>
-
+            <span class="material-icons">text_fields</span>
             LENGUAJE
-
           </div>
 
           <div class="card-title">
@@ -1983,12 +1745,10 @@
           </div>
 
           <div class="card-sub">
-            Términos que aparecen con mayor frecuencia
-            dentro de {{ categoria || 'esta categoría' }}
+            Términos que aparecen con mayor frecuencia dentro de
+            {{ categoria || 'esta categoría' }}
           </div>
-
         </div>
-
 
         <button
           type="button"
@@ -1997,36 +1757,28 @@
           [disabled]="loadingWordcloud"
           title="Actualizar nube de palabras">
 
-          <span class="material-icons">
+          <span
+            class="material-icons"
+            [class.nv-rotating]="loadingWordcloud">
             refresh
           </span>
-
         </button>
-
       </div>
 
-
       <div class="wordcloud-body">
-
         <div
           *ngIf="loadingWordcloud"
           class="wc-loading">
 
           <div class="spinner"></div>
-
-          <span>
-            Generando nube de palabras…
-          </span>
-
+          <span>Generando nube de palabras…</span>
         </div>
-
 
         <img
           *ngIf="!loadingWordcloud && wordcloudUrl"
           [src]="wordcloudUrl"
           alt="Nube de palabras"
           class="wordcloud-img" />
-
 
         <div
           *ngIf="!loadingWordcloud && !wordcloudUrl"
@@ -2039,11 +1791,8 @@
           <div class="empty-sub">
             Prueba otro período o cambia la selección de medios.
           </div>
-
         </div>
-
       </div>
-
     </article>
 
   </section>

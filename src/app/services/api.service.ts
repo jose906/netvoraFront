@@ -71,7 +71,52 @@ getTopicPulse(body: {
     body,
     { headers }
   );
+
+  
 }
+
+getStatsResumen(params: any): Observable<Partial<StatsResponse>> {
+  return this.http.post<Partial<StatsResponse>>(
+    `${this.apiUrl}estadisticas/resumen`,
+    params
+  );
+}
+
+getStatsTimeline(params: any): Observable<Partial<StatsResponse>> {
+  return this.http.post<Partial<StatsResponse>>(
+    `${this.apiUrl}estadisticas/timeline`,
+    params
+  );
+}
+
+getStatsMedios(params: any): Observable<Partial<StatsResponse>> {
+  return this.http.post<Partial<StatsResponse>>(
+    `${this.apiUrl}estadisticas/medios`,
+    params
+  );
+}
+
+getStatsTopicos(params: any): Observable<Partial<StatsResponse>> {
+  return this.http.post<Partial<StatsResponse>>(
+    `${this.apiUrl}estadisticas/topicos`,
+    params
+  );
+}
+
+getStatsEntidades(params: any): Observable<Partial<StatsResponse>> {
+  return this.http.post<Partial<StatsResponse>>(
+    `${this.apiUrl}estadisticas/entidades`,
+    params
+  );
+}
+
+getStatsComentarios(params: any): Observable<Partial<StatsResponse>> {
+  return this.http.post<Partial<StatsResponse>>(
+    `${this.apiUrl}estadisticas/comentarios`,
+    params
+  );
+}
+
 
 
   
@@ -137,6 +182,76 @@ getRepliesSummaryMany(tweetIds: any[]) {
   return this.http.post<any>( this.apiUrl + 'get_topic',body, {headers}); 
 
 }
+
+
+
+getCategoryTopicsTimeline(params: {
+  start: string;
+  end?: string;
+  users: string[];
+  categoria: string;
+  type_user: string;
+  search?: string;
+  topic_ids: number[];
+  timeline_interval: '1h' | '3h' | '6h' | '12h' | '1d';
+}): Observable<any> {
+  return this.http.post<any>(
+    `${this.apiUrl}categorias/topicos/timeline`,
+    params
+  );
+}
+
+
+getCategoryResumen(params: any): Observable<any> {
+  return this.http.post<any>(
+    `${this.apiUrl}categorias/resumen`, params
+  );
+}
+
+getStatsTopicsTimeline(params: any): Observable<Partial<StatsResponse>> {
+  return this.http.post<Partial<StatsResponse>>(
+    `${this.apiUrl}estadisticas/topicos/timeline`,
+    params
+  );
+}
+
+
+getCategoryTimeline(params: any): Observable<any> {
+  return this.http.post<any>(
+    `${this.apiUrl}categorias/timeline`, params
+  );
+}
+
+getCategoryFuentes(params: any): Observable<any> {
+  return this.http.post<any>(
+    `${this.apiUrl}categorias/fuentes`, params
+  );
+}
+
+getCategoryTopicos(params: any): Observable<any> {
+  return this.http.post<any>(
+    `${this.apiUrl}categorias/topicos`, params
+  );
+}
+
+getCategoryEntidades(params: any): Observable<any> {
+  return this.http.post<any>(
+    `${this.apiUrl}categorias/entidades`, params
+  );
+}
+
+getCategoryCruces(params: any): Observable<any> {
+  return this.http.post<any>(
+    `${this.apiUrl}categorias/cruces`, params
+  );
+}
+
+getCategoryComentarios(params: any): Observable<any> {
+  return this.http.post<any>(
+    `${this.apiUrl}categorias/comentarios`, params
+  );
+}
+
 
   getTopics():Observable<TopicOption[]>{
 

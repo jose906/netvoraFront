@@ -9,7 +9,7 @@ import {
   OnDestroy
 } from '@angular/core';
 import { ChartData, ChartOptions, ChartType } from 'chart.js';
-import { finalize } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 import { BaseChartDirective } from 'ng2-charts';
 import { NETVORA_PALETTE, exportCanvasWithWhiteBg } from '../../utils/helpers';
@@ -57,8 +57,24 @@ export class PoliticaEstadisticasComponent implements OnChanges, OnDestroy {
   @Input() searchText: string = '';
   @Input() users: users[] = [];
   @Input() selectedTopics: number[] = [];
-  loading = false;
-  errorMsg = '';
+  
+loading = false;
+errorMsg = '';
+
+errorsPorSeccion: Record<string, string> = {};
+
+
+
+
+  // Estados de carga requeridos por el HTML.
+  get cargandoDashboard(): boolean { return this.loading; }
+  get loadingResumen(): boolean { return this.loading; }
+  get loadingTopicos(): boolean { return this.loading; }
+  get loadingTimeline(): boolean { return this.loading; }
+  get loadingEntidades(): boolean { return this.loading; }
+  get loadingFuentes(): boolean { return this.loading; }
+  get loadingCruces(): boolean { return this.loading; }
+  get cargandoVistaComentarios(): boolean { return this.loading; }
   // ===== KPI =====
   totalPosts = 0;
 // Comparación con período anterior
@@ -100,7 +116,20 @@ mediaTop5Share = 0;
   // ===== Timeline =====
   @ViewChild(BaseChartDirective) timelineChart?: BaseChartDirective;
 
-  timelineInterval: TimelineInterval = '1d';
+  timelineInterval: TimelineInterval = '1h';
+  topicTimelineInterval: TimelineInterval = '1h';
+  loadingTopicTimeline = false;
+  private topicTimelineSubscription?: Subscription;
+  private topicTimelineVersion = 0;
+  private topicTimelineDailyRows: any[] = [];
+  private topicTimelineTopIds: number[] = [];
+  private topicTimelineNames = new Map<number, string>();
+  private dashboardRequestVersion = 0;
+  private dashboardSubscriptions: Subscription[] = [];
+  private dashboardResponse: any = {};
+  private timelineSubscription?: Subscription;
+  private timelineRequestVersion = 0;
+  private pendingSections = 0;
   readonly timelineIntervals: { value: TimelineInterval; label: string }[] = [
     { value: '1h', label: '1 hora' },
     { value: '3h', label: '3 horas' },
@@ -112,8 +141,109 @@ mediaTop5Share = 0;
   onTimelineIntervalChange(interval: TimelineInterval): void {
     if (this.timelineInterval === interval) return;
     this.timelineInterval = interval;
-    this.cargarDatos();
+    this.cargarSoloTimelinePublicaciones();
   }
+
+  onTopicTimelineIntervalChange(interval: TimelineInterval): void {
+    if (this.topicTimelineInterval === interval) return;
+    this.topicTimelineInterval = interval;
+    this.cargarSoloTimelineTopicos();
+  }
+
+  private actualizarGraficaEvolucionTopicos(rows: any[]): void {
+    const fechas = Array.from(new Set(
+      rows.map(row => String(row.fecha ?? '')).filter(Boolean)
+    )).sort();
+
+    const colors = ['#6d28d9', '#2563eb', '#059669', '#ea580c', '#dc2626'];
+    const valores = new Map<string, number>();
+
+    for (const row of rows) {
+      const id = Number(row.topic_id);
+      const fecha = String(row.fecha ?? '');
+      const key = `${id}|${fecha}`;
+      valores.set(key, (valores.get(key) ?? 0) + Number(row.total ?? 0));
+    }
+
+    this.topicsTimelineData = {
+      labels: fechas.map(fecha => {
+        const day = this.formatTimelineLabelUTC(fecha);
+        if (this.topicTimelineInterval === '1d') return day;
+        const match = fecha.match(/[T ](\d{2}):(\d{2})/);
+        return match ? `${day} ${match[1]}:${match[2]}` : day;
+      }),
+      datasets: this.topicTimelineTopIds.map((id, index) => {
+        const color = colors[index % colors.length];
+        return {
+          label: this.truncateTopic(this.topicTimelineNames.get(id) ?? `Tópico ${id}`, 38),
+          data: fechas.map(fecha => valores.get(`${id}|${fecha}`) ?? 0),
+          borderColor: color,
+          backgroundColor: color,
+          tension: 0.35,
+          fill: false,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          borderWidth: 2
+        };
+      })
+    };
+  }
+
+  public cargarSoloTimelineTopicos(): void {
+    const version = ++this.topicTimelineVersion;
+    this.topicTimelineSubscription?.unsubscribe();
+    this.topicTimelineSubscription = undefined;
+
+    if (!this.startDate || this.topicTimelineTopIds.length === 0) {
+      this.loadingTopicTimeline = false;
+      this.topicsTimelineData = { labels: [], datasets: [] };
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (this.topicTimelineInterval === '1d') {
+      this.loadingTopicTimeline = false;
+      this.actualizarGraficaEvolucionTopicos(this.topicTimelineDailyRows);
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const body: any = {
+      start: this.toYMD(this.startDate),
+      users: this.getUsersToSend(),
+      categoria: this.categoria || '',
+      type_user: 'Medio',
+      topic_ids: [...this.topicTimelineTopIds],
+      timeline_interval: this.topicTimelineInterval
+    };
+
+    if (this.endDate) body.end = this.toYMD(this.endDate);
+    if (this.searchText?.trim()) body.search = this.searchText.trim();
+
+    this.loadingTopicTimeline = true;
+    delete this.errorsPorSeccion['topics_timeline'];
+    this.cdr.markForCheck();
+
+    this.topicTimelineSubscription = this.apiService.getCategoryTopicsTimeline(body).subscribe({
+      next: (response: any) => {
+        if (version !== this.topicTimelineVersion) return;
+        const rows = Array.isArray(response?.topics_timeline_detail)
+          ? response.topics_timeline_detail : [];
+        this.actualizarGraficaEvolucionTopicos(rows);
+        this.loadingTopicTimeline = false;
+        this.cdr.markForCheck();
+      },
+      error: (error: any) => {
+        if (version !== this.topicTimelineVersion) return;
+        console.error('[Política] Error en evolución horaria de tópicos', error);
+        this.errorsPorSeccion['topics_timeline'] =
+          'No se pudo cargar la evolución horaria de tópicos.';
+        this.loadingTopicTimeline = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
   timelineData: ChartData<'line'> = {
     labels: [],
     datasets: [{ label: 'Publicaciones', data: [],
@@ -614,6 +744,13 @@ userIndiceChartOptions: ChartOptions<'bar'> = {
   }
 }
 ngOnDestroy(): void {
+  ++this.dashboardRequestVersion;
+  ++this.timelineRequestVersion;
+  this.dashboardSubscriptions.forEach(subscription => subscription.unsubscribe());
+  this.timelineSubscription?.unsubscribe();
+  ++this.topicTimelineVersion;
+  this.topicTimelineSubscription?.unsubscribe();
+  this.topicTimelineSubscription = undefined;
   if (this.wordcloudUrl) {
     URL.revokeObjectURL(this.wordcloudUrl);
   }
@@ -629,50 +766,115 @@ private getUsersToSend(): string[] {
       .filter(Boolean);
   }
  public cargarDatos(): void {
-  if (!this.startDate) return;
-  const usersToSend = this.getUsersToSend();
-  if (!usersToSend.length) {
-    this.errorMsg = 'No hay usuarios disponibles para consultar.';
-    this.totalPosts = 0;
-    this.topUsers = [];
-    this.userIndice = [];
-    this.cdr.markForCheck();
-    return;
-  }
-  const body: any = {
-    start: this.toYMD(this.startDate),
-    users: usersToSend,
-    categoria: this.categoria || '',
-    type_user: 'Medio',
-    topic_ids: [...this.selectedTopics],
-    timeline_interval: this.timelineInterval
-  };
-  if (this.endDate) {
-    body.end = this.toYMD(this.endDate);
-  }
-  const search = (this.searchText || '').trim();
-  if (search) {
-    body.search = search;
-  }
-  this.loading = true;
-  this.errorMsg = '';
-  this.cdr.markForCheck();
-  this.apiService.getCategoriesData(body)
-    .pipe(finalize(() => {
-      this.loading = false;
+    if (!this.startDate) return;
+    const usersToSend = this.getUsersToSend();
+    if (!usersToSend.length) {
+      this.errorMsg = 'No hay usuarios disponibles para consultar.';
+      this.totalPosts = 0;
+      this.topUsers = [];
+      this.userIndice = [];
       this.cdr.markForCheck();
-    }))
-    .subscribe({
-      next: (res) => {
-        this.mapResponse(res);
+      return;
+    }
+
+    const version = ++this.dashboardRequestVersion;
+    ++this.timelineRequestVersion;
+    ++this.topicTimelineVersion;
+    this.dashboardSubscriptions.forEach(subscription => subscription.unsubscribe());
+    this.dashboardSubscriptions = [];
+    this.timelineSubscription?.unsubscribe();
+    this.topicTimelineSubscription?.unsubscribe();
+    this.dashboardResponse = {};
+    this.errorsPorSeccion = {};
+    this.loadingTopicTimeline = false;
+    this.topicTimelineTopIds = [];
+    this.topicTimelineDailyRows = [];
+    this.topicsTimelineData = { labels: [], datasets: [] };
+
+    const body: any = {
+      start: this.toYMD(this.startDate),
+      users: usersToSend,
+      categoria: this.categoria || '',
+      type_user: 'Medio',
+      topic_ids: [...this.selectedTopics],
+      timeline_interval: this.timelineInterval
+    };
+    if (this.endDate) body.end = this.toYMD(this.endDate);
+    if (this.searchText?.trim()) body.search = this.searchText.trim();
+
+    const sections = [
+      { name: 'resumen', call: () => this.apiService.getCategoryResumen(body) },
+      { name: 'timeline', call: () => this.apiService.getCategoryTimeline(body) },
+      { name: 'fuentes', call: () => this.apiService.getCategoryFuentes(body) },
+      { name: 'topicos', call: () => this.apiService.getCategoryTopicos(body) },
+      { name: 'entidades', call: () => this.apiService.getCategoryEntidades(body) },
+      { name: 'cruces', call: () => this.apiService.getCategoryCruces(body) },
+      { name: 'comentarios', call: () => this.apiService.getCategoryComentarios(body) }
+    ];
+
+    this.pendingSections = sections.length;
+    this.loading = true;
+    this.errorMsg = '';
+    this.cdr.markForCheck();
+
+    for (const section of sections) {
+      const subscription = section.call().subscribe({
+        next: (res: any) => {
+          if (version !== this.dashboardRequestVersion) return;
+          this.dashboardResponse = { ...this.dashboardResponse, ...res };
+          this.mapResponse(this.dashboardResponse, section.name);
+          this.cdr.markForCheck();
+        },
+        error: (error: any) => {
+          if (version !== this.dashboardRequestVersion) return;
+          console.error(`[Política] Error en ${section.name}`, error);
+          this.errorsPorSeccion[section.name] = `No se pudo cargar ${section.name}.`;
+          this.pendingSections--;
+          this.loading = this.pendingSections > 0;
+          this.cdr.markForCheck();
+        },
+        complete: () => {
+          if (version !== this.dashboardRequestVersion) return;
+          this.pendingSections--;
+          this.loading = this.pendingSections > 0;
+          this.cdr.markForCheck();
+        }
+      });
+      this.dashboardSubscriptions.push(subscription);
+    }
+  }
+
+  private cargarSoloTimelinePublicaciones(): void {
+    if (!this.startDate || !this.getUsersToSend().length) return;
+    const version = ++this.timelineRequestVersion;
+    const dashboardVersion = this.dashboardRequestVersion;
+    this.timelineSubscription?.unsubscribe();
+    const body: any = {
+      start: this.toYMD(this.startDate),
+      users: this.getUsersToSend(),
+      categoria: this.categoria || '',
+      type_user: 'Medio',
+      topic_ids: [...this.selectedTopics],
+      timeline_interval: this.timelineInterval
+    };
+    if (this.endDate) body.end = this.toYMD(this.endDate);
+    if (this.searchText?.trim()) body.search = this.searchText.trim();
+    this.timelineSubscription = this.apiService.getCategoryTimeline(body).subscribe({
+      next: (res: any) => {
+        if (version !== this.timelineRequestVersion || dashboardVersion !== this.dashboardRequestVersion) return;
+        this.dashboardResponse = { ...this.dashboardResponse, ...res };
+        this.mapResponse(this.dashboardResponse, 'timeline');
       },
-      error: () => {
-        this.errorMsg = 'No se pudo cargar el dashboard.';
+      error: (error: any) => {
+        if (version !== this.timelineRequestVersion || dashboardVersion !== this.dashboardRequestVersion) return;
+        console.error('[Política] Error en timeline', error);
+        this.errorsPorSeccion['timeline'] = 'No se pudo cargar la evolución de publicaciones.';
         this.cdr.markForCheck();
-      },
+      }
     });
-}
-  private mapResponse(res: any): void {
+  }
+
+  private mapResponse(res: any, section: string): void {
     // Total posts
     this.totalPosts = res?.total_posts?.total_posts ?? 0;
     this.totalReplies = res?.total_replies?.total ?? 0;
@@ -770,76 +972,31 @@ this.topTopicsData = {
 // =========================================================
 // EVOLUCIÓN DE TÓPICOS DE LA CATEGORÍA
 // =========================================================
-const topicTimeline = Array.isArray(res?.topics_timeline)
-  ? res.topics_timeline
-  : [];
-const fechas: string[] = Array.from(
-  new Set<string>(
-    topicTimeline.map((item: any): string =>
-      String(item.fecha)
-    )
-  )
-);
-fechas.sort((a: string, b: string) => {
-  return new Date(a).getTime() - new Date(b).getTime();
-});
-const topicMap = new Map<
-  number,
-  {
-    topic_id: number;
-    topic_name: string;
-  }
->();
-topicTimeline.forEach((item: any) => {
-  const topicId = Number(item.topic_id);
-  if (!topicMap.has(topicId)) {
-    topicMap.set(topicId, {
-      topic_id: topicId,
-      topic_name: String(item.topic_name || 'Sin nombre')
-    });
-  }
-});
-const timelineTopics = Array.from(topicMap.values());
-const topicColors = [
-  '#6d28d9',
-  '#2563eb',
-  '#059669',
-  '#ea580c',
-  '#dc2626'
-];
-this.topicsTimelineData = {
-  labels: fechas.map((fecha: string) =>
-  this.formatTimelineLabelUTC(fecha)
-),
-  datasets: timelineTopics.map((topic, index) => {
-    const data = fechas.map((fecha) => {
-      const item = topicTimeline.find(
-        (row: any) =>
-          Number(row.topic_id) === topic.topic_id &&
-          String(row.fecha) === fecha
-      );
-      return item
-        ? Number(item.total ?? 0)
-        : 0;
-    });
-    const color =
-      topicColors[index % topicColors.length];
-    return {
-      label: this.truncateTopic(
-        topic.topic_name,
-        38
-      ),
-      data,
-      borderColor: color,
-      backgroundColor: color,
-      tension: 0.35,
-      fill: false,
-      pointRadius: 3,
-      pointHoverRadius: 5,
-      borderWidth: 2
-    };
-  })
-};
+if (section === 'topicos') {
+this.topicTimelineSubscription?.unsubscribe();
+this.topicTimelineSubscription = undefined;
+++this.topicTimelineVersion;
+
+this.topicTimelineDailyRows = Array.isArray(res?.topics_timeline)
+  ? res.topics_timeline : [];
+
+this.topicTimelineNames.clear();
+const totals = new Map<number, number>();
+
+for (const row of this.topicTimelineDailyRows) {
+  const id = Number(row.topic_id);
+  if (!Number.isSafeInteger(id) || id <= 0) continue;
+  this.topicTimelineNames.set(id, String(row.topic_name || `Tópico ${id}`));
+  totals.set(id, (totals.get(id) ?? 0) + Number(row.total ?? 0));
+}
+
+this.topicTimelineTopIds = [...totals.entries()]
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 5)
+  .map(([id]) => id);
+
+this.cargarSoloTimelineTopicos();
+}
 // =========================================================
 // TÓPICOS POR MEDIO / USUARIO
 // =========================================================

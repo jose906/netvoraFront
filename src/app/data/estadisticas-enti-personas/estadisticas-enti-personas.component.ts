@@ -120,16 +120,16 @@ export class EstadisticasEntiPersonasComponent
   // ESTADOS GENERALES
   // =====================================================
 
-  loading = false;
-  errorMsg = '';
+  loading = true;
+errorMsg = '';
 
-  loadingResumen = false;
-  loadingTimeline = false;
-  loadingFuentes = false;
-  loadingTopicos = false;
-  loadingEntidades = false;
-  loadingCruces = false;
-  loadingComentarios = false;
+loadingResumen = true;
+loadingTimeline = true;
+loadingFuentes = true;
+loadingTopicos = true;
+loadingEntidades = true;
+loadingCruces = true;
+loadingComentarios = false;
 
   errorsPorSeccion: Record<string, string> = {};
 
@@ -1199,24 +1199,21 @@ export class EstadisticasEntiPersonasComponent
 
     if (!filters) {
 
-      this.loading = false;
-      this.loadingResumen = false;
-      this.loadingTimeline = false;
-      this.loadingFuentes = false;
-      this.loadingTopicos = false;
-      this.loadingEntidades = false;
-      this.loadingCruces = false;
-      this.loadingComentarios = false;
+  this.loading = true;
+  this.loadingResumen = true;
+  this.loadingTimeline = true;
+  this.loadingFuentes = true;
+  this.loadingTopicos = true;
+  this.loadingEntidades = true;
+  this.loadingCruces = true;
+  this.loadingComentarios = false;
 
-      if (this.startDate) {
-        this.errorMsg =
-          'No hay usuarios disponibles para consultar.';
-      }
+  this.errorMsg = '';
 
-      this.cdr.markForCheck();
+  this.cdr.markForCheck();
 
-      return;
-    }
+  return;
+}
 
     // ===================================================
     // ACTIVAR CARGAS

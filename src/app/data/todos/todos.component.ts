@@ -120,12 +120,12 @@ export class TodosComponent implements OnInit, OnChanges, OnDestroy {
   // ESTADOS DE CARGA
   // =======================================================
 
-  loadingResumen = false;
-  loadingTimeline = false;
-  loadingMedios = false;
-  loadingTopicos = false;
-  loadingEntidades = false;
-  loadingComentarios = false;
+  loadingResumen = true;
+loadingTimeline = true;
+loadingMedios = true;
+loadingTopicos = true;
+loadingEntidades = true;
+loadingComentarios = false;
 
   get cargandoDashboard(): boolean {
     return this.loadingResumen ||
@@ -1054,24 +1054,22 @@ export class TodosComponent implements OnInit, OnChanges, OnDestroy {
     this.loadingTopicTimeline = false;
     this.mapResponse({} as StatsResponse);
 
-    if (!filters) {
+   if (!filters) {
 
-      this.loading = false;
-      this.loadingResumen = false;
-      this.loadingTimeline = false;
-      this.loadingMedios = false;
-      this.loadingTopicos = false;
-      this.loadingEntidades = false;
-      this.loadingComentarios = false;
+  this.loading = false;
+  this.loadingResumen = true;
+  this.loadingTimeline = true;
+  this.loadingMedios = true;
+  this.loadingTopicos = true;
+  this.loadingTopicTimeline = true;
+  this.loadingEntidades = true;
+  this.loadingComentarios = false;
 
-      if (this.startDate) {
-        this.errorMsg =
-          'No hay usuarios disponibles para consultar.';
-      }
+  this.errorMsg = '';
 
-      this.cdr.markForCheck();
-      return;
-    }
+  this.cdr.markForCheck();
+  return;
+}
 
     this.loadingResumen = true;
     this.loadingTimeline = true;

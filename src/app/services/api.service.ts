@@ -201,6 +201,18 @@ getCategoryTopicsTimeline(params: {
   );
 }
 
+getAdminSystemUsers(): Observable<any[]> {
+  return this.http.get<any[]>(
+    `${this.apiUrl}/admin/system-users`
+  );
+}
+
+getAdminXSources(): Observable<any[]> {
+  return this.http.get<any[]>(
+    `${this.apiUrl}/admin/x-sources`
+  );
+}
+
 
 getCategoryResumen(params: any): Observable<any> {
   return this.http.post<any>(

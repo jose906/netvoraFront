@@ -1,9 +1,4 @@
 <div class="admin-page">
-
-  <!-- =====================================================
-       HEADER
-  ====================================================== -->
-
   <header class="page-header">
 
     <div class="page-header-main">
@@ -38,23 +33,28 @@
 
   </header>
 
+  <nav class="admin-tabs" aria-label="Secciones del administrador">
+    <button type="button" class="admin-tab"
+      [class.is-active]="activeTab === 'sistema'"
+      [attr.aria-selected]="activeTab === 'sistema'"
+      (click)="setTab('sistema')">
+      <mat-icon>manage_accounts</mat-icon>
+      <span>Usuarios del sistema</span>
+      <span class="tab-count">{{ appUsers.length }}</span>
+    </button>
+    <button type="button" class="admin-tab"
+      [class.is-active]="activeTab === 'x'"
+      [attr.aria-selected]="activeTab === 'x'"
+      (click)="setTab('x')">
+      <mat-icon>alternate_email</mat-icon>
+      <span>Cuentas de X</span>
+      <span class="tab-count">{{ users.length }}</span>
+    </button>
+  </nav>
 
-  <!-- =====================================================
-       LAYOUT PRINCIPAL
-  ====================================================== -->
-
-  <div class="admin-grid">
-
-
-    <!-- ===================================================
-         COLUMNA IZQUIERDA
-    ==================================================== -->
-
+  <!-- Pestaña: administración de usuarios y suscripciones -->
+  <div *ngIf="activeTab === 'sistema'" class="admin-grid admin-system-grid">
     <aside class="admin-sidebar">
-
-
-      <!-- CREAR USUARIO -->
-
       <section class="panel create-user-panel">
 
         <div class="panel-header">
@@ -254,7 +254,7 @@
             <button
               class="btn btn-secondary btn-full"
               type="button"
-              (click)="cancelar()"
+              (click)="resetNewUserForm()"
             >
 
               <span>
@@ -280,22 +280,338 @@
         </div>
 
       </section>
-
     </aside>
 
-
-
-    <!-- ===================================================
-         COLUMNA PRINCIPAL
-    ==================================================== -->
-
     <main class="admin-content">
+      <section class="panel system-users-panel">
+        <div class="panel-header">
+          <div class="panel-heading">
+            <div class="panel-icon blue"><mat-icon>group</mat-icon></div>
+            <div>
+              <h2>Usuarios del sistema</h2>
+              <p>Accesos, roles y finalización de suscripciones.</p>
+            </div>
+          </div>
+          <div class="source-count"><strong>{{ appUsers.length }}</strong><span>usuarios</span></div>
+        </div>
+
+        <div class="panel-body compact-panel-body">
+          <div class="input-shell admin-search-shell">
+            <mat-icon>search</mat-icon>
+            <input class="input" type="search" [(ngModel)]="systemSearchTerm"
+              placeholder="Buscar por nombre, correo, rol o estado"
+              aria-label="Filtrar usuarios del sistema" />
+          </div>
+        </div>
+
+        <div *ngIf="loadingAppUsers" class="admin-list-message">Cargando usuarios...</div>
+
+        <div class="admin-table-scroll" *ngIf="!loadingAppUsers && filteredAppUsers.length">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Plan</th>
+                <th>Fin de suscripción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let u of filteredAppUsers">
+                <td>
+                  <div class="table-user">
+                    <div class="user-avatar table-avatar">
+                      {{ (u.display_name || u.email || 'U').slice(0, 1).toUpperCase() }}
+                    </div>
+                    <div class="table-user-info">
+                      <strong>{{ u.display_name || 'Sin nombre' }}</strong>
+                      <span>{{ u.email }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td>{{ u.role || u.tipeUser || '—' }}</td>
+                <td>
+                  <span class="admin-chip"
+                    [class.chip-positive]="(u.estadoUser || '').toLowerCase() === 'activo'">
+                    {{ u.estadoUser || '—' }}
+                  </span>
+                </td>
+                <td>{{ u.subscription_plan_name || '—' }}</td>
+                <td>
+                  <div class="date-column">
+                    <strong>{{ formatSubscriptionDate(u.subscription_end_date) }}</strong>
+                    <span class="admin-chip"
+                      [class.chip-positive]="subscriptionState(u) === 'vigente'"
+                      [class.chip-negative]="subscriptionState(u) === 'vencida'">
+                      {{ subscriptionStateLabel(u) }}
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="admin-list-message" *ngIf="!loadingAppUsers && !filteredAppUsers.length">
+          {{ appUsers.length ? 'No se encontraron usuarios con ese filtro.' : 'No hay usuarios registrados.' }}
+        </div>
+        <div class="panel-body metric-explanation">
+          <mat-icon>info_outline</mat-icon>
+          <span>La fecha y el nombre del plan requieren los nuevos campos de la API de usuarios.</span>
+        </div>
+      </section>
+
+      <section class="panel">
+
+        <div class="panel-header">
+
+          <div class="panel-heading">
+
+            <div class="panel-icon emerald">
+              <mat-icon>workspace_premium</mat-icon>
+            </div>
+
+            <div>
+              <h2>Asignar suscripción</h2>
+
+              <p>
+                Vincula un plan activo a un usuario de NetVora.
+              </p>
+            </div>
+
+          </div>
 
 
-      <!-- =================================================
-           CUENTA X / TWITTER
-      ================================================== -->
+          <span class="panel-badge premium">
+            Planes
+          </span>
 
+        </div>
+
+
+        <div class="panel-body">
+
+
+          <div class="subscription-grid">
+
+
+            <!-- USUARIO -->
+
+            <div class="field-group">
+
+              <label>
+                Usuario
+              </label>
+
+              <div class="select-shell">
+
+                <mat-icon>person_outline</mat-icon>
+
+                <select
+                  class="select"
+                  [(ngModel)]="selectedUserId"
+                  name="selectedUserId"
+                >
+
+                  <option [ngValue]="null">
+                    Seleccionar usuario
+                  </option>
+
+                  <option
+                    *ngFor="let u of activeAppUsers"
+                    [ngValue]="u.id"
+                  >
+                    {{ u.display_name }} — {{ u.email }}
+                  </option>
+
+                </select>
+
+                <mat-icon class="select-arrow">
+                  expand_more
+                </mat-icon>
+
+              </div>
+
+            </div>
+
+
+            <!-- PLAN -->
+
+            <div class="field-group">
+
+              <label>
+                Plan
+              </label>
+
+              <div class="select-shell">
+
+                <mat-icon>sell</mat-icon>
+
+                <select
+                  class="select"
+                  [(ngModel)]="selectedPlanId"
+                  name="selectedPlanId"
+                  (change)="onPlanChange()"
+                >
+
+                  <option [ngValue]="null">
+                    Seleccionar plan
+                  </option>
+
+                  <option
+                    *ngFor="let p of plans"
+                    [ngValue]="p.id"
+                  >
+                    {{ p.name }}
+                    · {{ p.duration_days }} días
+                    · Bs {{ p.cost }}
+                  </option>
+
+                </select>
+
+                <mat-icon class="select-arrow">
+                  expand_more
+                </mat-icon>
+
+              </div>
+
+            </div>
+
+
+            <!-- START -->
+
+            <div class="field-group">
+
+              <label>
+                Fecha de inicio
+              </label>
+
+              <div class="input-shell">
+
+                <mat-icon>calendar_today</mat-icon>
+
+                <input
+                  class="input"
+                  type="date"
+                  [(ngModel)]="startDate"
+                  name="startDate"
+                  (change)="recalcEndDate()"
+                />
+
+              </div>
+
+            </div>
+
+
+            <!-- END -->
+
+            <div class="field-group">
+
+              <label>
+                Fecha de finalización
+              </label>
+
+              <div class="input-shell readonly-shell">
+
+                <mat-icon>event_available</mat-icon>
+
+                <input
+                  class="input"
+                  type="date"
+                  [(ngModel)]="endDate"
+                  name="endDate"
+                  readonly
+                />
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+
+          <!-- PLAN INFO -->
+
+          <div
+            class="plan-summary"
+            *ngIf="selectedPlan"
+          >
+
+            <div class="plan-summary-icon">
+              <mat-icon>schedule</mat-icon>
+            </div>
+
+
+            <div>
+
+              <span>
+                Duración seleccionada
+              </span>
+
+              <strong>
+                {{ selectedPlan.duration_days }} días
+              </strong>
+
+            </div>
+
+          </div>
+
+
+
+          <div class="subscription-footer">
+
+            <div
+              class="subscription-message"
+              *ngIf="subMsg"
+            >
+              {{ subMsg }}
+            </div>
+
+
+            <div class="form-actions">
+
+              <button
+                class="btn btn-secondary"
+                type="button"
+                (click)="resetPlanForm()"
+              >
+                Limpiar
+              </button>
+
+
+              <button
+                class="btn btn-primary"
+                type="button"
+                (click)="crearSuscripcion()"
+                [disabled]="
+                  !canCreateSubscription() ||
+                  creatingSub
+                "
+              >
+
+                <mat-icon>add_card</mat-icon>
+
+                {{
+                  creatingSub
+                    ? 'Creando...'
+                    : 'Crear suscripción'
+                }}
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <!-- Pestaña: fuentes públicas de X -->
+  <div *ngIf="activeTab === 'x'" class="admin-content admin-x-content">
       <section class="panel">
 
         <div class="panel-header">
@@ -549,7 +865,7 @@
 
             <button
               class="btn btn-primary add-source-btn"
-              [disabled]="!user"
+              [disabled]="!user || !selectOpciones.value"
               type="button"
               (click)="
                 agregar(
@@ -572,265 +888,6 @@
         </div>
 
       </section>
-
-
-
-      <!-- =================================================
-           SUSCRIPCIÓN
-      ================================================== -->
-
-      <section class="panel">
-
-        <div class="panel-header">
-
-          <div class="panel-heading">
-
-            <div class="panel-icon emerald">
-              <mat-icon>workspace_premium</mat-icon>
-            </div>
-
-            <div>
-              <h2>Asignar suscripción</h2>
-
-              <p>
-                Vincula un plan activo a un usuario de NetVora.
-              </p>
-            </div>
-
-          </div>
-
-
-          <span class="panel-badge premium">
-            Planes
-          </span>
-
-        </div>
-
-
-        <div class="panel-body">
-
-
-          <div class="subscription-grid">
-
-
-            <!-- USUARIO -->
-
-            <div class="field-group">
-
-              <label>
-                Usuario
-              </label>
-
-              <div class="select-shell">
-
-                <mat-icon>person_outline</mat-icon>
-
-                <select
-                  class="select"
-                  [(ngModel)]="selectedUserId"
-                  name="selectedUserId"
-                >
-
-                  <option [ngValue]="null">
-                    Seleccionar usuario
-                  </option>
-
-                  <option
-                    *ngFor="let u of appUsers"
-                    [ngValue]="u.id"
-                  >
-                    {{ u.display_name }} — {{ u.email }}
-                  </option>
-
-                </select>
-
-                <mat-icon class="select-arrow">
-                  expand_more
-                </mat-icon>
-
-              </div>
-
-            </div>
-
-
-            <!-- PLAN -->
-
-            <div class="field-group">
-
-              <label>
-                Plan
-              </label>
-
-              <div class="select-shell">
-
-                <mat-icon>sell</mat-icon>
-
-                <select
-                  class="select"
-                  [(ngModel)]="selectedPlanId"
-                  name="selectedPlanId"
-                  (change)="onPlanChange()"
-                >
-
-                  <option [ngValue]="null">
-                    Seleccionar plan
-                  </option>
-
-                  <option
-                    *ngFor="let p of plans"
-                    [ngValue]="p.id"
-                  >
-                    {{ p.name }}
-                    · {{ p.duration_days }} días
-                    · Bs {{ p.cost }}
-                  </option>
-
-                </select>
-
-                <mat-icon class="select-arrow">
-                  expand_more
-                </mat-icon>
-
-              </div>
-
-            </div>
-
-
-            <!-- START -->
-
-            <div class="field-group">
-
-              <label>
-                Fecha de inicio
-              </label>
-
-              <div class="input-shell">
-
-                <mat-icon>calendar_today</mat-icon>
-
-                <input
-                  class="input"
-                  type="date"
-                  [(ngModel)]="startDate"
-                  name="startDate"
-                  (change)="recalcEndDate()"
-                />
-
-              </div>
-
-            </div>
-
-
-            <!-- END -->
-
-            <div class="field-group">
-
-              <label>
-                Fecha de finalización
-              </label>
-
-              <div class="input-shell readonly-shell">
-
-                <mat-icon>event_available</mat-icon>
-
-                <input
-                  class="input"
-                  type="date"
-                  [(ngModel)]="endDate"
-                  name="endDate"
-                  readonly
-                />
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-
-          <!-- PLAN INFO -->
-
-          <div
-            class="plan-summary"
-            *ngIf="selectedPlan"
-          >
-
-            <div class="plan-summary-icon">
-              <mat-icon>schedule</mat-icon>
-            </div>
-
-
-            <div>
-
-              <span>
-                Duración seleccionada
-              </span>
-
-              <strong>
-                {{ selectedPlan.duration_days }} días
-              </strong>
-
-            </div>
-
-          </div>
-
-
-
-          <div class="subscription-footer">
-
-            <div
-              class="subscription-message"
-              *ngIf="subMsg"
-            >
-              {{ subMsg }}
-            </div>
-
-
-            <div class="form-actions">
-
-              <button
-                class="btn btn-secondary"
-                type="button"
-                (click)="resetPlanForm()"
-              >
-                Limpiar
-              </button>
-
-
-              <button
-                class="btn btn-primary"
-                type="button"
-                (click)="crearSuscripcion()"
-                [disabled]="
-                  !canCreateSubscription() ||
-                  creatingSub
-                "
-              >
-
-                <mat-icon>add_card</mat-icon>
-
-                {{
-                  creatingSub
-                    ? 'Creando...'
-                    : 'Crear suscripción'
-                }}
-
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-
-      <!-- =================================================
-           LISTA DE FUENTES
-      ================================================== -->
 
       <section class="panel sources-panel">
 
@@ -871,6 +928,14 @@
 
 
 
+        <div class="panel-body compact-panel-body">
+          <div class="input-shell admin-search-shell">
+            <mat-icon>search</mat-icon>
+            <input class="input" type="search" [(ngModel)]="xSearchTerm"
+              placeholder="Filtrar por usuario, ID o clasificación" aria-label="Filtrar cuentas de X" />
+          </div>
+        </div>
+
         <!-- LOADING -->
 
         <div
@@ -901,13 +966,13 @@
         <!-- LISTA -->
 
         <div
-          *ngIf="!cargando && users.length"
+          *ngIf="!cargando && filteredXUsers.length"
           class="users-list"
         >
 
           <div
-            *ngFor="let item of users"
-            class="user-item"
+            *ngFor="let item of filteredXUsers"
+            class="user-item x-source-row"
           >
 
             <div class="user-profile">
@@ -938,6 +1003,17 @@
             </div>
 
 
+            <div class="x-source-metrics">
+              <div class="x-metric">
+                <span>Cuentas que sigue</span>
+                <strong>{{ formatXMetric(item.following_count) }}</strong>
+              </div>
+              <div class="x-metric">
+                <span>Posts publicados</span>
+                <strong>{{ formatXMetric(item.tweet_count) }}</strong>
+              </div>
+            </div>
+
             <span
               class="source-type"
               [class.person]="item.tipeUser === 'Persona'"
@@ -955,7 +1031,7 @@
         <!-- VACÍO -->
 
         <div
-          *ngIf="!cargando && !users.length"
+          *ngIf="!cargando && !filteredXUsers.length"
           class="empty-state"
         >
 
@@ -964,19 +1040,19 @@
           </div>
 
           <strong>
-            No hay fuentes registradas
+            {{ users.length ? 'Sin coincidencias' : 'No hay fuentes registradas' }}
           </strong>
 
           <span>
-            Agrega una cuenta de X para comenzar.
+            {{ users.length ? 'Prueba otra búsqueda.' : 'Agrega una cuenta de X para comenzar.' }}
           </span>
 
         </div>
 
+        <div class="panel-body metric-explanation">
+          <mat-icon>info_outline</mat-icon>
+          <span>Las métricas de seguimiento y publicaciones se mostrarán al incorporarlas a la respuesta de la API.</span>
+        </div>
       </section>
-
-    </main>
-
   </div>
-
 </div>

@@ -734,7 +734,7 @@
               </span>
 
               <strong>
-                ${{ sub.cost | number:'1.0-2' }}
+                Bs {{ sub.cost | number:'1.0-2' }}
               </strong>
 
             </div>
@@ -830,6 +830,44 @@
 
 
           <!-- =================================================
+               PRÓXIMA SUSCRIPCIÓN PROGRAMADA
+          ================================================== -->
+
+          <div *ngIf="loadingUpcoming" class="billing-message">
+            Consultando próximas renovaciones...
+          </div>
+
+          <section class="upcoming-subscription" *ngIf="upcomingPlan as next">
+            <div class="plan-divider"></div>
+
+            <span class="subscription-kicker">
+              Renovación programada
+            </span>
+
+            <div class="plan-details">
+              <div class="plan-row">
+                <span>Próximo plan</span>
+                <strong class="purple-value">{{ next.plan_name }}</strong>
+              </div>
+
+              <div class="plan-row">
+                <span>Comienza el</span>
+                <strong>{{ next.start_date | date:'dd MMM yyyy' }}</strong>
+              </div>
+
+              <div class="plan-row">
+                <span>Válido hasta</span>
+                <strong>{{ next.end_date | date:'dd MMM yyyy' }}</strong>
+              </div>
+            </div>
+
+            <p class="plan-description">
+              Esta renovación comenzará cuando finalice la vigencia contratada previamente.
+            </p>
+          </section>
+
+
+          <!-- =================================================
                RENOVACIÓN
           ================================================== -->
 
@@ -837,8 +875,7 @@
             class="renewal-message"
             *ngIf="sub.status === 'vencida'"
           >
-            Para renovar tu suscripción, escribe a
-            <strong>ventas&#64;netvora.com</strong>
+            Tu suscripción venció. Puedes seleccionar un plan y pagarlo con QR.
           </div>
 
 
@@ -850,7 +887,9 @@
             class="free-trial-box"
             *ngIf="
               freeTrial.loaded &&
-              freeTrial.available
+              freeTrial.available &&
+              !freeTrial.hasActiveSubscription &&
+              !['activa', 'activo', 'active'].includes(sub.status)
             "
           >
 
@@ -957,6 +996,17 @@
 
           </div>
 
+
+          <!-- ADQUIRIR O RENOVAR PLAN CON QR -->
+          <div class="billing-entry">
+            <div class="billing-entry-copy">
+              <strong>{{ sub.status === 'activa' ? 'Gestiona tu suscripción' : 'Activa NetVora con un plan' }}</strong>
+              <span>Selecciona un plan y paga desde tu banco con QR.</span>
+            </div>
+            <button type="button" class="billing-entry-button" (click)="openBilling()">
+              {{ sub.status === 'activa' ? 'Ver planes y renovar' : 'Ver planes y pagar con QR' }}
+            </button>
+          </div>
         </ng-container>
 
       </section>
@@ -1046,5 +1096,134 @@
     </aside>
 
   </main>
+
+
+
+  <!-- =====================================================
+       MODAL DE COBRO QR: solo se comunica con Flask
+  ====================================================== -->
+  <div class="billing-overlay" *ngIf="billing.open" (click)="closeBilling()">
+    <section
+      class="billing-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="billing-dialog-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="billing-dialog-header">
+        <div>
+          <span class="billing-eyebrow">NetVora · Suscripciones</span>
+          <h2 id="billing-dialog-title">
+            {{ billing.step === 'plans' ? 'Selecciona tu plan' : 'Paga tu suscripción' }}
+          </h2>
+          <p>
+            {{ billing.step === 'plans'
+              ? 'Elige el plan que mejor se adapte a ti.'
+              : 'Escanea el QR desde la app de tu banco.' }}
+          </p>
+        </div>
+        <button type="button" class="billing-close" aria-label="Cerrar ventana" (click)="closeBilling()">×</button>
+      </div>
+
+      <div class="billing-dialog-body">
+        <p *ngIf="billing.error" class="billing-error" role="alert">
+          {{ billing.error }}
+        </p>
+
+        <!-- Paso 1: planes reales desde MySQL (por Flask) -->
+        <ng-container *ngIf="billing.step === 'plans'">
+          <p *ngIf="billing.loadingPlans" class="billing-message">Cargando planes disponibles...</p>
+          <p *ngIf="!billing.loadingPlans && billing.plans.length === 0 && !billing.error"
+             class="billing-message">Todavía no hay planes disponibles para pago online.</p>
+
+          <div class="billing-plans" *ngIf="!billing.loadingPlans">
+            <article class="billing-plan" *ngFor="let plan of billing.plans">
+              <div class="billing-plan-main">
+                <div class="billing-plan-heading">
+                  <h3>{{ plan.name }}</h3>
+                  <span class="billing-current" *ngIf="plan.name === sub.plan && sub.status === 'activa'">
+                    Tu plan actual
+                  </span>
+                </div>
+                <p *ngIf="plan.description">{{ plan.description }}</p>
+                <span class="billing-plan-duration">{{ plan.duration_days }} días de acceso</span>
+              </div>
+              <div class="billing-plan-action">
+               <strong>Bs {{ plan.cost | number:'1.2-2' }}</strong>
+                <span *ngIf="plan.currency !== 'BOB'" class="billing-plan-duration">
+                  Pago QR pendiente de habilitar: confirma moneda BOB en la API.
+                </span>
+                
+                <button
+                  type="button"
+                  class="billing-pay-button"
+                  [disabled]="billing.generating || plan.currency !== 'BOB'"
+                  (click)="selectPlanAndGenerateQr(plan)"
+                >
+                  {{ billing.generating && billing.selectedPlan?.id === plan.id
+                    ? 'Generando QR...' : (plan.currency === 'BOB' ? 'Pagar con QR' : 'QR no habilitado') }}
+                </button>
+              </div>
+            </article>
+          </div>
+          <button type="button" class="billing-link-button" *ngIf="billing.error" (click)="fetchBillingPlans()">
+            Reintentar carga de planes
+          </button>
+        </ng-container>
+
+        <!-- Paso 2: QR recibido del backend. Nunca es ficticio. -->
+        <ng-container *ngIf="billing.step === 'qr' && billing.payment as payment">
+          <div class="billing-order-summary">
+            <span>{{ billing.selectedPlan?.name || 'Suscripción NetVora' }}</span>
+            <strong>Bs {{ payment.amount | number:'1.2-2' }}</strong>
+          </div>
+
+          <div class="billing-qr-panel" *ngIf="payment.status === 'PENDIENTE'">
+            <img *ngIf="billing.qrImageUrl" [src]="billing.qrImageUrl"
+                 alt="Código QR para realizar el pago de NetVora" class="billing-qr-image" />
+            <p *ngIf="!billing.qrImageUrl" class="billing-message">Imagen QR no disponible.</p>
+            <span class="billing-payment-state pending">Esperando confirmación del banco</span>
+            <p class="billing-qr-help">Abre tu app bancaria, elige pagar con QR y escanea el código.</p>
+            <p class="billing-expiry" *ngIf="payment.expires_at">
+              Vence: {{ payment.expires_at | date:'dd/MM/yyyy HH:mm' }}
+            </p>
+            <p class="billing-reference">Referencia: {{ payment.reference }}</p>
+          </div>
+
+          <div class="billing-qr-result" *ngIf="payment.status === 'PAGADO'">
+            <span class="billing-result-icon success">✓</span>
+            <h3>Pago confirmado</h3>
+            <p>La actualización de tu suscripción se procesa en el servidor.</p>
+          </div>
+
+          <div class="billing-qr-result" *ngIf="payment.status === 'EXPIRADO' || payment.status === 'CANCELADO' || payment.status === 'ERROR'">
+            <span class="billing-result-icon failure">!</span>
+            <h3>{{ payment.status === 'EXPIRADO' ? 'El QR expiró' : payment.status === 'CANCELADO' ? 'QR cancelado' : 'Hubo un problema con el cobro' }}</h3>
+            <p>Puedes seleccionar un plan e intentar nuevamente.</p>
+          </div>
+
+          <div class="billing-qr-actions" *ngIf="payment.status === 'PENDIENTE'">
+            <button type="button" class="billing-pay-button"
+                    [disabled]="billing.checking" (click)="checkPaymentNow()">
+              {{ billing.checking ? 'Consultando...' : 'Ya pagué · Verificar' }}
+            </button>
+            <button type="button" class="billing-outline-button"
+                    [disabled]="billing.cancelling" (click)="cancelQr()">
+              {{ billing.cancelling ? 'Cancelando...' : 'Cancelar este QR' }}
+            </button>
+          </div>
+
+          <div class="billing-qr-actions" *ngIf="payment.status !== 'PENDIENTE'">
+            <button *ngIf="payment.status === 'PAGADO'" type="button"
+                    class="billing-pay-button" (click)="closeBilling()">Finalizar</button>
+            <button *ngIf="payment.status !== 'PAGADO'" type="button"
+                    class="billing-pay-button" (click)="backToPlans()">Volver a planes</button>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="billing-dialog-footer">Pago protegido. NetVora no recibe tus credenciales bancarias.</div>
+    </section>
+  </div>
 
 </div>

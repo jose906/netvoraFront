@@ -566,6 +566,94 @@
 
           </div>
         </div>
+
+        <!-- STANCE POR TWEET · Solo Pro/Admin (mismo bloqueo que sentimiento) -->
+        <section class="stance-post" aria-label="Posturas de los comentarios">
+          <div class="stance-post-head">
+            <div>
+              <span class="stance-post-kicker">STANCE · POSTURAS</span>
+              <h3>Posición de los comentarios</h3>
+            </div>
+            <span *ngIf="stanceLoading" class="stance-loading-label">Analizando…</span>
+          </div>
+
+          <ng-container *ngIf="getStance(item.tweetid) as stance; else stanceSinResultado">
+            <div class="stance-target" *ngIf="stance.main_target">
+              <span>Respecto a:</span>
+              <strong>{{ stance.main_target }}</strong>
+            </div>
+
+            <ng-container *ngIf="stance.stance_summary.processed > 0; else stancePendiente">
+              <div class="stance-mini-track" role="img" aria-label="Distribución de las cinco posturas">
+                <span *ngFor="let s of stanceLabels"
+                  [class]="'stance-fill ' + s.tone"
+                  [style.width.%]="stance.stance_summary.percentages[s.key]"
+                  [title]="s.label + ': ' + (stance.stance_summary.percentages[s.key] | number:'1.0-1') + '%'">
+                </span>
+              </div>
+
+              <div class="stance-mini-legend">
+                <div class="stance-mini-item" *ngFor="let s of stanceLabels">
+                  <span [class]="'stance-mini-dot ' + s.tone"></span>
+                  <span>{{ s.label }}</span>
+                  <strong>{{ stance.stance_summary.percentages[s.key] | number:'1.0-1' }}%</strong>
+                  <small>{{ stance.stance_summary.distribution[s.key] | number }} comentarios</small>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-template #stancePendiente>
+              <p class="stance-post-note">{{ stanceStatusText(stance) }}</p>
+            </ng-template>
+
+            <div class="stance-post-footer">
+              <span>{{ stance.stance_summary.processed | number }} de {{ stance.stance_summary.total | number }} comentarios clasificados</span>
+              <span *ngIf="stance.stance_summary.processed > 0">Cobertura: {{ stance.stance_summary.coverage_percent | number:'1.0-1' }}%</span>
+              <button type="button" class="stance-detail-toggle"
+                *ngIf="stance.stance_summary.total > 0 && stance.status !== 'not_applicable'"
+                (click)="toggleStanceComments(item.tweetid)">
+                {{ stanceOpenId === item.tweetid.toString() ? 'Ocultar comentarios' : 'Ver comentarios' }}
+                <mat-icon>{{ stanceOpenId === item.tweetid.toString() ? 'expand_less' : 'expand_more' }}</mat-icon>
+              </button>
+            </div>
+
+            <div class="stance-comments" *ngIf="stanceOpenId === item.tweetid.toString()">
+              <div class="stance-comments-heading">
+                <strong>Comentarios de esta publicación</strong>
+                <button type="button" class="stance-detail-toggle" (click)="closeStanceComments()">Cerrar</button>
+              </div>
+              <p class="stance-post-note" *ngIf="stanceCommentsLoading">Cargando comentarios…</p>
+              <p class="stance-post-note stance-error" *ngIf="stanceCommentsError">{{ stanceCommentsError }}</p>
+              <div class="stance-comment" *ngFor="let comment of stanceComments">
+                <p>{{ comment.comment_text }}</p>
+                <div class="stance-comment-meta">
+                  <span [class]="'stance-comment-label ' + (comment.stance || 'PENDIENTE')">
+                    {{ stanceCommentLabel(comment) }}
+                  </span>
+                  <span *ngIf="comment.confidence !== null && comment.confidence !== undefined">
+                    Confianza: {{ comment.confidence * 100 | number:'1.0-1' }}%
+                  </span>
+                </div>
+              </div>
+              <p *ngIf="!stanceCommentsLoading && !stanceCommentsError && !stanceComments.length"
+                class="stance-post-note">Sin comentarios disponibles.</p>
+              <div class="stance-comments-pager" *ngIf="!stanceCommentsLoading && stanceCommentsTotal > stanceCommentsLimit">
+                <span>Página {{ stanceCommentsPage }} · {{ stanceCommentsTotal | number }} comentarios</span>
+                <div>
+                  <button type="button" [disabled]="stanceCommentsPage <= 1"
+                    (click)="loadStanceComments(stanceCommentsPage - 1)">Anterior</button>
+                  <button type="button" [disabled]="stanceCommentsPage * stanceCommentsLimit >= stanceCommentsTotal"
+                    (click)="loadStanceComments(stanceCommentsPage + 1)">Siguiente</button>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-template #stanceSinResultado>
+            <p class="stance-post-note" *ngIf="!stanceLoading && !stanceError">Sin análisis de Stance disponible para esta publicación.</p>
+            <p class="stance-post-note stance-error" *ngIf="!stanceLoading && stanceError">No se pudo cargar Stance.</p>
+          </ng-template>
+        </section>
       </ng-container>
 
       <!-- CONVERSACIÓN BLOQUEADA -->
@@ -583,7 +671,7 @@
           </strong>
 
           <p>
-            Analiza el sentimiento de los comentarios
+            Analiza el sentimiento y las posturas de los comentarios
             relacionados con esta publicación institucional.
           </p>
         </div>

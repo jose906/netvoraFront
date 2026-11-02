@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../services/api.service';
 
@@ -7,6 +8,7 @@ import { users } from '../interfaces/users';
 import { AccountService} from '../services/account.service';
 import { AccountMeResponse } from '../interfaces/me';
 import { linkifyText } from '../utils/helpers';
+import { StanceComment, StancePublication, StanceValue } from '../interfaces/stance';
 import { toPng } from 'html-to-image';
 import { AuthzService,UserRole } from '../services/authz.service';
 
@@ -41,7 +43,7 @@ interface PulseData {
   templateUrl: './categoria.component.html',
   styleUrl: './categoria.component.css'
 })
-export class CategoriaComponent implements OnInit {
+export class CategoriaComponent implements OnInit, OnDestroy {
 
   // =========================================================
   // CATEGORÍA
@@ -144,6 +146,153 @@ errorPulse = '';
   // =========================================================
   // REPLIES
   // =========================================================
+
+  // =========================================================
+  // STANCE POR PUBLICACIÓN · PRO / ADMIN
+  // =========================================================
+
+  stanceByTweet: Record<string, StancePublication> = {};
+  stanceLoading = false;
+  stanceError = '';
+
+  readonly stanceLabels: Array<{ key: StanceValue; label: string; tone: string }> = [
+    { key: 'FAVOR', label: 'A favor', tone: 'favor' },
+    { key: 'CONTRA', label: 'En contra', tone: 'contra' },
+    { key: 'MIXTO', label: 'Mixto', tone: 'mixto' },
+    { key: 'NEUTRAL', label: 'Neutral', tone: 'neutral' },
+    { key: 'NO_CLARO', label: 'No claro', tone: 'no-claro' }
+  ];
+
+  stanceOpenId: string | null = null;
+  stanceComments: StanceComment[] = [];
+  stanceCommentsLoading = false;
+  stanceCommentsError = '';
+  stanceCommentsPage = 1;
+  stanceCommentsTotal = 0;
+  readonly stanceCommentsLimit = 20;
+
+  private stanceBatchSub?: Subscription;
+  private stanceCommentsSub?: Subscription;
+  private stanceLoadToken = 0;
+
+  ngOnDestroy(): void {
+    ++this.stanceLoadToken;
+    this.stanceBatchSub?.unsubscribe();
+    this.stanceCommentsSub?.unsubscribe();
+  }
+
+  getStance(tweetid: string | number): StancePublication | null {
+    return this.stanceByTweet[String(tweetid)] ?? null;
+  }
+
+  stanceStatusText(item: StancePublication): string {
+    switch (item.status) {
+      case 'processed': return 'Clasificado';
+      case 'partial': return 'Parcialmente clasificado';
+      case 'pending': return 'Pendiente de clasificar';
+      case 'not_applicable': return 'No aplica a este contenido';
+      case 'no_comments': return 'Sin comentarios';
+      default: return 'Sin información';
+    }
+  }
+
+  cargarStanceBatch(): void {
+    this.stanceBatchSub?.unsubscribe();
+    this.stanceByTweet = {};
+    this.stanceError = '';
+
+    if (!this.canViewReplies) {
+      this.stanceLoading = false;
+      return;
+    }
+
+    const ids = [...new Set(this.datos.map(item => String(item.tweetid)).filter(Boolean))];
+    if (!ids.length) {
+      this.stanceLoading = false;
+      return;
+    }
+
+    const token = this.stanceLoadToken;
+    this.stanceLoading = true;
+
+    // Un único request para la página completa, nunca uno por tarjeta.
+    this.stanceBatchSub = this.apiService.getStancePublicacionesBatch({
+      analysisType: 'post',
+      tweetids: ids
+    }).subscribe({
+      next: response => {
+        if (token !== this.stanceLoadToken) return;
+        this.stanceByTweet = response?.batch?.items ?? {};
+        this.stanceLoading = false;
+      },
+      error: error => {
+        if (token !== this.stanceLoadToken) return;
+        console.error('Error cargando Stance por publicación:', error);
+        this.stanceByTweet = {};
+        this.stanceError = 'No se pudo consultar Stance para estas publicaciones.';
+        this.stanceLoading = false;
+      }
+    });
+  }
+
+  toggleStanceComments(tweetid: string | number): void {
+    const id = String(tweetid);
+    if (this.stanceOpenId === id) {
+      this.closeStanceComments();
+      return;
+    }
+    this.stanceOpenId = id;
+    this.loadStanceComments(1);
+  }
+
+  closeStanceComments(): void {
+    this.stanceCommentsSub?.unsubscribe();
+    this.stanceOpenId = null;
+    this.stanceComments = [];
+    this.stanceCommentsLoading = false;
+    this.stanceCommentsError = '';
+    this.stanceCommentsPage = 1;
+    this.stanceCommentsTotal = 0;
+  }
+
+  loadStanceComments(page: number): void {
+    const id = this.stanceOpenId;
+    if (!id || !this.canViewReplies || page < 1) return;
+
+    this.stanceCommentsSub?.unsubscribe();
+    this.stanceCommentsLoading = true;
+    this.stanceCommentsError = '';
+    this.stanceComments = [];
+
+    // El target ya llegó en batch. Aquí se pide únicamente la página de comentarios.
+    this.stanceCommentsSub = this.apiService.getStanceComentarios({
+      analysisType: 'post',
+      tweetid: id,
+      page,
+      limit: this.stanceCommentsLimit
+    }).subscribe({
+      next: response => {
+        if (this.stanceOpenId !== id) return;
+        this.stanceComments = response.comments?.items ?? [];
+        this.stanceCommentsTotal = Number(response.comments?.total ?? 0);
+        this.stanceCommentsPage = page;
+        this.stanceCommentsLoading = false;
+      },
+      error: error => {
+        if (this.stanceOpenId !== id) return;
+        console.error('Error cargando detalle de Stance:', error);
+        this.stanceCommentsError = 'No fue posible cargar los comentarios.';
+        this.stanceCommentsLoading = false;
+      }
+    });
+  }
+
+  stanceCommentLabel(comment: StanceComment): string {
+    if (comment.stance) {
+      return this.stanceLabels.find(item => item.key === comment.stance)?.label ?? comment.stance;
+    }
+    return comment.status === 'not_applicable' ? 'No aplica' : 'Pendiente';
+  }
 
   repliesByTweet: Record<
     string,
@@ -491,6 +640,15 @@ private inicializarContenido(): void {
     this.cargando = true;
     this.error = '';
 
+    // Invalidar los resultados de Stance de la página anterior.
+    ++this.stanceLoadToken;
+    this.stanceBatchSub?.unsubscribe();
+    this.closeStanceComments();
+    this.stanceByTweet = {};
+    this.stanceLoading = false;
+    this.stanceError = '';
+    const tokenActual = this.stanceLoadToken;
+
     this.datos = [];
     this.repliesByTweet = {};
 
@@ -577,6 +735,7 @@ private inicializarContenido(): void {
       .subscribe({
 
         next: (data: any) => {
+          if (tokenActual !== this.stanceLoadToken) return;
           console.log('Datos recibidos de la API:', data);
           this.datos =
             data?.resultado ??
@@ -595,11 +754,13 @@ private inicializarContenido(): void {
             this.pageSize;
 
           this.cargarReplies();
+          this.cargarStanceBatch();
 
           this.cargando = false;
         },
 
         error: (error) => {
+          if (tokenActual !== this.stanceLoadToken) return;
 
           console.error(
             `Error cargando categoría ${this.categoria}:`,
@@ -1328,13 +1489,9 @@ formatPulseDate(date: string): string {
   
 
 
-  isGuardado(
-    tweetid: string | number
-  ): boolean {
+  isGuardado(tweetid: string | number): boolean {
 
-    return this.guardados.has(
-      String(tweetid)
-    );
+    return this.guardados.has(String(tweetid));
   }
 
 
@@ -1342,30 +1499,19 @@ formatPulseDate(date: string): string {
   // FECHAS
   // =========================================================
 
-  private toYMD(
-    date: Date
-  ): string {
+  private toYMD(date: Date): string {
 
-    const year =
-      date.getFullYear();
+    const year = date.getFullYear();
 
-    const month =
-      String(
-        date.getMonth() + 1
-      ).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
 
-    const day =
-      String(
-        date.getDate()
-      ).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
 
     return `${year}-${month}-${day}`;
   }
 
 
-  formatBoliviaDate(
-    value: unknown
-  ): string {
+  formatBoliviaDate(value: unknown): string {
 
     if (!value) {
       return '';
@@ -1375,32 +1521,21 @@ formatPulseDate(date: string): string {
 
     if (value instanceof Date) {
 
-      date =
-        new Date(value.getTime());
+      date = new Date(value.getTime());
 
     } else {
 
-      let raw =
-        String(value)
-          .trim()
-          .replace(' ', 'T');
+      let raw = String(value).trim().replace(' ', 'T');
 
-      if (
-        !/(?:Z|[+-]\d{2}:?\d{2})$/i
-          .test(raw)
-      ) {
-        raw += 'Z';
+      if (!/(?:Z|[+-]\d{2}:?\d{2})$/i.test(raw)) {
+        raw += '-04:00';
       }
 
       date = new Date(raw);
 
     }
 
-    if (
-      Number.isNaN(
-        date.getTime()
-      )
-    ) {
+    if (Number.isNaN(date.getTime())) {
       return String(value);
     }
 

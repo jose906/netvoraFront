@@ -849,6 +849,21 @@
         </div>
       </div>
 
+      <!-- STANCE: mismo bloque de Comentarios PRO, mismos filtros globales -->
+      <div style="margin-top:28px;padding-top:22px;border-top:1px solid #e2e8f0">
+        <app-stance-comentarios
+          [startDate]="startDate"
+          [endDate]="endDate"
+          [users]="users"
+          [selectedUsers]="selectedUsers"
+          [selectedTopics]="selectedTopics"
+          [searchText]="searchText"
+          [categoria]="categoria"
+          [type_user]="type_user === 'Entidad' ? 'Entidad' : 'Persona'"
+          [fallbackEndToStart]="true">
+        </app-stance-comentarios>
+      </div>
+
     </ng-container>
 
     <div class="comments-access-loading" *ngIf="accessLoading">

@@ -15,6 +15,8 @@ import { HomePageResponse } from '../interfaces/homePage';
 import { StatsResponse } from '../interfaces/data/mainDashboard';
 import { DashboardStatsResponse } from '../interfaces/data/MediaDashboard';
 import { NewsItem, PulseResponse, TopicItem, TopicOption } from '../interfaces/NewsItem';
+import { StanceFilters, StanceSummary, StanceTimelineRow, StanceComment, StancePublication, StanceTopic, StanceSource, StancePage } from '../interfaces/stance';
+
 
 
 
@@ -393,6 +395,65 @@ unfollowTweetUser(tweetuser_id: string) {
 getFollowedTweetUsers() {
   return this.http.get<{ ok: boolean; rows: { tweetuser_id: string }[] }>(`${this.apiUrl}followed_tweetusers`);
 }
+ getStanceResumen(body: StanceFilters): Observable<{ ok: boolean; summary: StanceSummary }> {
+    return this.http.post<{ ok: boolean; summary: StanceSummary }>(
+      `${this.apiUrl}api/stance/resumen`, body
+    );
+  }
+
+  getStanceTimeline(body: StanceFilters): Observable<{ ok: boolean; timeline: StanceTimelineRow[] }> {
+    return this.http.post<{ ok: boolean; timeline: StanceTimelineRow[] }>(
+      `${this.apiUrl}api/stance/timeline`, body
+    );
+  }
+
+  getStanceComentarios(body: StanceFilters): Observable<{ ok: boolean; comments: StancePage<StanceComment> }> {
+    return this.http.post<{ ok: boolean; comments: StancePage<StanceComment> }>(
+      `${this.apiUrl}api/stance/comentarios`, body
+    );
+  }
+
+  getStancePublicaciones(body: StanceFilters): Observable<{ ok: boolean; publications: StancePage<StancePublication> }> {
+    return this.http.post<{ ok: boolean; publications: StancePage<StancePublication> }>(
+      `${this.apiUrl}api/stance/publicaciones`, body
+    );
+  }
+
+  getStancePublicacion(body: StanceFilters): Observable<{ ok: boolean; found: boolean; publication?: StancePublication; comments?: StancePage<StanceComment>; summary_filtered?: StanceSummary }> {
+    return this.http.post<{ ok: boolean; found: boolean; publication?: StancePublication; comments?: StancePage<StanceComment>; summary_filtered?: StanceSummary }>(
+      `${this.apiUrl}api/stance/publicacion`, body
+    );
+  }
+
+  getStanceTopicos(body: StanceFilters): Observable<{ ok: boolean; topics: StancePage<StanceTopic> }> {
+    return this.http.post<{ ok: boolean; topics: StancePage<StanceTopic> }>(
+      `${this.apiUrl}api/stance/topicos`, body
+    );
+  }
+
+  getStanceTopico(body: StanceFilters): Observable<{ ok: boolean; found: boolean; topic?: StanceTopic; summary?: StanceSummary; comments?: StancePage<StanceComment> }> {
+    return this.http.post<{ ok: boolean; found: boolean; topic?: StanceTopic; summary?: StanceSummary; comments?: StancePage<StanceComment> }>(
+      `${this.apiUrl}api/stance/topico`, body
+    );
+  }
+
+  getStanceFuentes(body: StanceFilters): Observable<{ ok: boolean; sources: StanceSource[] }> {
+    return this.http.post<{ ok: boolean; sources: StanceSource[] }>(
+      `${this.apiUrl}api/stance/fuentes`, body
+    );
+  }
+
+  getStanceEstado(body: StanceFilters): Observable<{ ok: boolean; state: Record<string, unknown> }> {
+    return this.http.post<{ ok: boolean; state: Record<string, unknown> }>(
+      `${this.apiUrl}api/stance/estado`, body
+    );
+  }
+
+  getStancePublicacionesBatch(body: StanceFilters & { tweetids: string[] }): Observable<{ ok: boolean; batch: { items: Record<string, StancePublication>; requested: number; found: number } }> {
+    return this.http.post<{ ok: boolean; batch: { items: Record<string, StancePublication>; requested: number; found: number } }>(
+      `${this.apiUrl}api/stance/publicaciones/batch`, body
+    );
+  }
 
 
 

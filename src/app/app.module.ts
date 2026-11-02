@@ -49,6 +49,7 @@ import { GuardarComponent } from './guardar/guardar.component';
 import { SettingsComponent } from './settings/settings.component';
 import { TopicsComponent } from './topics/topics.component';
 import { CategoriaComponent } from './categoria/categoria.component';
+import { StanceComentariosComponent } from './data/stance-comentarios/stance-comentarios.component';
 
 
 // Initialize Firebase
@@ -109,6 +110,7 @@ const routes: Routes = [
     TopicsComponent,
     CategoriaComponent,
     
+    
   ],
   imports: [
     BrowserModule,
@@ -131,6 +133,7 @@ const routes: Routes = [
    AngularFireAuthModule,
     AngularFireAuthModule, 
     MatTooltipModule,
+    StanceComentariosComponent,
     
 
 

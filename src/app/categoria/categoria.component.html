@@ -546,9 +546,23 @@
       <ng-container
         *ngIf="!accessLoading && canViewReplies">
 
-        <div
-          class="conversation-summary"
-          *ngIf="getRepliesCounts(item.tweetid) as replies">
+        <div class="conversation-summary" *ngIf="repliesLoading" role="status">
+          Cargando comentarios y sentimiento…
+        </div>
+
+        <div class="conversation-summary" *ngIf="!repliesLoading && repliesError" role="alert">
+          {{ repliesError }}
+        </div>
+
+        <div class="conversation-summary"
+          *ngIf="!repliesLoading && !repliesError && hasRepliesStanceMismatch(item.tweetid)" role="status">
+          Los comentarios tienen Stance registrado, pero el resumen de sentimiento no coincide.
+        </div>
+
+        <ng-container *ngIf="!repliesLoading && !repliesError && !hasRepliesStanceMismatch(item.tweetid)">
+          <div
+            class="conversation-summary"
+            *ngIf="getRepliesCounts(item.tweetid) as replies">
 
           <div class="conversation-head">
             <div>
@@ -595,7 +609,8 @@
             </div>
 
           </div>
-        </div>
+          </div>
+        </ng-container>
 
         <!-- STANCE POR TWEET · Solo Pro/Admin (mismo bloqueo que sentimiento) -->
         <section class="stance-post" aria-label="Posturas de los comentarios">
@@ -604,7 +619,7 @@
               <span class="stance-post-kicker">STANCE · POSTURAS</span>
               <h3>Posición de los comentarios</h3>
             </div>
-            <span *ngIf="stanceLoading" class="stance-loading-label">Analizando…</span>
+            <span *ngIf="stanceLoading" class="stance-loading-label">Cargando posturas…</span>
           </div>
 
           <ng-container *ngIf="getStance(item.tweetid) as stance; else stanceSinResultado">
@@ -680,6 +695,7 @@
           </ng-container>
 
           <ng-template #stanceSinResultado>
+            <p class="stance-post-note" *ngIf="stanceLoading">Cargando análisis de Stance…</p>
             <p class="stance-post-note" *ngIf="!stanceLoading && !stanceError">Sin análisis de Stance disponible para esta publicación.</p>
             <p class="stance-post-note stance-error" *ngIf="!stanceLoading && stanceError">No se pudo cargar Stance.</p>
           </ng-template>

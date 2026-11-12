@@ -50,6 +50,7 @@ import { SettingsComponent } from './settings/settings.component';
 import { TopicsComponent } from './topics/topics.component';
 import { CategoriaComponent } from './categoria/categoria.component';
 import { StanceComentariosComponent } from './data/stance-comentarios/stance-comentarios.component';
+import { ProspectosComponent } from './prospectos/prospectos.component';
 
 
 // Initialize Firebase
@@ -79,7 +80,8 @@ const routes: Routes = [
   { path: 'guardar', component: GuardarComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
   { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
   { path: 'topics/:id', component: TopicsComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
-  { path: 'topics', component: TopicsComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } }
+  { path: 'topics', component: TopicsComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
+  { path: 'prospectos', component: ProspectosComponent, canActivate: [AuthGuard], data: { roles: ['admin'] } }
   
 
 
@@ -109,6 +111,7 @@ const routes: Routes = [
     SettingsComponent,
     TopicsComponent,
     CategoriaComponent,
+    ProspectosComponent,
     
     
   ],

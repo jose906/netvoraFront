@@ -306,52 +306,375 @@
 
         <div *ngIf="loadingAppUsers" class="admin-list-message">Cargando usuarios...</div>
 
-        <div class="admin-table-scroll" *ngIf="!loadingAppUsers && filteredAppUsers.length">
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th>Usuario</th>
-                <th>Rol</th>
-                <th>Estado</th>
-                <th>Plan</th>
-                <th>Fin de suscripción</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let u of filteredAppUsers">
-                <td>
-                  <div class="table-user">
-                    <div class="user-avatar table-avatar">
-                      {{ (u.display_name || u.email || 'U').slice(0, 1).toUpperCase() }}
-                    </div>
-                    <div class="table-user-info">
-                      <strong>{{ u.display_name || 'Sin nombre' }}</strong>
-                      <span>{{ u.email }}</span>
-                    </div>
-                  </div>
-                </td>
-                <td>{{ u.role || u.tipeUser || '—' }}</td>
-                <td>
-                  <span class="admin-chip"
-                    [class.chip-positive]="(u.estadoUser || '').toLowerCase() === 'activo'">
-                    {{ u.estadoUser || '—' }}
-                  </span>
-                </td>
-                <td>{{ u.subscription_plan_name || '—' }}</td>
-                <td>
-                  <div class="date-column">
-                    <strong>{{ formatSubscriptionDate(u.subscription_end_date) }}</strong>
-                    <span class="admin-chip"
-                      [class.chip-positive]="subscriptionState(u) === 'vigente'"
-                      [class.chip-negative]="subscriptionState(u) === 'vencida'">
-                      {{ subscriptionStateLabel(u) }}
+       
+<div
+  class="admin-table-scroll"
+  *ngIf="!loadingAppUsers && filteredAppUsers.length"
+>
+  <table class="admin-table">
+
+    <thead>
+      <tr>
+        <th>Usuario</th>
+        <th>Rol</th>
+        <th>Estado</th>
+        <th>Plan</th>
+        <th>Fin de suscripción</th>
+        <th>Gestión</th>
+      </tr>
+    </thead>
+
+    <tbody>
+
+      <ng-container *ngFor="let u of filteredAppUsers">
+
+        <!-- FILA PRINCIPAL DEL USUARIO -->
+        <tr>
+
+          <td>
+            <div class="table-user">
+
+              <div class="user-avatar table-avatar">
+                {{
+                  (u.display_name || u.email || 'U')
+                    .slice(0, 1)
+                    .toUpperCase()
+                }}
+              </div>
+
+              <div class="table-user-info">
+                <strong>
+                  {{ u.display_name || 'Sin nombre' }}
+                </strong>
+
+                <span>{{ u.email }}</span>
+              </div>
+
+            </div>
+          </td>
+
+          <td>
+            {{ u.role || u.tipeUser || '—' }}
+          </td>
+
+          <td>
+            <span
+              class="admin-chip"
+              [class.chip-positive]="
+                (u.estadoUser || '').toLowerCase() === 'activo'
+              "
+            >
+              {{ u.estadoUser || '—' }}
+            </span>
+          </td>
+
+          <td>
+            {{ u.subscription_plan_name || '—' }}
+          </td>
+
+          <td>
+            <div class="date-column">
+
+              <strong>
+                {{ formatSubscriptionDate(u.subscription_end_date) }}
+              </strong>
+
+              <span
+                class="admin-chip"
+                [class.chip-positive]="subscriptionState(u) === 'vigente'"
+                [class.chip-negative]="subscriptionState(u) === 'vencida'"
+              >
+                {{ subscriptionStateLabel(u) }}
+              </span>
+
+            </div>
+          </td>
+
+          <!-- BOTÓN ADMINISTRAR -->
+          <td>
+            <button
+              type="button"
+              class="admin-user-manage-btn"
+              (click)="toggleAppUserDetails(u.id)"
+              [attr.aria-expanded]="expandedAppUserId === u.id"
+              [attr.aria-controls]="'user-details-' + u.id"
+            >
+
+              <mat-icon>
+                {{
+                  expandedAppUserId === u.id
+                    ? 'expand_less'
+                    : 'tune'
+                }}
+              </mat-icon>
+
+              <span>
+                {{
+                  expandedAppUserId === u.id
+                    ? 'Cerrar'
+                    : 'Administrar'
+                }}
+              </span>
+
+            </button>
+          </td>
+
+        </tr>
+
+        <!-- PANEL EXPANDIBLE -->
+        <tr
+          *ngIf="expandedAppUserId === u.id"
+          class="admin-user-expansion-row"
+        >
+
+          <td colspan="6">
+
+            <div
+              class="admin-user-details"
+              [id]="'user-details-' + u.id"
+            >
+
+              <div class="admin-user-details-header">
+
+                <div>
+                  <h3>
+                    {{ u.display_name || u.email }}
+                  </h3>
+
+                  <p>
+                    Historial de suscripciones
+                  </p>
+                </div>
+
+                <span class="admin-user-history-count">
+                  {{ subscriptionHistory.length }} registros
+                </span>
+
+              </div>
+
+              <!-- CARGANDO -->
+              <div
+                *ngIf="loadingSubscriptionHistory"
+                class="admin-user-history-message"
+              >
+                Cargando suscripciones...
+              </div>
+
+              <!-- ERROR -->
+              <div
+                *ngIf="subscriptionHistoryError"
+                class="admin-user-history-error"
+              >
+                {{ subscriptionHistoryError }}
+              </div>
+
+              <!-- SIN SUSCRIPCIONES -->
+              <div
+                *ngIf="
+                  !loadingSubscriptionHistory &&
+                  !subscriptionHistoryError &&
+                  !subscriptionHistory.length
+                "
+                class="admin-user-history-message"
+              >
+                Este usuario todavía no tiene suscripciones registradas.
+              </div>
+
+              <!-- HISTORIAL -->
+              <div
+                class="admin-user-history-list"
+                *ngIf="
+                  !loadingSubscriptionHistory &&
+                  !subscriptionHistoryError &&
+                  subscriptionHistory.length
+                "
+              >
+
+                <div
+                  class="admin-user-history-card"
+                  *ngFor="let sub of subscriptionHistory"
+                >
+
+                  <div class="admin-user-history-card-header">
+
+                    <strong>
+                      {{ sub.plan_name }}
+                    </strong>
+
+                    <span
+                      class="admin-user-history-status"
+                      [class.is-active]="sub.status === 'vigente'"
+                      [class.is-expired]="sub.status === 'vencida'"
+                      [class.is-pending]="sub.status === 'programada'"
+                    >
+                      {{ sub.status }}
                     </span>
+
                   </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+
+                  <div class="admin-user-history-info">
+
+                    <div>
+                      <small>Inicio</small>
+                      <strong>
+                        {{ formatSubscriptionDate(sub.start_date) }}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <small>Finalización</small>
+                      <strong>
+                        {{ formatSubscriptionDate(sub.end_date) }}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <small>Precio del plan</small>
+                      <strong>
+                        Bs {{ sub.plan_cost }}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <small>Duración</small>
+                      <strong>
+                        {{ sub.duration_days }} días
+                      </strong>
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+<section class="panel admin-email-panel">
+
+  <div class="panel-header">
+    <div class="panel-heading">
+      <div class="panel-icon blue">
+        <mat-icon>outgoing_mail</mat-icon>
+      </div>
+
+      <div>
+        <h3>Enviar correo</h3>
+        <p>
+          Comunicación con {{ u.email }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-body">
+
+    <div class="field-group">
+      <label>Tipo de correo</label>
+
+      <div class="select-shell">
+        <mat-icon>mail_outline</mat-icon>
+
+        <select
+          class="select"
+          [(ngModel)]="mailTipo"
+          (ngModelChange)="mailStatus = ''"
+        >
+          <option value="renovacion">
+            Renovar suscripción
+          </option>
+
+          <option value="vencimiento">
+            Aviso de vencimiento
+          </option>
+
+          <option value="nueva_suscripcion">
+            Invitar a nueva suscripción
+          </option>
+
+          <option value="prueba_gratuita">
+            Invitar a prueba gratuita
+          </option>
+
+          <option value="personalizado">
+            Correo personalizado
+          </option>
+
+          <option value="anuncio">
+            Anuncio
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <ng-container
+      *ngIf="
+        mailTipo === 'personalizado' ||
+        mailTipo === 'anuncio'
+      "
+    >
+      <div class="field-group">
+        <label>Asunto</label>
+
+        <input
+          type="text"
+          class="input"
+          [(ngModel)]="mailAsunto"
+          placeholder="Asunto del correo"
+          maxlength="150"
+        />
+      </div>
+
+      <div class="field-group">
+        <label>Mensaje</label>
+
+        <textarea
+          class="input"
+          [(ngModel)]="mailMensaje"
+          rows="5"
+          maxlength="10000"
+          placeholder="Escribí el mensaje..."
+        ></textarea>
+      </div>
+    </ng-container>
+
+    <div
+      *ngIf="mailStatus"
+      class="subscription-message"
+      role="status"
+    >
+      {{ mailStatus }}
+    </div>
+
+    <div class="form-actions">
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="mailSending"
+        (click)="enviarCorreoUsuario(u)"
+      >
+        <mat-icon>send</mat-icon>
+
+        {{ mailSending ? 'Enviando...' : 'Enviar correo' }}
+      </button>
+    </div>
+
+  </div>
+</section>
+
+
+
+            </div>
+
+          </td>
+
+        </tr>
+
+      </ng-container>
+
+    </tbody>
+
+  </table>
+</div>
+
         <div class="admin-list-message" *ngIf="!loadingAppUsers && !filteredAppUsers.length">
           {{ appUsers.length ? 'No se encontraron usuarios con ese filtro.' : 'No hay usuarios registrados.' }}
         </div>

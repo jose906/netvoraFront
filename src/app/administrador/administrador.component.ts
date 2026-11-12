@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../services/api.service';
-import { user, users } from '../interfaces/users';
+import { user, users,AdminUserSubscription,AdminUserSubscriptionsResponse } from '../interfaces/users';
 import { AuthService } from '../services/auth.service';
 
 type AdminTab = 'sistema' | 'x';
@@ -72,6 +72,27 @@ export class AdministradorComponent implements OnInit {
   subMsg = '';
 
   user: user | null = null;
+
+
+expandedAppUserId: number | null = null;
+
+subscriptionHistory: AdminUserSubscription[] = [];
+
+loadingSubscriptionHistory = false;
+
+subscriptionHistoryError = '';
+
+
+mailTipo = 'renovacion';
+mailAsunto = '';
+mailMensaje = '';
+mailSending = false;
+mailStatus = '';
+mailError = false;
+
+
+
+
 
   constructor(
     private apiService: ApiService,
@@ -149,6 +170,64 @@ export class AdministradorComponent implements OnInit {
       error: err => console.error('Error al cargar planes:', err)
     });
   }
+
+  async enviarCorreoUsuario(u: AppUser): Promise<void> {
+
+  if (this.mailSending) return;
+
+  if (
+    ['personalizado', 'anuncio'].includes(this.mailTipo) &&
+    (!this.mailAsunto.trim() || !this.mailMensaje.trim())
+  ) {
+    this.mailStatus = 'Completá el asunto y el mensaje.';
+    this.mailError = true;
+    return;
+  }
+
+  if (!confirm(
+    `¿Enviar correo de ${this.mailTipo} a ${u.email}?`
+  )) {
+    return;
+  }
+
+  this.mailSending = true;
+  this.mailStatus = '';
+  this.mailError = false;
+
+  try {
+    const token = await this.AuthService.getIdToken();
+
+    this.apiService.sendAdminUserEmail(
+      u.id,
+      {
+        tipo: this.mailTipo,
+        asunto: this.mailAsunto,
+        mensaje: this.mailMensaje
+      },
+      token
+    ).subscribe({
+      next: (response) => {
+        this.mailSending = false;
+        this.mailStatus =
+          `Correo enviado a ${response.destinatario}`;
+        this.mailError = false;
+      },
+      error: (err) => {
+        this.mailSending = false;
+        this.mailStatus =
+          err.error?.error ||
+          'No se pudo enviar el correo.';
+        this.mailError = true;
+      }
+    });
+
+  } catch (error) {
+    console.error('Error enviando correo:', error);
+    this.mailSending = false;
+    this.mailStatus = 'Error de autenticación.';
+    this.mailError = true;
+  }
+}
 
  async loadAppUsers(): Promise<void> {
   this.loadingAppUsers = true;
@@ -367,4 +446,64 @@ export class AdministradorComponent implements OnInit {
     this.endDate = '';
     this.subMsg = '';
   }
+
+
+toggleAppUserDetails(userId: number): void {
+
+  // Cerrar si ya está abierto.
+  if (this.expandedAppUserId === userId) {
+    this.expandedAppUserId = null;
+    return;
+  }
+
+  // Abrir usuario seleccionado.
+  this.expandedAppUserId = userId;
+
+  this.loadSubscriptionHistory(userId);
+}
+
+
+loadSubscriptionHistory(userId: number): void {
+
+  this.loadingSubscriptionHistory = true;
+  this.subscriptionHistoryError = '';
+  this.subscriptionHistory = [];
+
+  this.apiService.getAdminUserSubscriptions(userId)
+    .subscribe({
+
+      next: (response) => {
+        console.log('Historial de suscripciones para usuario %d:', userId, response);
+        // Evitar mostrar datos de otro usuario
+        // si la respuesta llega después de cambiar.
+        if (this.expandedAppUserId !== userId) {
+          return;
+        }
+
+        this.subscriptionHistory =
+          response.subscriptions || [];
+
+        this.loadingSubscriptionHistory = false;
+      },
+
+      error: (err) => {
+
+        if (this.expandedAppUserId !== userId) {
+          return;
+        }
+
+        console.error(
+          'Error al cargar historial:',
+          err
+        );
+
+        this.subscriptionHistoryError =
+          'No se pudo cargar el historial de suscripciones.';
+
+        this.loadingSubscriptionHistory = false;
+      }
+
+    });
+}
+
 }

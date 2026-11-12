@@ -8,7 +8,7 @@ import { CategoriasData } from '../interfaces/data/CategoriasData';
 import { ConteoResponse } from '../interfaces/data/AllData';
 import { Data } from '@angular/router';
 import { DataFromCategorie } from '../interfaces/data/DataFromCategorie';
-import { users,user } from '../interfaces/users';
+import { users,user,AdminUserSubscription,AdminUserSubscriptionsResponse } from '../interfaces/users';
 import { MainPageData } from '../interfaces/data/mainpage';
 import { NumberSymbol } from '@angular/common';
 import { HomePageResponse } from '../interfaces/homePage';
@@ -16,7 +16,7 @@ import { StatsResponse } from '../interfaces/data/mainDashboard';
 import { DashboardStatsResponse } from '../interfaces/data/MediaDashboard';
 import { NewsItem, PulseResponse, TopicItem, TopicOption } from '../interfaces/NewsItem';
 import { StanceFilters, StanceSummary, StanceTimelineRow, StanceComment, StancePublication, StanceTopic, StanceSource, StancePage } from '../interfaces/stance';
-
+import { tap } from 'rxjs/operators';
 
 
 
@@ -31,6 +31,7 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
+  
 
   getAllPosts(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
@@ -425,11 +426,37 @@ getFollowedTweetUsers() {
     );
   }
 
-  getStanceTopicos(body: StanceFilters): Observable<{ ok: boolean; topics: StancePage<StanceTopic> }> {
-    return this.http.post<{ ok: boolean; topics: StancePage<StanceTopic> }>(
-      `${this.apiUrl}api/stance/topicos`, body
-    );
-  }
+  
+  getStanceTopicos(body: StanceFilters): Observable<{
+  ok: boolean;
+  topics: StancePage<StanceTopic>;
+}> {
+
+  console.log('[STANCE] Filtros enviados:', body);
+
+  return this.http.post<{
+    ok: boolean;
+    topics: StancePage<StanceTopic>;
+  }>(
+    `${this.apiUrl}api/stance/topicos`,
+    body
+  ).pipe(
+    tap({
+      next: response => {
+        console.log('[STANCE] Respuesta del servidor:', response);
+
+        const topico295 = response.topics?.items?.find(
+          topic => Number(topic.topic_id) === 295
+        );
+
+        console.log('[STANCE] Tópico 295:', topico295);
+      },
+      error: error => {
+        console.error('[STANCE] Error del endpoint:', error);
+      }
+    })
+  );
+}
 
   getStanceTopico(body: StanceFilters): Observable<{ ok: boolean; found: boolean; topic?: StanceTopic; summary?: StanceSummary; comments?: StancePage<StanceComment> }> {
     return this.http.post<{ ok: boolean; found: boolean; topic?: StanceTopic; summary?: StanceSummary; comments?: StancePage<StanceComment> }>(
@@ -454,6 +481,50 @@ getFollowedTweetUsers() {
       `${this.apiUrl}api/stance/publicaciones/batch`, body
     );
   }
+
+
+getAdminUserSubscriptions(
+  userId: number
+): Observable<AdminUserSubscriptionsResponse> {
+
+  return this.http.get<AdminUserSubscriptionsResponse>(
+    `${this.apiUrl}/admin/system-users/${userId}/subscriptions`
+  );
+
+}
+
+sendAdminUserEmail(
+  userId: number,
+  body: {
+    tipo: string;
+    asunto: string;
+    mensaje: string;
+  },
+  token: string
+) {
+  // Reemplazar this.baseUrl por la propiedad
+  // de URL base que usa tu ApiService.
+  const url =
+    `${this.apiUrl}/admin/system-users/${userId}/send-email`;
+
+  return this.http.post<{
+    ok: boolean;
+    message: string;
+    destinatario: string;
+    gmail_message_id?: string;
+  }>(
+    url,
+    body,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  );
+}
+
+
+  
 
 
 

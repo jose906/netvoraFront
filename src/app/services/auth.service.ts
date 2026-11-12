@@ -30,11 +30,13 @@ export class AuthService {
   } 
   getCurrentUser(){
 
+    
     return this.afAuth.currentUser;
   }
   
 
   authState$() {
+   
     return this.afAuth.authState;
   }
 
@@ -44,11 +46,16 @@ export class AuthService {
   async getIdToken(): Promise<string> {
   const user = await this.afAuth.currentUser;
   if (!user) throw new Error('No hay usuario autenticado');
+
+ // Log the token for debugging
+ console.log('User ID Token:', await user.getIdToken());
   return user.getIdToken();
 }
   async getToken(): Promise<string | null> {
     const user = await this.afAuth.currentUser;
-    
+    console.log('Current user:', user); // Log the current user for debugging
+    console.log('User ID Token:', await user?.getIdToken()); // Log the token for debugging
+
     return user ? user.getIdToken() : null;
   }
   async forgotPassword(email: string): Promise<void> {

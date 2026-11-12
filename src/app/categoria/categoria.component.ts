@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../services/api.service';
@@ -174,11 +174,27 @@ errorPulse = '';
   private stanceBatchSub?: Subscription;
   private stanceCommentsSub?: Subscription;
   private stanceLoadToken = 0;
+  private postsSub?: Subscription;
+  private repliesSub?: Subscription;
+  private routeSub?: Subscription;
+  private usersSub?: Subscription;
+  private pulseSub?: Subscription;
+  private accessSub?: Subscription;
+  private repliesRetryCount = 0;
+  private repliesReady = false;
+  repliesLoading = false;
+  repliesError = '';
 
   ngOnDestroy(): void {
     ++this.stanceLoadToken;
+    this.postsSub?.unsubscribe();
+    this.repliesSub?.unsubscribe();
     this.stanceBatchSub?.unsubscribe();
     this.stanceCommentsSub?.unsubscribe();
+    this.routeSub?.unsubscribe();
+    this.usersSub?.unsubscribe();
+    this.pulseSub?.unsubscribe();
+    this.accessSub?.unsubscribe();
   }
 
   getStance(tweetid: string | number): StancePublication | null {
@@ -224,6 +240,8 @@ errorPulse = '';
         if (token !== this.stanceLoadToken) return;
         this.stanceByTweet = response?.batch?.items ?? {};
         this.stanceLoading = false;
+        this.cdr.markForCheck();
+        this.revisarCoherenciaReplies();
       },
       error: error => {
         if (token !== this.stanceLoadToken) return;
@@ -231,6 +249,7 @@ errorPulse = '';
         this.stanceByTweet = {};
         this.stanceError = 'No se pudo consultar Stance para estas publicaciones.';
         this.stanceLoading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -277,12 +296,14 @@ errorPulse = '';
         this.stanceCommentsTotal = Number(response.comments?.total ?? 0);
         this.stanceCommentsPage = page;
         this.stanceCommentsLoading = false;
+        this.cdr.markForCheck();
       },
       error: error => {
         if (this.stanceOpenId !== id) return;
         console.error('Error cargando detalle de Stance:', error);
         this.stanceCommentsError = 'No fue posible cargar los comentarios.';
         this.stanceCommentsLoading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -294,14 +315,7 @@ errorPulse = '';
     return comment.status === 'not_applicable' ? 'No aplica' : 'Pendiente';
   }
 
-  repliesByTweet: Record<
-    string,
-    {
-      negativo: number;
-      neutro: number;
-      positivo: number;
-    }
-  > = {};
+  repliesByTweet: Record<string, { negativo: number; neutro: number; positivo: number }> = {};
 
 
   // =========================================================
@@ -337,7 +351,8 @@ currentRole: UserRole = 'viewer';
   private accountService: AccountService,
   private authzService: AuthzService,
   private route: ActivatedRoute,
-  private router: Router
+  private router: Router,
+  private cdr: ChangeDetectorRef
 ) {}
 
   // =========================================================
@@ -346,7 +361,7 @@ currentRole: UserRole = 'viewer';
 
  ngOnInit(): void {
 
-  this.route.data.subscribe(data => {
+  this.routeSub = this.route.data.subscribe(data => {
 
     this.categoria =
       String(
@@ -415,7 +430,8 @@ currentRole: UserRole = 'viewer';
 
   loadUsers(): void {
 
-  this.apiService
+  this.usersSub?.unsubscribe();
+  this.usersSub = this.apiService
     .getUsers2('Medio')
     .subscribe({
 
@@ -449,7 +465,10 @@ currentRole: UserRole = 'viewer';
         );
 
         this.usersLoaded = true;
-
+        // Un fallo cargando medios no debe impedir que se carguen las publicaciones.
+        this.currentPage = 1;
+        this.load(this.startDate, this.endDate, this.selectedUsers, 1, this.searchText);
+        this.loadPulse();
       }
 
     });
@@ -570,7 +589,8 @@ loadPulse(): void {
   // API
   // =====================================================
 
-  this.apiService
+  this.pulseSub?.unsubscribe();
+  this.pulseSub = this.apiService
     .getPulse(body)
     .subscribe({
 
@@ -580,6 +600,7 @@ loadPulse(): void {
           response?.pulse ?? null;
 
         this.cargandoPulse = false;
+        this.cdr.markForCheck();
 
       },
 
@@ -596,6 +617,7 @@ loadPulse(): void {
         this.pulse = null;
 
         this.cargandoPulse = false;
+        this.cdr.markForCheck();
 
       }
 
@@ -642,15 +664,21 @@ private inicializarContenido(): void {
 
     // Invalidar los resultados de Stance de la página anterior.
     ++this.stanceLoadToken;
+    this.postsSub?.unsubscribe();
+    this.repliesSub?.unsubscribe();
     this.stanceBatchSub?.unsubscribe();
     this.closeStanceComments();
     this.stanceByTweet = {};
     this.stanceLoading = false;
     this.stanceError = '';
+    this.repliesByTweet = {};
+    this.repliesLoading = false;
+    this.repliesError = '';
+    this.repliesRetryCount = 0;
+    this.repliesReady = false;
     const tokenActual = this.stanceLoadToken;
 
     this.datos = [];
-    this.repliesByTweet = {};
 
 
     const body: {
@@ -730,7 +758,7 @@ private inicializarContenido(): void {
     // API
     // =======================================================
 
-    this.apiService
+    this.postsSub = this.apiService
       .getPostsCategoria(body)
       .subscribe({
 
@@ -753,10 +781,11 @@ private inicializarContenido(): void {
             this.datos.length ===
             this.pageSize;
 
+          this.cargando = false;
+          // Los dos análisis se cargan solos, en paralelo, para la página actual.
           this.cargarReplies();
           this.cargarStanceBatch();
-
-          this.cargando = false;
+          this.cdr.markForCheck();
         },
 
         error: (error) => {
@@ -773,8 +802,9 @@ private inicializarContenido(): void {
           this.datos = [];
           this.hasMore = false;
           this.repliesByTweet = {};
-
+          this.repliesLoading = false;
           this.cargando = false;
+          this.cdr.markForCheck();
         }
 
       });
@@ -791,157 +821,121 @@ private inicializarContenido(): void {
 // =========================================================
 
 cargarReplies(): void {
-
-  // =====================================================
-  // SOLO PLAN PRO
-  // =====================================================
-
- if (!this.canViewReplies) {
-
+  this.repliesSub?.unsubscribe();
+  this.repliesError = '';
+  this.repliesReady = false;
   this.repliesByTweet = {};
 
-  return;
-
-}
-
-
-  // =====================================================
-  // IDS
-  // =====================================================
-
-  const tweetIds =
-    this.datos.map(
-      item =>
-        String(item.tweetid)
-    );
-
-
-  if (!tweetIds.length) {
-
-    this.repliesByTweet = {};
-
+  if (!this.canViewReplies) {
+    this.repliesLoading = false;
     return;
-
   }
 
+  const tweetIds = [...new Set(this.datos.map(item => String(item.tweetid)).filter(Boolean))];
+  if (!tweetIds.length) {
+    this.repliesLoading = false;
+    return;
+  }
 
-  // =====================================================
-  // API
-  // =====================================================
+  const token = this.stanceLoadToken;
+  const permitidos = new Set(tweetIds);
+  this.repliesLoading = true;
+  this.cdr.markForCheck();
 
-  this.apiService
-    .getRepliesSummaryMany(tweetIds)
-    .subscribe({
+  this.repliesSub = this.apiService.getRepliesSummaryMany(tweetIds).subscribe({
+    next: (response: any) => {
+      if (token !== this.stanceLoadToken) return;
 
-      next: (rows: any[]) => {
+      // Compatibilidad con arrays directos y wrappers comunes del endpoint.
+      const rows: unknown = Array.isArray(response)
+        ? response
+        : response?.items ?? response?.resultado ?? response?.data;
 
-        const map: Record<
-          string,
-          {
-            negativo: number;
-            neutro: number;
-            positivo: number;
-          }
-        > = {};
+      if (!Array.isArray(rows)) {
+        console.error('Formato inesperado en resumen de comentarios:', response);
+        this.repliesByTweet = {};
+        this.repliesError = 'El servidor devolvió un formato inválido de comentarios.';
+        this.repliesLoading = false;
+        this.repliesReady = false;
+        this.cdr.markForCheck();
+        return;
+      }
 
+      const map: Record<string, { negativo: number; neutro: number; positivo: number }> = {};
 
-        for (const row of rows || []) {
+      for (const row of rows) {
+        const key = String(row?.tweetid ?? '');
+        if (!permitidos.has(key)) continue;
 
-          const key =
-            String(row.tweetid);
-
-
-          if (!map[key]) {
-
-            map[key] = {
-              negativo: 0,
-              neutro: 0,
-              positivo: 0
-            };
-
-          }
-
-
-          const sentimiento =
-            String(
-              row.sentimiento ?? ''
-            )
-              .trim()
-              .toLowerCase();
-
-
-          const total =
-            Number(row.total) || 0;
-
-
-          if (
-            sentimiento === 'negativo'
-          ) {
-
-            map[key].negativo =
-              total;
-
-          }
-
-
-          if (
-            sentimiento === 'neutro'
-          ) {
-
-            map[key].neutro =
-              total;
-
-          }
-
-
-          if (
-            sentimiento === 'positivo'
-          ) {
-
-            map[key].positivo =
-              total;
-
-          }
-
+        if (!map[key]) {
+          map[key] = { negativo: 0, neutro: 0, positivo: 0 };
         }
 
+        const sentimiento = String(row?.sentimiento ?? '')
+          .trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const total = Math.max(0, Number(row?.total) || 0);
 
-        this.repliesByTweet =
-          map;
-
-      },
-
-
-      error: (error) => {
-
-        console.error(
-          'Error cargando comentarios:',
-          error
-        );
-
-        this.repliesByTweet = {};
-
+        if (sentimiento === 'negativo' || sentimiento === 'negative') {
+          map[key].negativo += total;
+        } else if (sentimiento === 'neutro' || sentimiento === 'neutral') {
+          map[key].neutro += total;
+        } else if (sentimiento === 'positivo' || sentimiento === 'positive') {
+          map[key].positivo += total;
+        }
       }
 
-    });
-
+      this.repliesByTweet = map;
+      this.repliesLoading = false;
+      this.repliesReady = true;
+      this.cdr.markForCheck();
+      this.revisarCoherenciaReplies();
+    },
+    error: error => {
+      if (token !== this.stanceLoadToken) return;
+      console.error('Error cargando comentarios:', error);
+      this.repliesError = 'No se pudo cargar el resumen de comentarios.';
+      this.repliesLoading = false;
+      this.repliesReady = false;
+      this.cdr.markForCheck();
+    }
+  });
 }
 
-  getRepliesCounts(
-    tweetid: string | number
-  ) {
+getRepliesCounts(tweetid: string | number): { negativo: number; neutro: number; positivo: number } {
+  return this.repliesByTweet[String(tweetid)] ?? { negativo: 0, neutro: 0, positivo: 0 };
+}
 
-    return (
-      this.repliesByTweet[
-        String(tweetid)
-      ] ??
-      {
-        negativo: 0,
-        neutro: 0,
-        positivo: 0
-      }
-    );
+private totalReplies(tweetid: string | number): number {
+  const counts = this.getRepliesCounts(tweetid);
+  return counts.negativo + counts.neutro + counts.positivo;
+}
+
+// Si Stance indica que existen comentarios clasificados, pero la API de
+// sentimiento respondió 0, repetir UNA vez sin pedir que se recargue la página.
+private revisarCoherenciaReplies(): void {
+  if (!this.repliesReady || this.repliesLoading || this.stanceLoading ||
+      this.repliesRetryCount > 0 || this.repliesError || this.stanceError) return;
+
+  const inconsistente = this.datos.some(item => {
+    const stance = this.getStance(item.tweetid);
+    return (stance?.stance_summary?.processed ?? 0) > 0 &&
+           this.totalReplies(item.tweetid) === 0;
+  });
+
+  if (inconsistente) {
+    this.repliesRetryCount++;
+    this.cargarReplies();
   }
+}
+
+// No mostrar "0 comentarios" cuando Stance confirma datos
+// y el resumen de sentimiento sigue sin reflejarlos.
+hasRepliesStanceMismatch(tweetid: string | number): boolean {
+  return this.repliesReady && !this.repliesLoading &&
+    (this.getStance(tweetid)?.stance_summary?.processed ?? 0) > 0 &&
+    this.totalReplies(tweetid) === 0;
+}
+
   // =========================================================
 // RESUMEN VISUAL - NETVORA PULSE
 // Solo usa los datos que ya están cargados
@@ -1190,7 +1184,8 @@ private loadAccess(): void {
 
   this.accessLoading = true;
 
-  this.accountService
+  this.accessSub?.unsubscribe();
+  this.accessSub = this.accountService
     .me()
     .subscribe({
 
@@ -1248,6 +1243,7 @@ if (res?.user?.role) {
 
 
         this.accessLoading = false;
+        this.cdr.markForCheck();
 
 
         console.log(
@@ -1280,6 +1276,7 @@ if (res?.user?.role) {
         this.subscriptionStatus = '';
 
         this.accessLoading = false;
+        this.cdr.markForCheck();
 
 
         // Aunque falle la consulta del plan,

@@ -2,32 +2,26 @@
 :host {
   display: block;
 
-  --bg: #f6f7f9;
-  --surface: #ffffff;
+  --bg: var(--theme-bg);
+  --surface: var(--theme-surface);
 
-  --text: #0f172a;
-  --muted: #64748b;
+  --text: var(--theme-text);
+  --muted: var(--theme-muted);
 
   --soft: rgba(15, 23, 42, .06);
   --soft2: rgba(15, 23, 42, .10);
 
-  --border: rgba(15, 23, 42, .08);
-  --border-strong: rgba(15, 23, 42, .12);
+  --border: var(--theme-line);
+  --border-strong: var(--theme-line-strong);
 
-  --accent: #6d28d9;
-  --accent-soft: rgba(109, 40, 217, .08);
+  --accent: var(--theme-primary);
+  --accent-soft: var(--theme-primary-soft);
   --accent-soft-strong: rgba(109, 40, 217, .12);
 
   color: var(--text);
   background: var(--bg);
 
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+  font-family: var(--theme-font);
 }
 
 
@@ -35,12 +29,7 @@
    CONTENEDOR GENERAL SUPERIOR
 ========================================================= */
 
-.dashboard-toolbar {
-  width: min(1320px, calc(100% - 40px));
-  margin: 0 auto;
 
-  padding-top: 20px;
-}
 
 
 /* =========================================================
@@ -71,7 +60,7 @@
 
   margin-bottom: 5px;
 
-  color: var(--muted);
+  color: var(--accent);
 
   font-size: 11px;
   font-weight: 700;
@@ -994,13 +983,13 @@
 .filter-action--apply {
   border: 1px solid transparent;
 
-  background: var(--text);
+  background: var(--theme-primary);
 
   color: #fff;
 }
 
 .filter-action--apply:hover {
-  background: #020617;
+  background: var(--theme-primary-dark);
 }
 
 
@@ -1008,13 +997,7 @@
    ÁREA DE GRÁFICOS
 ========================================================= */
 
-.chart-section {
-  width: min(1320px, calc(100% - 40px));
 
-  margin: 0 auto;
-
-  padding: 8px 0 28px;
-}
 
 .chart-container {
   min-height: 60vh;
@@ -1046,10 +1029,6 @@
 
 @media (max-width: 1000px) {
 
-  .dashboard-toolbar,
-  .chart-section {
-    width: min(100% - 28px, 1320px);
-  }
 
 
   /* navegación horizontal */
@@ -1085,19 +1064,13 @@
 
 @media (max-width: 700px) {
 
-  .dashboard-toolbar,
-  .chart-section {
-    width: calc(100% - 22px);
-  }
 
 
   /* =======================================================
      CABECERA
   ======================================================== */
 
-  .dashboard-toolbar {
-    padding-top: 14px;
-  }
+
 
   .toolbar-main {
     align-items: center;
@@ -1319,3 +1292,9 @@
 
 }
 
+
+.stats-quick-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; }
+.stats-quick-actions button, .stats-quick-actions input { font: inherit; color: inherit; background: var(--nv-surface, #fff); border: 1px solid var(--nv-border, #dfd6ef); border-radius: .5rem; padding: .35rem .6rem; }
+.stats-quick-actions button { cursor: pointer; }
+.stats-quick-actions button:hover { background: var(--nv-accent-soft, #f3edff); }
+.stats-quick-actions input { max-width: 100%; }

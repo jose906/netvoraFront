@@ -1,4 +1,6 @@
-import { Component, HostListener } from '@angular/core';
+import { Component } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { AuthzService } from '../services/authz.service';
 import { Router } from '@angular/router';
@@ -18,17 +20,11 @@ export class LoginComponent {
   showForgot: boolean = false;
   forgotEmail: string = '';
   msg: string = '';
+  resetSent = false;
   loading: boolean = false;
 
   // ================== SIGNUP ==================
   showSignup: boolean = false;
-
-  signupName: string = '';
-  signupUsername: string = '';
-  signupEmail: string = '';
-  signupPassword: string = '';
-  signupPassword2: string = '';
-  acceptTerms: boolean = false;
 
   loadingSignup: boolean = false;
   signupMsg: string = '';
@@ -47,12 +43,10 @@ loadingLogin: boolean = false;
     private authz: AuthzService,
     private router: Router,
     private apiService: ApiService
-  ) {}
-
-  ngOnInit() {
-    this.auth.authState$().subscribe(async (user) => {
-      if (user) {
-        this.router.navigate(['/']);
+  ) {
+    this.auth.authState$().pipe(takeUntilDestroyed()).subscribe(user => {
+      if (user && !this.loadingLogin && !this.loadingSignup && !this.registroPendiente) {
+        void this.router.navigate(['/']);
       }
     });
   }
@@ -63,7 +57,8 @@ loadingLogin: boolean = false;
   // ================== LOGIN ==================
  async loginEmail() {
   const email = this.cleanEmail(this.email);
-  const password = (this.password || '').trim();
+  if (this.loadingLogin) return;
+  const password = this.password;
 
   this.loginMsg = '';
   this.loadingLogin = true;
@@ -119,6 +114,7 @@ loadingLogin: boolean = false;
   }
 
   async sendReset() {
+    this.resetSent = false;
     const email = this.cleanEmail(this.forgotEmail);
 
     if (!email || !this.isValidEmail(email)) {
@@ -131,6 +127,7 @@ loadingLogin: boolean = false;
 
     try {
       await this.auth.forgotPassword(email);
+      this.resetSent = true;
       this.msg = 'Si el correo existe, te llegará un email para restablecer la contraseña.';
     } catch (e: any) {
       
@@ -140,86 +137,90 @@ loadingLogin: boolean = false;
     }
   }
 
-   async registrarUsuario() {
-  const email = this.cleanEmail(this.email2);
-  const pass = (this.password2 || '').trim();
+  private registroPendiente: {
+    name: string;
+    email: string;
+    organizacion: string;
+    tipeUser: string;
+    estadoUser: string;
+  } | null = null;
 
-  this.signupMsg = '';
-  this.loadingSignup = true;
-
-  try {
-    // (opcional) validaciones rápidas
-    if (!email || !this.isValidEmail(email)) {
-      this.signupMsg = 'Escribe un correo válido.';
-      return;
-    }
-    if (!pass) {
-      this.signupMsg = 'Escribe una contraseña.';
-      return;
-    }
-
-    await this.auth.register(email, pass);
-
-    const token = await this.auth.getIdToken();
-    const body = {
-      name: this.nombre2,
-      email,
-      organizacion: this.organizacion2,
-      tipeUser: "Usuario",
-      estadoUser: "Activo"
-    };
-
-    this.apiService.syncUsers(body, token).subscribe({
-      next: (data) => {
-        
-        this.signupMsg = '✅ Usuario registrado con éxito.';
-      },
-      error: (error) => {
-       
-        this.signupMsg = 'Se creó la cuenta, pero falló la sincronización.';
-      }
-    });
-
-  } catch (e: any) {
-   
-
-    const code = e?.code || e?.error?.code;
-
-    if (code === 'auth/email-already-in-use') {
-      this.signupMsg = '⚠️ Esa cuenta ya existe. Inicia sesión o recupera tu contraseña.';
-    } else if (code === 'auth/invalid-email') {
-      this.signupMsg = 'Correo inválido.';
-    } else if (code === 'auth/weak-password') {
-      this.signupMsg = 'La contraseña es muy débil (mínimo 6 caracteres).';
-    } else {
-      this.signupMsg = 'No se pudo crear la cuenta. Intenta nuevamente.';
-    }
-  } finally {
-    this.loadingSignup = false;
+  get sincronizacionPendiente(): boolean {
+    return this.registroPendiente !== null;
   }
-}
-     cancelar(): void {
+
+  async registrarUsuario(): Promise<void> {
+    if (this.loadingSignup) return;
+    this.signupMsg = '';
+    this.loadingSignup = true;
+
+    try {
+      if (!this.registroPendiente) {
+        const email = this.cleanEmail(this.email2);
+        if (!this.isValidEmail(email) || !this.nombre2.trim() || !this.organizacion2.trim()) {
+          this.signupMsg = 'Completa el nombre, la organización y un correo válido.';
+          return;
+        }
+        if (this.password2.length < 6 || this.password2 !== this.passwordConfirm2) {
+          this.signupMsg = 'Usa al menos 6 caracteres y confirma la misma contraseña.';
+          return;
+        }
+
+        const datos = {
+          name: this.nombre2.trim(),
+          email,
+          organizacion: this.organizacion2.trim(),
+          tipeUser: 'Usuario',
+          estadoUser: 'Activo'
+        };
+        await this.auth.register(email, this.password2);
+        this.registroPendiente = datos;
+      }
+
+      await firstValueFrom(this.apiService.syncUsers(this.registroPendiente));
+      this.registroPendiente = null;
+      this.authz.reset();
+      await this.authz.refreshMe();
+      await this.router.navigate(['/']);
+    } catch (error: unknown) {
+      if (this.registroPendiente) {
+        this.signupMsg = 'La cuenta se creó. Reintenta la sincronización para continuar.';
+      } else if ((error as { code?: string })?.code === 'auth/email-already-in-use') {
+        this.signupMsg = 'Esa cuenta ya existe. Inicia sesión o recupera tu contraseña.';
+      } else {
+        this.signupMsg = 'No se pudo completar el registro. Intenta nuevamente.';
+      }
+    } finally {
+      this.loadingSignup = false;
+    }
+  }
+
+  cancelar(): void {
+    this.clearSignup();
+  }
+
+  closesignup(): void {
+    if (!this.loadingSignup && !this.sincronizacionPendiente) this.showSignup = false;
+  }
+
+  clearSignup(): void {
+    if (this.loadingSignup || this.sincronizacionPendiente) return;
     this.nombre2 = '';
+    this.organizacion2 = '';
     this.email2 = '';
     this.password2 = '';
+    this.passwordConfirm2 = '';
+    this.signupMsg = '';
   }
 
-  closesignup() {
-    this.showSignup = false;
-  }
-
-  clearSignup() {
-   
-  }
-  openSignup() {
+  openSignup(): void {
     this.showSignup = true;
-    if (!this.signupEmail && this.email) this.signupEmail = this.email;
+    if (!this.email2) this.email2 = this.email;
   }
-
 
   // ================== HELPERS ==================
   private cleanEmail(raw: string): string {
-    return (raw || '').trim().replace(/\s+/g, '');
+    return (raw || '').trim();
   }
 
   private isValidEmail(email: string): boolean {

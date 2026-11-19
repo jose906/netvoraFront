@@ -1,7 +1,7 @@
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, from, switchMap } from 'rxjs';
-import { AuthService } from '../services/auth.service';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 export type EstadoProspecto = 'nuevo' | 'contactado' | 'interesado' | 'negociacion' | 'descartado';
 export type TipoCorreoProspecto = 'presentacion' | 'prueba_gratuita' | 'nueva_suscripcion' | 'personalizado' | 'anuncio';
@@ -61,39 +61,29 @@ export interface CorreoProspectoRespuesta {
 
 @Injectable({ providedIn: 'root' })
 export class ProspectosService {
-  // IMPORTANTE: usá la MISMA URL BASE que ya utiliza tu ApiService.
-  // No incluyas barra final. Ejemplo: https://mi-servicio-xxxxx.a.run.app
-  private readonly baseUrl = 'https://netvoraback-109294037791.europe-west1.run.app/';
+  private readonly baseUrl = `${environment.apiUrl}/admin/prospectos`;
 
-  constructor(private http: HttpClient, private auth: AuthService) {}
-
-  private conToken<T>(
-    fn: (headers: HttpHeaders) => Observable<T>
-  ): Observable<T> {
-    return from(this.auth.getIdToken()).pipe(
-      switchMap(token => fn(new HttpHeaders({ Authorization: `Bearer ${token}` })))
-    );
-  }
+  constructor(private http: HttpClient) {}
 
   listar(buscar: string, estado: string, pagina: number, limite = 25): Observable<ProspectosRespuesta> {
     let params = new HttpParams().set('pagina', pagina).set('limite', limite);
     if (buscar.trim()) params = params.set('buscar', buscar.trim());
     if (estado) params = params.set('estado', estado);
-    return this.conToken(headers => this.http.get<ProspectosRespuesta>(
-      `${this.baseUrl}/admin/prospectos`, { headers, params }
-    ));
+    return this.http.get<ProspectosRespuesta>(
+      this.baseUrl, { params }
+    );
   }
 
   crear(body: ProspectoFormulario): Observable<CrudProspectoRespuesta> {
-    return this.conToken(headers => this.http.post<CrudProspectoRespuesta>(
-      `${this.baseUrl}/admin/prospectos`, body, { headers }
-    ));
+    return this.http.post<CrudProspectoRespuesta>(
+      this.baseUrl, body
+    );
   }
 
   editar(id: number, body: ProspectoFormulario): Observable<CrudProspectoRespuesta> {
-    return this.conToken(headers => this.http.patch<CrudProspectoRespuesta>(
-      `${this.baseUrl}/admin/prospectos/${id}`, body, { headers }
-    ));
+    return this.http.patch<CrudProspectoRespuesta>(
+      `${this.baseUrl}/${id}`, body
+    );
   }
 
   enviarCorreo(id: number, body: {
@@ -101,8 +91,8 @@ export class ProspectosService {
     asunto?: string;
     mensaje?: string;
   }): Observable<CorreoProspectoRespuesta> {
-    return this.conToken(headers => this.http.post<CorreoProspectoRespuesta>(
-      `${this.baseUrl}/admin/prospectos/${id}/enviar-correo`, body, { headers }
-    ));
+    return this.http.post<CorreoProspectoRespuesta>(
+      `${this.baseUrl}/${id}/enviar-correo`, body
+    );
   }
 }

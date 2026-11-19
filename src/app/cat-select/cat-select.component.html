@@ -20,17 +20,14 @@
   </nav>
 </header>
 
-<div class="page">
+<div class="page nv-page">
 
   <!-- ========================================
        ENCABEZADO
   ========================================= -->
 
-  <section class="admin-heading">
+  <section class="admin-heading nv-page-heading">
     <div>
-      <span class="section-kicker">
-        NETVORA · ADMINISTRACIÓN
-      </span>
 
       <h1>Revisión de publicaciones</h1>
 
@@ -50,19 +47,14 @@
        FILTROS
   ========================================= -->
 
-  <section class="filters-section">
+  <section class="filters-section nv-quiet-surface">
 
     <div class="filters-header">
       <div>
-        <span class="section-kicker">CONSULTA</span>
         <h2>Filtros de publicaciones</h2>
       </div>
 
-      <span
-        class="filter-loading"
-        *ngIf="cargandoUsuarios">
-        Cargando cuentas…
-      </span>
+      <span *ngIf="cargandoUsuarios" class="nv-loading-state" role="status">Cargando cuentas…</span>
     </div>
 
     <div class="filters-row">
@@ -182,7 +174,7 @@
   ========================================= -->
 
   <div
-    class="notice notice-error"
+    class="notice notice-error nv-error-state"
     *ngIf="error"
     role="alert">
     {{ error }}
@@ -208,18 +200,7 @@
        CARGANDO
   ========================================= -->
 
-  <section
-    class="loading-state"
-    *ngIf="cargando">
-
-    <div class="loading-spinner"></div>
-
-    <div>
-      <strong>Consultando publicaciones</strong>
-      <p>Cargando resultados de {{ activeOption.label }}…</p>
-    </div>
-
-  </section>
+  <div *ngIf="cargando" class="nv-loading-state" role="status">Cargando publicaciones…</div>
 
   <!-- ========================================
        SIN RESULTADOS
@@ -563,7 +544,7 @@
 
       <div
         *ngIf="errorGuardado"
-        class="notice notice-error"
+        class="notice notice-error nv-error-state"
         role="alert">
         {{ errorGuardado }}
       </div>

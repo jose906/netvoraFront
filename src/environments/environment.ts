@@ -1,12 +1,5 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 export const environment = {
+  apiUrl: 'https://netvoraback-109294037791.europe-west1.run.app',
   production: false,
   firebase: {
     apiKey: "AIzaSyAIqmyXlK_xGvDp-ftMuB9J2x0YKLmBd_E",

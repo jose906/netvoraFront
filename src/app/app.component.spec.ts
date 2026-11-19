@@ -1,35 +1,37 @@
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { RouterModule } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { of } from 'rxjs';
 import { AppComponent } from './app.component';
+import { AuthzService } from './services/authz.service';
+import { SuscriptionService } from './services/suscription.service';
+
+@Component({ selector: 'app-menu', template: '' })
+class MenuStubComponent {}
 
 describe('AppComponent', () => {
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [
-        RouterModule.forRoot([])
-      ],
-      declarations: [
-        AppComponent
-      ],
-    }).compileComponents();
-  });
+  it('clears account state when there is no active session', () => {
+    const authz = jasmine.createSpyObj('AuthzService', ['reset', 'refreshMe']);
+    const subscription = jasmine.createSpyObj(
+      'SuscriptionService', ['clear', 'fetchStatus'], { status$: of(null) }
+    );
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
+    TestBed.configureTestingModule({
+      imports: [RouterTestingModule],
+      declarations: [AppComponent, MenuStubComponent],
+      providers: [
+        { provide: AngularFireAuth, useValue: { authState: of(null) } },
+        { provide: AuthzService, useValue: authz },
+        { provide: SuscriptionService, useValue: subscription }
+      ]
+    });
 
-  it(`should have as title 'frontTweets'`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('frontTweets');
-  });
-
-  it('should render title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, frontTweets');
+
+    expect(authz.reset).toHaveBeenCalled();
+    expect(subscription.clear).toHaveBeenCalled();
+    expect(subscription.fetchStatus).not.toHaveBeenCalled();
   });
 });

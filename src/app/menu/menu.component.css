@@ -1,22 +1,22 @@
 :host {
   display: block;
 
-  --nv-primary: #6d28d9;
-  --nv-primary-dark: #5b21b6;
+  --nv-primary: var(--theme-primary);
+  --nv-primary-dark: var(--theme-primary-dark);
 
-  --nv-primary-soft: rgba(109, 40, 217, 0.08);
+  --nv-primary-soft: var(--theme-primary-soft);
   --nv-primary-soft-2: rgba(109, 40, 217, 0.055);
-  --nv-primary-border: rgba(109, 40, 217, 0.15);
+  --nv-primary-border: var(--theme-primary-border);
 
-  --nv-text: #111827;
-  --nv-text-soft: #334155;
-  --nv-muted: #64748b;
-  --nv-muted-light: #94a3b8;
+  --nv-text: var(--theme-text);
+  --nv-text-soft: var(--theme-text-soft);
+  --nv-muted: var(--theme-muted);
+  --nv-muted-light: var(--theme-muted-light);
 
-  --nv-border: rgba(15, 23, 42, 0.075);
-  --nv-border-strong: rgba(15, 23, 42, 0.11);
+  --nv-border: var(--theme-line);
+  --nv-border-strong: var(--theme-line-strong);
 
-  --nv-sidebar: #fafafa;
+  --nv-sidebar: var(--theme-surface);
 }
 
 
@@ -25,36 +25,22 @@
 ======================================================== */
 
 .sidebar {
-  width: 272px;
-  height: 100vh;
+  box-sizing: border-box;
+  width: var(--sidebar-width);
+  height: 100dvh;
 
   display: flex;
   flex-direction: column;
 
   position: relative;
 
-  background:
-    linear-gradient(
-      180deg,
-      #fcfcfd 0%,
-      #fafafa 100%
-    );
+  background: var(--nv-sidebar);
 
   border-right: 1px solid var(--nv-border);
 
   color: var(--nv-text);
 
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
+  font-family: var(--theme-font);
 
   overflow: hidden;
 }
@@ -988,7 +974,7 @@ details[open] .chevron {
    MOBILE
 ======================================================== */
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
 
   .sidebar {
     position: fixed;

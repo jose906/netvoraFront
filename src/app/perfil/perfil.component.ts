@@ -1,14 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import {
-  getAuth,
-  updateProfile,
-  updatePassword,
-  User,
-  EmailAuthProvider,
-  reauthenticateWithCredential
-} from 'firebase/auth';
-import { EMPTY, Subscription, catchError, exhaustMap, timer } from 'rxjs';
+import firebase from 'firebase/compat/app';
+import { EMPTY, Subscription, catchError, exhaustMap, take, timer } from 'rxjs';
 
+import { AuthService } from '../services/auth.service';
 import { AuthzService } from '../services/authz.service';
 import { AccountService } from '../services/account.service';
 import { AccountMeResponse, SubscriptionStatus } from '../interfaces/me';
@@ -115,6 +109,7 @@ loadingUpcoming = false;
   constructor(
     public authz: AuthzService,
     private account: AccountService,
+    private auth: AuthService,
     private billingService: BillingService
   ) {}
 
@@ -176,13 +171,12 @@ loadingUpcoming = false;
   }
 
   private loadUserFromFirebase(): void {
-    const u = getAuth().currentUser;
-    if (!u) {
-      this.setMsg('err', 'No hay sesión activa.');
-      return;
-    }
-    this.profile.displayName = u.displayName || '';
-    this.profile.email = u.email || '';
+    const subscription = this.auth.user$.pipe(take(1)).subscribe(user => {
+      if (!user) return;
+      this.profile.displayName ||= user.displayName || '';
+      this.profile.email ||= user.email || '';
+    });
+    this.subx.add(subscription);
   }
 
   private loadRole(): void {
@@ -516,15 +510,15 @@ cancelQr(): void {
   // ----------------------- PERFIL / CONTRASEÑA -------------------------
 
   async saveProfile(): Promise<void> {
-    const u = getAuth().currentUser;
-    if (!u) { this.setMsg('err', 'No hay sesión activa.'); return; }
     if (!this.profile.displayName?.trim()) {
       this.setMsg('err', 'Nombre inválido.'); return;
     }
 
     try {
       this.loading.profile = true;
-      await updateProfile(u, { displayName: this.profile.displayName.trim() });
+      const user = await this.auth.getCurrentUser();
+      if (!user) { this.setMsg('err', 'No hay sesión activa.'); return; }
+      await user.updateProfile({ displayName: this.profile.displayName.trim() });
       this.setMsg('ok', 'Perfil actualizado correctamente.');
     } catch (e: any) {
       this.setMsg('err', this.humanFirebaseError(e));
@@ -538,9 +532,6 @@ cancelQr(): void {
   }
 
   async changePassword(): Promise<void> {
-    const u: User | null = getAuth().currentUser;
-    if (!u) { this.setMsg('err', 'No hay sesión activa.'); return; }
-    if (!u.email) { this.setMsg('err', 'No se encontró el email.'); return; }
     if (!this.pass.currentPassword) {
       this.setMsg('err', 'Debes ingresar tu contraseña actual.'); return;
     }
@@ -553,9 +544,12 @@ cancelQr(): void {
 
     try {
       this.loading.pass = true;
-      const credential = EmailAuthProvider.credential(u.email, this.pass.currentPassword);
-      await reauthenticateWithCredential(u, credential);
-      await updatePassword(u, this.pass.newPassword);
+      const user = await this.auth.getCurrentUser();
+      if (!user) { this.setMsg('err', 'No hay sesión activa.'); return; }
+      if (!user.email) { this.setMsg('err', 'No se encontró el email.'); return; }
+      const credential = firebase.auth.EmailAuthProvider.credential(user.email, this.pass.currentPassword);
+      await user.reauthenticateWithCredential(credential);
+      await user.updatePassword(this.pass.newPassword);
       this.pass.currentPassword = '';
       this.pass.newPassword = '';
       this.pass.repeatPassword = '';

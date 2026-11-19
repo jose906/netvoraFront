@@ -143,38 +143,24 @@
      PAGE
 ========================================================= -->
 
-<main class="page">
+<main class="page nv-page">
 
   <!-- =======================================================
        HERO
   ======================================================== -->
 
-  <header class="hero-v3">
+  <header class="hero-v3 nv-page-heading">
 
     <div class="hero-main">
 
       <div class="hero-content">
 
-        <div class="brand-row">
-          <span class="hero-icon">
-            <mat-icon>bookmark</mat-icon>
-          </span>
 
-          <span class="category-label">
-            Biblioteca personal
-          </span>
-        </div>
-
-
-        <h1 class="hero-title">
-          Publicaciones
-          <span>Guardadas</span>
-        </h1>
+        <h1 class="hero-title">Publicaciones guardadas</h1>
 
 
         <p class="hero-subtitle">
-          Organiza, consulta y agrega notas a las publicaciones
-          que quieres conservar para tu análisis.
+          Consulta los guardados y agrega notas para tu análisis.
         </p>
 
       </div>
@@ -205,7 +191,7 @@
        FILTROS
   ======================================================== -->
 
-  <section class="filters-section">
+  <section class="filters-section nv-quiet-surface">
 
     <div class="filters-header">
 
@@ -362,35 +348,7 @@
        LOADING
   ======================================================== -->
 
-  <section
-    *ngIf="cargando"
-    class="skeleton-container"
-  >
-
-    <div
-      *ngFor="let i of [1,2,3,4]"
-      class="skeleton-item"
-    >
-
-      <div class="skeleton-top">
-        <div class="sk-avatar pulse"></div>
-
-        <div class="sk-info">
-          <div class="sk-title pulse"></div>
-          <div class="sk-date pulse"></div>
-        </div>
-
-        <div class="sk-chip pulse"></div>
-      </div>
-
-      <div class="sk-body pulse"></div>
-      <div class="sk-body sk-body-short pulse"></div>
-
-      <div class="sk-footer pulse"></div>
-
-    </div>
-
-  </section>
+  <div *ngIf="cargando" class="nv-loading-state" role="status">Cargando publicaciones guardadas…</div>
 
 
   <!-- =======================================================
@@ -399,8 +357,8 @@
 
   <div
     *ngIf="error"
-    class="state state-error"
-  >
+    class="state state-error nv-error-state"
+   role="alert">
 
     <div class="state-icon">
       <mat-icon>error_outline</mat-icon>

@@ -1,14 +1,13 @@
-<div class="crm-page">
-  <header class="crm-header">
+<div class="crm-page nv-page">
+  <header class="crm-header nv-page-heading">
     <div class="crm-brand">
       <div class="crm-header-icon"><mat-icon>handshake</mat-icon></div>
       <div>
-        <span class="crm-eyebrow">NETVORA · CRM</span>
         <h1>Clientes potenciales</h1>
         <p>Gestioná contactos que aún no están registrados en NetVora.</p>
       </div>
     </div>
-    <button type="button" class="crm-btn crm-primary" (click)="nuevo()">
+    <button type="button" class="crm-btn crm-primary" [disabled]="guardando" (click)="nuevo()">
       <mat-icon>person_add</mat-icon> Agregar prospecto
     </button>
   </header>
@@ -26,22 +25,22 @@
     </div>
     <div class="crm-stat crm-stat-accent">
       <span>Correo de salida</span>
-      <strong class="crm-email-label">ventas"&#64;"netvora.org</strong>
+      <strong class="crm-email-label">ventas&#64;netvora.org</strong>
       <small>Mediante Gmail API</small>
     </div>
   </div>
 
-  <div *ngIf="aviso" class="crm-alert" [class.crm-alert-error]="avisoError" role="status">
+  <div *ngIf="aviso" class="crm-alert" [class.crm-alert-error]="avisoError" [class.nv-error-state]="avisoError" [attr.role]="avisoError ? 'alert' : 'status'">
     <mat-icon>{{ avisoError ? 'error_outline' : 'check_circle_outline' }}</mat-icon>
     <span>{{ aviso }}</span>
     <button type="button" aria-label="Cerrar mensaje" (click)="aviso = ''"><mat-icon>close</mat-icon></button>
   </div>
 
-  <section class="crm-panel" *ngIf="formularioAbierto">
+  <section class="crm-panel nv-quiet-surface" *ngIf="formularioAbierto">
     <div class="crm-panel-title">
       <div><h2>{{ editandoId === null ? 'Nuevo prospecto' : 'Editar prospecto' }}</h2>
         <p>Registrá sus datos sin crear una cuenta de usuario.</p></div>
-      <button type="button" class="crm-icon-btn" aria-label="Cerrar formulario" (click)="cancelarEdicion()"><mat-icon>close</mat-icon></button>
+      <button type="button" class="crm-icon-btn" aria-label="Cerrar formulario" [disabled]="guardando" (click)="cancelarEdicion()"><mat-icon>close</mat-icon></button>
     </div>
     <div class="crm-form-grid">
       <div class="crm-field"><label for="crmNombre">Nombre o contacto *</label>
@@ -66,14 +65,14 @@
         <span>No contactar por correo (rechazó comunicaciones o solicitó baja)</span></label>
     </div>
     <div class="crm-form-actions">
-      <button type="button" class="crm-btn crm-secondary" (click)="cancelarEdicion()">Cancelar</button>
+      <button type="button" class="crm-btn crm-secondary" [disabled]="guardando" (click)="cancelarEdicion()">Cancelar</button>
       <button type="button" class="crm-btn crm-primary" [disabled]="guardando" (click)="guardar()">
         <mat-icon>save</mat-icon> {{ guardando ? 'Guardando...' : 'Guardar prospecto' }}
       </button>
     </div>
   </section>
 
-  <section class="crm-panel">
+  <section class="crm-panel nv-quiet-surface">
     <div class="crm-panel-title">
       <div><h2>Directorio comercial</h2><p>Filtrá por nombre, correo, organización o estado.</p></div>
     </div>
@@ -88,8 +87,10 @@
       <button type="button" class="crm-btn crm-secondary" (click)="filtrar()"><mat-icon>filter_alt</mat-icon> Buscar</button>
     </div>
 
-    <div *ngIf="cargando" class="crm-empty">Cargando prospectos...</div>
-    <div *ngIf="!cargando && errorLista" class="crm-empty crm-error">{{ errorLista }}</div>
+    <div *ngIf="cargando" class="nv-loading-state" role="status">Cargando prospectos…</div>
+    <div *ngIf="!cargando && errorLista" class="nv-error-state" role="alert">
+      {{ errorLista }} <button class="nv-retry" type="button" (click)="cargar()">Reintentar</button>
+    </div>
     <div *ngIf="!cargando && !errorLista && !prospectos.length" class="crm-empty">
       <mat-icon>people_outline</mat-icon>
       <strong>No hay prospectos para mostrar</strong>
@@ -112,7 +113,7 @@
             <td><span class="crm-date">{{ formatoFecha(p.ultimo_correo_fecha) }}</span>
               <small>{{ p.correos_enviados }} enviado(s)</small></td>
             <td><div class="crm-row-actions">
-              <button type="button" class="crm-btn crm-secondary crm-btn-sm" (click)="editar(p)"><mat-icon>edit</mat-icon> Editar</button>
+              <button type="button" class="crm-btn crm-secondary crm-btn-sm" [disabled]="guardando" (click)="editar(p)"><mat-icon>edit</mat-icon> Editar</button>
               <button type="button" class="crm-btn crm-primary crm-btn-sm" [disabled]="p.no_contactar"
                 (click)="abrirCorreo(p)"><mat-icon>mail</mat-icon> Correo</button>
             </div></td>
@@ -132,7 +133,7 @@
   <div class="crm-overlay" *ngIf="destinatarioCorreo as destino">
     <div class="crm-modal" role="dialog" aria-modal="true" aria-labelledby="crmMailTitle">
       <div class="crm-panel-title">
-        <div><span class="crm-eyebrow">GMAIL API · NETVORA</span><h2 id="crmMailTitle">Enviar correo</h2>
+        <div><h2 id="crmMailTitle">Enviar correo</h2>
           <p>Destinatario: <strong>{{ destino.nombre }}</strong> · {{ destino.email }}</p></div>
         <button type="button" class="crm-icon-btn" aria-label="Cerrar" [disabled]="enviando" (click)="cerrarCorreo()"><mat-icon>close</mat-icon></button>
       </div>
@@ -151,7 +152,7 @@
           <div class="crm-field"><label for="crmMailMessage">Mensaje</label>
             <textarea class="crm-input crm-textarea" id="crmMailMessage" rows="6" maxlength="10000" [(ngModel)]="mensajeCorreo"></textarea></div>
         </ng-container>
-        <p class="crm-mail-disclaimer">El envío se realiza individualmente desde <strong>ventas"&#64;"netvora.org</strong>. Respetá las solicitudes de no recibir comunicaciones.</p>
+        <p class="crm-mail-disclaimer">El envío se realiza individualmente desde <strong>ventas&#64;netvora.org</strong>. Respetá las solicitudes de no recibir comunicaciones.</p>
       </div>
       <div class="crm-form-actions">
         <button type="button" class="crm-btn crm-secondary" [disabled]="enviando" (click)="cerrarCorreo()">Cancelar</button>

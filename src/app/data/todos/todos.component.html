@@ -1,23 +1,21 @@
 
-<section class="dash">
+<section class="dash nv-dashboard-page overview">
 
   <!-- HEADER -->
-  <header class="dashboard-header">
+  <header class="dashboard-header overview-header">
     <div class="dashboard-heading">
-      <span class="eyebrow">Panorama general</span>
-      <h1>Qué está pasando</h1>
+      <h2>Panorama general</h2>
       <p>
-        Principales conversaciones, actividad y actores detectados
-        en el período seleccionado.
+        Publicaciones, conversaciones y fuentes del período seleccionado.
       </p>
     </div>
 
     <div class="header-actions">
       <button
         type="button"
-        class="btn"
+        class="btn dashboard-primary"
         (click)="cargarDatos()"
-        [disabled]="cargandoDashboard">
+        [disabled]="cargandoDashboard || !!filterMessage">
         <span
           class="refresh-icon"
           [class.nv-rotating]="cargandoDashboard">↻</span>
@@ -28,31 +26,30 @@
         type="button"
         class="btn btn-secondary"
         (click)="downloadAllCharts()"
-        [disabled]="cargandoDashboard">
+        [disabled]="cargandoDashboard || !!filterMessage">
         ↓ Descargar gráficos
       </button>
     </div>
   </header>
 
+  <div class="dashboard-notice" *ngIf="filterMessage" role="status">{{ filterMessage }}</div>
+  <div class="dashboard-notice dashboard-notice-error nv-error-state" *ngIf="errorMsg" role="alert">{{ errorMsg }}</div>
+  <details class="dashboard-notice dashboard-notice-error nv-error-state" *ngIf="errorsPorSeccion | keyvalue as errors" [hidden]="!errors.length">
+    <summary>Algunas secciones no se pudieron cargar ({{ errors.length }})</summary>
+    <ul><li *ngFor="let entry of errors">{{ entry.value }}</li></ul>
+  </details>
+
+  <ng-container *ngIf="!filterMessage">
+
   <!-- CARGA GLOBAL -->
-  <div
-    class="nv-global-loading"
-    *ngIf="cargandoDashboard"
-    role="status"
-    aria-live="polite">
-    <span class="nv-loader" aria-hidden="true"></span>
-    <span>Actualizando los datos del dashboard...</span>
-    <span class="nv-loading-track" aria-hidden="true">
-      <span></span>
-    </span>
-  </div>
+  <div *ngIf="cargandoDashboard" class="nv-loading-state" role="status">Actualizando los datos del dashboard…</div>
 
   
   <!-- ========================================= -->
   <!-- INDICADORES PRINCIPALES -->
   <!-- ========================================= -->
 
-  <section class="metrics-grid">
+  <section class="metrics-grid overview-metrics" aria-label="Indicadores del período">
 
     <!-- PUBLICACIONES -->
     <article class="metric-card">
@@ -67,45 +64,9 @@
         {{ totalPosts | number }}
       </div>
 
-      <div
-        class="nv-comment-loading"
-        *ngIf="loadingResumen"
-        role="status">
-        <span class="nv-loader" aria-hidden="true"></span>
-        Cargando...
-      </div>
+      <div *ngIf="loadingResumen" class="nv-loading-state" role="status">Cargando indicadores…</div>
 
-      <div
-        class="kpi-comparison"
-        *ngIf="!loadingResumen && postsChange !== null">
 
-        <span
-          class="kpi-change"
-          [class.positive]="postsChange > 0"
-          [class.negative]="postsChange < 0"
-          [class.neutral]="postsChange === 0">
-
-          <span class="material-icons">
-            {{
-              postsChange > 0
-                ? 'arrow_upward'
-                : postsChange < 0
-                  ? 'arrow_downward'
-                  : 'remove'
-            }}
-          </span>
-
-          {{ Math.abs(postsChange) | number:'1.1-1' }}%
-        </span>
-
-        <span class="kpi-comparison-text">
-          vs. período anterior
-        </span>
-      </div>
-
-      <div class="metric-footer">
-        En el período seleccionado
-      </div>
     </article>
 
     <!-- COMENTARIOS PRO -->
@@ -122,13 +83,7 @@
 
       <ng-container *ngIf="!accessLoading && canViewReplies">
 
-        <div
-          class="nv-comment-loading"
-          *ngIf="cargandoVistaComentarios"
-          role="status">
-          <span class="nv-loader" aria-hidden="true"></span>
-          Cargando...
-        </div>
+        <div *ngIf="cargandoVistaComentarios" class="nv-loading-state" role="status">Cargando indicadores…</div>
 
         <div
           class="metric-value"
@@ -136,37 +91,7 @@
           {{ totalReplies | number }}
         </div>
 
-        <div
-          class="kpi-comparison"
-          *ngIf="postsChange !== null">
 
-          <span
-            class="kpi-change"
-            [class.positive]="postsChange > 0"
-            [class.negative]="postsChange < 0"
-            [class.neutral]="postsChange === 0">
-
-            <span class="material-icons">
-              {{
-                postsChange > 0
-                  ? 'arrow_upward'
-                  : postsChange < 0
-                    ? 'arrow_downward'
-                    : 'remove'
-              }}
-            </span>
-
-            {{ abs(postsChange) | number:'1.1-1' }}%
-          </span>
-
-          <span class="kpi-comparison-text">
-            vs. período anterior
-          </span>
-        </div>
-
-        <div class="metric-footer">
-          Respuestas analizadas
-        </div>
       </ng-container>
 
       <ng-container *ngIf="accessLoading">
@@ -202,17 +127,8 @@
         {{ currentEmergingTopics.length | number }}
       </div>
 
-      <div
-        class="nv-comment-loading"
-        *ngIf="loadingTopicos"
-        role="status">
-        <span class="nv-loader" aria-hidden="true"></span>
-        Cargando...
-      </div>
+      <div *ngIf="loadingTopicos" class="nv-loading-state" role="status">Cargando indicadores…</div>
 
-      <div class="metric-footer metric-footer--accent">
-        Temas con crecimiento
-      </div>
     </article>
 
     <!-- CUENTAS -->
@@ -232,21 +148,123 @@
         }}
       </div>
 
-      <div class="metric-footer">
-        Fuentes incluidas
-      </div>
     </article>
 
+  </section>
+
+  <!-- ========================================= -->
+  <!-- ACTIVIDAD Y LÍNEA DE TIEMPO -->
+  <!-- ========================================= -->
+
+  <section class="section-block activity-section">
+    <!-- GRÁFICO DE ACTIVIDAD -->
+    <div class="activity-chart overview-activity chart">
+      <div class="activity-chart-header overview-chart-header">
+        <div>
+          <h2 class="activity-chart-title">
+            {{
+              timelineInterval === '1d'
+                ? 'Actividad diaria'
+                : 'Actividad por horas'
+            }}
+          </h2>
+
+          <span class="activity-chart-subtitle">
+            {{
+              timelineInterval === '1d'
+                ? 'Publicaciones detectadas por día'
+                : 'Publicaciones por intervalo seleccionado'
+            }}
+          </span>
+        </div>
+
+        <div class="overview-chart-actions">
+          <div class="timeline-interval-control">
+            <label for="todos-timeline-interval">
+              Intervalo
+            </label>
+
+            <select
+              id="todos-timeline-interval"
+              [value]="timelineInterval"
+              [disabled]="loadingTimeline"
+              (change)="onTimelineIntervalChange($any($event.target).value)">
+
+              <option
+                *ngFor="let item of timelineIntervals"
+                [value]="item.value">
+                {{ item.label }}
+              </option>
+            </select>
+          </div>
+
+          <button
+            type="button"
+            class="iconbtn"
+            (click)="downloadChart($event)"
+            title="Descargar gráfico"
+            aria-label="Descargar gráfico de actividad"
+            [disabled]="!timelineData.labels?.length || loadingTimeline">
+            <span class="material-icons">download</span>
+          </button>
+        </div>
+      </div>
+
+      <div
+        class="chart-wrap chart-wrap--main"
+        *ngIf="timelineData.labels?.length; else noActivity">
+
+        <canvas role="img" aria-label="Evolución de publicaciones por intervalo"
+          baseChart
+          [type]="'line'"
+          [data]="timelineData"
+          [options]="lineOptions"
+          (chartClick)="activityEvidence.openPoint($any($event.active?.[0])?.index)">
+        </canvas>
+      </div>
+      <dl class="overview-activity-insights" *ngIf="!loadingTimeline && timelineData.labels?.length">
+        <div>
+          <dt>Promedio diario</dt>
+          <dd>{{ activityAverage | number:'1.0-1' }}</dd>
+        </div>
+        <div>
+          <dt>Pico diario</dt>
+          <dd>{{ activityPeak | number }} <small *ngIf="activityPeakDate">· {{ activityPeakDate }}</small></dd>
+        </div>
+      </dl>
+
+      <app-dashboard-evidence #activityEvidence
+
+          [startDate]="startDate" [endDate]="endDate" [users]="users"
+          [selectedUsers]="selectedUsers" [selectedTopics]="selectedTopics" [search]="searchText"
+          [interval]="timelineInterval" [rows]="activityEvidenceRows"
+          (applySelection)="applyDashboardSelection.emit($event)">
+        </app-dashboard-evidence>
+
+      <ng-template #noActivity>
+
+        <div *ngIf="loadingTimeline" class="nv-loading-state" role="status">Cargando resultados…</div>
+
+        <div class="empty-state" *ngIf="!loadingTimeline">
+          <span class="material-icons">timeline</span>
+          <div>
+            <strong>No hay actividad disponible</strong>
+            <p>
+              No existen publicaciones para el período seleccionado.
+            </p>
+          </div>
+        </div>
+      </ng-template>
+    </div>
   </section>
 
   <!-- ========================================= -->
   <!-- CONVERSACIONES EN CRECIMIENTO -->
   <!-- ========================================= -->
 
-  <section class="section-block">
+  <section class="section-block overview-topics">
     <div class="section-heading">
       <div>
-        <span class="section-eyebrow">AHORA</span>
         <h2>Conversaciones en crecimiento</h2>
         <p>
           Temas cuya actividad aumentó frente al período
@@ -255,14 +273,7 @@
       </div>
     </div>
 
-    <div
-      class="nv-section-loading"
-      *ngIf="loadingTopicos"
-      role="status"
-      aria-live="polite">
-      <span class="nv-loader" aria-hidden="true"></span>
-      <span>Detectando conversaciones en crecimiento...</span>
-    </div>
+    <div *ngIf="loadingTopicos" class="nv-loading-state" role="status">Detectando conversaciones en crecimiento…</div>
 
     <div
       class="emerging-list"
@@ -329,13 +340,7 @@
     </div>
 
     <ng-template #noEmergingTopicsList>
-      <div
-        class="nv-empty-loading"
-        *ngIf="loadingTopicos"
-        role="status">
-        <span class="nv-loader" aria-hidden="true"></span>
-        <span>Cargando resultados...</span>
-      </div>
+      <div *ngIf="loadingTopicos" class="nv-loading-state" role="status">Cargando resultados…</div>
 
       <div class="empty-state" *ngIf="!loadingTopicos">
         <span class="material-icons">insights</span>
@@ -351,182 +356,13 @@
   </section>
 
   <!-- ========================================= -->
-  <!-- ACTIVIDAD Y LÍNEA DE TIEMPO -->
-  <!-- ========================================= -->
-
-  <section class="section-block activity-section">
-    <div class="section-heading">
-      <div>
-        <span class="section-eyebrow neutral">ACTIVIDAD</span>
-        <h2>Cómo se está moviendo la conversación</h2>
-        <p>
-          Evolución del volumen de publicaciones durante
-          el período seleccionado.
-        </p>
-      </div>
-    </div>
-
-    <div
-      class="nv-section-loading"
-      *ngIf="loadingTimeline"
-      role="status"
-      aria-live="polite">
-      <span class="nv-loader" aria-hidden="true"></span>
-      <span>Preparando la línea de tiempo...</span>
-    </div>
-
-    <!-- RESUMEN DE ACTIVIDAD -->
-    <div class="activity-summary">
-
-      <div class="activity-stat">
-        <div class="activity-stat-top">
-          <span class="material-icons">article</span>
-          <span>Volumen</span>
-        </div>
-
-        <strong>{{ activityTotal | number }}</strong>
-        <small>publicaciones en el período</small>
-      </div>
-
-      <div class="activity-stat">
-        <div class="activity-stat-top">
-          <span class="material-icons">query_stats</span>
-          <span>Promedio</span>
-        </div>
-
-        <strong>{{ activityAverage | number }}</strong>
-        <small>publicaciones por día</small>
-      </div>
-
-      <div class="activity-stat activity-stat--peak">
-        <div class="activity-stat-top">
-          <span class="material-icons">bolt</span>
-          <span>Pico de actividad</span>
-        </div>
-
-        <strong>{{ activityPeak | number }}</strong>
-        <small *ngIf="activityPeakDate">
-          {{ activityPeakDate }}
-        </small>
-      </div>
-
-      <div
-        class="activity-stat"
-        [class.activity-stat--positive]="activityVariationPositive"
-        [class.activity-stat--negative]="activityVariationNegative">
-
-        <div class="activity-stat-top">
-          <span class="material-icons">
-            {{
-              activityVariationPositive
-                ? 'trending_up'
-                : activityVariationNegative
-                  ? 'trending_down'
-                  : 'trending_flat'
-            }}
-          </span>
-          <span>Último movimiento</span>
-        </div>
-
-        <strong>{{ activityVariationText }}</strong>
-        <small>frente al día anterior</small>
-      </div>
-
-    </div>
-
-    <!-- GRÁFICO DE ACTIVIDAD -->
-    <div class="activity-chart chart">
-      <div class="activity-chart-header">
-        <div>
-          <span class="activity-chart-title">
-            {{
-              timelineInterval === '1d'
-                ? 'Evolución diaria'
-                : 'Evolución por horas'
-            }}
-          </span>
-
-          <span class="activity-chart-subtitle">
-            {{
-              timelineInterval === '1d'
-                ? 'Publicaciones detectadas por día'
-                : 'Publicaciones por intervalo seleccionado'
-            }}
-          </span>
-        </div>
-
-        <div class="timeline-interval-control">
-          <label for="todos-timeline-interval">
-            Intervalo
-          </label>
-
-          <select
-            id="todos-timeline-interval"
-            [value]="timelineInterval"
-            [disabled]="loadingTimeline"
-            (change)="onTimelineIntervalChange($any($event.target).value)">
-
-            <option
-              *ngFor="let item of timelineIntervals"
-              [value]="item.value">
-              {{ item.label }}
-            </option>
-          </select>
-        </div>
-
-        <button
-          type="button"
-          class="iconbtn"
-          (click)="downloadChart($event)"
-          title="Descargar gráfico">
-          <span class="material-icons">download</span>
-        </button>
-      </div>
-
-      <div
-        class="chart-wrap chart-wrap--main"
-        *ngIf="timelineData.labels?.length; else noActivity">
-
-        <canvas
-          baseChart
-          [type]="'line'"
-          [data]="timelineData"
-          [options]="lineOptions">
-        </canvas>
-      </div>
-
-      <ng-template #noActivity>
-
-        <div
-          class="nv-empty-loading"
-          *ngIf="loadingTimeline"
-          role="status">
-          <span class="nv-loader" aria-hidden="true"></span>
-          <span>Cargando resultados...</span>
-        </div>
-
-        <div class="empty-state" *ngIf="!loadingTimeline">
-          <span class="material-icons">timeline</span>
-          <div>
-            <strong>No hay actividad disponible</strong>
-            <p>
-              No existen publicaciones para el período seleccionado.
-            </p>
-          </div>
-        </div>
-      </ng-template>
-    </div>
-  </section>
-
-  <!-- ========================================= -->
   <!-- PUBLICACIONES POR MEDIO -->
   <!-- ========================================= -->
 
   <section class="section-block media-section">
     <div class="section-heading">
       <div>
-        <span class="section-eyebrow neutral">FUENTES</span>
-        <h2>Quién está publicando más</h2>
+        <h2>Publicaciones por medio</h2>
         <p>
           Medios con mayor volumen de publicaciones durante
           el período seleccionado.
@@ -534,14 +370,7 @@
       </div>
     </div>
 
-    <div
-      class="nv-section-loading"
-      *ngIf="loadingMedios"
-      role="status"
-      aria-live="polite">
-      <span class="nv-loader" aria-hidden="true"></span>
-      <span>Calculando publicaciones por medio...</span>
-    </div>
+    <div *ngIf="loadingMedios" class="nv-loading-state" role="status">Calculando publicaciones por medio…</div>
 
     <article class="analysis-card chart media-card">
 
@@ -633,13 +462,7 @@
 
       <ng-template #noPostsByMedia>
 
-        <div
-          class="nv-empty-loading"
-          *ngIf="loadingMedios"
-          role="status">
-          <span class="nv-loader" aria-hidden="true"></span>
-          <span>Cargando resultados...</span>
-        </div>
+        <div *ngIf="loadingMedios" class="nv-loading-state" role="status">Cargando resultados…</div>
 
         <div class="empty-state" *ngIf="!loadingMedios">
           <span class="material-icons">campaign</span>
@@ -662,22 +485,14 @@
   <section class="section-block">
     <div class="section-heading">
       <div>
-        <span class="section-eyebrow neutral">ACTORES</span>
-        <h2>Quiénes dominan la conversación</h2>
+        <h2>Entidades más mencionadas</h2>
         <p>
           Personas, organizaciones y lugares más mencionados.
         </p>
       </div>
     </div>
 
-    <div
-      class="nv-section-loading"
-      *ngIf="loadingEntidades"
-      role="status"
-      aria-live="polite">
-      <span class="nv-loader" aria-hidden="true"></span>
-      <span>Identificando personas, organizaciones y lugares...</span>
-    </div>
+    <div *ngIf="loadingEntidades" class="nv-loading-state" role="status">Identificando personas, organizaciones y lugares…</div>
 
     <div class="entities-grid">
 
@@ -728,13 +543,7 @@
         </div>
 
         <ng-template #noPersonas>
-          <div
-            class="nv-empty-loading"
-            *ngIf="loadingEntidades"
-            role="status">
-            <span class="nv-loader" aria-hidden="true"></span>
-            <span>Buscando menciones...</span>
-          </div>
+          <div *ngIf="loadingEntidades" class="nv-loading-state" role="status">Buscando menciones…</div>
 
           <div class="entity-empty" *ngIf="!loadingEntidades">
             Sin personas detectadas
@@ -791,13 +600,7 @@
         </div>
 
         <ng-template #noOrganizaciones>
-          <div
-            class="nv-empty-loading"
-            *ngIf="loadingEntidades"
-            role="status">
-            <span class="nv-loader" aria-hidden="true"></span>
-            <span>Buscando menciones...</span>
-          </div>
+          <div *ngIf="loadingEntidades" class="nv-loading-state" role="status">Buscando menciones…</div>
 
           <div class="entity-empty" *ngIf="!loadingEntidades">
             Sin organizaciones detectadas
@@ -852,13 +655,7 @@
         </div>
 
         <ng-template #noLugares>
-          <div
-            class="nv-empty-loading"
-            *ngIf="loadingEntidades"
-            role="status">
-            <span class="nv-loader" aria-hidden="true"></span>
-            <span>Buscando menciones...</span>
-          </div>
+          <div *ngIf="loadingEntidades" class="nv-loading-state" role="status">Buscando menciones…</div>
 
           <div class="entity-empty" *ngIf="!loadingEntidades">
             Sin lugares detectados
@@ -876,8 +673,7 @@
   <section class="section-block">
     <div class="section-heading">
       <div>
-        <span class="section-eyebrow neutral">ANÁLISIS</span>
-        <h2>Entender la conversación</h2>
+        <h2>Sentimiento de las publicaciones</h2>
         <p>
           Tópicos principales, sentimiento y comportamiento
           de los comentarios.
@@ -885,14 +681,7 @@
       </div>
     </div>
 
-    <div
-      class="nv-section-loading"
-      *ngIf="loadingTopicos"
-      role="status"
-      aria-live="polite">
-      <span class="nv-loader" aria-hidden="true"></span>
-      <span>Procesando análisis de tópicos...</span>
-    </div>
+    <div *ngIf="loadingTopicos" class="nv-loading-state" role="status">Procesando análisis de tópicos…</div>
 
     <!-- INSIGHTS -->
     <div class="analysis-insights">
@@ -1004,13 +793,7 @@
         </div>
 
         <ng-template #noTopics>
-          <div
-            class="nv-empty-loading"
-            *ngIf="loadingTopicos"
-            role="status">
-            <span class="nv-loader" aria-hidden="true"></span>
-            <span>Cargando resultados...</span>
-          </div>
+          <div *ngIf="loadingTopicos" class="nv-loading-state" role="status">Cargando resultados…</div>
 
           <div class="empty-state compact" *ngIf="!loadingTopicos">
             <span class="material-icons">topic</span>
@@ -1056,13 +839,7 @@
         </div>
 
         <ng-template #noTopicSentiment>
-          <div
-            class="nv-empty-loading"
-            *ngIf="loadingTopicos"
-            role="status">
-            <span class="nv-loader" aria-hidden="true"></span>
-            <span>Cargando resultados...</span>
-          </div>
+          <div *ngIf="loadingTopicos" class="nv-loading-state" role="status">Cargando resultados…</div>
 
           <div class="empty-state compact" *ngIf="!loadingTopicos">
             <span class="material-icons">sentiment_neutral</span>
@@ -1089,8 +866,7 @@
 
       <div class="section-heading">
         <div>
-          <span class="section-eyebrow neutral">COMENTARIOS</span>
-          <h2>Reacción de la conversación</h2>
+          <h2>Reacciones en los comentarios</h2>
           <p>
             Cómo están respondiendo las personas a las
             publicaciones analizadas.
@@ -1114,14 +890,7 @@
         </div>
       </div>
 
-      <div
-        class="nv-section-loading"
-        *ngIf="cargandoVistaComentarios"
-        role="status"
-        aria-live="polite">
-        <span class="nv-loader" aria-hidden="true"></span>
-        <span>Analizando comentarios...</span>
-      </div>
+      <div *ngIf="cargandoVistaComentarios" class="nv-loading-state" role="status">Analizando comentarios…</div>
 
       <!-- RESUMEN -->
       <div class="replies-summary">
@@ -1308,12 +1077,7 @@
     </ng-container>
 
     <!-- VERIFICACIÓN DE ACCESO -->
-    <div
-      class="comments-access-loading"
-      *ngIf="accessLoading">
-      <span class="material-icons">hourglass_top</span>
-      <span>Verificando acceso a comentarios…</span>
-    </div>
+    <div *ngIf="accessLoading" class="nv-loading-state" role="status">Verificando acceso…</div>
 
     <!-- ACCESO PRO -->
     <div
@@ -1377,8 +1141,7 @@
   <section class="section-block explore-section">
     <div class="section-heading">
       <div>
-        <span class="section-eyebrow neutral">EXPLORAR</span>
-        <h2>Análisis complementario</h2>
+        <h2>Evolución de temas</h2>
         <p>
           Profundiza en la evolución y composición general
           de la conversación.
@@ -1386,14 +1149,7 @@
       </div>
     </div>
 
-    <div
-      class="nv-section-loading"
-      *ngIf="loadingTopicos"
-      role="status"
-      aria-live="polite">
-      <span class="nv-loader" aria-hidden="true"></span>
-      <span>Generando análisis complementario...</span>
-    </div>
+    <div *ngIf="loadingTopicos" class="nv-loading-state" role="status">Generando análisis complementario…</div>
 
     <!-- ===================================== -->
     <!-- EVOLUCIÓN HORARIA DE TÓPICOS -->
@@ -1447,24 +1203,13 @@
       </div>
 
       <!-- INDICADOR DE CARGA HORARIA -->
-      <div
-        class="nv-section-loading"
-        *ngIf="loadingTopicTimeline && !loadingTopicos"
-        role="status"
-        aria-live="polite">
-
-        <span class="nv-loader" aria-hidden="true"></span>
-
-        <span>
-          Cargando evolución de tópicos por
-          {{ topicTimelineInterval }}...
-        </span>
-      </div>
+      <div *ngIf="loadingTopicTimeline && !loadingTopicos" class="nv-loading-state" role="status">Cargando evolución de tópicos por
+          {{ topicTimelineInterval }}…</div>
 
       <!-- ERROR DE EVOLUCIÓN -->
       <div
-        class="alert"
-        *ngIf="errorsPorSeccion['topics_timeline']">
+        class="alert nv-error-state"
+        *ngIf="errorsPorSeccion['topics_timeline']" role="alert">
         {{ errorsPorSeccion['topics_timeline'] }}
       </div>
 
@@ -1487,14 +1232,7 @@
 
       <ng-template #noTopicsTimeline>
 
-        <div
-          class="nv-empty-loading"
-          *ngIf="loadingTopicos || loadingTopicTimeline"
-          role="status">
-
-          <span class="nv-loader" aria-hidden="true"></span>
-          <span>Cargando resultados...</span>
-        </div>
+        <div *ngIf="loadingTopicos || loadingTopicTimeline" class="nv-loading-state" role="status">Cargando resultados…</div>
 
         <div
           class="empty-state"
@@ -1621,4 +1359,5 @@
     </div>
   </section>
 
+  </ng-container>
 </section>

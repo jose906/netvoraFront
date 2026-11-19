@@ -1,9 +1,10 @@
+import { RadarComponent } from './radar/radar.component';
+import { DashboardEvidenceComponent } from './data/dashboard-evidence.component';
 import { NgModule } from '@angular/core';
-import { BrowserModule, provideClientHydration } from '@angular/platform-browser';
+import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule,Routes} from '@angular/router';
-import { HttpClient, HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
-import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MenuComponent } from './menu/menu.component';
 import { ResumenComponent } from './resumen/resumen.component';
@@ -14,7 +15,6 @@ import { MatNativeDateModule } from '@angular/material/core'
 import { FormsModule } from '@angular/forms' 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { MatFormFieldModule} from '@angular/material/form-field';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -28,15 +28,12 @@ import { MatCardModule } from '@angular/material/card';
 import { PrincipalComponent } from './principal/principal.component';
 import { AdministradorComponent } from './administrador/administrador.component';
 import { PersonasComponent } from './personas/personas.component';
-import path from 'path';
 import { LoginComponent } from './login/login.component';
 import { environment } from '../environments/environment';
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
-import { getAuth,provideAuth } from '@angular/fire/auth';
 import { AuthInterceptor } from "./core/interceptor/auth.interceptor";
 import { AuthGuard } from './core/guards/auth.guard';
-import { provideFirebaseApp } from '@angular/fire/app';
 import { EntidadesComponent } from './entidades/entidades.component';
 import { CatSelectComponent } from './cat-select/cat-select.component';
 import { RoleGuard } from './core/guards/role.guard';
@@ -57,31 +54,32 @@ import { ProspectosComponent } from './prospectos/prospectos.component';
 
 
 const routes: Routes = [
-  { path: '', component: PrincipalComponent, canActivate: [AuthGuard],data: { subscriptionRequired: true } },
+  { path: '', component: PrincipalComponent, canActivate: [AuthGuard, SubscriptionGuard],data: { subscriptionRequired: true } },
   { path: 'politica', component: CategoriaComponent, canActivate: [AuthGuard], data:{categoria: 'Politica',categoriaLabel: 'Política',categoriaPath: 'politica'} },
   { path: 'economia', component: CategoriaComponent, canActivate: [AuthGuard], data:{categoria: 'Economia',categoriaLabel: 'Economía',categoriaPath: 'economia'} },
   { path: 'resumen',  component: ResumenComponent},
   { path: 'seguridad',  component: CategoriaComponent, canActivate: [AuthGuard], data:{categoria: 'Seguridad',categoriaLabel: 'Seguridad',categoriaPath: 'seguridad'} },
+  { path: 'radar', component: RadarComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
   { path: 'estadisticas', component:EstadisticasComponent, canActivate: [AuthGuard] },
-  { path: 'deportes', component:CategoriaComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true, categoria: 'Deportes', categoriaLabel: 'Deportes', categoriaPath: 'deportes' }, },
-  { path: 'social', component:CategoriaComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true, categoria: 'Social', categoriaLabel: 'Social', categoriaPath: 'social' } },
-  { path: 'ambiente', component:CategoriaComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true, categoria: 'Ambiente', categoriaLabel: 'Ambiente', categoriaPath: 'ambiente' } },
+  { path: 'deportes', component:CategoriaComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true, categoria: 'Deportes', categoriaLabel: 'Deportes', categoriaPath: 'deportes' }, },
+  { path: 'social', component:CategoriaComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true, categoria: 'Social', categoriaLabel: 'Social', categoriaPath: 'social' } },
+  { path: 'ambiente', component:CategoriaComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true, categoria: 'Ambiente', categoriaLabel: 'Ambiente', categoriaPath: 'ambiente' } },
   { path: 'administrador', component:AdministradorComponent, canActivate: [AuthGuard, RoleGuard], data: { roles: ['admin']},},
-  { path: 'personas', component:PersonasComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
-  { path: 'salud', component:CategoriaComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true, categoria: 'Salud', categoriaLabel: 'Salud', categoriaPath: 'salud' } },
-  { path: 'educacion', component:CategoriaComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true, categoria: 'Educacion', categoriaLabel: 'Educación', categoriaPath: 'educacion' } },
-  { path: 'otros', component:CategoriaComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true, categoria: 'Otros', categoriaLabel: 'Otros', categoriaPath: 'otros' } },
-  { path: 'gestiones', component:CategoriaComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true, categoria: 'Gestiones', categoriaLabel: 'Gestiones', categoriaPath: 'gestiones' } },
+  { path: 'personas', component:PersonasComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
+  { path: 'salud', component:CategoriaComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true, categoria: 'Salud', categoriaLabel: 'Salud', categoriaPath: 'salud' } },
+  { path: 'educacion', component:CategoriaComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true, categoria: 'Educacion', categoriaLabel: 'Educación', categoriaPath: 'educacion' } },
+  { path: 'otros', component:CategoriaComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true, categoria: 'Otros', categoriaLabel: 'Otros', categoriaPath: 'otros' } },
+  { path: 'gestiones', component:CategoriaComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true, categoria: 'Gestiones', categoriaLabel: 'Gestiones', categoriaPath: 'gestiones' } },
   { path: 'login', component:LoginComponent},
-  { path: 'entidades', component:EntidadesComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
-  { path: 'catSelect',component:CatSelectComponent, canActivate: [AuthGuard], data: { roles:["admin"] } },
-  { path: 'account', component:PerfilComponent},
+  { path: 'entidades', component:EntidadesComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
+  { path: 'catSelect',component:CatSelectComponent, canActivate: [AuthGuard, RoleGuard], data: { roles:["admin"] } },
+  { path: 'account', redirectTo: 'perfil', pathMatch: 'full'},
   { path:'perfil', component:PerfilComponent, canActivate:[AuthGuard]},
-  { path: 'guardar', component: GuardarComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
-  { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
-  { path: 'topics/:id', component: TopicsComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
-  { path: 'topics', component: TopicsComponent, canActivate: [AuthGuard], data: { subscriptionRequired: true } },
-  { path: 'prospectos', component: ProspectosComponent, canActivate: [AuthGuard], data: { roles: ['admin'] } }
+  { path: 'guardar', component: GuardarComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
+  { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
+  { path: 'topics/:id', component: TopicsComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
+  { path: 'topics', component: TopicsComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
+  { path: 'prospectos', component: ProspectosComponent, canActivate: [AuthGuard, RoleGuard], data: { roles: ['admin'] } }
   
 
 
@@ -116,8 +114,8 @@ const routes: Routes = [
     
   ],
   imports: [
+    DashboardEvidenceComponent,
     BrowserModule,
-    AppRoutingModule,
     RouterModule.forRoot(routes),
     HttpClientModule,
     MatDatepickerModule,
@@ -134,7 +132,6 @@ const routes: Routes = [
     MatCardModule, 
     AngularFireModule.initializeApp(environment.firebase),
    AngularFireAuthModule,
-    AngularFireAuthModule, 
     MatTooltipModule,
     StanceComentariosComponent,
     
@@ -142,8 +139,6 @@ const routes: Routes = [
 
   ],
   providers: [
-    provideClientHydration(),
-    provideAnimationsAsync(),
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: SubscriptionInterceptor, multi: true },
 

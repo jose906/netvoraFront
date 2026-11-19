@@ -1,3 +1,6 @@
+import { RadarActor, RadarCadence, RadarFilters, RadarSnapshot, RadarState, RadarStory, RadarWatch } from '../interfaces/radar';
+import { DashboardEntityType, DashboardEvidence, DashboardEvidenceFilters } from '../interfaces/dashboard-evidence';
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient,HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -16,7 +19,6 @@ import { StatsResponse } from '../interfaces/data/mainDashboard';
 import { DashboardStatsResponse } from '../interfaces/data/MediaDashboard';
 import { NewsItem, PulseResponse, TopicItem, TopicOption } from '../interfaces/NewsItem';
 import { StanceFilters, StanceSummary, StanceTimelineRow, StanceComment, StancePublication, StanceTopic, StanceSource, StancePage } from '../interfaces/stance';
-import { tap } from 'rxjs/operators';
 
 
 
@@ -26,7 +28,7 @@ import { tap } from 'rxjs/operators';
 })
 export class ApiService {
 
-  private apiUrl = 'https://netvoraback-109294037791.europe-west1.run.app/'; // URL base de tu API
+  private apiUrl = `${environment.apiUrl}/`; // URL base de tu API
 
 
   constructor(private http: HttpClient) { }
@@ -197,6 +199,8 @@ getCategoryTopicsTimeline(params: {
   search?: string;
   topic_ids: number[];
   timeline_interval: '1h' | '3h' | '6h' | '12h' | '1d';
+  entidad?: string;
+  entity_type?: DashboardEntityType;
 }): Observable<any> {
   return this.http.post<any>(
     `${this.apiUrl}categorias/topicos/timeline`,
@@ -206,13 +210,13 @@ getCategoryTopicsTimeline(params: {
 
 getAdminSystemUsers(): Observable<any[]> {
   return this.http.get<any[]>(
-    `${this.apiUrl}/admin/system-users`
+    `${this.apiUrl}admin/system-users`
   );
 }
 
 getAdminXSources(): Observable<any[]> {
   return this.http.get<any[]>(
-    `${this.apiUrl}/admin/x-sources`
+    `${this.apiUrl}admin/x-sources`
   );
 }
 
@@ -316,11 +320,67 @@ getCategoryComentarios(params: any): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<any>(this.apiUrl+'create_user',body, {headers});
   }
-  syncUsers(body: any, token: string): Observable<any> {
-    const headers = {Authorization: `Bearer ${token}`}; 
-    return this.http.post<any>(this.apiUrl+'sync',body, {headers});   
+  syncUsers(body: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl + 'sync', body);
   
   }   
+  getDashboardEvidence(filters: DashboardEvidenceFilters): Observable<DashboardEvidence> {
+    return this.http.post<DashboardEvidence>(this.apiUrl + 'estadisticas/evidencia', filters);
+  }
+
+  getRadarOverview() {
+    return this.http.get<{ watches: number; pending: number }>(this.apiUrl + 'api/radar/overview');
+  }
+
+  explainRadarDay(id: string, day: string, mode: string) {
+    return this.http.get<{ text: string[]; citations: { source: string; url: string }[] }>(
+      this.apiUrl + 'api/radar/watches/' + id + '/history/' + day + '/explain', { params: { mode } }
+    );
+  }
+
+  getRadarWatches() {
+    return this.http.get<{ watches: RadarWatch[] }>(this.apiUrl + 'api/radar/watches');
+  }
+
+  createRadarWatch(name: string, filters: RadarFilters) {
+    return this.http.post<{ id: string }>(this.apiUrl + 'api/radar/watches', { name, ...filters });
+  }
+
+  updateRadarWatch(id: string, changes: { cadence?: RadarCadence; paused?: boolean }) {
+    return this.http.patch(this.apiUrl + 'api/radar/watches/' + id, changes);
+  }
+
+  getRadarHistory(id: string, refresh = false) {
+    const url = this.apiUrl + 'api/radar/watches/' + id + '/history';
+    return refresh ? this.http.post<{ history: RadarSnapshot[] }>(url, {})
+      : this.http.get<{ history: RadarSnapshot[] }>(url);
+  }
+
+  reviewRadarDay(id: string, day: string, state: RadarState, note: string) {
+    return this.http.patch(this.apiUrl + 'api/radar/watches/' + id + '/history/' + day, { state, note });
+  }
+
+  getRadarActors(id: string, day: string) {
+    return this.http.get<{ mentions: RadarActor[] }>(
+      this.apiUrl + 'api/radar/watches/' + id + '/actors', { params: { day } }
+    );
+  }
+
+  correctRadarStory(id: string, tweetid: string, split: boolean) {
+    const url = this.apiUrl + 'api/radar/watches/' + id + '/stories/splits/' + tweetid;
+    return split ? this.http.put(url, {}) : this.http.delete(url);
+  }
+
+  getRadarStories(id: string, query: string) {
+    return this.http.get<{ stories: RadarStory[]; scanned: number }>(
+      this.apiUrl + 'api/radar/watches/' + id + '/stories', { params: { q: query } }
+    );
+  }
+
+  getDashboardDayPosts(date: string, users: string[], page: number, limit: number): Observable<NewsData> {
+    return this.http.post<NewsData>(this.apiUrl + 'tweets', { startDate: date, users, page, limit });
+  }
+
   getMainPageStats(users?: string[]): Observable<HomePageResponse> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<HomePageResponse>(this.apiUrl+'main_dashboard', { users }, { headers });
@@ -339,10 +399,8 @@ getAppUsers() {
   return this.http.get<any[]>(`${this.apiUrl}get_users`);
 }
 
-createUserPlan(body: any, token: string) {
-  return this.http.post(this.apiUrl + 'create_plan', body, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+createUserPlan(body: any) {
+  return this.http.post(this.apiUrl + 'create_plan', body);
 }
 
 getGuardados(limit = 10, offset = 0, category?: string) {
@@ -432,29 +490,12 @@ getFollowedTweetUsers() {
   topics: StancePage<StanceTopic>;
 }> {
 
-  console.log('[STANCE] Filtros enviados:', body);
-
   return this.http.post<{
     ok: boolean;
     topics: StancePage<StanceTopic>;
   }>(
     `${this.apiUrl}api/stance/topicos`,
     body
-  ).pipe(
-    tap({
-      next: response => {
-        console.log('[STANCE] Respuesta del servidor:', response);
-
-        const topico295 = response.topics?.items?.find(
-          topic => Number(topic.topic_id) === 295
-        );
-
-        console.log('[STANCE] Tópico 295:', topico295);
-      },
-      error: error => {
-        console.error('[STANCE] Error del endpoint:', error);
-      }
-    })
   );
 }
 
@@ -488,7 +529,7 @@ getAdminUserSubscriptions(
 ): Observable<AdminUserSubscriptionsResponse> {
 
   return this.http.get<AdminUserSubscriptionsResponse>(
-    `${this.apiUrl}/admin/system-users/${userId}/subscriptions`
+    `${this.apiUrl}admin/system-users/${userId}/subscriptions`
   );
 
 }
@@ -499,13 +540,12 @@ sendAdminUserEmail(
     tipo: string;
     asunto: string;
     mensaje: string;
-  },
-  token: string
+  }
 ) {
   // Reemplazar this.baseUrl por la propiedad
   // de URL base que usa tu ApiService.
   const url =
-    `${this.apiUrl}/admin/system-users/${userId}/send-email`;
+    `${this.apiUrl}admin/system-users/${userId}/send-email`;
 
   return this.http.post<{
     ok: boolean;
@@ -514,12 +554,7 @@ sendAdminUserEmail(
     gmail_message_id?: string;
   }>(
     url,
-    body,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }
+    body
   );
 }
 

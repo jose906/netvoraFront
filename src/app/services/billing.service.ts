@@ -1,13 +1,10 @@
+import { environment } from '../../environments/environment';
 
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { getAuth } from 'firebase/auth';
+import { HttpClient } from '@angular/common/http';
 import {
-  from,
   Observable,
-  switchMap,
   map,
-  throwError
 } from 'rxjs';
 
 export interface BillingPlan {
@@ -79,33 +76,12 @@ interface CobraFacilQrResponse {
 export class BillingService {
 
   private readonly flaskBaseUrl =
-    'https://netvoraback-109294037791.europe-west1.run.app';
+    environment.apiUrl;
 
   private readonly baseUrl =
     `${this.flaskBaseUrl}/api/billing`;
 
   constructor(private readonly http: HttpClient) {}
-
-  private authenticated<T>(
-    request: (headers: HttpHeaders) => Observable<T>
-  ): Observable<T> {
-
-    const user = getAuth().currentUser;
-
-    if (!user) {
-      return throwError(
-        () => new Error('No hay sesión activa.')
-      );
-    }
-
-    return from(user.getIdToken()).pipe(
-      switchMap(token => request(
-        new HttpHeaders({
-          Authorization: `Bearer ${token}`
-        })
-      ))
-    );
-  }
 
   // =====================================
   // OBTENER PLANES
@@ -113,12 +89,10 @@ export class BillingService {
 
   getPlans(): Observable<{ plans: BillingPlan[] }> {
 
-    return this.authenticated(headers =>
-      this.http.get<
+    return this.http.get<
         BillingPlan[] | { plans: BillingPlan[] }
       >(
-        `${this.flaskBaseUrl}/get_plans`,
-        { headers }
+        `${this.flaskBaseUrl}/get_plans`
       ).pipe(
         map(response => {
 
@@ -144,7 +118,6 @@ export class BillingService {
             }))
           };
         })
-      )
     );
   }
 
@@ -153,12 +126,9 @@ export class BillingService {
   // =====================================
 
   createQr(planId: number): Observable<QrPayment> {
-  return this.authenticated(headers =>
-    this.http.post<QrPayment>(
+  return this.http.post<QrPayment>(
       `${this.baseUrl}/payments/qr`,
-      { plan_id: planId },
-      { headers }
-    )
+      { plan_id: planId }
   );
 }
 
@@ -169,11 +139,8 @@ export class BillingService {
   // =====================================
 
   getPayment(paymentId: string): Observable<QrPaymentCheck> {
-    return this.authenticated(headers =>
-      this.http.get<QrPaymentCheck>(
-        `${this.baseUrl}/payments/${encodeURIComponent(paymentId)}`,
-        { headers }
-      )
+    return this.http.get<QrPaymentCheck>(
+        `${this.baseUrl}/payments/${encodeURIComponent(paymentId)}`
     );
   }
 
@@ -183,12 +150,9 @@ export class BillingService {
   // =====================================
 
   cancelPayment(paymentId: string): Observable<QrPaymentCheck> {
-    return this.authenticated(headers =>
-      this.http.post<QrPaymentCheck>(
+    return this.http.post<QrPaymentCheck>(
         `${this.baseUrl}/payments/${encodeURIComponent(paymentId)}/cancel`,
-        {},
-        { headers }
-      )
+        {}
     );
   }
 
@@ -199,13 +163,10 @@ export class BillingService {
   getUpcomingSubscription(): Observable<{
     upcoming: UpcomingUserPlan | null
   }> {
-    return this.authenticated(headers =>
-      this.http.get<{
+    return this.http.get<{
         upcoming: UpcomingUserPlan | null
       }>(
-        `${this.baseUrl}/subscription/upcoming`,
-        { headers }
-      )
+        `${this.baseUrl}/subscription/upcoming`
     );
   }
 

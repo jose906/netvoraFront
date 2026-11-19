@@ -1,42 +1,20 @@
-<div class="page">
+<div class="page nv-page">
 
   <!-- =====================================================
        NETVORA SIGNAL HERO
   ====================================================== -->
 
-  <header class="signal-hero">
+  <header class="signal-hero nv-feed-heading">
 
-    <div class="signal-hero-top">
+    <div class="signal-hero-top nv-page-heading">
 
       <div class="signal-heading">
-
-        <div class="signal-context">
-
-          <span class="signal-mark">
-            <span class="signal-wave"></span>
-          </span>
-
-          <span class="signal-context-label">
-            NETVORA SIGNAL
-          </span>
-
-          <span class="signal-separator"></span>
-
-          <span class="signal-live">
-            <span class="signal-live-dot"></span>
-            En monitoreo
-          </span>
-
-        </div>
-
-
         <h1>
           Personas públicas
         </h1>
 
         <p class="signal-description">
-          Sigue la actividad, narrativa y reacción alrededor
-          de las personas públicas monitoreadas.
+          Actividad y comentarios en las cuentas de personas públicas.
         </p>
 
       </div>
@@ -73,9 +51,6 @@
 
           <div>
 
-            <span class="pulse-kicker">
-              NETVORA PULSE
-            </span>
 
             <h2>
               Estado de la conversación
@@ -83,12 +58,7 @@
 
           </div>
 
-          <span
-            class="pulse-loading"
-            *ngIf="cargandoPulse"
-          >
-            Actualizando…
-          </span>
+          <span *ngIf="cargandoPulse" class="nv-loading-state" role="status">Cargando actividad…</span>
 
         </div>
 
@@ -416,9 +386,9 @@
       ================================================== -->
 
       <div
-        class="pulse-error"
+        class="pulse-error nv-error-state"
         *ngIf="!cargandoPulse && errorPulse"
-      >
+       role="alert">
         {{ errorPulse }}
       </div>
 
@@ -578,8 +548,8 @@
 
   <div
     *ngIf="error"
-    class="feedback feedback-error"
-  >
+    class="feedback feedback-error nv-error-state"
+   role="alert">
     <mat-icon>
       error_outline
     </mat-icon>
@@ -592,8 +562,8 @@
 
   <div
     *ngIf="errorGuardar"
-    class="feedback feedback-error"
-  >
+    class="feedback feedback-error nv-error-state"
+   role="alert">
     <mat-icon>
       bookmark_remove
     </mat-icon>
@@ -608,27 +578,7 @@
        LOADING
   ====================================================== -->
 
-  <section
-    *ngIf="cargando"
-    class="loading-state"
-  >
-
-    <div
-      class="skeleton-card"
-      *ngFor="let i of [1, 2, 3]"
-    >
-
-      <div class="skeleton skeleton-small"></div>
-
-      <div class="skeleton skeleton-title"></div>
-
-      <div class="skeleton skeleton-line"></div>
-
-      <div class="skeleton skeleton-line short"></div>
-
-    </div>
-
-  </section>
+  <div *ngIf="cargando" class="nv-loading-state" role="status">Cargando publicaciones…</div>
 
 
   <!-- =====================================================
@@ -651,9 +601,6 @@
     </div>
 
 
-    <span class="empty-kicker">
-      SIN ACTIVIDAD
-    </span>
 
 
     <h2>
@@ -734,7 +681,7 @@
 
     <article
       *ngFor="let item of datos"
-      class="news-card"
+      class="news-card nv-quiet-surface"
       #cardRef
     >
 
@@ -1031,7 +978,7 @@
               <span class="stance-post-kicker">STANCE · POSTURAS</span>
               <h3>Posición de los comentarios</h3>
             </div>
-            <span *ngIf="stanceLoading" class="stance-loading-label">Analizando…</span>
+            <span *ngIf="stanceLoading" class="nv-loading-state" role="status">Analizando…</span>
           </div>
 
           <ng-container *ngIf="getStance(item.tweetid) as stance; else stanceSinResultado">
@@ -1079,8 +1026,8 @@
                 <strong>Comentarios de esta publicación</strong>
                 <button type="button" class="stance-detail-toggle" (click)="closeStanceComments()">Cerrar</button>
               </div>
-              <p class="stance-post-note" *ngIf="stanceCommentsLoading">Cargando comentarios…</p>
-              <p class="stance-post-note stance-error" *ngIf="stanceCommentsError">{{ stanceCommentsError }}</p>
+              <div *ngIf="stanceCommentsLoading" class="nv-loading-state" role="status">Cargando comentarios…</div>
+              <p class="stance-post-note stance-error nv-error-state" *ngIf="stanceCommentsError" role="alert">{{ stanceCommentsError }}</p>
               <div class="stance-comment" *ngFor="let comment of stanceComments">
                 <p>{{ comment.comment_text }}</p>
                 <div class="stance-comment-meta">
@@ -1108,7 +1055,7 @@
 
           <ng-template #stanceSinResultado>
             <p class="stance-post-note" *ngIf="!stanceLoading && !stanceError">Sin análisis de Stance disponible para esta publicación.</p>
-            <p class="stance-post-note stance-error" *ngIf="!stanceLoading && stanceError">No se pudo cargar Stance.</p>
+            <p class="stance-post-note stance-error nv-error-state" *ngIf="!stanceLoading && stanceError" role="alert">No se pudo cargar Stance.</p>
           </ng-template>
         </section>
 

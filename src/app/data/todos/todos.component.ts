@@ -1,3 +1,5 @@
+import { DashboardSelection } from '../../interfaces/dashboard-evidence';
+import { ElementRef, EventEmitter, Output } from '@angular/core';
 
 import {
   Component,
@@ -87,7 +89,7 @@ type MediaPostItem = {
 @Component({
   selector: 'app-todos',
   templateUrl: './todos.component.html',
-  styleUrls: ['./todos.component.css'],
+  styleUrls: ['./todos.component.css', '../dashboard.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TodosComponent implements OnInit, OnChanges, OnDestroy {
@@ -151,6 +153,7 @@ loadingComentarios = false;
 
   loading = false;
   errorMsg = '';
+  filterMessage = '';
 
   errorsPorSeccion: Record<string, string> = {};
 
@@ -222,16 +225,6 @@ loadingComentarios = false;
   topLocacion: EntItem[] = [];
   topOrganizacion: EntItem[] = [];
   topPersona: EntItem[] = [];
-
-  // =======================================================
-  // COMPARACIÓN DE PERÍODOS
-  // =======================================================
-
-  postsChange: number | null = null;
-
-  previousPosts = 0;
-  previousPeriodStart = '';
-  previousPeriodEnd = '';
 
   // =======================================================
   // MEDIOS / SHARE OF VOICE
@@ -405,6 +398,9 @@ loadingComentarios = false;
     { value: '1d', label: 'Días' }
   ];
 
+  activityEvidenceRows: { fecha: string; total: number }[] = [];
+  @Output() applyDashboardSelection = new EventEmitter<DashboardSelection>();
+
   timelineData: ChartData<'line'> = {
     labels: [],
     datasets: [{
@@ -444,11 +440,9 @@ loadingComentarios = false;
     }
   };
 
-  activityTotal = 0;
   activityAverage = 0;
   activityPeak = 0;
   activityPeakDate = '';
-  activityVariation: number | null = null;
 
   // =======================================================
   // TÓPICOS
@@ -833,6 +827,7 @@ loadingComentarios = false;
   // =======================================================
 
   constructor(
+    private readonly host: ElementRef<HTMLElement>,
     private api: ApiService,
     private cdr: ChangeDetectorRef,
     private router: Router,
@@ -1054,18 +1049,20 @@ loadingComentarios = false;
     this.loadingTopicTimeline = false;
     this.mapResponse({} as StatsResponse);
 
-   if (!filters) {
+   this.filterMessage = '';
+
+    if (!filters) {
 
   this.loading = false;
-  this.loadingResumen = true;
-  this.loadingTimeline = true;
-  this.loadingMedios = true;
-  this.loadingTopicos = true;
-  this.loadingTopicTimeline = true;
-  this.loadingEntidades = true;
+  this.loadingResumen = false;
+  this.loadingTimeline = false;
+  this.loadingMedios = false;
+  this.loadingTopicos = false;
+  this.loadingTopicTimeline = false;
+  this.loadingEntidades = false;
   this.loadingComentarios = false;
 
-  this.errorMsg = '';
+  this.filterMessage = 'Selecciona un período y al menos una fuente en los filtros.';
 
   this.cdr.markForCheck();
   return;
@@ -1859,27 +1856,6 @@ loadingComentarios = false;
         : 0;
 
     // =====================================================
-    // COMPARACIÓN DE PERÍODOS
-    // =====================================================
-
-    const comparison = res?.comparison;
-
-    this.postsChange =
-      comparison?.posts?.change !== undefined
-        ? comparison.posts.change
-        : null;
-
-    this.previousPosts = Number(
-      comparison?.posts?.previous ?? 0
-    );
-
-    this.previousPeriodStart =
-      comparison?.period?.previous_start ?? '';
-
-    this.previousPeriodEnd =
-      comparison?.period?.previous_end ?? '';
-
-    // =====================================================
     // ENTIDADES
     // =====================================================
 
@@ -2262,15 +2238,13 @@ return {
       total: Number(x.total ?? 0)
     }));
 
-    this.activityTotal = timelineRows.reduce(
+    const activityTotal = timelineRows.reduce(
       (sum, item) => sum + item.total,
       0
     );
 
     this.activityAverage = timelineRows.length
-      ? Math.round(
-          this.activityTotal / timelineRows.length
-        )
+      ? activityTotal / timelineRows.length
       : 0;
 
     const peakItem = timelineRows.reduce(
@@ -2289,33 +2263,6 @@ return {
     this.activityPeakDate = peakItem.fecha
       ? this.formatTimelineLabel(peakItem.fecha)
       : '';
-
-    if (timelineRows.length >= 2) {
-
-      const current =
-        timelineRows[timelineRows.length - 1].total;
-
-      const previous =
-        timelineRows[timelineRows.length - 2].total;
-
-      if (previous > 0) {
-
-        this.activityVariation =
-          (current - previous) / previous * 100;
-
-      } else if (current > 0) {
-
-        this.activityVariation = 100;
-
-      } else {
-
-        this.activityVariation = 0;
-      }
-
-    } else {
-
-      this.activityVariation = null;
-    }
 
     // =====================================================
     // TIMELINE CONFIGURABLE
@@ -2343,6 +2290,7 @@ return {
       0
     );
 
+    this.activityEvidenceRows = graphicRows.map(row => ({ fecha: String(row.fecha ?? ''), total: Number(row.total ?? 0) }));
     this.timelineData = {
 
       labels: graphicRows.map(
@@ -2515,39 +2463,6 @@ return {
   }
 
   // =========================================================
-  // VARIACIÓN DE ACTIVIDAD
-  // =========================================================
-
-  get activityVariationPositive(): boolean {
-    return (this.activityVariation ?? 0) > 0;
-  }
-
-  get activityVariationNegative(): boolean {
-    return (this.activityVariation ?? 0) < 0;
-  }
-
-  get activityVariationText(): string {
-
-    if (this.activityVariation == null) {
-      return 'Sin comparación';
-    }
-
-    const value = Math.abs(
-      this.activityVariation
-    );
-
-    if (this.activityVariation > 0) {
-      return `+${value.toFixed(1)}%`;
-    }
-
-    if (this.activityVariation < 0) {
-      return `-${value.toFixed(1)}%`;
-    }
-
-    return '0%';
-  }
-
-  // =========================================================
   // EXPORTAR GRÁFICO INDIVIDUAL
   // =========================================================
 
@@ -2577,10 +2492,7 @@ return {
 
   public downloadAllCharts(): void {
 
-    const canvases = document.querySelectorAll(
-      '.chart canvas'
-    ) as NodeListOf<HTMLCanvasElement>;
-
+    const canvases = this.host.nativeElement.querySelectorAll<HTMLCanvasElement>('canvas');
     if (!canvases.length) return;
 
     canvases.forEach((canvas, index) => {
@@ -2651,10 +2563,6 @@ return {
         Number(total || 0) / max * 100
       )
     );
-  }
-
-  abs(value: number): number {
-    return Math.abs(value);
   }
 
   formatRank(index: number): string {

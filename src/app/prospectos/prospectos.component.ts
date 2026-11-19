@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EMPTY, Subject, catchError, switchMap } from 'rxjs';
 import {
   Prospecto, ProspectoFormulario, ProspectosService,
   EstadoProspecto, TipoCorreoProspecto
@@ -55,9 +57,27 @@ export class ProspectosComponent implements OnInit {
     { value: 'anuncio', label: 'Anuncio' }
   ];
 
-  constructor(private prospectosService: ProspectosService) {}
+  private readonly consultas = new Subject<void>();
 
-  ngOnInit(): void { this.cargar(); }
+  constructor(private prospectosService: ProspectosService, private destroyRef: DestroyRef) {}
+
+  ngOnInit(): void {
+    this.consultas.pipe(
+      switchMap(() => this.prospectosService.listar(
+        this.buscar, this.filtroEstado, this.pagina, this.limite
+      ).pipe(catchError(err => {
+        this.errorLista = err?.error?.error || 'No se pudieron cargar los prospectos.';
+        this.cargando = false;
+        return EMPTY;
+      }))),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(respuesta => {
+      this.prospectos = respuesta.prospectos ?? [];
+      this.total = respuesta.total ?? 0;
+      this.cargando = false;
+    });
+    this.cargar();
+  }
 
   get totalPaginas(): number { return Math.max(1, Math.ceil(this.total / this.limite)); }
 
@@ -68,17 +88,7 @@ export class ProspectosComponent implements OnInit {
   cargar(): void {
     this.cargando = true;
     this.errorLista = '';
-    this.prospectosService.listar(this.buscar, this.filtroEstado, this.pagina, this.limite).subscribe({
-      next: r => {
-        this.prospectos = r.prospectos || [];
-        this.total = r.total || 0;
-        this.cargando = false;
-      },
-      error: err => {
-        this.errorLista = err?.error?.error || 'No se pudieron cargar los prospectos.';
-        this.cargando = false;
-      }
-    });
+    this.consultas.next();
   }
 
   filtrar(): void { this.pagina = 1; this.cargar(); }
@@ -91,6 +101,7 @@ export class ProspectosComponent implements OnInit {
   }
 
   nuevo(): void {
+    if (this.guardando) return;
     this.form = nuevoFormulario();
     this.editandoId = null;
     this.formularioAbierto = true;
@@ -98,6 +109,7 @@ export class ProspectosComponent implements OnInit {
   }
 
   editar(p: Prospecto): void {
+    if (this.guardando) return;
     this.form = {
       nombre: p.nombre, email: p.email,
       organizacion: p.organizacion || '', cargo: p.cargo || '',
@@ -110,6 +122,7 @@ export class ProspectosComponent implements OnInit {
   }
 
   cancelarEdicion(): void {
+    if (this.guardando) return;
     this.formularioAbierto = false;
     this.editandoId = null;
     this.form = nuevoFormulario();
@@ -117,17 +130,28 @@ export class ProspectosComponent implements OnInit {
 
   guardar(): void {
     if (this.guardando) return;
-    if (!this.form.nombre.trim() || !this.form.email.trim()) {
+    const nombre = this.form.nombre.trim();
+    const email = this.form.email.trim();
+    if (!nombre || !email) {
       this.mostrarAviso('El nombre y el correo son obligatorios.', true);
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      this.mostrarAviso('Ingresá un correo válido.', true);
+      return;
+    }
+    const datos = { ...this.form, nombre, email };
     this.guardando = true;
     const solicitud = this.editandoId === null
-      ? this.prospectosService.crear(this.form)
-      : this.prospectosService.editar(this.editandoId, this.form);
-    solicitud.subscribe({
-      next: () => {
+      ? this.prospectosService.crear(datos)
+      : this.prospectosService.editar(this.editandoId, datos);
+    solicitud.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: respuesta => {
         this.guardando = false;
+        if (!respuesta.ok) {
+          this.mostrarAviso(respuesta.message || 'No se pudo guardar el prospecto.', true);
+          return;
+        }
         this.cancelarEdicion();
         this.mostrarAviso('Datos del prospecto guardados correctamente.');
         this.pagina = 1;
@@ -141,6 +165,7 @@ export class ProspectosComponent implements OnInit {
   }
 
   abrirCorreo(p: Prospecto): void {
+    if (this.enviando) return;
     if (p.no_contactar) {
       this.mostrarAviso('Este contacto está marcado como «No contactar».', true);
       return;
@@ -168,9 +193,13 @@ export class ProspectosComponent implements OnInit {
       tipo: this.tipoCorreo,
       asunto: this.asuntoCorreo,
       mensaje: this.mensajeCorreo
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: respuesta => {
         this.enviando = false;
+        if (!respuesta.ok) {
+          this.mostrarAviso(respuesta.message || 'No se pudo enviar el correo.', true);
+          return;
+        }
         this.destinatarioCorreo = null;
         this.mostrarAviso(
           respuesta.seguimiento_guardado

@@ -1,0 +1,74 @@
+<div class="evidence-toolbar evidence-controls" *ngIf="rows.length">
+  <label>Intervalo de publicaciones
+    <select [ngModel]="selection.bucket || ''" (ngModelChange)="open({ bucket: $event || undefined })">
+      <option value="">Período completo</option>
+      <option *ngFor="let row of rows" [value]="row.fecha">
+        {{ row.fecha }} · {{ row.total | number }}
+      </option>
+    </select>
+  </label>
+  <button type="button" (click)="open()">Ver publicaciones</button>
+  <div class="evidence-secondary-actions">
+    <button type="button" [attr.aria-expanded]="showTable" (click)="showTable = !showTable">{{ showTable ? 'Ocultar tabla' : 'Ver tabla' }}</button>
+    <button type="button" (click)="exportCsv()">Descargar CSV</button>
+  </div>
+</div>
+<div class="evidence-scroll" *ngIf="showTable && rows.length">
+  <table>
+    <caption>Actividad por intervalo · hora de Bolivia</caption>
+    <thead><tr><th scope="col">Intervalo</th><th scope="col">Publicaciones</th></tr></thead>
+    <tbody><tr *ngFor="let row of rows">
+      <td><button type="button" (click)="open({ bucket: row.fecha })">{{ row.fecha }}</button></td>
+      <td>{{ row.total | number }}</td>
+    </tr></tbody>
+  </table>
+</div>
+<div #detailsAnchor></div>
+<section class="evidence-panel" *ngIf="active" aria-label="Detalle de publicaciones">
+  <div class="evidence-heading">
+    <div><h3>{{ selection.entity || entity ? 'Publicaciones que mencionan a ' + (selection.entity || entity) : 'Publicaciones' }}</h3><p>{{ selection.bucket || 'Período seleccionado' }}<span *ngIf="selection.label"> · {{ selection.label }}</span></p></div>
+    <button type="button" (click)="close()">Cerrar detalle</button>
+  </div>
+  <div *ngIf="loading" class="nv-loading-state" role="status">Cargando publicaciones…</div>
+  <p *ngIf="error" role="alert" class="nv-error-state">No se pudo cargar el detalle. <button type="button" (click)="load(page)">Reintentar</button></p>
+  <ng-container *ngIf="result as data">
+    <div class="evidence-summary">
+      <strong>{{ data.total | number }} publicaciones</strong>
+      <button *ngIf="selection.bucket || selection.sourceId || selection.topicId || selection.entity"
+        type="button" (click)="applySelection.emit(selection)">{{ selection.bucket?.length === 19 ? 'Filtrar panel por día' : 'Filtrar panel' }}</button>
+      <button *ngIf="selection.sourceId || selection.topicId || selection.entity"
+        type="button" (click)="open({ bucket: selection.bucket })">Quitar selección</button>
+    </div>
+    <div class="evidence-rankings">
+      <div *ngIf="data.topics.length && !selection.topicId">
+        <h4>Temas principales</h4>
+        <button *ngFor="let topic of data.topics" type="button"
+          (click)="open({ bucket: selection.bucket, sourceId: selection.sourceId, entity: selection.entity, entityType: selection.entityType, topicId: topic.topic_id, label: topic.topic_name })">
+          <span>{{ topic.topic_name }}</span>
+          <span class="evidence-rank-metric"><strong>{{ topic.total | number }}</strong>
+          </span>
+        </button>
+      </div>
+      <div *ngIf="data.sources.length && !selection.sourceId">
+        <h4>Principales cuentas</h4>
+        <button *ngFor="let source of data.sources" type="button"
+          (click)="open({ bucket: selection.bucket, topicId: selection.topicId, entity: selection.entity, entityType: selection.entityType, sourceId: source.id, label: source.name })">
+          <span>{{ source.name }}</span>
+          <span class="evidence-rank-metric"><strong>{{ source.total | number }}</strong>
+          </span>
+        </button>
+      </div>
+    </div>
+    <p *ngIf="!data.posts.length">No hay publicaciones para esta selección.</p>
+    <article *ngFor="let post of data.posts" class="evidence-post">
+      <strong>{{ post.source }}</strong><span *ngIf="post.sentimiento"> · {{ post.sentimiento }}</span>
+      <p>{{ post.text }}</p>
+      <a *ngIf="post.url" [href]="post.url" target="_blank" rel="noopener noreferrer">Abrir original</a>
+    </article>
+    <div class="evidence-toolbar" *ngIf="data.total > 10">
+      <button type="button" [disabled]="page <= 1" (click)="load(page - 1)">Anterior</button>
+      <span>Página {{ page }}</span>
+      <button type="button" [disabled]="page * 10 >= data.total" (click)="load(page + 1)">Siguiente</button>
+    </div>
+  </ng-container>
+</section>

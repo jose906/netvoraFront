@@ -1,9 +1,10 @@
-import { Component,OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthzService } from './services/authz.service';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { SubscriptionStatusResponse, SuscriptionService } from '../app/services/suscription.service';
-import { Observable } from 'rxjs';
+import { EMPTY, Observable, catchError, switchMap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 
 @Component({
@@ -19,29 +20,27 @@ export class AppComponent implements OnInit {
     private afAuth: AngularFireAuth,
     private authz: AuthzService,
     private router: Router,
-    private sub: SuscriptionService
+    private sub: SuscriptionService,
+    private destroyRef: DestroyRef
   ) {
-
     this.sub$ = this.sub.status$;
   }
-  
 
   ngOnInit(): void {
-    this.afAuth.authState.subscribe(async (user) => {
-      
-
-      if (user) {
-        // IMPORTANTE: espera un micro-tick para que currentUser esté listo
-        await this.authz.refreshMe();
-      } else {
+    this.afAuth.authState.pipe(
+      switchMap(user => {
         this.authz.reset();
-      }
-    });
-    this.sub.fetchStatus().subscribe({ error: () => {} });
+        this.sub.clear();
+        if (!user) return EMPTY;
 
+        void this.authz.refreshMe();
+        return this.sub.fetchStatus().pipe(catchError(() => EMPTY));
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe();
   }
 
   esLogin() {
-    return this.router.url === '/login';
+    return this.router.url.split(/[?#]/, 1)[0] === '/login';
   }
 }

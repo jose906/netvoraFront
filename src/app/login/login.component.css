@@ -1,65 +1,56 @@
 /* login.component.css */
 :host{
   display: block;
-  height: 100vh;
+  height: 100dvh;
 }
 
 /* Variables locales del login (no dependas de :root global) */
 .login-split{
-  --bg: #ffffff;
-  --text: #0f172a;
-  --muted: #64748b;
-  --line: rgba(15, 23, 42, 0.10);
+  --bg: var(--theme-surface);
+  --text: var(--theme-text);
+  --muted: var(--theme-muted);
+  --line: var(--theme-line);
 
-  --accent: #6d28d9;
-  --accentHover: #5b21b6;
+  --accent: var(--theme-primary);
+  --accentHover: var(--theme-primary-dark);
   --focus: rgba(109, 40, 217, 0.18);
 
   height: 100%;
   width: 100%;
   display: grid;
-  grid-template-columns: 4fr 1fr; /* ✅ 4/5 + 1/5 */
-  background: var(--bg);
+  grid-template-columns: minmax(0, 1fr);
+  background: var(--theme-bg);
   color: var(--text);
   overflow: hidden;
 
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-family: var(--theme-font);
 }
 
 /* ===================== LEFT ===================== */
-.left{
-  height: 100%;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-
-  padding: clamp(28px, 4vw, 64px);
-  padding-left: clamp(32px, 5vw, 90px);
-  padding-right: clamp(28px, 4vw, 64px);
-
+.left {
+  box-sizing: border-box;
   display: flex;
-  justify-content: center;
-  align-items: stretch; /* mejor cuando hay header sticky */
+  overflow: auto;
+  padding: clamp(16px, 4vw, 48px);
 }
 
-.left-inner{
-  max-width: 520px;
-  width: 100%;
-  transform: none;
+.left-inner {
+  box-sizing: border-box;
+  width: min(100%, 460px);
+  margin: auto;
+  padding: clamp(16px, 4vw, 34px);
+  border: 1px solid var(--theme-line);
+  border-radius: var(--theme-radius-large);
+  background: var(--theme-surface);
+  box-shadow: var(--theme-shadow);
 }
 
-/* Header sticky */
-.brand{
-  position: sticky;
-  top: 0;
-  z-index: 10;
-
+.brand {
   display: flex;
   align-items: center;
   gap: 12px;
-
-  padding: 18px 0 14px;
-  background: var(--bg);
-  border-bottom: 1px solid var(--line);
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--theme-line);
 }
 
 .brand-logo{
@@ -72,14 +63,10 @@
 
 .title{
   margin: 0;
-  font-size: 16px;
+  font-size: clamp(22px, 4vw, 28px);
   line-height: 1.15;
-  font-weight: 950;
-  white-space: nowrap;
-}
-
-.title span{
-  color: var(--accent);
+  font-weight: 750;
+  letter-spacing: -.035em;
 }
 
 .form{
@@ -251,95 +238,6 @@
   box-shadow: 0 14px 30px rgba(2,6,23,0.10);
 }
 
-/* ===================== RIGHT ===================== */
-.right{
-  height: 100%;
-  padding: 22px;
-  overflow: hidden;
-
-  background: linear-gradient(
-    180deg,
-    rgba(109,40,217,0.10),
-    rgba(109,40,217,0.04)
-  );
-  border-left: 1px solid rgba(15,23,42,0.08);
-}
-
-.right-inner{
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.badge{
-  align-self: flex-start;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-weight: 900;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(109,40,217,0.95);
-  background: rgba(109,40,217,0.10);
-  border: 1px solid rgba(109,40,217,0.18);
-}
-
-.right h2{
-  margin: 0;
-  font-size: 16px;
-  font-weight: 950;
-}
-
-.right p{
-  margin: 0;
-  color: rgba(71,85,105,0.95);
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.art{
-  margin-top: 6px;
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.7);
-  box-shadow: 0 12px 28px rgba(2,6,23,0.08);
-}
-
-.art img{
-  width: 100%;
-  height: 210px;
-  object-fit: cover;
-  display: block;
-}
-
-.bullets{
-  margin: 6px 0 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  color: rgba(71,85,105,0.95);
-  font-size: 13px;
-}
-
-.bullets li{
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.dot{
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(109,40,217,0.85);
-  box-shadow: 0 0 0 4px rgba(109,40,217,0.10);
-}
-
-/* ===================== MODAL (BASE) ===================== */
 .nv-modal{
   position: fixed;
   inset: 0;
@@ -576,9 +474,6 @@
 @media (max-width: 900px){
   .login-split{
     grid-template-columns: 1fr;
-  }
-  .right{
-    display: none;
   }
   .left{
     padding: 22px;

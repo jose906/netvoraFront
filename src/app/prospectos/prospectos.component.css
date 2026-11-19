@@ -1,27 +1,27 @@
 :host {
-  --crm-primary: #6d28d9;
-  --crm-primary-dark: #5b21b6;
-  --crm-primary-soft: #f5f0ff;
-  --crm-ink: #172136;
-  --crm-muted: #64748b;
-  --crm-line: #e6eaf1;
-  --crm-bg: #f7f8fc;
+  --crm-primary: var(--theme-primary);
+  --crm-primary-dark: var(--theme-primary-dark);
+  --crm-primary-soft: var(--theme-primary-soft);
+  --crm-ink: var(--theme-text);
+  --crm-muted: var(--theme-muted);
+  --crm-line: var(--theme-line);
+  --crm-bg: var(--theme-bg);
   display: block;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--theme-font);
   background: var(--crm-bg);
   color: var(--crm-ink);
   min-height: 100vh;
 }
 :host *, :host *::before, :host *::after { box-sizing: border-box; }
-.crm-page { width: 100%; max-width: 1500px; margin: auto; padding: 30px 30px 55px; }
+
 .crm-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-bottom: 25px; border-bottom: 1px solid var(--crm-line); }
 .crm-brand { display: flex; align-items: center; gap: 16px; min-width: 0; }
 .crm-header-icon { display: grid; place-items: center; width: 50px; height: 50px; flex: 0 0 50px; border: 1px solid #e4d8fb; border-radius: 15px; color: var(--crm-primary); background: var(--crm-primary-soft); }
 .crm-header-icon mat-icon { width: 25px; height: 25px; font-size: 25px; }
 .crm-eyebrow { display: block; color: var(--crm-primary); font-size: 10px; font-weight: 800; letter-spacing: .12em; }
-.crm-header h1 { margin: 4px 0; font-size: clamp(22px, 2.4vw, 29px); font-weight: 760; letter-spacing: -.03em; }
+.crm-header h1 { margin: 4px 0; font-size: var(--theme-title-size); font-weight: 750; letter-spacing: -.03em; }
 .crm-header p { margin: 3px 0 0; color: var(--crm-muted); font-size: 13px; line-height: 1.5; }
-.crm-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 10px; border: 1px solid transparent; min-height: 40px; padding: 10px 15px; background: white; color: var(--crm-ink); font-size: 12px; font-weight: 730; cursor: pointer; transition: background .15s ease, box-shadow .15s ease, border-color .15s ease; white-space: nowrap; }
+.crm-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: var(--theme-radius-small); border: 1px solid transparent; min-height: 40px; padding: 10px 15px; background: white; color: var(--crm-ink); font-size: 12px; font-weight: 730; cursor: pointer; transition: background .15s ease, box-shadow .15s ease, border-color .15s ease; white-space: nowrap; }
 .crm-btn mat-icon { width: 18px; height: 18px; font-size: 18px; }
 .crm-primary { color: white; border-color: var(--crm-primary); background: var(--crm-primary); box-shadow: 0 3px 8px rgba(109,40,217,.12); }
 .crm-primary:hover:not(:disabled) { background: var(--crm-primary-dark); border-color: var(--crm-primary-dark); }
@@ -48,7 +48,7 @@
 .crm-field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
 .crm-field label { color: #526076; text-transform: uppercase; font-size: 10px; font-weight: 800; letter-spacing: .045em; }
 .crm-field-span { grid-column: 1 / -1; }
-.crm-input { font: inherit; font-size: 13px; color: var(--crm-ink); background: #fcfdff; border: 1px solid #d9dfea; border-radius: 9px; width: 100%; min-width: 0; min-height: 42px; padding: 10px 12px; outline: none; transition: border-color .16s ease, box-shadow .16s ease; }
+.crm-input { font: inherit; font-size: 13px; color: var(--crm-ink); background: #fcfdff; border: 1px solid #d9dfea; border-radius: var(--theme-radius-small); width: 100%; min-width: 0; min-height: 42px; padding: 10px 12px; outline: none; transition: border-color .16s ease, box-shadow .16s ease; }
 .crm-input::placeholder { color: #9ba6b5; }
 .crm-input:focus { border-color: #986be5; box-shadow: 0 0 0 3px rgba(109,40,217,.10); background: #fff; }
 .crm-textarea { resize: vertical; min-height: 96px; line-height: 1.6; }
@@ -104,7 +104,7 @@
 .crm-mail-disclaimer { margin: 0; line-height: 1.6; color: #64748b; font-size: 11px; }
 @media (max-width: 900px) { .crm-page { padding: 24px 18px 40px; } .crm-header { align-items: flex-start; } }
 @media (max-width: 650px) {
-  .crm-page { padding: 19px 12px 35px; }
+
   .crm-header { flex-direction: column; align-items: stretch; }
   .crm-header .crm-btn { width: 100%; }
   .crm-header-icon { width: 42px; height: 42px; flex-basis: 42px; }

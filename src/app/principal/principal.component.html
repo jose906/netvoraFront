@@ -1,82 +1,33 @@
-<div class="page">
+<div class="page nv-page daily-overview">
 
   <!-- =======================================================
        HEADER
   ======================================================== -->
 
   <header class="topbar">
-
-    <div class="brand">
-
-      <img
-        class="brand-logo"
-        src="icon.png"
-        alt="NetVora"
-      />
-
-      <div class="brand-copy">
-        <h1>Resumen de hoy</h1>
-
-        <p>
-          Lo más relevante en los medios que estás monitoreando.
-        </p>
-      </div>
-
+    <div class="brand-copy">
+      <h1>Resumen de hoy</h1>
+      <p>{{ todayLabel || 'Hoy' }}<span *ngIf="users.length"> · {{ users.length | number }} {{ users.length === 1 ? 'medio monitoreado' : 'medios monitoreados' }}</span></p>
     </div>
-
-    <div class="topbar-right">
-
-      <div
-        class="monitor-status"
-        *ngIf="users.length"
-      >
-        <span class="status-dot"></span>
-
-        <span>
-          Monitoreo activo
-        </span>
-
-        <strong>
-          {{ users.length }}
-          {{ users.length === 1 ? 'medio' : 'medios' }}
-        </strong>
-      </div>
-
-      <div class="date">
-        {{ todayLabel || '—' }}
-      </div>
-
-    </div>
-
+    <a *ngIf="radarOverview?.watches" class="overview-radar-link" routerLink="/radar">
+      Ver Radar <span *ngIf="radarOverview?.pending">{{ radarOverview?.pending | number }} pendientes</span>
+      <span aria-hidden="true">→</span>
+    </a>
   </header>
-
 
   <!-- =======================================================
        ESTADOS
   ======================================================== -->
 
-  <div
-    *ngIf="cargando"
-    class="loading-shell"
-  >
-
-    <div class="loading-line loading-line-large"></div>
-
-    <div class="loading-grid">
-      <div class="loading-card"></div>
-      <div class="loading-card"></div>
-      <div class="loading-card"></div>
-      <div class="loading-card"></div>
-    </div>
-
-  </div>
+  <div *ngIf="cargando" class="nv-loading-state" role="status">Cargando el resumen…</div>
 
 
   <div
     *ngIf="!cargando && error"
-    class="state state-error"
+    class="state state-error nv-error-state" role="alert"
   >
-    {{ error }}
+    <span>{{ error }}</span>
+    <button class="nv-retry" type="button" (click)="loadUsers()">Reintentar</button>
   </div>
 
 
@@ -98,15 +49,10 @@
 
       <div class="hero-main">
 
-        <div class="eyebrow">
-          <span class="eyebrow-dot"></span>
-          Ahora mismo
-        </div>
-
         <ng-container *ngIf="temaPrincipal as topic; else heroEmpty">
 
           <div class="hero-topic-label">
-            Tema con mayor actividad
+            Tema del día
           </div>
 
           <h2 class="hero-title">
@@ -142,17 +88,12 @@
 
           </div>
 
-          <p class="hero-description">
-            Este es el tema que concentra más actividad entre
-            las publicaciones analizadas durante el día.
-          </p>
-
           <button
             type="button"
             class="hero-action"
             (click)="irATopico(topic)"
           >
-            Analizar tema
+            Ver análisis del tema
 
             <span>→</span>
           </button>
@@ -188,7 +129,7 @@
 
           <div>
             <span class="section-kicker">
-              Pulso de hoy
+              Sentimiento de hoy
             </span>
 
             <h3>
@@ -283,125 +224,100 @@
          KPIs
     ====================================================== -->
 
-    <section class="kpis">
-
-      <!-- Publicaciones -->
-
-      <article class="kpi-card">
-
-        <div class="kpi-top">
-
-          <span class="kpi-label">
-            Publicaciones hoy
-          </span>
-
-          <span class="kpi-icon">
-            ↗
-          </span>
-
-        </div>
-
-        <div class="kpi-value">
-          {{ stats.totalHoy | number }}
-        </div>
-
-        <p class="kpi-description">
-          Noticias y publicaciones analizadas durante el día.
-        </p>
-
-      </article>
-
-
-      <!-- Tópicos -->
-
-      <article class="kpi-card">
-
-        <div class="kpi-top">
-
-          <span class="kpi-label">
-            Nuevos tópicos
-          </span>
-
-          <span class="kpi-icon accent">
-            +
-          </span>
-
-        </div>
-
-        <div class="kpi-value">
-          {{ nuevosTopicosHoy }}
-        </div>
-
-        <p class="kpi-description">
-          Temas que aparecieron hoy y no registraban actividad ayer.
-        </p>
-
-      </article>
-
-
-      <!-- Categoría -->
-
-      <article class="kpi-card">
-
-        <div class="kpi-top">
-
-          <span class="kpi-label">
-            Categoría con más actividad
-          </span>
-
-          <span class="kpi-icon">
-            #
-          </span>
-
-        </div>
-
-        <div class="kpi-value kpi-value-text">
-          {{ stats.categoriaTop || '—' }}
-        </div>
-
-        <p class="kpi-description">
-          Categoría predominante entre las publicaciones de hoy.
-        </p>
-
-      </article>
-
-
-      <!-- Sentimiento -->
-
-      <article class="kpi-card">
-
-        <div class="kpi-top">
-
-          <span class="kpi-label">
-            Sentimiento dominante
-          </span>
-
-          <span class="kpi-icon">
-            ◎
-          </span>
-
-        </div>
-
-        <div class="kpi-value kpi-value-text">
-          {{ sentimientoDominante }}
-        </div>
-
-        <p class="kpi-description">
-          Representa el
-          <strong>
-            {{ sentimientoDominantePorcentaje }}%
-          </strong>
-          de las publicaciones clasificadas.
-        </p>
-
-      </article>
-
-    </section>
+    <dl class="kpis overview-kpis" aria-label="Indicadores de hoy">
+      <div>
+        <dt>Publicaciones analizadas</dt>
+        <dd>{{ stats.totalHoy | number }}</dd>
+      </div>
+      <div>
+        <dt>Nuevos temas</dt>
+        <dd>{{ nuevosTopicosHoy | number }}</dd>
+      </div>
+      <div>
+        <dt>Categoría más activa</dt>
+        <dd>{{ stats.categoriaTop || '—' }}</dd>
+      </div>
+    </dl>
 
 
     <!-- =====================================================
          CONTENIDO PRINCIPAL
     ====================================================== -->
+
+    <section class="panel activity-panel" aria-labelledby="activity-title">
+      <div class="panel-header activity-header">
+        <div>
+          <h2 id="activity-title">Actividad de los últimos 7 días</h2>
+          <p *ngIf="peakDay as peak">
+            Mayor actividad: {{ formatActivityDate(peak.fecha) }} · {{ peak.total | number }} publicaciones
+          </p>
+        </div>
+        <div class="activity-total">
+          <strong>{{ activityTotal | number }}</strong>
+          <span>publicaciones en el período</span>
+        </div>
+      </div>
+
+      <div *ngIf="activity.length" class="activity-body">
+        <div class="activity-chart" role="group" aria-label="Publicaciones por día">
+          <button *ngFor="let day of activity" type="button" class="activity-day"
+            [class.activity-day-peak]="day === peakDay"
+            [attr.aria-pressed]="day === selectedDay"
+            [attr.aria-label]="formatActivityDate(day.fecha) + ', ' + day.total + ' publicaciones' + (day.parcial ? ', hoy parcial' : '')"
+            (click)="selectActivityDay(day)">
+            <span class="activity-volume">{{ day.total | number }}</span>
+            <span class="activity-track" aria-hidden="true">
+              <span class="activity-bar" [style.height.%]="day.total / activityScale * 100"></span>
+            </span>
+            <span class="activity-date">{{ formatActivityDate(day.fecha) }}</span>
+            <span class="activity-partial">{{ day.parcial ? 'Hoy, parcial' : '' }}</span>
+          </button>
+        </div>
+
+        <aside class="activity-detail" *ngIf="selectedDay as day">
+          <div class="activity-detail-heading" aria-live="polite">
+            <span class="section-kicker">{{ formatActivityDate(day.fecha) }}</span>
+            <h3>Temas del día</h3>
+          </div>
+          <ul *ngIf="day.temas.length">
+            <li *ngFor="let topic of day.temas">
+              <button type="button" class="activity-topic" (click)="irATopico(topic, day.fecha)">
+                <span>{{ topic.topic_name }}</span>
+                <span>{{ topic.total | number }} <span aria-hidden="true">↗</span></span>
+              </button>
+            </li>
+          </ul>
+          <p *ngIf="!day.temas.length">{{ day.total ? 'No hay temas disponibles para este día.' : 'Sin publicaciones registradas.' }}</p>
+          <button *ngIf="day.total" type="button" class="activity-link"
+            [attr.aria-expanded]="dayPostsOpen" aria-controls="activity-posts"
+            (click)="dayPostsOpen ? closeDayPosts() : loadDayPosts()">
+            {{ dayPostsOpen ? 'Ocultar publicaciones' : 'Ver publicaciones del día' }}
+          </button>
+        </aside>
+      </div>
+      <p *ngIf="!activity.length" class="activity-empty">No hay datos de actividad disponibles.</p>
+
+      <div *ngIf="dayPostsOpen" id="activity-posts" class="activity-posts" aria-live="polite">
+        <h3>Publicaciones del {{ selectedDay ? formatActivityDate(selectedDay.fecha) : '' }}</h3>
+        <div *ngIf="dayPostsLoading" class="nv-loading-state" role="status">Cargando publicaciones…</div>
+        <p *ngIf="dayPostsError">No se pudieron cargar las publicaciones.
+          <button type="button" class="activity-link" (click)="loadDayPosts(dayPostsPage)">Reintentar</button>
+        </p>
+        <p *ngIf="!dayPostsLoading && !dayPostsError && !dayPosts.length">No hay publicaciones en esta página.</p>
+        <article *ngFor="let post of dayPosts" class="activity-post">
+          <strong>{{ post.TweetUser }}</strong>
+          <p>{{ post.text }}</p>
+          <a *ngIf="post.url" [href]="post.url" target="_blank" rel="noopener noreferrer">Abrir publicación</a>
+        </article>
+        <div class="activity-pagination" *ngIf="!dayPostsLoading && !dayPostsError">
+          <button type="button" class="activity-link" [disabled]="dayPostsPage === 1" (click)="loadDayPosts(dayPostsPage - 1)">Anterior</button>
+          <span>Página {{ dayPostsPage }}</span>
+          <button type="button" class="activity-link"
+            [disabled]="dayPostsPage * dayPostsPageSize >= (selectedDay?.total ?? 0) || dayPosts.length < dayPostsPageSize"
+            (click)="loadDayPosts(dayPostsPage + 1)">Siguiente</button>
+        </div>
+      </div>
+    </section>
 
     <section class="main-grid">
 
@@ -416,30 +332,22 @@
 
           <div>
 
-            <span class="section-kicker">
-              Conversación
-            </span>
-
             <h2>
               Temas en movimiento
             </h2>
-
-            <p>
-              Descubre qué conversaciones están concentrando
-              la atención.
-            </p>
 
           </div>
 
 
           <div
             class="topic-tabs"
-            role="tablist"
+            role="group" aria-label="Período de temas"
           >
 
             <button
               type="button"
               class="topic-tab"
+              [attr.aria-pressed]="activeTopicTab === 'dia'"
               [class.active]="activeTopicTab === 'dia'"
               (click)="cambiarTabTopicos('dia')"
             >
@@ -449,6 +357,7 @@
             <button
               type="button"
               class="topic-tab"
+              [attr.aria-pressed]="activeTopicTab === 'semana'"
               [class.active]="activeTopicTab === 'semana'"
               (click)="cambiarTabTopicos('semana')"
             >
@@ -602,10 +511,6 @@
 
           <div>
 
-            <span class="section-kicker">
-              Protagonistas
-            </span>
-
             <h2>
               Entidades en foco
             </h2>
@@ -705,170 +610,6 @@
 
 
     <!-- =====================================================
-         EVOLUCIÓN
-    ====================================================== -->
-
-    <section class="panel evolution-panel">
-
-      <div class="panel-header evolution-header">
-
-        <div>
-
-          <span class="section-kicker">
-            Últimos 7 días
-          </span>
-
-          <h2>
-            Evolución del sentimiento
-          </h2>
-
-          <p>
-            {{ weekTrendDescription }}
-          </p>
-
-        </div>
-
-
-        <div class="evolution-status">
-
-          <span
-            class="evolution-status-dot"
-            [class.status-positive]="weekAvg > 0.1"
-            [class.status-negative]="weekAvg < -0.1"
-          ></span>
-
-          {{ weekStatus }}
-
-        </div>
-
-      </div>
-
-
-      <div
-        class="chart-container"
-        *ngIf="weekBars.length"
-      >
-
-        <svg
-          viewBox="0 0 100 40"
-          preserveAspectRatio="none"
-          aria-label="Evolución del sentimiento durante los últimos 7 días"
-        >
-
-          <line
-            class="zero-line"
-            x1="0"
-            [attr.y1]="weekZeroY"
-            x2="100"
-            [attr.y2]="weekZeroY"
-          ></line>
-
-
-          <g class="bars">
-
-            <ng-container
-              *ngFor="
-                let bar of weekBars;
-                trackBy: trackByBar
-              "
-            >
-
-              <rect
-                [attr.x]="bar.x"
-                [attr.y]="bar.y"
-                [attr.width]="bar.w"
-                [attr.height]="bar.h"
-                [ngClass]="{
-                  'bar-pos': bar.cls === 'pos',
-                  'bar-neg': bar.cls === 'neg',
-                  'bar-zero': bar.cls === 'zero'
-                }"
-                rx="1.2"
-                ry="1.2"
-              >
-                <title>
-                  {{ bar.fecha }} · índice:
-                  {{ bar.v | number:'1.3-3' }}
-                </title>
-              </rect>
-
-            </ng-container>
-
-          </g>
-
-        </svg>
-
-
-        <div class="chart-labels">
-
-          <span
-            *ngFor="
-              let label of weekLabels;
-              trackBy: trackByIndex
-            "
-          >
-            {{ label }}
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <div
-        class="empty-panel"
-        *ngIf="!weekBars.length"
-      >
-        Todavía no hay suficiente información para mostrar la evolución.
-      </div>
-
-
-      <div class="evolution-summary">
-
-        <div>
-
-          <span>
-            Promedio 7D
-          </span>
-
-          <strong>
-            {{ weekAvg | number:'1.2-2' }}
-          </strong>
-
-        </div>
-
-
-        <div>
-
-          <span>
-            Mejor registro
-          </span>
-
-          <strong>
-            {{ weekMax | number:'1.2-2' }}
-          </strong>
-
-        </div>
-
-
-        <div>
-
-          <span>
-            Menor registro
-          </span>
-
-          <strong>
-            {{ weekMin | number:'1.2-2' }}
-          </strong>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =====================================================
          QUÉ CAMBIÓ
     ====================================================== -->
 
@@ -876,21 +617,18 @@
 
       <div class="changes-heading">
 
-        <span class="section-kicker">
-          Señales
-        </span>
-
         <h2>
           Qué cambió hoy
         </h2>
 
         <p>
-          Las variaciones más relevantes detectadas por NetVora.
+          Comparación con ayer. El conteo de hoy es parcial.
         </p>
 
       </div>
 
 
+      <p *ngIf="!insights.length">Todavía no hay cambios destacados.</p>
       <div class="changes-grid">
 
         <article
@@ -906,8 +644,7 @@
             [ngClass]="{
               'change-up': insight.icon === 'up',
               'change-down': insight.icon === 'down',
-              'change-new': insight.icon === 'new',
-              'change-neutral': insight.icon === 'neutral'
+              'change-new': insight.icon === 'new'
             }"
           >
 
@@ -923,22 +660,14 @@
               +
             </span>
 
-            <span *ngIf="insight.icon === 'neutral'">
-              •
-            </span>
-
           </div>
 
 
           <div class="change-copy">
 
-            <strong>
-              {{ insight.title }}
-            </strong>
-
-            <p>
-              {{ insight.description }}
-            </p>
+            <strong>{{ insight.topic.topic_name }}</strong>
+            <p>{{ insight.title }} · {{ insight.topic.tweets_hoy | number }} hoy · {{ insight.topic.tweets_ayer | number }} ayer</p>
+            <button type="button" class="activity-link" (click)="irATopico(insight.topic, todayLabel)">Ver tema</button>
 
           </div>
 
@@ -948,29 +677,6 @@
 
     </section>
 
-
-    <!-- =====================================================
-         FOOTER
-    ====================================================== -->
-
-    <footer class="dashboard-footer">
-
-      <div>
-
-        <span class="footer-status-dot"></span>
-
-        Información correspondiente a
-        <strong>
-          {{ todayLabel || 'hoy' }}
-        </strong>
-
-      </div>
-
-      <div>
-        NetVora · Inteligencia sobre la conversación
-      </div>
-
-    </footer>
 
   </main>
 
@@ -1052,10 +758,6 @@
     <div class="topics-modal-header">
 
       <div>
-
-        <span class="section-kicker">
-          Conversación
-        </span>
 
         <h2>
           {{

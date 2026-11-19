@@ -8,7 +8,7 @@
       <!-- Header -->
       <header class="brand" aria-label="NetVora">
         <img class="brand-logo" src="logo.jpg" alt="NetVora" />
-        <h1 class="title">Iniciar sesión en <span>NetVora</span></h1>
+        <h1 class="title">Iniciar sesión</h1>
       </header>
 
       <form class="form" #loginForm="ngForm" (ngSubmit)="loginEmail()">
@@ -61,7 +61,7 @@
           <span>Iniciar sesión</span>
           <span class="arrow">→</span>
         </button>
-        <p class="login-msg" *ngIf="loginMsg">{{ loginMsg }}</p>
+        <p class="login-msg nv-error-state" *ngIf="loginMsg" role="alert">{{ loginMsg }}</p>
 
         <div class="footer">
           <span>¿No tienes cuenta?</span>
@@ -71,29 +71,6 @@
 
     </div>
   </section>
-
-  <!-- ===================== RIGHT ===================== -->
-  <aside class="right">
-    <div class="right-inner">
-      <div class="badge">NetVora</div>
-
-      <h2>Monitoreo y análisis en tiempo real</h2>
-      <p>
-        Visualiza categorías, entidades y sentimiento para entender qué está
-        pasando y tomar decisiones con datos.
-      </p>
-
-      <div class="art">
-        <img src="logo.jpg" alt="Panel NetVora" />
-      </div>
-
-      <ul class="bullets">
-        <li><span class="dot"></span> KPIs y timelines</li>
-        <li><span class="dot"></span> Entidades y personajes</li>
-        <li><span class="dot"></span> Sentimiento por medios</li>
-      </ul>
-    </div>
-  </aside>
 
   <!-- ===================== MODAL: FORGOT PASSWORD ===================== -->
   <div class="nv-modal" *ngIf="showForgot" (click)="closeForgot()">
@@ -130,7 +107,7 @@
         {{ loading ? 'Enviando…' : 'Enviar enlace' }}
       </button>
 
-      <p class="nv-modal-msg" *ngIf="msg">{{ msg }}</p>
+      <p class="nv-modal-msg" *ngIf="msg" [class.nv-error-state]="!resetSent" [attr.role]="resetSent ? 'status' : 'alert'">{{ msg }}</p>
     </div>
   </div>
 
@@ -259,24 +236,24 @@
           <button
             class="nv-modal-btn"
             type="submit"
-            [disabled]="loadingSignup || signupForm.invalid || (passwordConfirm2 && password2 && passwordConfirm2 !== password2)"
+            [disabled]="loadingSignup || (!sincronizacionPendiente && (signupForm.invalid || passwordConfirm2 !== password2))"
           >
-            {{ loadingSignup ? 'Registrando…' : 'Registrar' }}
+            {{ loadingSignup ? 'Registrando…' : (sincronizacionPendiente ? 'Reintentar sincronización' : 'Registrar') }}
           </button>
 
-          <button class="btn btn-ghost" type="button" (click)="clearSignup()">
+          <button class="btn btn-ghost" type="button" (click)="clearSignup()" [disabled]="loadingSignup || sincronizacionPendiente">
             Limpiar
           </button>
         </div>
 
-        <p class="nv-modal-msg" *ngIf="signupMsg">{{ signupMsg }}</p>
+        <p class="nv-modal-msg nv-error-state" *ngIf="signupMsg" role="alert">{{ signupMsg }}</p>
 
         <div class="nv-switch">
           <span>¿Ya tienes cuenta?</span>
           <button type="button" class="link" (click)="closesignup()">Iniciar sesión</button>
         </div>
       </form>
-      <p class="signup-msg" *ngIf="signupMsg">{{ signupMsg }}</p>
+
     </div>
   </div>
 

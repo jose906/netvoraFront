@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
+import { CanActivate, Router, UrlTree } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { map, take } from 'rxjs/operators';
 import { Observable } from 'rxjs';
@@ -8,14 +8,10 @@ import { Observable } from 'rxjs';
 export class AuthGuard implements CanActivate {
   constructor(private afAuth: AngularFireAuth, private router: Router) {}
 
-  canActivate(): Observable<boolean> {
+  canActivate(): Observable<boolean | UrlTree> {
     return this.afAuth.authState.pipe(
       take(1),
-      map(user => {
-        if (user) return true;
-        this.router.navigate(['/login']);
-        return false;
-      })
+      map(user => user ? true : this.router.createUrlTree(['/login']))
     );
   }
 }

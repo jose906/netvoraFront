@@ -159,6 +159,13 @@
       </li>
 
 
+      <li routerLinkActive="active">
+        <a routerLink="/radar" matTooltip="Radar">
+          <span class="menu-icon"><i class="fas fa-bell"></i></span>
+          <span class="menu-label">Radar</span>
+        </a>
+      </li>
+
       <!-- ESTADÍSTICAS -->
 
       <li routerLinkActive="active">
@@ -576,13 +583,13 @@
 
               <a
                 routerLink="/prospectos"
-                matTooltip="Modificar categorías"
+                matTooltip="Gestionar prospectos"
               >
 
                 <span class="submenu-dot"></span>
 
                 <span>
-                  prospectos
+                  Prospectos
                 </span>
 
               </a>
@@ -716,6 +723,7 @@
         </span>
 
       </button>
+      <p *ngIf="logoutError" role="alert" class="nv-error-state">{{ logoutError }}</p>
 
 
     </div>

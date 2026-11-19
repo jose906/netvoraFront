@@ -1,16 +1,17 @@
+<section class="nv-page">
+  <header class="nv-page-heading"><h1>Resumen de la publicación</h1></header>
+  <div *ngIf="isLoading" class="nv-loading-state" role="status">Cargando resumen…</div>
 
-<div *ngIf="isLoading" class="loading-container">
-  <i class="fas fa-spinner"></i> Cargando...
-</div>
-
-<div class="detalle-container" *ngIf="!isLoading && resumen.length > 0; else noData">
-  <h2>Detalle del Texto</h2>
-  <p><strong>Categoría:</strong> {{ dato.categoria[0] }}</p>
-  <p><strong>Texto:</strong> {{ dato.texto }}</p>
-  <p><strong>Nota:</strong> {{ resumen[0]['resumen'] }}</p>
-  <button (click)="goBack()">Volver</button>
-</div>
-
-<ng-template #noData>
-  <p>No hay resumen disponible.</p>
-</ng-template>
+  <div *ngIf="!isLoading" class="detalle-container">
+    <p *ngIf="error" role="alert" class="nv-error-state">{{ error }}</p>
+    <ng-container *ngIf="resumen as resultado; else sinResumen">
+      <p><strong>Categoría:</strong> {{ dato?.categoria?.[0] }}</p>
+      <p><strong>Texto:</strong> {{ dato?.texto }}</p>
+      <p><strong>Nota:</strong> {{ resultado.resumen }}</p>
+    </ng-container>
+    <ng-template #sinResumen>
+      <p *ngIf="!error">No hay resumen disponible.</p>
+    </ng-template>
+    <button type="button" class="nv-button" (click)="goBack()">Volver</button>
+  </div>
+</section>

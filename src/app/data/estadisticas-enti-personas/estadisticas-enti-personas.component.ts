@@ -1,3 +1,6 @@
+import { DashboardEvidenceComponent } from '../dashboard-evidence.component';
+import { DashboardEntityType, DashboardSelection } from '../../interfaces/dashboard-evidence';
+import { ElementRef, EventEmitter, Output } from '@angular/core';
 import {
   Component,
   Input,
@@ -42,6 +45,7 @@ interface CategoryFilters {
   search?: string;
   categoria?: string;
   entidad?: string;
+  entity_type?: DashboardEntityType;
 }
 
 type TimelineRow = {
@@ -90,7 +94,7 @@ type TopicEntityType =
 @Component({
   selector: 'app-estadisticas-enti-personas',
   templateUrl: './estadisticas-enti-personas.component.html',
-  styleUrl: './estadisticas-enti-personas.component.css',
+  styleUrls: ['./estadisticas-enti-personas.component.css', '../dashboard.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EstadisticasEntiPersonasComponent
@@ -111,6 +115,7 @@ export class EstadisticasEntiPersonasComponent
   @Input() searchText: string = '';
 
   @Input() entidad: string = 'none';
+  @Input() entityType?: DashboardEntityType;
   @Input() selectedTopics: number[] = [];
 
   @ViewChild(BaseChartDirective)
@@ -122,6 +127,7 @@ export class EstadisticasEntiPersonasComponent
 
   loading = true;
 errorMsg = '';
+  filterMessage = '';
 
 loadingResumen = true;
 loadingTimeline = true;
@@ -286,6 +292,59 @@ loadingComentarios = false;
 
     this.cargarSoloTimeline();
   }
+
+  @ViewChild(DashboardEvidenceComponent) private evidence?: DashboardEvidenceComponent;
+  evidenceTopics: { topic_id: number; topic_name: string }[] = [];
+  sentimentShare = false;
+  private readonly sentimentShareOptions: ChartOptions<'bar'> = {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    scales: {
+      x: { stacked: true, min: 0, max: 100, ticks: { callback: value => value + '%' } },
+      y: { stacked: true }
+    },
+    plugins: { tooltip: { callbacks: {
+      label: item => `${item.dataset.label}: ${Number(item.raw).toFixed(1)}%`
+    } } }
+  };
+
+  get toneOptions(): ChartOptions<'bar'> {
+    return this.sentimentShare ? this.sentimentShareOptions : this.sentVsUserOptions;
+  }
+
+  private sharesSource?: ChartData<'bar'>;
+  private sharesData?: ChartData<'bar'>;
+
+  get toneData(): ChartData<'bar'> {
+    if (!this.sentimentShare) return this.sentVsUserData;
+    if (this.sharesSource !== this.sentVsUserData || !this.sharesData) {
+      const source = this.sentVsUserData;
+      const totals = (source.labels ?? []).map((_, index) =>
+        source.datasets.reduce((sum, dataset) => sum + Number(dataset.data[index] ?? 0), 0));
+      this.sharesData = { ...source, datasets: source.datasets.map(dataset => ({
+        ...dataset, data: dataset.data.map((count, index) =>
+          totals[index] ? Number(count) / totals[index] * 100 : 0)
+      })) };
+      this.sharesSource = source;
+    }
+    return this.sharesData;
+  }
+
+  exploreTopic(index: number): void {
+    const topic = this.evidenceTopics[index];
+    if (topic?.topic_id) this.evidence?.openFromRanking({ topicId: topic.topic_id, label: topic.topic_name });
+  }
+
+  exploreMention(entity: string, entityType: DashboardEntityType): void {
+    this.evidence?.openFromRanking({ entity, entityType });
+  }
+
+  exploreAccount(name: unknown): void {
+    const account = this.users.find(user => user.TweetUser === name);
+    if (account) this.evidence?.openFromRanking({ sourceId: String(account.idTweetUser), label: account.TweetUser });
+  }
+
+  activityEvidenceRows: { fecha: string; total: number }[] = [];
+  @Output() applyDashboardSelection = new EventEmitter<DashboardSelection>();
 
   timelineData: ChartData<'line'> = {
     labels: [],
@@ -507,6 +566,7 @@ loadingComentarios = false;
       categoria: filters.categoria ?? 'none',
       type_user: filters.type_user,
       search: filters.search,
+      entidad: filters.entidad, entity_type: filters.entity_type,
       topic_ids: [...this.topicTimelineTopIds],
       timeline_interval: this.topicTimelineInterval
     }).pipe(finalize(() => {
@@ -850,6 +910,7 @@ loadingComentarios = false;
   // WORDCLOUD
   // =====================================================
 
+  wordcloudRequested = false;
   wordcloudUrl: string | null = null;
   loadingWordcloud = false;
 
@@ -880,6 +941,7 @@ loadingComentarios = false;
   // =====================================================
 
   constructor(
+    private readonly host: ElementRef<HTMLElement>,
     private apiService: ApiService,
     private cdr: ChangeDetectorRef,
     private accountService: AccountService
@@ -980,6 +1042,7 @@ loadingComentarios = false;
       'type_user',
       'categoria',
       'entidad',
+      'entityType',
       'selectedTopics'
     ].some(key => !!changes[key]);
 
@@ -988,7 +1051,7 @@ loadingComentarios = false;
     }
 
     this.cargarDatos();
-    this.loadWordcloud();
+    this.resetWordcloud();
   }
 
   // =====================================================
@@ -1059,6 +1122,7 @@ loadingComentarios = false;
       ent.toLowerCase() !== 'none'
     ) {
       filters.entidad = ent;
+      filters.entity_type = this.entityType;
     }
 
     return filters;
@@ -1181,9 +1245,6 @@ loadingComentarios = false;
 
     this.errorsPorSeccion = {};
     this.errorMsg = '';
-    if (filters?.entidad || filters?.topic_ids.length) {
-      this.errorMsg = 'Aviso: algunos endpoints separados todavía no aplican los filtros de entidad o tópicos seleccionados.';
-    }
 
     this.currentResponse = {};
     this.topicTimelineDailyRows = [];
@@ -1197,18 +1258,20 @@ loadingComentarios = false;
     // SIN FILTROS VÁLIDOS
     // ===================================================
 
+    this.filterMessage = '';
+
     if (!filters) {
 
-  this.loading = true;
-  this.loadingResumen = true;
-  this.loadingTimeline = true;
-  this.loadingFuentes = true;
-  this.loadingTopicos = true;
-  this.loadingEntidades = true;
-  this.loadingCruces = true;
+  this.loading = false;
+  this.loadingResumen = false;
+  this.loadingTimeline = false;
+  this.loadingFuentes = false;
+  this.loadingTopicos = false;
+  this.loadingEntidades = false;
+  this.loadingCruces = false;
   this.loadingComentarios = false;
 
-  this.errorMsg = '';
+  this.filterMessage = 'Selecciona un período y al menos una fuente en los filtros.';
 
   this.cdr.markForCheck();
 
@@ -1465,6 +1528,7 @@ loadingComentarios = false;
   // =====================================================
 
   private cargarComentariosSiCorresponde(): void {
+    if (this.lastFilters && this.usaEndpointOriginal(this.lastFilters)) return;
 
     if (
       !this.mainFinished ||
@@ -1691,6 +1755,9 @@ loadingComentarios = false;
       ? res.top_topics
       : [];
 
+    this.evidenceTopics = topTopics.map((topic: any) => ({
+      topic_id: Number(topic.topic_id), topic_name: String(topic.topic_name)
+    }));
     this.topTopicsData = {
       labels: topTopics.map((item: any) =>
         this.truncateTopic(
@@ -1966,6 +2033,7 @@ loadingComentarios = false;
           }))
         : dailyRows;
 
+    this.activityEvidenceRows = graphicRows.map(row => ({ fecha: String(row.fecha ?? ''), total: Number(row.total ?? 0) }));
     this.timelineData = {
       labels: graphicRows.map(
         x => this.formatActivityTimelineLabel(
@@ -2195,6 +2263,14 @@ loadingComentarios = false;
   // NUBE DE PALABRAS
   // =====================================================
 
+  private resetWordcloud(): void {
+    this.wordcloudSubscription?.unsubscribe();
+    if (this.wordcloudUrl) URL.revokeObjectURL(this.wordcloudUrl);
+    this.wordcloudUrl = null;
+    this.wordcloudRequested = false;
+    this.loadingWordcloud = false;
+  }
+
   loadWordcloud(): void {
 
     const version = ++this.wordcloudVersion;
@@ -2226,11 +2302,13 @@ loadingComentarios = false;
         this.endDate ?? this.startDate
       ),
       tipo_cuenta: this.type_user,
+      entidad: this.entidad, entity_type: this.entityType,
       topic_ids: [...(this.selectedTopics ?? [])],
       search: (this.searchText ?? '').trim(),
       users: selected
     };
 
+    this.wordcloudRequested = true;
     this.loadingWordcloud = true;
 
     this.cdr.markForCheck();
@@ -2337,10 +2415,7 @@ loadingComentarios = false;
 
   public downloadAllCharts(): void {
 
-    const canvases = document.querySelectorAll(
-      'canvas'
-    ) as NodeListOf<HTMLCanvasElement>;
-
+    const canvases = this.host.nativeElement.querySelectorAll<HTMLCanvasElement>('canvas');
     if (!canvases.length) return;
 
     canvases.forEach((canvas, index) => {

@@ -1,3 +1,7 @@
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { of } from 'rxjs';
+import { AppModule } from '../app.module';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SettingsComponent } from './settings.component';
@@ -8,7 +12,8 @@ describe('SettingsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [SettingsComponent]
+      imports: [AppModule, HttpClientTestingModule],
+      providers: [{ provide: AngularFireAuth, useValue: { authState: of(null), currentUser: Promise.resolve(null) } }]
     })
     .compileComponents();
 

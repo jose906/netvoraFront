@@ -9,27 +9,26 @@
   min-width: 0;
   color: #192438;
   background: #f7f8fc;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: var(--theme-font);
   -webkit-font-smoothing: antialiased;
 
-  --nv-bg: #f7f8fc;
-  --nv-surface: #ffffff;
-  --nv-surface-muted: #f9faff;
-  --nv-text: #192438;
-  --nv-text-strong: #111c32;
-  --nv-muted: #617087;
-  --nv-muted-light: #8b9ab0;
-  --nv-line: #e5e9f2;
-  --nv-line-strong: #cfd6e4;
-  --nv-primary: #6932cf;
-  --nv-primary-hover: #5628b2;
-  --nv-primary-soft: #f3edff;
+  --nv-bg: var(--theme-bg);
+  --nv-surface: var(--theme-surface);
+  --nv-surface-muted: var(--theme-surface-soft);
+  --nv-text: var(--theme-text);
+  --nv-text-strong: var(--theme-text);
+  --nv-muted: var(--theme-muted);
+  --nv-muted-light: var(--theme-muted-light);
+  --nv-line: var(--theme-line);
+  --nv-line-strong: var(--theme-line-strong);
+  --nv-primary: var(--theme-primary);
+  --nv-primary-hover: var(--theme-primary-dark);
+  --nv-primary-soft: var(--theme-primary-soft);
   --nv-focus: rgba(105, 50, 207, .16);
-  --nv-blue: #2563eb;
-  --nv-green: #087e5d;
-  --nv-red: #b42332;
-  --nv-shadow: 0 5px 24px rgba(29, 39, 69, .045), 0 1px 3px rgba(29, 39, 69, .03);
+  --nv-blue: var(--theme-info);
+  --nv-green: var(--theme-success);
+  --nv-red: var(--theme-danger);
+  --nv-shadow: var(--theme-shadow);
 }
 
 :host *, :host *::before, :host *::after { box-sizing: border-box; }
@@ -38,9 +37,6 @@
 
 /* === ESTRUCTURA GENERAL ==================================================== */
 .admin-page {
-  width: min(100%, 1540px);
-  margin: 0 auto;
-  padding: clamp(18px, 2.5vw, 36px) clamp(14px, 2.3vw, 34px) 64px;
   min-width: 0;
 }
 
@@ -69,7 +65,7 @@
   letter-spacing: .11em; text-transform: uppercase;
 }
 .page-heading h1 {
-  margin: 0; font-size: clamp(21px, 2.2vw, 29px); font-weight: 780;
+  margin: 0; font-size: var(--theme-title-size); font-weight: 750;
   letter-spacing: -.035em; line-height: 1.2; color: var(--nv-text-strong);
 }
 .page-heading p { margin: 7px 0 0; color: var(--nv-muted); font-size: 12.5px; line-height: 1.55; }
@@ -201,7 +197,7 @@ input:disabled, select:disabled, textarea:disabled { cursor: not-allowed; opacit
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   min-height: 43px; padding: 10px 16px; border: 1px solid transparent;
-  border-radius: 10px; text-align: center; line-height: 1.25;
+  border-radius: var(--theme-radius-small); text-align: center; line-height: 1.25;
   font-size: 12px; font-weight: 760; cursor: pointer;
   transition: background-color .16s ease, transform .16s ease, box-shadow .16s ease, border-color .16s ease;
 }
@@ -490,7 +486,7 @@ input:disabled, select:disabled, textarea:disabled { cursor: not-allowed; opacit
   .create-user-panel .btn-full { flex: 1 1 0; }
 }
 @media (max-width: 680px) {
-  .admin-page { padding: 20px 13px 42px; }
+
   .page-header { padding-bottom: 18px; }
   .page-status { display: none; }
   .admin-tabs { margin: 17px 0; gap: 5px; }
@@ -530,7 +526,7 @@ input:disabled, select:disabled, textarea:disabled { cursor: not-allowed; opacit
   .admin-email-panel .form-actions .btn-primary { width: 100%; }
 }
 @media (max-width: 400px) {
-  .admin-page { padding: 15px 10px 35px; }
+
   .page-icon { width: 42px; height: 42px; flex-basis: 42px; }
   .page-heading p { font-size: 11px; }
   .panel-heading h2, .panel-heading h3 { font-size: 13px; }

@@ -2,6 +2,7 @@
 
 export interface HomePageResponse {
   daily: HomePageDaily;
+  activity?: DashboardActivityDay[];
   last_7_days: HomePageLast7DayItem[];
 }
 
@@ -45,4 +46,17 @@ export interface HomePageLast7DayItem {
   negativas: string; // viene como string en tu JSON
   positivas: string; // viene como string en tu JSON
   total: number;     // en tu JSON es number
+}
+
+export interface DashboardActivityTopic {
+  topic_id: number;
+  topic_name: string;
+  total: number;
+}
+
+export interface DashboardActivityDay {
+  fecha: string;
+  total: number;
+  parcial: boolean;
+  temas: DashboardActivityTopic[];
 }

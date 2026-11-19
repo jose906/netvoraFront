@@ -1,6 +1,7 @@
-import { Injectable,NgModule } from '@angular/core';
+import { environment } from '../../environments/environment';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, defer } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 export type SubStatus =
@@ -30,15 +31,22 @@ export interface SubscriptionStatusResponse {
 })
 export class SuscriptionService {
 
-    private baseUrl = 'https://netvoraback-109294037791.europe-west1.run.app'; 
+  private readonly baseUrl = environment.apiUrl;
+  private generation = 0;
   private _status$ = new BehaviorSubject<SubscriptionStatusResponse | null>(null);
   status$ = this._status$.asObservable();
 
   constructor(private http: HttpClient) {}
 
   fetchStatus(): Observable<SubscriptionStatusResponse> {
-    return this.http.get<SubscriptionStatusResponse>(`${this.baseUrl}/subscription/status`)
-      .pipe(tap(res => this._status$.next(res)));
+    return defer(() => {
+      const generation = this.generation;
+      return this.http.get<SubscriptionStatusResponse>(`${this.baseUrl}/subscription/status`).pipe(
+        tap(response => {
+          if (generation === this.generation) this._status$.next(response);
+        })
+      );
+    });
   }
 
   get snapshot(): SubscriptionStatusResponse | null {
@@ -46,7 +54,8 @@ export class SuscriptionService {
     return this._status$.value;
   }
 
-  clear() {
+  clear(): void {
+    this.generation++;
     this._status$.next(null);
   }
 }

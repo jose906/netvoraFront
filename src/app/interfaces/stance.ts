@@ -1,3 +1,5 @@
+import { DashboardEntityType } from './dashboard-evidence';
+
 // Interfaces para los 10 endpoints de Stance de NetVora.
 export type StanceAnalysisType = 'post' | 'topic';
 export type StanceValue = 'FAVOR' | 'CONTRA' | 'MIXTO' | 'NEUTRAL' | 'NO_CLARO';
@@ -13,6 +15,8 @@ export interface StanceFilters {
   topicId?: number;
   tweetid?: string;
   categoria?: string;
+  entidad?: string;
+  entity_type?: DashboardEntityType;
   type_user?: 'Medio' | 'Persona' | 'Entidad';
   search?: string;
   commentSearch?: string;

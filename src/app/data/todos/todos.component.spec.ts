@@ -1,3 +1,7 @@
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { of } from 'rxjs';
+import { AppModule } from '../../app.module';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TodosComponent } from './todos.component';
@@ -8,7 +12,8 @@ describe('TodosComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [TodosComponent]
+      imports: [AppModule, HttpClientTestingModule],
+      providers: [{ provide: AngularFireAuth, useValue: { authState: of(null), currentUser: Promise.resolve(null) } }]
     })
     .compileComponents();
 
@@ -17,7 +22,13 @@ describe('TodosComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('shows the filter prompt without leaving any section loading', () => {
+    component.cargarDatos();
+    fixture.detectChanges();
+
+    expect(component.cargandoDashboard).toBeFalse();
+    expect(component.loadingTopicTimeline).toBeFalse();
+    expect(fixture.nativeElement.querySelector('[role="status"]').textContent)
+      .toContain('Selecciona un período');
   });
 });

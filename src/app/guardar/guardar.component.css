@@ -9,38 +9,31 @@
 :host {
   display: block;
 
-  --nv-bg: #f8f9fb;
-  --nv-surface: #ffffff;
-  --nv-surface-soft: #fbfbfc;
+  --nv-bg: var(--theme-bg);
+  --nv-surface: var(--theme-surface);
+  --nv-surface-soft: var(--theme-surface-soft);
 
-  --nv-text: #111827;
-  --nv-text-soft: #334155;
-  --nv-muted: #64748b;
-  --nv-muted-light: #94a3b8;
+  --nv-text: var(--theme-text);
+  --nv-text-soft: var(--theme-text-soft);
+  --nv-muted: var(--theme-muted);
+  --nv-muted-light: var(--theme-muted-light);
 
-  --nv-border: rgba(15, 23, 42, 0.075);
-  --nv-border-strong: rgba(15, 23, 42, 0.11);
+  --nv-border: var(--theme-line);
+  --nv-border-strong: var(--theme-line-strong);
 
-  --nv-primary: #6d28d9;
-  --nv-primary-dark: #5b21b6;
+  --nv-primary: var(--theme-primary);
+  --nv-primary-dark: var(--theme-primary-dark);
   --nv-primary-light: #7c3aed;
 
-  --nv-primary-soft: rgba(109, 40, 217, 0.07);
+  --nv-primary-soft: var(--theme-primary-soft);
   --nv-primary-soft-2: rgba(109, 40, 217, 0.045);
-  --nv-primary-border: rgba(109, 40, 217, 0.14);
+  --nv-primary-border: var(--theme-primary-border);
 
-  --nv-green: #059669;
-  --nv-red: #dc2626;
+  --nv-green: var(--theme-success);
+  --nv-red: var(--theme-danger);
   --nv-yellow: #d97706;
 
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+  font-family: var(--theme-font);
 
   color: var(--nv-text);
 
@@ -249,15 +242,7 @@
    PAGE
 ========================================================= */
 
-.page {
-  width: 100%;
 
-  max-width: 1440px;
-
-  margin: 0 auto;
-
-  padding: 0 28px 72px;
-}
 
 
 /* =========================================================
@@ -346,9 +331,9 @@
 
   color: #111827;
 
-  font-size: clamp(30px, 3vw, 43px);
+  font-size: var(--theme-title-size);
 
-  font-weight: 800;
+  font-weight: 750;
 
   line-height: 1.08;
 
@@ -2066,12 +2051,7 @@
   }
 
 
-  .page {
-    padding:
-      0
-      15px
-      54px;
-  }
+
 
 
   /* HERO */
@@ -2094,7 +2074,7 @@
 
 
   .hero-title {
-    font-size: 30px;
+    font-size: var(--theme-title-size);
   }
 
 
@@ -2298,12 +2278,7 @@
 
 @media (max-width: 480px) {
 
-  .page {
-    padding:
-      0
-      12px
-      48px;
-  }
+
 
 
   .top-menu-inner {
@@ -2314,7 +2289,7 @@
 
 
   .hero-title {
-    font-size: 27px;
+    font-size: var(--theme-title-size);
   }
 
 

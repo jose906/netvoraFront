@@ -3,7 +3,8 @@ import { finalize } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
 import { ApiService } from '../services/api.service';
-import { HomePageResponse } from '../interfaces/homePage';
+import { DashboardActivityDay, HomePageResponse } from '../interfaces/homePage';
+import { NewsItem } from '../interfaces/NewsItem';
 import { users } from '../interfaces/users';
 
 interface PrincipalStatsVM {
@@ -42,20 +43,10 @@ export interface TopicDay {
   porcentaje?: number;
 }
 
-interface WeekBar {
-  x: number;
-  w: number;
-  y: number;
-  h: number;
-  v: number;
-  fecha: string;
-  cls: 'pos' | 'neg' | 'zero';
-}
-
 interface InsightVM {
-  icon: 'up' | 'down' | 'new' | 'neutral';
+  topic: TopicDay;
+  icon: 'up' | 'down' | 'new';
   title: string;
-  description: string;
 }
 
 @Component({
@@ -66,10 +57,9 @@ interface InsightVM {
 export class PrincipalComponent implements OnInit {
 
   todayLabel = '';
+  radarOverview?: { watches: number; pending: number };
 
   stats: PrincipalStatsVM = this.emptyStats();
-
-  last7Days: HomePageResponse['last_7_days'] = [];
 
   topicosDia: TopicDay[] = [];
   topicosSemana: TopicWeek[] = [];
@@ -80,17 +70,21 @@ export class PrincipalComponent implements OnInit {
   // GRÁFICA
   // =========================================================
 
-  weekBars: WeekBar[] = [];
-  weekLabels: string[] = [];
-
-  weekZeroY = 20;
-
-  weekDomainMin = 0;
-  weekDomainMax = 0;
-
-  weekMax = 0;
-  weekMin = 0;
-  weekAvg = 0;
+  activity: DashboardActivityDay[] = [];
+  selectedDay?: DashboardActivityDay;
+  peakDay?: DashboardActivityDay;
+  activityTotal = 0;
+  activityScale = 1;
+  dayPosts: NewsItem[] = [];
+  dayPostsOpen = false;
+  dayPostsLoading = false;
+  dayPostsError = false;
+  dayPostsPage = 1;
+  readonly dayPostsPageSize = 5;
+  private dayPostsRequest = 0;
+  private readonly activityDate = new Intl.DateTimeFormat('es-BO', {
+    timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short'
+  });
 
   // =========================================================
   // UI
@@ -117,6 +111,10 @@ export class PrincipalComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUsers();
+    this.apiService.getRadarOverview().subscribe({
+      next: overview => { this.radarOverview = overview; },
+      error: () => { this.radarOverview = undefined; }
+    });
   }
 
   // =========================================================
@@ -124,6 +122,8 @@ export class PrincipalComponent implements OnInit {
   // =========================================================
 
   loadUsers(): void {
+    this.cargando = true;
+    this.error = '';
 
     this.apiService.getUsers2('Medio').subscribe({
 
@@ -134,6 +134,7 @@ export class PrincipalComponent implements OnInit {
           : [];
 
         if (this.users.length === 0) {
+          this.cargando = false;
           this.showNoUsersModal = true;
           return;
         }
@@ -146,7 +147,8 @@ export class PrincipalComponent implements OnInit {
       },
 
       error: () => {
-        this.error = 'No se pudieron cargar los usuarios.';
+        this.cargando = false;
+        this.error = 'No se pudieron cargar los medios.';
       }
 
     });
@@ -171,7 +173,6 @@ export class PrincipalComponent implements OnInit {
       .subscribe({
 
         next: (res: HomePageResponse) => {
-          console.log(res)
           const daily = res?.daily;
 
           this.todayLabel = daily?.fecha ?? '';
@@ -237,11 +238,15 @@ export class PrincipalComponent implements OnInit {
             topicosSemana: this.topicosSemana
           };
 
-          this.last7Days = Array.isArray(res?.last_7_days)
-            ? res.last_7_days
+          const totalByDate = new Map((res.last_7_days ?? []).map(day => [day.fecha, day.total]));
+          const today = Date.parse(this.todayLabel);
+          const legacyDays = Number.isFinite(today)
+            ? Array.from({ length: 7 }, (_, index) => {
+                const fecha = new Date(today - (6 - index) * 86400000).toISOString().slice(0, 10);
+                return { fecha, total: this.toNumber(totalByDate.get(fecha)), parcial: index === 6, temas: [] };
+              })
             : [];
-
-          this.buildWeekBarChart(this.last7Days);
+          this.setActivity(res.activity ?? legacyDays);
         },
 
         error: () => {
@@ -256,9 +261,7 @@ export class PrincipalComponent implements OnInit {
           this.topicosDia = [];
           this.topicosSemana = [];
 
-          this.last7Days = [];
-
-          this.resetWeekChart();
+          this.setActivity([]);
         }
 
       });
@@ -491,270 +494,73 @@ export class PrincipalComponent implements OnInit {
   // =========================================================
 
   get insights(): InsightVM[] {
-
-    const items: InsightVM[] = [];
-
-    const topicUp = this.topicosDia
-      .filter(
-        topic =>
-          topic.tendencia === 'SUBIO' &&
-          !this.esTopicoEspecial(topic.topic_name)
-      )
-      .sort(
-        (a, b) =>
-          (b.porcentaje ?? 0) -
-          (a.porcentaje ?? 0)
-      )[0];
-
-    if (topicUp) {
-
-      items.push({
-        icon: 'up',
-        title: `${topicUp.topic_name} está creciendo`,
-        description: topicUp.porcentaje
-          ? `La actividad aumentó ${this.formatPercent(topicUp.porcentaje)}% respecto a ayer.`
-          : `Registra más publicaciones que ayer.`
+    return this.topicosDia
+      .filter(topic => !this.esTopicoEspecial(topic.topic_name) &&
+        Math.max(topic.tweets_hoy, topic.tweets_ayer) >= 5 &&
+        topic.tweets_hoy !== topic.tweets_ayer)
+      .sort((a, b) => Math.abs(b.tweets_hoy - b.tweets_ayer) - Math.abs(a.tweets_hoy - a.tweets_ayer))
+      .slice(0, 3)
+      .map(topic => {
+        if (!topic.tweets_ayer) {
+          return { topic, icon: 'new', title: 'Nuevo hoy' };
+        }
+        return topic.tweets_hoy > topic.tweets_ayer
+          ? { topic, icon: 'up', title: 'Subió' }
+          : { topic, icon: 'down', title: 'Bajó' };
       });
-    }
-
-    const topicNew = this.topicosDia.find(
-      topic =>
-        topic.tendencia === 'NUEVO' &&
-        !this.esTopicoEspecial(topic.topic_name)
-    );
-
-    if (topicNew) {
-
-      items.push({
-        icon: 'new',
-        title: `Nuevo tema: ${topicNew.topic_name}`,
-        description:
-          `Apareció hoy con ${topicNew.tweets_hoy} publicaciones detectadas.`
-      });
-    }
-
-    const topicDown = this.topicosDia
-      .filter(
-        topic =>
-          topic.tendencia === 'BAJO' &&
-          !this.esTopicoEspecial(topic.topic_name)
-      )
-      .sort(
-        (a, b) =>
-          (b.porcentaje ?? 0) -
-          (a.porcentaje ?? 0)
-      )[0];
-
-    if (topicDown && items.length < 3) {
-
-      items.push({
-        icon: 'down',
-        title: `${topicDown.topic_name} pierde actividad`,
-        description: topicDown.porcentaje
-          ? `La conversación disminuyó ${this.formatPercent(topicDown.porcentaje)}% respecto a ayer.`
-          : `Registra menos actividad que ayer.`
-      });
-    }
-
-    if (items.length < 3) {
-
-      items.push({
-        icon: 'neutral',
-        title: `${this.sentimientoDominante} es el tono predominante`,
-        description:
-          `${this.sentimientoDominantePorcentaje}% de las publicaciones analizadas corresponden al sentimiento dominante.`
-      });
-    }
-
-    return items.slice(0, 3);
   }
 
-  // =========================================================
-  // GRÁFICA
-  // =========================================================
+  private setActivity(days: DashboardActivityDay[]): void {
+    this.activity = days;
+    this.activityTotal = days.reduce((total, day) => total + day.total, 0);
+    this.peakDay = days.filter(day => day.total > 0)
+      .reduce<DashboardActivityDay | undefined>((peak, day) =>
+        !peak || day.total > peak.total ? day : peak, undefined);
+    this.activityScale = this.peakDay?.total || 1;
+    this.selectActivityDay(this.peakDay ?? days[days.length - 1]);
+  }
 
-  private buildWeekBarChart(
-    days: HomePageResponse['last_7_days']
-  ): void {
+  formatActivityDate(date: string): string {
+    return this.activityDate.format(new Date(date));
+  }
 
-    const safeDays =
-      Array.isArray(days)
-        ? days
-        : [];
+  selectActivityDay(day?: DashboardActivityDay): void {
+    this.selectedDay = day;
+    this.dayPostsRequest++;
+    this.dayPostsOpen = false;
+    this.dayPostsLoading = false;
+    this.dayPosts = [];
+  }
 
-    if (!safeDays.length) {
-      this.resetWeekChart();
-      return;
-    }
+  loadDayPosts(page = 1): void {
+    const day = this.selectedDay;
+    if (!day?.total) return;
 
-    this.weekLabels = safeDays.map(
-      day => day.fecha ?? '—'
-    );
-
-    const values = safeDays.map(
-      day => this.toNumber(day.indice)
-    );
-
-    const maxV = Math.max(...values);
-    const minV = Math.min(...values);
-
-    const avgV =
-      values.reduce(
-        (acc, value) => acc + value,
-        0
-      ) / values.length;
-
-    this.weekMax = maxV;
-    this.weekMin = minV;
-    this.weekAvg = avgV;
-
-    const domainMin = Math.min(
-      minV,
-      0
-    );
-
-    const domainMax = Math.max(
-      maxV,
-      0
-    );
-
-    this.weekDomainMin = domainMin;
-    this.weekDomainMax = domainMax;
-
-    const yTop = 6;
-    const yBot = 34;
-
-    const yRange =
-      yBot - yTop;
-
-    const denom =
-      domainMax - domainMin === 0
-        ? 1
-        : domainMax - domainMin;
-
-    const mapY = (
-      value: number
-    ): number => {
-
-      const t =
-        (value - domainMin) / denom;
-
-      return +(
-        yBot -
-        t * yRange
-      ).toFixed(2);
-    };
-
-    const zeroY = mapY(0);
-
-    this.weekZeroY = zeroY;
-
-    const n = values.length;
-
-    const gap = 2;
-
-    const totalGap =
-      gap * (n + 1);
-
-    const width =
-      Math.max(
-        6,
-        (100 - totalGap) / n
-      );
-
-    const bars: WeekBar[] = [];
-
-    for (let i = 0; i < n; i++) {
-
-      const value = values[i];
-
-      const valueY = mapY(value);
-
-      const y = Math.min(
-        zeroY,
-        valueY
-      );
-
-      let height = Math.abs(
-        zeroY - valueY
-      );
-
-      // Hace visible un valor 0
-      if (height === 0) {
-        height = 0.7;
+    const request = ++this.dayPostsRequest;
+    this.dayPostsOpen = true;
+    this.dayPostsLoading = true;
+    this.dayPostsError = false;
+    this.dayPostsPage = page;
+    this.dayPosts = [];
+    this.apiService.getDashboardDayPosts(
+      day.fecha, this.users.map(user => String(user.idTweetUser)), page, this.dayPostsPageSize
+    ).subscribe({
+      next: response => {
+        if (request !== this.dayPostsRequest) return;
+        this.dayPosts = response.resultado ?? [];
+        this.dayPostsLoading = false;
+      },
+      error: () => {
+        if (request !== this.dayPostsRequest) return;
+        this.dayPostsError = true;
+        this.dayPostsLoading = false;
       }
-
-      const x = +(
-        gap +
-        i * (width + gap)
-      ).toFixed(2);
-
-      const cls: WeekBar['cls'] =
-        value > 0
-          ? 'pos'
-          : value < 0
-            ? 'neg'
-            : 'zero';
-
-      bars.push({
-        x,
-        w: +width.toFixed(2),
-        y,
-        h: +height.toFixed(2),
-        v: value,
-        fecha:
-          this.weekLabels[i] || '—',
-        cls
-      });
-    }
-
-    this.weekBars = bars;
+    });
   }
 
-  get weekTrendDescription(): string {
-
-    if (!this.weekBars.length) {
-      return 'Todavía no hay suficientes datos.';
-    }
-
-    const first =
-      this.weekBars[0]?.v ?? 0;
-
-    const last =
-      this.weekBars[
-        this.weekBars.length - 1
-      ]?.v ?? 0;
-
-    const diff =
-      last - first;
-
-    if (diff > 0.05) {
-      return 'La percepción general mejoró durante los últimos 7 días.';
-    }
-
-    if (diff < -0.05) {
-      return 'La percepción general se volvió más negativa durante los últimos 7 días.';
-    }
-
-    return 'La percepción general se mantuvo relativamente estable durante los últimos 7 días.';
+  closeDayPosts(): void {
+    this.selectActivityDay(this.selectedDay);
   }
-
-  get weekStatus(): string {
-
-    if (this.weekAvg > 0.1) {
-      return 'Tendencia positiva';
-    }
-
-    if (this.weekAvg < -0.1) {
-      return 'Tendencia negativa';
-    }
-
-    return 'Tendencia estable';
-  }
-
-  // =========================================================
-  // HELPERS
-  // =========================================================
 
   private emptyStats(): PrincipalStatsVM {
 
@@ -800,21 +606,6 @@ export class PrincipalComponent implements OnInit {
     );
   }
 
-  private resetWeekChart(): void {
-
-    this.weekBars = [];
-    this.weekLabels = [];
-
-    this.weekZeroY = 20;
-
-    this.weekDomainMin = 0;
-    this.weekDomainMax = 0;
-
-    this.weekMax = 0;
-    this.weekMin = 0;
-    this.weekAvg = 0;
-  }
-
   trackByIndex = (
     index: number
   ): number => index;
@@ -823,12 +614,6 @@ export class PrincipalComponent implements OnInit {
     _: number,
     topic: TopicDay | TopicWeek
   ): number => topic.topic_id;
-
-  trackByBar = (
-    _: number,
-    bar: WeekBar
-  ): string =>
-    `${bar.x}-${bar.v}-${bar.fecha}`;
 
   // =========================================================
   // NAVEGACIÓN
@@ -851,13 +636,15 @@ export class PrincipalComponent implements OnInit {
   }
 
   irATopico(
-    topic: TopicDay | TopicWeek
+    topic: Pick<TopicDay, 'topic_id' | 'topic_name'>, date?: string
   ): void {
 
     this.router.navigate(
       ['/topics', topic.topic_id],
       {
+        queryParams: date ? { fecha: date } : {},
         state: {
+          selectedUsers: this.users.map(user => String(user.idTweetUser)),
           topic_id: topic.topic_id,
           topic_name: topic.topic_name
         }

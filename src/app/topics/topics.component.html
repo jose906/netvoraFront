@@ -1,33 +1,15 @@
 
-<div class="page">
+<div class="page nv-page">
 
   <!-- ==========================================
        ENCABEZADO · NETVORA SIGNAL
   =========================================== -->
 
-  <header class="signal-hero">
+  <header class="signal-hero nv-feed-heading">
 
-    <div class="signal-hero-top">
+    <div class="signal-hero-top nv-page-heading">
 
       <div class="signal-heading">
-
-        <div class="signal-context">
-          <span class="signal-mark">
-            <span class="signal-wave"></span>
-          </span>
-
-          <span class="signal-context-label">
-            NETVORA SIGNAL
-          </span>
-
-          <span class="signal-separator"></span>
-
-          <span class="signal-live">
-            <span class="signal-live-dot"></span>
-            En monitoreo
-          </span>
-        </div>
-
         <h1>
           {{ topicName || 'Explorar conversaciones' }}
         </h1>
@@ -91,18 +73,11 @@
         <div class="pulse-section-head">
 
           <div>
-            <span class="pulse-kicker">
-              NETVORA PULSE
-            </span>
 
             <h2>Estado de la conversación</h2>
           </div>
 
-          <span
-            *ngIf="cargandoPulse"
-            class="pulse-loading">
-            Actualizando…
-          </span>
+          <span *ngIf="cargandoPulse" class="nv-loading-state" role="status">Cargando actividad…</span>
 
         </div>
 
@@ -266,6 +241,13 @@
             </span>
 
             <h3>Sentimiento</h3>
+            <p class="sentiment-count" *ngIf="!cargandoPulse && pulse">
+              {{ totalSentimientos | number }} de {{ totalPublicaciones | number }} publicaciones clasificadas<span
+                *ngIf="publicacionesSinClasificar"> · {{ publicacionesSinClasificar | number }} sin clasificar</span>.
+              Los porcentajes se calculan sobre las clasificadas.
+            </p>
+            <a *ngIf="datos.length" href="#topic-publications" class="sentiment-count"
+              (click)="$event.preventDefault(); publicationExamples.scrollIntoView()">Ver publicaciones y su tono</a>
           </div>
 
         </div>
@@ -360,13 +342,17 @@
 
       <div
         *ngIf="!cargandoPulse && errorPulse"
-        class="pulse-error">
+        class="pulse-error nv-error-state" role="alert">
         {{ errorPulse }}
       </div>
 
     </section>
 
   </header>
+
+  <a *ngIf="topicId" class="btn btn-ghost" routerLink="/estadisticas" [queryParams]="radarParams">
+    Seguir conversación en Radar
+  </a>
 
   <!-- ==========================================
        FILTROS
@@ -494,7 +480,7 @@
 
   <div
     *ngIf="error && !cargando"
-    class="feedback feedback-error"
+    class="feedback feedback-error nv-error-state"
     role="alert">
 
     <mat-icon>error_outline</mat-icon>
@@ -505,7 +491,7 @@
 
   <div
     *ngIf="errorGuardar"
-    class="feedback feedback-error"
+    class="feedback feedback-error nv-error-state"
     role="alert">
 
     <mat-icon>bookmark_remove</mat-icon>
@@ -526,9 +512,6 @@
       <mat-icon>forum</mat-icon>
     </div>
 
-    <span class="empty-kicker">
-      EXPLORAR CONVERSACIONES
-    </span>
 
     <h2>Selecciona una conversación</h2>
 
@@ -543,24 +526,7 @@
        CARGANDO PUBLICACIONES
   =========================================== -->
 
-  <section
-    *ngIf="cargando"
-    class="loading-state"
-    aria-label="Cargando publicaciones">
-
-    <div
-      *ngFor="let i of [1,2,3]"
-      class="skeleton-card">
-
-      <div class="skeleton skeleton-small"></div>
-      <div class="skeleton skeleton-title"></div>
-      <div class="skeleton skeleton-line"></div>
-      <div class="skeleton skeleton-line"></div>
-      <div class="skeleton skeleton-line short"></div>
-
-    </div>
-
-  </section>
+  <div *ngIf="cargando" class="nv-loading-state" role="status">Cargando publicaciones…</div>
 
   <!-- ==========================================
        SIN RESULTADOS
@@ -574,9 +540,6 @@
       <mat-icon>search_off</mat-icon>
     </div>
 
-    <span class="empty-kicker">
-      SIN RESULTADOS
-    </span>
 
     <h2>No encontramos publicaciones</h2>
 
@@ -593,6 +556,8 @@
     </button>
 
   </section>
+
+  <div #publicationExamples id="topic-publications"></div>
 
   <!-- ==========================================
        RESULTADOS
@@ -619,7 +584,7 @@
 
     <article
       *ngFor="let item of datos"
-      class="news-card"
+      class="news-card nv-quiet-surface"
       #newsCard>
 
       <!-- HEADER DE PUBLICACIÓN -->

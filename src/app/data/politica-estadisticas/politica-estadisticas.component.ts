@@ -1,3 +1,6 @@
+import { DashboardEvidenceComponent } from '../dashboard-evidence.component';
+import { DashboardSelection } from '../../interfaces/dashboard-evidence';
+import { ElementRef, EventEmitter, Output } from '@angular/core';
 import {
   Component,
   Input,
@@ -46,7 +49,7 @@ type TopicEntityType =
 @Component({
   selector: 'app-politica-estadisticas',
   templateUrl: './politica-estadisticas.component.html',
-  styleUrls: ['./politica-estadisticas.component.css'],
+  styleUrls: ['./politica-estadisticas.component.css', '../dashboard.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PoliticaEstadisticasComponent implements OnChanges, OnDestroy {
@@ -60,6 +63,7 @@ export class PoliticaEstadisticasComponent implements OnChanges, OnDestroy {
   
 loading = false;
 errorMsg = '';
+  filterMessage = '';
 
 errorsPorSeccion: Record<string, string> = {};
 
@@ -243,6 +247,55 @@ mediaTop5Share = 0;
       }
     });
   }
+
+  @ViewChild(DashboardEvidenceComponent) private evidence?: DashboardEvidenceComponent;
+  evidenceTopics: { topic_id: number; topic_name: string }[] = [];
+  sentimentShare = false;
+  private readonly sentimentShareOptions: ChartOptions<'bar'> = {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    scales: {
+      x: { stacked: true, min: 0, max: 100, ticks: { callback: value => value + '%' } },
+      y: { stacked: true }
+    },
+    plugins: { tooltip: { callbacks: {
+      label: item => `${item.dataset.label}: ${Number(item.raw).toFixed(1)}%`
+    } } }
+  };
+
+  get toneOptions(): ChartOptions<'bar'> {
+    return this.sentimentShare ? this.sentimentShareOptions : this.sentVsUserOptions;
+  }
+
+  private sharesSource?: ChartData<'bar'>;
+  private sharesData?: ChartData<'bar'>;
+
+  get toneData(): ChartData<'bar'> {
+    if (!this.sentimentShare) return this.sentVsUserData;
+    if (this.sharesSource !== this.sentVsUserData || !this.sharesData) {
+      const source = this.sentVsUserData;
+      const totals = (source.labels ?? []).map((_, index) =>
+        source.datasets.reduce((sum, dataset) => sum + Number(dataset.data[index] ?? 0), 0));
+      this.sharesData = { ...source, datasets: source.datasets.map(dataset => ({
+        ...dataset, data: dataset.data.map((count, index) =>
+          totals[index] ? Number(count) / totals[index] * 100 : 0)
+      })) };
+      this.sharesSource = source;
+    }
+    return this.sharesData;
+  }
+
+  exploreTopic(index: number): void {
+    const topic = this.evidenceTopics[index];
+    if (topic?.topic_id) this.evidence?.openFromRanking({ topicId: topic.topic_id, label: topic.topic_name });
+  }
+
+  exploreAccount(name: unknown): void {
+    const account = this.users.find(user => user.TweetUser === name);
+    if (account) this.evidence?.openFromRanking({ sourceId: String(account.idTweetUser), label: account.TweetUser });
+  }
+
+  activityEvidenceRows: { fecha: string; total: number }[] = [];
+  @Output() applyDashboardSelection = new EventEmitter<DashboardSelection>();
 
   timelineData: ChartData<'line'> = {
     labels: [],
@@ -640,6 +693,8 @@ readonly topTopicsOptions: ChartOptions<'bar'> = {
     }
   };
   // wordCloud
+  wordcloudRequested = false;
+  private wordcloudSubscription?: Subscription;
   wordcloudUrl: string | null = null;
   loadingWordcloud = false;
   // ===== Extra: Índice de sentimiento por usuario =====
@@ -685,6 +740,7 @@ userIndiceChartOptions: ChartOptions<'bar'> = {
     );
   }
   constructor(
+    private readonly host: ElementRef<HTMLElement>,
     private apiService: ApiService,
     private cdr: ChangeDetectorRef,
     private authzService: AuthzService,
@@ -692,9 +748,11 @@ userIndiceChartOptions: ChartOptions<'bar'> = {
   ) {
     this.loadAccess();
   }
+  private accessSubscription?: Subscription;
+
   private loadAccess(): void {
   this.accessLoading = true;
-  this.accountService.me().subscribe({
+  this.accessSubscription = this.accountService.me().subscribe({
     next: (res: any) => {
       const role = String(
         res?.user?.role || 'viewer'
@@ -728,7 +786,6 @@ userIndiceChartOptions: ChartOptions<'bar'> = {
   });
 }
   ngOnChanges(changes: SimpleChanges): void {
-  if (!this.startDate) return;
   const startChanged = !!changes['startDate'];
   const endChanged = !!changes['endDate'];
   const usersChanged = !!changes['users'];
@@ -736,14 +793,13 @@ userIndiceChartOptions: ChartOptions<'bar'> = {
   const searchChanged = !!changes['searchText'];
   const catChanged = !!changes['categoria'];
   const topicsChanged = !!changes['selectedTopics'];
-  const usersToSend = this.getUsersToSend();
-  if (!usersToSend.length) return;
   if (startChanged || endChanged || usersChanged || selChanged || searchChanged || catChanged || topicsChanged) {
     this.cargarDatos();
-    this.loadWordcloud();
+    this.resetWordcloud();
   }
 }
 ngOnDestroy(): void {
+  this.accessSubscription?.unsubscribe();
   ++this.dashboardRequestVersion;
   ++this.timelineRequestVersion;
   this.dashboardSubscriptions.forEach(subscription => subscription.unsubscribe());
@@ -751,9 +807,7 @@ ngOnDestroy(): void {
   ++this.topicTimelineVersion;
   this.topicTimelineSubscription?.unsubscribe();
   this.topicTimelineSubscription = undefined;
-  if (this.wordcloudUrl) {
-    URL.revokeObjectURL(this.wordcloudUrl);
-  }
+  this.resetWordcloud();
 }
 private getUsersToSend(): string[] {
     if (this.selectedUsers?.length) {
@@ -766,17 +820,6 @@ private getUsersToSend(): string[] {
       .filter(Boolean);
   }
  public cargarDatos(): void {
-    if (!this.startDate) return;
-    const usersToSend = this.getUsersToSend();
-    if (!usersToSend.length) {
-      this.errorMsg = 'No hay usuarios disponibles para consultar.';
-      this.totalPosts = 0;
-      this.topUsers = [];
-      this.userIndice = [];
-      this.cdr.markForCheck();
-      return;
-    }
-
     const version = ++this.dashboardRequestVersion;
     ++this.timelineRequestVersion;
     ++this.topicTimelineVersion;
@@ -791,6 +834,18 @@ private getUsersToSend(): string[] {
     this.topicTimelineDailyRows = [];
     this.topicsTimelineData = { labels: [], datasets: [] };
 
+    this.mapResponse({}, '');
+    const usersToSend = this.getUsersToSend();
+    this.filterMessage = '';
+    this.errorMsg = '';
+    if (!this.startDate || !usersToSend.length) {
+      this.loading = false;
+      this.pendingSections = 0;
+      this.filterMessage = 'Selecciona un período y al menos una fuente en los filtros.';
+      this.cdr.markForCheck();
+      return;
+    }
+
     const body: any = {
       start: this.toYMD(this.startDate),
       users: usersToSend,
@@ -802,7 +857,9 @@ private getUsersToSend(): string[] {
     if (this.endDate) body.end = this.toYMD(this.endDate);
     if (this.searchText?.trim()) body.search = this.searchText.trim();
 
-    const sections = [
+    const sections = body.topic_ids.length
+      ? [{ name: 'topicos', call: () => this.apiService.getCategoriesData(body) }]
+      : [
       { name: 'resumen', call: () => this.apiService.getCategoryResumen(body) },
       { name: 'timeline', call: () => this.apiService.getCategoryTimeline(body) },
       { name: 'fuentes', call: () => this.apiService.getCategoryFuentes(body) },
@@ -905,6 +962,7 @@ private getUsersToSend(): string[] {
     const graphicPeak = timelineRows.reduce(
       (max: number, item: any) => Math.max(max, Number(item.total ?? 0)), 0
     );
+    this.activityEvidenceRows = timelineRows.map(row => ({ fecha: String(row.fecha ?? ''), total: Number(row.total ?? 0) }));
     this.timelineData = {
       labels: timelineRows.map((x: any) =>
         this.formatActivityTimelineLabel(String(x.fecha ?? ''))
@@ -948,7 +1006,10 @@ private getUsersToSend(): string[] {
 const topTopics = Array.isArray(res?.top_topics)
   ? res.top_topics
   : [];
-this.topTopicsData = {
+this.evidenceTopics = topTopics.map((topic: any) => ({
+      topic_id: Number(topic.topic_id), topic_name: String(topic.topic_name)
+    }));
+    this.topTopicsData = {
   labels: topTopics.map((item: any) =>
     this.truncateTopic(
       String(item.topic_name || 'Sin nombre'),
@@ -1287,9 +1348,7 @@ this.indiceSent = [...filtered].sort((a, b) => b.total - a.total);
     link.click();
   }
   public downloadAllCharts(): void {
-    const canvases = document.querySelectorAll(
-      '.dash canvas'
-    ) as NodeListOf<HTMLCanvasElement>;
+    const canvases = this.host.nativeElement.querySelectorAll<HTMLCanvasElement>('canvas');
     if (!canvases.length) return;
     canvases.forEach((canvas, index) => {
       const link = document.createElement('a');
@@ -1331,14 +1390,23 @@ this.indiceSent = [...filtered].sort((a, b) => b.total - a.total);
     return match ? `${daily} ${match[1]}:${match[2]}` : daily;
   }
 
-  loadWordcloud() {
+  private resetWordcloud(): void {
+    this.wordcloudSubscription?.unsubscribe();
+    if (this.wordcloudUrl) URL.revokeObjectURL(this.wordcloudUrl);
+    this.wordcloudUrl = null;
+    this.wordcloudRequested = false;
+    this.loadingWordcloud = false;
+  }
+
+  loadWordcloud(): void {
   if (!this.startDate) return;
   const usersToSend = this.getUsersToSend();
   if (!usersToSend.length) {
     this.wordcloudUrl = null;
     return;
   }
-  this.loadingWordcloud = true;
+  this.wordcloudRequested = true;
+    this.loadingWordcloud = true;
   this.cdr.markForCheck();
   const body = {
     start: this.toYMD(this.startDate),
@@ -1349,7 +1417,7 @@ this.indiceSent = [...filtered].sort((a, b) => b.total - a.total);
     search: this.searchText?.trim() || '',
     topic_ids: [...this.selectedTopics]
   };
-  this.apiService.getWordcloud(body).subscribe({
+  this.wordcloudSubscription = this.apiService.getWordcloud(body).subscribe({
     next: (resp) => {
       const blob = resp.body as Blob;
       if (blob?.type?.includes('application/json')) {

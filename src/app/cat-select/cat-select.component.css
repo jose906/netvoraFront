@@ -10,41 +10,34 @@
   min-width: 0;
   max-width: 100%;
 
-  --nv-bg: #f7f8fb;
-  --nv-surface: #ffffff;
-  --nv-surface-soft: #fafbfe;
+  --nv-bg: var(--theme-bg);
+  --nv-surface: var(--theme-surface);
+  --nv-surface-soft: var(--theme-surface-soft);
 
-  --nv-text: #111827;
-  --nv-text-soft: #334155;
-  --nv-muted: #64748b;
+  --nv-text: var(--theme-text);
+  --nv-text-soft: var(--theme-text-soft);
+  --nv-muted: var(--theme-muted);
 
-  --nv-line: #e5eaf1;
-  --nv-line-strong: #cbd5e1;
+  --nv-line: var(--theme-line);
+  --nv-line-strong: var(--theme-line-strong);
 
-  --nv-purple: #6d28d9;
-  --nv-purple-dark: #5b21b6;
-  --nv-purple-soft: #f5f0ff;
-  --nv-purple-border: #ddd0fb;
+  --nv-purple: var(--theme-primary);
+  --nv-purple-dark: var(--theme-primary-dark);
+  --nv-purple-soft: var(--theme-primary-soft);
+  --nv-purple-border: var(--theme-primary-border);
 
-  --nv-green: #15803d;
-  --nv-green-soft: #f0fdf4;
+  --nv-green: var(--theme-success);
+  --nv-green-soft: var(--theme-success-soft);
 
-  --nv-red: #b91c1c;
-  --nv-red-soft: #fef2f2;
+  --nv-red: var(--theme-danger);
+  --nv-red-soft: var(--theme-danger-soft);
 
   --nv-neutral: #64748b;
   --nv-neutral-soft: #f1f5f9;
 
   color: var(--nv-text);
 
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+  font-family: var(--theme-font);
 
   -webkit-font-smoothing: antialiased;
 }
@@ -137,13 +130,9 @@
 ========================================================= */
 
 .page {
-  width: 100%;
-  max-width: 1480px;
   min-width: 0;
   min-height: 100vh;
 
-  margin: 0 auto;
-  padding: 30px 32px 64px;
 
   container-type: inline-size;
   container-name: netvora-admin;
@@ -182,8 +171,8 @@
 
   color: var(--nv-text);
 
-  font-size: clamp(27px, 3vw, 38px);
-  font-weight: 800;
+  font-size: var(--theme-title-size);
+  font-weight: 750;
   line-height: 1.15;
   letter-spacing: -0.04em;
 }
@@ -349,7 +338,7 @@
   padding: 0 18px;
 
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: var(--theme-radius-small);
 
   font-family: inherit;
   font-size: 13px;
@@ -930,10 +919,7 @@
 
   overflow-y: auto;
 
-  font-family:
-    Inter, ui-sans-serif, system-ui,
-    -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
+  font-family: var(--theme-font);
 }
 
 .confirmation-dialog::backdrop {
@@ -1226,9 +1212,7 @@
 
 @media (max-width: 600px) {
 
-  .page {
-    padding: 20px 16px 40px;
-  }
+
 
   .menu-items {
     padding: 10px 16px;

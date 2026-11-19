@@ -2,57 +2,57 @@
 
   display: block;
 
-  --bg: #f7f8fa;
+  --bg: var(--theme-bg);
 
-  --surface: #ffffff;
+  --surface: var(--theme-surface);
 
-  --surface-soft: #fafbfc;
+  --surface-soft: var(--theme-surface-soft);
 
-  --text: #111827;
+  --text: var(--theme-text);
 
-  --text-soft: #334155;
+  --text-soft: var(--theme-text-soft);
 
-  --muted: #64748b;
+  --muted: var(--theme-muted);
 
-  --muted-light: #94a3b8;
+  --muted-light: var(--theme-muted-light);
 
-  --line: rgba(15, 23, 42, 0.08);
+  --line: var(--theme-line);
 
-  --line-strong: rgba(15, 23, 42, 0.13);
+  --line-strong: var(--theme-line-strong);
 
-  --purple: #6d28d9;
+  --purple: var(--theme-primary);
 
-  --purple-dark: #5b21b6;
+  --purple-dark: var(--theme-primary-dark);
 
-  --purple-soft: rgba(109, 40, 217, 0.07);
+  --purple-soft: var(--theme-primary-soft);
 
-  --purple-border: rgba(109, 40, 217, 0.16);
+  --purple-border: var(--theme-primary-border);
 
-  --green: #15803d;
+  --green: var(--theme-success);
 
   --green-light: #22c55e;
 
-  --green-soft: #f0fdf4;
+  --green-soft: var(--theme-success-soft);
 
   --green-border: #bbf7d0;
 
-  --red: #b42318;
+  --red: var(--theme-danger);
 
-  --red-soft: #fff5f5;
+  --red-soft: var(--theme-danger-soft);
 
   --red-border: #fecaca;
 
-  --orange: #b45309;
+  --orange: var(--theme-warning);
 
-  --orange-soft: #fff8eb;
+  --orange-soft: var(--theme-warning-soft);
 
   --orange-border: #fed7aa;
 
-  --radius-large: 20px;
+  --radius-large: var(--theme-radius-large);
 
-  --radius: 14px;
+  --radius: var(--theme-radius-card);
 
-  --radius-control: 10px;
+  --radius-control: var(--theme-radius-small);
 
   --radius-pill: 999px;
 
@@ -72,19 +72,7 @@
 
   color: var(--text);
 
-  font-family:
-
-    ui-sans-serif,
-
-    system-ui,
-
-    -apple-system,
-
-    BlinkMacSystemFont,
-
-    "Segoe UI",
-
-    sans-serif;
+  font-family: var(--theme-font);
 
 }
 
@@ -100,23 +88,7 @@
 
 ========================================================= */
 
-.profile-page {
 
-  width: 100%;
-
-  max-width: 1240px;
-
-  margin: 0 auto;
-
-  padding:
-
-    30px
-
-    30px
-
-    55px;
-
-}
 
 /* =========================================================
 
@@ -290,17 +262,7 @@
 
   color: var(--text);
 
-  font-size:
-
-    clamp(
-
-      28px,
-
-      4vw,
-
-      37px
-
-    );
+  font-size: var(--theme-title-size);
 
   line-height: 1.08;
 
@@ -308,7 +270,7 @@
 
     -0.045em;
 
-  font-weight: 780;
+  font-weight: 750;
 
 }
 
@@ -1136,9 +1098,7 @@ background .15s ease;
 
     var(--radius-control);
 
-  background:
-
-    var(--text);
+  background: var(--theme-primary);
 
   color: #fff;
 
@@ -1168,7 +1128,7 @@ background .15s ease;
 
     translateY(-1px);
 
-  background: #020617;
+  background: var(--theme-primary-dark);
 
   box-shadow:
 
@@ -2302,17 +2262,7 @@ background .15s ease,
 
 (max-width: 650px) {
 
-  .profile-page {
 
-    padding:
-
-      20px
-
-      15px
-
-      40px;
-
-  }
 
   .identity-row {
 
@@ -2350,7 +2300,7 @@ background .15s ease,
 
   .identity-top h1 {
 
-    font-size: 29px;
+    font-size: var(--theme-title-size);
 
   }
 
@@ -2412,13 +2362,7 @@ background .15s ease,
 
 (max-width: 430px) {
 
-  .profile-page {
 
-    padding-left: 10px;
-
-    padding-right: 10px;
-
-  }
 
   .identity-row {
 
@@ -2438,7 +2382,7 @@ background .15s ease,
 
   .identity-top h1 {
 
-    font-size: 25px;
+    font-size: var(--theme-title-size);
 
   }
 

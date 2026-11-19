@@ -1,3 +1,4 @@
+import { DashboardEntityType } from '../../interfaces/dashboard-evidence';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, Input, NgZone, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -8,7 +9,9 @@ import { ApiService } from '../../services/api.service';
 import { users } from '../../interfaces/users';
 import {
   StanceAnalysisType,
+  StanceComment,
   StanceFilters,
+  StancePage,
   StanceSource,
   StanceSummary,
   StanceTimelineRow,
@@ -30,7 +33,7 @@ const ZERO_DISTRIBUTION: Record<StanceValue, number> = {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './stance-comentarios.component.html',
-  styleUrls: ['./stance-comentarios.component.css']
+  styleUrls: ['./stance-comentarios.component.css', '../dashboard.css']
 })
 export class StanceComentariosComponent implements OnInit, OnChanges, OnDestroy {
   // Conserva los filtros del componente padre y la firma de ApiService existente.
@@ -41,6 +44,8 @@ export class StanceComentariosComponent implements OnInit, OnChanges, OnDestroy 
   @Input() searchText = '';
   @Input() users: users[] = [];
   @Input() categoria = '';
+  @Input() entity = '';
+  @Input() entityType?: DashboardEntityType;
   @Input() type_user: 'Medio' | 'Persona' | 'Entidad' | null = null;
   @Input() fallbackEndToStart = false;
 
@@ -60,7 +65,6 @@ export class StanceComentariosComponent implements OnInit, OnChanges, OnDestroy 
     NO_CLARO: '#9276cb'
   };
   readonly intervals: TimelineInterval[] = ['1h', '3h', '6h', '12h', '1d'];
-  readonly skeletonItems = [1, 2, 3, 4];
 
   analysisType: StanceAnalysisType = 'post';
   interval: TimelineInterval = '1d';
@@ -132,6 +136,7 @@ export class StanceComentariosComponent implements OnInit, OnChanges, OnDestroy 
   }
 
   ngOnDestroy(): void {
+    this.closeEvidence();
     this.destroyed = true;
     this.filtersSub?.unsubscribe();
     this.summarySub?.unsubscribe();
@@ -193,12 +198,43 @@ export class StanceComentariosComponent implements OnInit, OnChanges, OnDestroy 
     return `${year}-${month}-${day}`;
   }
 
+  evidence?: StancePage<StanceComment>;
+  evidenceSelection?: { stance: StanceValue; topic?: StanceTopic };
+  evidenceLoading = false;
+  evidenceError = false;
+  private evidenceRequest?: Subscription;
+
+  showEvidence(stance: StanceValue, topic?: StanceTopic, page = 1): void {
+    this.evidenceRequest?.unsubscribe();
+    this.evidenceSelection = { stance, topic };
+    this.evidenceLoading = true;
+    this.evidenceError = false;
+    this.evidence = undefined;
+    this.evidenceRequest = this.api.getStanceComentarios({
+      ...this.baseFilters(topic ? 'topic' : this.analysisType),
+      stance, topicId: topic?.topic_id, page, limit: 10
+    }).subscribe({
+      next: response => this.applyAsync(() => { this.evidence = response.comments; this.evidenceLoading = false; }),
+      error: () => this.applyAsync(() => { this.evidenceLoading = false; this.evidenceError = true; })
+    });
+  }
+
+  closeEvidence(): void {
+    this.evidenceRequest?.unsubscribe();
+    this.evidenceSelection = undefined;
+    this.evidence = undefined;
+    this.evidenceLoading = false;
+    this.evidenceError = false;
+  }
+
   private baseFilters(analysisType: StanceAnalysisType = this.analysisType): StanceFilters {
     const filters: StanceFilters = {
       analysisType,
       users: this.effectiveUsers,
       topic_ids: [...(this.selectedTopics ?? [])],
       search: this.searchText?.trim() || undefined,
+      entidad: this.entity || undefined,
+      entity_type: this.entityType,
       timeline_interval: this.interval
     };
 
@@ -215,6 +251,7 @@ export class StanceComentariosComponent implements OnInit, OnChanges, OnDestroy 
   }
 
   reload(refreshTopics = true): void {
+    this.closeEvidence();
     this.summarySub?.unsubscribe();
     this.sourcesSub?.unsubscribe();
     this.timelineSub?.unsubscribe();
@@ -330,7 +367,7 @@ export class StanceComentariosComponent implements OnInit, OnChanges, OnDestroy 
       next: data => this.applyAsync(() => {
         this.timeline = data?.timeline ?? [];
         // El máximo se calcula una vez, no una vez por cada barra renderizada.
-        this.timelineMax = Math.max(1, ...this.timeline.map(row => Number(row.total) || 0));
+        this.timelineMax = this.timeline.reduce((max, row) => Math.max(max, Number(row.total) || 0), 1);
         this.loadingTimeline = false;
       }),
       error: () => this.applyAsync(() => {

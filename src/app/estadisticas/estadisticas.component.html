@@ -4,7 +4,7 @@
 
 ========================================================= -->
 
-<div class="dashboard-toolbar">
+<div class="dashboard-toolbar nv-page nv-page-toolbar">
 
   <!-- =====================================================
 
@@ -12,25 +12,16 @@
 
   ====================================================== -->
 
-  <div class="toolbar-main">
+  <div class="toolbar-main nv-page-heading">
 
     <!-- TÍTULO / VISTA ACTUAL -->
 
     <div class="toolbar-title">
 
-      <span class="toolbar-eyebrow">NetVora Intelligence</span>
 
       <div class="toolbar-title-row">
 
-        <h2>{{ selectedCategoria || 'Panel principal' }}</h2>
-
-        <span class="view-status">
-
-          <span class="view-status-dot"></span>
-
-          Análisis activo
-
-        </span>
+        <h1>{{ selectedCategoria || 'Estadísticas' }}</h1>
 
       </div>
 
@@ -559,6 +550,21 @@
 
     </div>
 
+    <div class="stats-quick-actions">
+      <button type="button" (click)="applyPreset(7)">7 días</button>
+      <button type="button" (click)="applyPreset(30)">30 días</button>
+      <button *ngIf="appliedSelectedUsers.length" type="button" (click)="removeAppliedFilter('accounts')">Quitar cuentas</button>
+      <button *ngIf="appliedSelectedTopics.length" type="button" (click)="removeAppliedFilter('topics')">Quitar tópicos</button>
+      <button *ngIf="appliedSearchText" type="button" (click)="removeAppliedFilter('search')">Quitar búsqueda</button>
+      <button *ngIf="appliedEntity" type="button" (click)="removeAppliedFilter('entity')">Quitar mención a {{ appliedEntity }}</button>
+      <button type="button" [attr.aria-expanded]="radarFormOpen" (click)="radarFormOpen = !radarFormOpen">Seguir conversación</button>
+      <form *ngIf="radarFormOpen" class="stats-quick-actions" (ngSubmit)="saveRadarWatch()">
+        <input name="radarName" [(ngModel)]="radarName" aria-label="Nombre del seguimiento" placeholder="Nombre del seguimiento" maxlength="120">
+        <button type="submit" [disabled]="radarSaving || !radarName.trim() || !users.length">Guardar seguimiento</button>
+        <span *ngIf="radarMessage" role="alert" class="nv-error-state">{{ radarMessage }}</span>
+      </form>
+    </div>
+
     <button
 
       type="button"
@@ -591,11 +597,6 @@
 
       <div>
 
-        <span class="filters-panel-eyebrow">
-
-          Personalizar resultados
-
-        </span>
 
         <h3>Filtros</h3>
 
@@ -841,7 +842,7 @@
 
 ========================================================= -->
 
-<section class="chart-section">
+<section class="chart-section nv-section">
 
   <div class="chart-container">
 
@@ -852,6 +853,7 @@
     ====================================================== -->
 
     <app-todos
+      (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'todos'"
 
@@ -876,6 +878,8 @@
     ====================================================== -->
 
     <app-politica-estadisticas
+
+      (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'politica'"
 
@@ -903,6 +907,8 @@
 
     <app-politica-estadisticas
 
+      (applyDashboardSelection)="applyDashboardSelection($event)"
+
       *ngIf="selectedComponent === 'economia'"
 
       categoria="economia"
@@ -928,6 +934,8 @@
     ====================================================== -->
 
     <app-politica-estadisticas
+
+      (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'deportes'"
 
@@ -955,6 +963,8 @@
 
     <app-politica-estadisticas
 
+      (applyDashboardSelection)="applyDashboardSelection($event)"
+
       *ngIf="selectedComponent === 'seguridad'"
 
       categoria="seguridad"
@@ -980,6 +990,8 @@
     ====================================================== -->
 
     <app-politica-estadisticas
+
+      (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'sociedad'"
 
@@ -1007,6 +1019,8 @@
 
     <app-politica-estadisticas
 
+      (applyDashboardSelection)="applyDashboardSelection($event)"
+
       *ngIf="selectedComponent === 'ambiente'"
 
       categoria="ambiente"
@@ -1032,6 +1046,8 @@
     ====================================================== -->
 
     <app-politica-estadisticas
+
+      (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'salud'"
 
@@ -1059,6 +1075,8 @@
 
     <app-politica-estadisticas
 
+      (applyDashboardSelection)="applyDashboardSelection($event)"
+
       *ngIf="selectedComponent === 'educacion'"
 
       categoria="educacion"
@@ -1084,6 +1102,8 @@
     ====================================================== -->
 
     <app-politica-estadisticas
+
+      (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'gestiones'"
 
@@ -1111,6 +1131,8 @@
 
     <app-politica-estadisticas
 
+      (applyDashboardSelection)="applyDashboardSelection($event)"
+
       *ngIf="selectedComponent === 'otros'"
 
       categoria="otros"
@@ -1137,6 +1159,8 @@
 
     <app-estadisticas-enti-personas
 
+      (applyDashboardSelection)="applyDashboardSelection($event)"
+
       *ngIf="selectedComponent === 'entidades'"
 
       [startDate]="appliedStartDate"
@@ -1148,6 +1172,7 @@
       [selectedTopics]="appliedSelectedTopics"
 
       [type_user]="'Entidad'"
+      [entidad]="appliedEntity" [entityType]="appliedEntityType"
 
       [searchText]="appliedSearchText"
 
@@ -1163,6 +1188,8 @@
 
     <app-estadisticas-enti-personas
 
+      (applyDashboardSelection)="applyDashboardSelection($event)"
+
       *ngIf="selectedComponent === 'personas'"
 
       [startDate]="appliedStartDate"
@@ -1174,6 +1201,7 @@
       [selectedTopics]="appliedSelectedTopics"
 
       [type_user]="'Persona'"
+      [entidad]="appliedEntity" [entityType]="appliedEntityType"
 
       [searchText]="appliedSearchText"
 

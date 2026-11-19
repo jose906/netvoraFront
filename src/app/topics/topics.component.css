@@ -5,33 +5,30 @@
 ========================================================= */
 
 :host {
-  --nv-bg: #f6f7f9;
-  --nv-surface: #ffffff;
-  --nv-surface-soft: #fafbfc;
-  --nv-text: #0f172a;
-  --nv-text-soft: #334155;
-  --nv-muted: #64748b;
-  --nv-muted-light: #94a3b8;
-  --nv-line: rgba(15, 23, 42, 0.08);
-  --nv-line-strong: rgba(15, 23, 42, 0.13);
-  --nv-purple: #6d28d9;
-  --nv-purple-dark: #5b21b6;
-  --nv-purple-soft: rgba(109, 40, 217, 0.07);
-  --nv-purple-border: rgba(109, 40, 217, 0.17);
-  --nv-green: #16a34a;
-  --nv-green-soft: rgba(22, 163, 74, 0.08);
-  --nv-red: #dc2626;
-  --nv-red-soft: rgba(220, 38, 38, 0.08);
+  --nv-bg: var(--theme-bg);
+  --nv-surface: var(--theme-surface);
+  --nv-surface-soft: var(--theme-surface-soft);
+  --nv-text: var(--theme-text);
+  --nv-text-soft: var(--theme-text-soft);
+  --nv-muted: var(--theme-muted);
+  --nv-muted-light: var(--theme-muted-light);
+  --nv-line: var(--theme-line);
+  --nv-line-strong: var(--theme-line-strong);
+  --nv-purple: var(--theme-primary);
+  --nv-purple-dark: var(--theme-primary-dark);
+  --nv-purple-soft: var(--theme-primary-soft);
+  --nv-purple-border: var(--theme-primary-border);
+  --nv-green: var(--theme-success);
+  --nv-green-soft: var(--theme-success-soft);
+  --nv-red: var(--theme-danger);
+  --nv-red-soft: var(--theme-danger-soft);
   --nv-neutral: #64748b;
   --nv-neutral-soft: rgba(100, 116, 139, 0.1);
-  --nv-radius-sm: 9px;
-  --nv-radius: 14px;
-  --nv-radius-lg: 20px;
-  --nv-shadow-sm:
-    0 1px 2px rgba(15, 23, 42, 0.03),
-    0 4px 14px rgba(15, 23, 42, 0.035);
-  --nv-shadow-md:
-    0 12px 32px rgba(15, 23, 42, 0.06);
+  --nv-radius-sm: var(--theme-radius-small);
+  --nv-radius: var(--theme-radius-card);
+  --nv-radius-lg: var(--theme-radius-large);
+  --nv-shadow-sm: var(--theme-shadow);
+  --nv-shadow-md: var(--theme-shadow-raised);
   display: block;
   min-width: 0;
 }
@@ -48,16 +45,10 @@
 ========================================================= */
 
 .page {
-  width: 100%;
-  max-width: 1480px;
   min-width: 0;
   min-height: 100vh;
-  margin: 0 auto;
-  padding: 24px 0 56px;
   color: var(--nv-text);
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--theme-font);
 }
 
 /* =========================================================
@@ -178,8 +169,8 @@
   max-width: 900px;
   margin: 0;
   color: var(--nv-text);
-  font-size: clamp(29px, 3vw, 43px);
-  font-weight: 850;
+  font-size: var(--theme-title-size);
+  font-weight: 750;
   line-height: 1.1;
   letter-spacing: -0.04em;
   overflow-wrap: anywhere;
@@ -649,7 +640,7 @@
   min-height: 44px;
   padding: 0 18px;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: var(--theme-radius-small);
   font-family: inherit;
   font-size: 12px;
   font-weight: 750;
@@ -672,12 +663,12 @@
 
 .btn-primary {
   color: #fff;
-  background: var(--nv-text);
-  border-color: var(--nv-text);
+  background: var(--theme-primary);
+  border-color: var(--theme-primary);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #020617;
+  background: var(--theme-primary-dark);
 }
 
 .btn-ghost {
@@ -1444,10 +1435,7 @@
 ========================================================= */
 
 @media (max-width: 1350px) {
-  .page {
-    padding-left: 18px;
-    padding-right: 18px;
-  }
+
 
   .signal-pulse {
     grid-template-columns:
@@ -1486,9 +1474,7 @@
 ========================================================= */
 
 @media (max-width: 900px) {
-  .page {
-    padding: 18px 14px 40px;
-  }
+
 
   .signal-hero {
     padding: 24px 22px 0;
@@ -1538,9 +1524,7 @@
 ========================================================= */
 
 @media (max-width: 640px) {
-  .page {
-    padding: 12px 10px 32px;
-  }
+
 
   .signal-hero {
     margin-bottom: 14px;
@@ -1561,7 +1545,7 @@
   }
 
   .signal-heading h1 {
-    font-size: 29px;
+    font-size: var(--theme-title-size);
     line-height: 1.15;
   }
 

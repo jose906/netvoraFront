@@ -1,18 +1,12 @@
-<div class="profile-page">
+<div class="profile-page nv-page">
 
   <!-- =====================================================
        HEADER
   ====================================================== -->
 
-  <header class="profile-header">
+  <header class="profile-header nv-page-heading">
 
     <div class="profile-heading">
-
-      <div class="breadcrumb">
-        Configuración
-        <span>/</span>
-        Perfil
-      </div>
 
       <div class="identity-row">
 
@@ -92,6 +86,8 @@
     class="feedback"
     [class.success]="msg.type === 'ok'"
     [class.error]="msg.type === 'err'"
+    [class.nv-error-state]="msg.type === 'err'"
+    [attr.role]="msg.type === 'err' ? 'alert' : 'status'"
   >
 
     <div class="feedback-mark">
@@ -123,15 +119,12 @@
            INFORMACIÓN PERSONAL
       ================================================== -->
 
-      <section class="section-card">
+      <section class="nv-quiet-surface section-card">
 
         <header class="section-header">
 
           <div>
 
-            <span class="section-kicker">
-              Cuenta
-            </span>
 
             <h2>
               Información personal
@@ -353,15 +346,12 @@
            SEGURIDAD
       ================================================== -->
 
-      <section class="section-card security-card">
+      <section class="nv-quiet-surface section-card security-card">
 
         <header class="section-header">
 
           <div>
 
-            <span class="section-kicker">
-              Seguridad
-            </span>
 
             <h2>
               Contraseña
@@ -625,26 +615,7 @@
 
         <!-- LOADING -->
 
-        <div
-          class="subscription-loading"
-          *ngIf="loading.subscription"
-        >
-
-          <span class="spinner"></span>
-
-          <div>
-
-            <strong>
-              Cargando tu plan
-            </strong>
-
-            <span>
-              Consultando tu suscripción.
-            </span>
-
-          </div>
-
-        </div>
+        <div *ngIf="loading.subscription" class="nv-loading-state" role="status">Cargando tu plan…</div>
 
 
         <!-- CONTENT -->
@@ -1126,7 +1097,7 @@
       </div>
 
       <div class="billing-dialog-body">
-        <p *ngIf="billing.error" class="billing-error" role="alert">
+        <p *ngIf="billing.error" class="billing-error nv-error-state" role="alert">
           {{ billing.error }}
         </p>
 

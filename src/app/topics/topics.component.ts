@@ -180,6 +180,17 @@ export class TopicsComponent implements OnInit {
   // INIT
   // =========================================================
 
+  get radarParams() {
+    return {
+      inicio: this.toYMD(this.startDate ?? new Date()),
+      cuentas: this.selectedUsers.join(','),
+      temas: this.topicId,
+      buscar: this.searchText,
+      seguir: '1',
+      nombre: this.topicName
+    };
+  }
+
   ngOnInit(): void {
 
     const navigationState =
@@ -218,9 +229,12 @@ export class TopicsComponent implements OnInit {
     // FILTROS DESDE DASHBOARD
     // =======================================================
 
-    if (
-      navigationState?.startDate
-    ) {
+    const activityDate = this.route.snapshot.queryParamMap?.get('fecha');
+
+    if (activityDate && /^\d{4}-\d{2}-\d{2}$/.test(activityDate)) {
+      this.startDate = this.parseNavigationDate(activityDate);
+      this.endDate = undefined;
+    } else if (navigationState?.startDate) {
 
       this.startDate =
         this.parseNavigationDate(
@@ -284,9 +298,7 @@ export class TopicsComponent implements OnInit {
         this.route
           .snapshot
           .paramMap
-          .get(
-            'topic_id'
-          );
+          .get('id');
 
 
       if (routeId) {
@@ -1678,6 +1690,10 @@ export class TopicsComponent implements OnInit {
   // =========================================================
   // TOTAL SENTIMIENTOS
   // =========================================================
+
+  get publicacionesSinClasificar(): number {
+    return Math.max(0, this.totalPublicaciones - this.totalSentimientos);
+  }
 
   get totalSentimientos(): number {
 

@@ -74,11 +74,17 @@ export class MenuComponent implements OnInit {
   // AUTH
   // =========================================================
 
-  logout() {
-    this.authService.logout();
-    window.location.reload();
-    this.router.navigate(['/login']);
+  async logout(): Promise<void> {
+    this.logoutError = '';
+    try {
+      await this.authService.logout();
+      await this.router.navigate(['/login']);
+    } catch {
+      this.logoutError = 'No se pudo cerrar sesión. Intenta nuevamente.';
+    }
   }
+
+  logoutError = '';
 
   // =========================================================
   // PERMISOS

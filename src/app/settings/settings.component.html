@@ -1,4 +1,4 @@
-<div class="settings-page">
+<div class="settings-page nv-page">
 
   <!-- =====================================================
        TOAST
@@ -13,6 +13,8 @@
       *ngIf="toast.show"
       class="toast"
       [ngClass]="toast.type"
+      [class.nv-error-state]="toast.type === 'error'"
+      [attr.role]="toast.type === 'error' ? 'alert' : 'status'"
     >
 
       <div class="toast-indicator"></div>
@@ -46,15 +48,9 @@
        HEADER
   ====================================================== -->
 
-  <header class="page-header">
+  <header class="page-header nv-page-heading">
 
     <div class="page-heading">
-
-      <div class="breadcrumb">
-        Configuración
-        <span>/</span>
-        Fuentes
-      </div>
 
       <div class="heading-row">
 
@@ -163,7 +159,7 @@
        CONTENT
   ====================================================== -->
 
-  <main class="sources-panel">
+  <main class="sources-panel nv-quiet-surface">
 
 
     <!-- ===================================================
@@ -275,26 +271,7 @@
          LOADING
     ==================================================== -->
 
-    <div
-      class="loading-state"
-      *ngIf="cargando"
-    >
-
-      <span class="spinner"></span>
-
-      <div>
-
-        <strong>
-          Cargando fuentes
-        </strong>
-
-        <p>
-          Estamos preparando las cuentas disponibles.
-        </p>
-
-      </div>
-
-    </div>
+    <div *ngIf="cargando" class="nv-loading-state" role="status">Cargando fuentes…</div>
 
 
     <!-- ===================================================
@@ -593,21 +570,7 @@
     "
   >
 
-    <div class="drawer-loading">
-
-      <span class="spinner"></span>
-
-      <div>
-        <strong>
-          Comprobando acceso
-        </strong>
-
-        <p>
-          Estamos revisando tu plan.
-        </p>
-      </div>
-
-    </div>
+    <div class="nv-loading-state" role="status">Verificando acceso…</div>
 
   </div>
 

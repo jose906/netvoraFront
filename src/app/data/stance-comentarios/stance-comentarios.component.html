@@ -1,12 +1,11 @@
-<section class="sv-page" aria-label="Panel de posturas de comentarios">
-  <header class="sv-head">
+<section class="sv-page nv-dashboard-page" aria-label="Panel de posturas de comentarios">
+  <header class="sv-head dashboard-banner">
     <div class="sv-head-copy">
-      <div class="sv-eyebrow"><span class="sv-eyebrow-dot"></span> INTELIGENCIA DE AUDIENCIAS / STANCE</div>
       <h2>Posturas de la audiencia</h2>
       <p>Explora cómo se posicionan los comentarios frente a publicaciones y tópicos.</p>
     </div>
-    <button class="sv-button sv-refresh" type="button" (click)="reload()"
-      [disabled]="!isReady" aria-label="Actualizar análisis">
+    <button class="sv-button sv-refresh dashboard-primary" type="button" (click)="reload()"
+      [disabled]="!isReady || loadingDashboard || loadingTimeline" aria-label="Actualizar análisis">
       <span class="sv-refresh-icon" [class.is-spinning]="loadingDashboard || loadingTimeline" aria-hidden="true">↻</span>
       {{ loadingDashboard || loadingTimeline ? 'Actualizando' : 'Actualizar datos' }}
     </button>
@@ -42,7 +41,7 @@
   </div>
 
   <div class="sv-notice sv-warn" role="status" *ngIf="!isReady">{{ selectionMessage }}</div>
-  <div class="sv-notice sv-error" role="alert" *ngIf="error">{{ error }}</div>
+  <div class="sv-notice sv-error nv-error-state" role="alert" *ngIf="error">{{ error }}</div>
 
   <ng-container *ngIf="isReady">
     <div class="sv-kpis" *ngIf="!loadingSummary; else svKpiLoading">
@@ -71,19 +70,12 @@
       </article>
     </div>
     <ng-template #svKpiLoading>
-      <div class="sv-kpis" aria-label="Cargando indicadores" role="status">
-        <article class="sv-kpi sv-kpi-loading" *ngFor="let item of skeletonItems">
-          <span class="sv-skeleton sv-skeleton-short"></span>
-          <span class="sv-skeleton sv-skeleton-tall"></span>
-          <span class="sv-skeleton sv-skeleton-medium"></span>
-        </article>
-      </div>
+      <div class="nv-loading-state" role="status">Cargando indicadores…</div>
     </ng-template>
 
     <div class="sv-insight" *ngIf="!loadingSummary && leadingStance as dominant">
       <div class="sv-insight-mark" aria-hidden="true">↗</div>
       <div>
-        <span class="sv-section-kicker">HALLAZGO DEL PERÍODO</span>
         <p>La postura más frecuente es <strong [style.color]="colors[dominant.key]">{{ dominant.label }}</strong>,
           con <strong>{{ dominant.percentage | number:'1.1-1' }}%</strong> de las evaluaciones clasificadas.</p>
         <small>Es un agregado de objetivos diferentes: no representa apoyo o rechazo a una sola persona o medida.</small>
@@ -94,7 +86,6 @@
       <article class="sv-card sv-distribution-card">
         <div class="sv-card-head">
           <div>
-            <span class="sv-section-kicker">COMPOSICIÓN</span>
             <h3>Distribución de posturas</h3>
             <p>Porcentaje sobre las evaluaciones clasificadas.</p>
           </div>
@@ -110,7 +101,8 @@
           <div class="sv-legend-list">
             <div class="sv-legend-row" *ngFor="let stance of stances; trackBy: trackByStance">
               <span class="sv-dot" [style.backgroundColor]="colors[stance]"></span>
-              <span class="sv-legend-label">{{ labels[stance] }}</span>
+              <button type="button" class="sv-text-action sv-legend-label" [disabled]="!summary.distribution[stance]"
+                (click)="showEvidence(stance)">{{ labels[stance] }}</button>
               <span class="sv-mini-track" aria-hidden="true"><span [style.width.%]="summary.percentages[stance]" [style.backgroundColor]="colors[stance]"></span></span>
               <strong>{{ summary.percentages[stance] | number:'1.1-1' }}%</strong>
               <span class="sv-muted sv-legend-count">{{ summary.distribution[stance] | number }}</span>
@@ -130,7 +122,6 @@
       <article class="sv-card sv-timeline-card">
         <div class="sv-card-head sv-chart-head">
           <div>
-            <span class="sv-section-kicker">ACTIVIDAD</span>
             <h3>Evolución de posturas</h3>
             <p>Volumen y composición por intervalo.</p>
           </div>
@@ -146,7 +137,7 @@
           <button type="button" [class.active]="timelineDisplay === 'share'"
             [attr.aria-pressed]="timelineDisplay === 'share'" (click)="timelineDisplay = 'share'">Proporción 100%</button>
         </div>
-        <p class="sv-notice sv-error" role="alert" *ngIf="timelineError">{{ timelineError }}
+        <p class="sv-notice sv-error nv-error-state" role="alert" *ngIf="timelineError">{{ timelineError }}
           <button class="sv-text-action" type="button" (click)="loadTimeline()">Reintentar</button>
         </p>
         <div class="sv-timeline" *ngIf="!loadingTimeline && timeline.length; else svNoTimeline">
@@ -165,7 +156,7 @@
           </div>
         </div>
         <ng-template #svNoTimeline>
-          <p class="sv-empty" *ngIf="loadingTimeline" role="status">Cargando evolución temporal...</p>
+          <div *ngIf="loadingTimeline" class="nv-loading-state" role="status">Cargando evolución temporal…</div>
           <p class="sv-empty" *ngIf="!loadingTimeline && !timelineError">Sin evaluaciones en este intervalo.</p>
         </ng-template>
         <div class="sv-card-footer sv-chart-footer">
@@ -178,8 +169,7 @@
     <article class="sv-card sv-topics-card">
       <div class="sv-card-head sv-responsive-head">
         <div>
-          <span class="sv-section-kicker">DETALLE / TÓPICOS</span>
-          <h3>Tópicos con mayor actividad</h3>
+          <h3>Posturas por tema</h3>
           <p>Las posturas de esta sección siempre se evalúan frente al objetivo del tópico.</p>
         </div>
         <div class="sv-head-meta" *ngIf="totalEligibleTopics > 0">{{ totalEligibleTopics | number }} tópicos elegibles</div>
@@ -198,7 +188,7 @@
           </select>
         </label>
       </div>
-      <p class="sv-notice sv-error" role="alert" *ngIf="topicsError">{{ topicsError }}</p>
+      <p class="sv-notice sv-error nv-error-state" role="alert" *ngIf="topicsError">{{ topicsError }}</p>
       <div class="sv-topic-list" *ngIf="!loadingTopics && sortedTopics.length; else svNoTopics">
         <article class="sv-topic-row" *ngFor="let topic of sortedTopics; let i = index; trackBy: trackByTopic">
           <button type="button" class="sv-topic-main" (click)="toggleTopic(topic.topic_id)"
@@ -232,7 +222,8 @@
             <div class="sv-topic-detail-grid">
               <div *ngFor="let stance of stances; trackBy: trackByStance">
                 <span class="sv-dot" [style.backgroundColor]="colors[stance]"></span>
-                <span>{{ labels[stance] }}</span>
+                <button type="button" class="sv-text-action" [disabled]="!topic.stance_summary.distribution[stance]"
+                  (click)="showEvidence(stance, topic)">{{ labels[stance] }}</button>
                 <strong>{{ topic.stance_summary.distribution[stance] | number }}</strong>
                 <small>{{ topic.stance_summary.percentages[stance] | number:'1.1-1' }}%</small>
               </div>
@@ -249,11 +240,41 @@
       <p class="sv-section-footnote">Se consultan hasta 10 tópicos, ordenados inicialmente por el servidor. Los controles de búsqueda y orden solo afectan los resultados cargados; los porcentajes con muestras pequeñas deben interpretarse con cuidado.</p>
     </article>
 
+    <article class="sv-card sv-evidence" *ngIf="evidenceSelection as selected" aria-label="Comentarios clasificados">
+      <div class="sv-card-head">
+        <div><h3>{{ labels[selected.stance] }} · Comentarios clasificados</h3>
+          <p *ngIf="selected.topic as topic">{{ topic.topic_name }} · {{ topic.stance_summary.coverage_percent | number:'1.1-1' }}% de cobertura</p>
+        </div>
+        <button type="button" class="sv-button" (click)="closeEvidence()">Cerrar detalle</button>
+      </div>
+      <div *ngIf="evidenceLoading" class="nv-loading-state" role="status">Cargando comentarios…</div>
+      <p *ngIf="evidenceError" role="alert" class="nv-error-state">No se pudieron cargar los comentarios.
+        <button type="button" class="sv-text-action" (click)="showEvidence(selected.stance, selected.topic)">Reintentar</button>
+      </p>
+      <ng-container *ngIf="evidence as result">
+        <p>{{ result.total | number }} evaluaciones para esta selección</p>
+        <article *ngFor="let comment of result.items" class="sv-evidence-comment">
+          <strong>{{ comment.main_target || comment.topic_name || 'Objetivo de la publicación' }}</strong>
+          <p>{{ comment.comment_text }}</p>
+          <details><summary>Publicación original · {{ comment.source_name }}</summary>
+            <p>{{ comment.post_text }}</p>
+            <a *ngIf="comment.post_url" [href]="comment.post_url" target="_blank" rel="noopener noreferrer">Abrir original</a>
+          </details>
+        </article>
+        <div class="sv-card-footer" *ngIf="result.total > result.limit">
+          <button type="button" class="sv-button" [disabled]="result.page <= 1"
+            (click)="showEvidence(selected.stance, selected.topic, result.page - 1)">Anterior</button>
+          <span>Página {{ result.page }}</span>
+          <button type="button" class="sv-button" [disabled]="result.page * result.limit >= result.total"
+            (click)="showEvidence(selected.stance, selected.topic, result.page + 1)">Siguiente</button>
+        </div>
+      </ng-container>
+    </article>
+
     <article class="sv-card sv-source-card">
       <div class="sv-card-head sv-responsive-head">
         <div>
-          <span class="sv-section-kicker">COMPARACIÓN / FUENTES</span>
-          <h3>Posturas por cuenta de origen</h3>
+          <h3>Posturas por cuenta</h3>
           <p>Se analizan las respuestas recibidas en sus publicaciones, no la línea editorial de cada cuenta.</p>
         </div>
         <span class="sv-head-meta" *ngIf="sources.length">{{ sources.length | number }} cuentas</span>
@@ -272,7 +293,7 @@
           </select>
         </label>
       </div>
-      <p class="sv-notice sv-error" role="alert" *ngIf="sourcesError">{{ sourcesError }}</p>
+      <p class="sv-notice sv-error nv-error-state" role="alert" *ngIf="sourcesError">{{ sourcesError }}</p>
       <div class="sv-table-scroll" *ngIf="!loadingSources && filteredSources.length; else svNoSources">
         <table class="sv-table">
           <thead>
@@ -307,7 +328,7 @@
         </table>
       </div>
       <ng-template #svNoSources>
-        <p class="sv-empty" *ngIf="loadingSources">Cargando cuentas...</p>
+        <div *ngIf="loadingSources" class="nv-loading-state" role="status">Cargando cuentas…</div>
         <p class="sv-empty" *ngIf="!loadingSources && !sourcesError">
           {{ sources.length ? 'No hay cuentas que coincidan con tu búsqueda.' : 'No hay datos por fuente para los filtros aplicados.' }}
         </p>

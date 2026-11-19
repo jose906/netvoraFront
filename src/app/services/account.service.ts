@@ -1,3 +1,4 @@
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -9,7 +10,7 @@ import { AccountMeResponse } from '../interfaces/me';
 })
 export class AccountService {
 
-  private baseUrl = 'https://netvoraback-109294037791.europe-west1.run.app/';
+  private baseUrl = `${environment.apiUrl}/`;
 
   constructor(private http: HttpClient) {}
 
@@ -22,7 +23,7 @@ export class AccountService {
     used: boolean;
     has_active_subscription: boolean;
   }>(
-    `${this.baseUrl}/subscription/free-trial/status`
+    `${this.baseUrl}subscription/free-trial/status`
   );
 }
 
@@ -33,7 +34,7 @@ activateFreeTrial() {
     start_date: string;
     end_date: string;
   }>(
-    `${this.baseUrl}/subscription/free-trial/activate`,
+    `${this.baseUrl}subscription/free-trial/activate`,
     {}
   );
 }

@@ -1,3 +1,4 @@
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
@@ -17,31 +18,44 @@ export class AuthzService {
   role$ = this.roleSubject.asObservable();
 
   private loaded = false;
+  private generation = 0;
+  private pending?: Promise<void>;
 
   constructor(private http: HttpClient) {}
 
-  /** Llamar SOLO cuando ya existe sesión firebase (token lo pone el interceptor) */
-  async refreshMe(): Promise<void> {
+  refreshMe(): Promise<void> {
+    if (this.pending) return this.pending;
+
+    const generation = this.generation;
+    this.pending = this.loadRole(generation).finally(() => {
+      if (generation === this.generation) this.pending = undefined;
+    });
+    return this.pending;
+  }
+
+  private async loadRole(generation: number): Promise<void> {
     try {
       const me = await firstValueFrom(
-        this.http.get<MeResponse>('https://netvoraback-109294037791.europe-west1.run.app/api/auth/me')
+        this.http.get<MeResponse>(`${environment.apiUrl}/api/auth/me`)
       );
+      if (generation !== this.generation) return;
 
-      const role = (me.role || 'viewer').toString().trim().toLowerCase() as UserRole;
-      this.roleSubject.next(role);
+      const role = me.role?.trim().toLowerCase();
       this.loaded = true;
+      this.roleSubject.next(role === 'admin' || role === 'analista' ? role : 'viewer');
+    } catch {
+      if (generation !== this.generation) return;
 
-      
-    } catch (err) {
-      
+      this.loaded = false;
       this.roleSubject.next('viewer');
-      this.loaded = true;
     }
   }
 
   reset(): void {
-    this.roleSubject.next('viewer');
+    this.generation++;
+    this.pending = undefined;
     this.loaded = false;
+    this.roleSubject.next('viewer');
   }
 
   isLoaded(): boolean {

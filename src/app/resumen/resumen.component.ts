@@ -1,57 +1,51 @@
-import { Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, DestroyRef, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { JsonData } from '../interfaces/JsonData';
-import { ApiService } from  '../services/api.service';
-import { ResumeInterface } from '../interfaces/ResumeInterface'
+import { ApiService } from '../services/api.service';
+import { ResumeInterface } from '../interfaces/ResumeInterface';
 
 @Component({
   selector: 'app-resumen',
   templateUrl: './resumen.component.html',
   styleUrl: './resumen.component.css'
 })
-export class ResumenComponent {
+export class ResumenComponent implements OnInit {
+  dato?: JsonData;
+  resumen?: ResumeInterface;
+  isLoading = false;
+  error = '';
 
-  texto: string = '';
-  dato: JsonData ;
-  resumen: ResumeInterface[]=[];
-  isLoading: boolean = true;
-
-  constructor(private route: ActivatedRoute, private router: Router, private apiService: ApiService) {
-
-    const navigation = this.router.getCurrentNavigation();
-    this.dato = navigation?.extras.state?.['datos'] || { texto: 'Sin información', categoria: ['Desconocido'] ,url_web:"hols"};
-
-  }
+  constructor(
+    private router: Router,
+    private location: Location,
+    private apiService: ApiService,
+    private destroyRef: DestroyRef
+  ) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe((params) => {
-      this.texto = params.get('texto') || 'Sin información';
-    });
-    this.getResumen()
+    const state = this.router.getCurrentNavigation()?.extras.state ?? this.location.getState();
+    this.dato = (state as { datos?: JsonData } | null)?.datos;
+    const url = this.dato?.url_web?.trim();
+    if (!url) return;
 
-  }
- 
-  goBack(): void {
-    this.router.navigate(['/']);
-  }
-
-
-  getResumen(): void {
-    this.apiService.getResumen({url:this.dato.url_web}).subscribe({
-      next: (response:ResumeInterface[]) => {
-        console.log(response)
-        this.resumen = response
-        console.log(this.resumen[0]['resumen'])
-        this.isLoading = false
+    this.isLoading = true;
+    this.apiService.getResumen({ url }).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: response => {
+        this.resumen = response[0];
+        this.isLoading = false;
       },
-      error: (err) => {
-
-        console.error('Error al enviar dato:', err);
-        this.isLoading = false
+      error: () => {
+        this.error = 'No se pudo cargar el resumen.';
+        this.isLoading = false;
       }
-
-    })
+    });
   }
 
+  goBack(): void {
+    void this.router.navigate(['/']);
+  }
 }

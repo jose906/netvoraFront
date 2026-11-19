@@ -1,3 +1,4 @@
+import { DashboardEntityType, DashboardSelection } from '../interfaces/dashboard-evidence';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
@@ -54,6 +55,8 @@ export class EstadisticasComponent implements OnInit {
   appliedEndDate: Date | null = null;
   appliedSelectedUsers: string[] = [];
   appliedSearchText = '';
+  appliedEntity = '';
+  appliedEntityType?: DashboardEntityType;
   appliedSelectedTopics: number[] = [];
 
   users: users[] = [];
@@ -72,8 +75,114 @@ export class EstadisticasComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.goToView('todos', 'Panel principal', 'todos');
+    const params = this.router.parseUrl(this.router.url).queryParams;
+    const views: Record<VistaDashboard, string> = {
+      todos: 'Panel principal', politica: 'Política', economia: 'Economía', seguridad: 'Seguridad',
+      deportes: 'Deportes', sociedad: 'Sociedad', ambiente: 'Ambiente', salud: 'Salud',
+      educacion: 'Educación', gestiones: 'Gestiones', otros: 'Otros', entidades: 'Entidades', personas: 'Personas'
+    };
+    const view: VistaDashboard = typeof params['vista'] === 'string' &&
+      Object.prototype.hasOwnProperty.call(views, params['vista']) ? params['vista'] as VistaDashboard : 'todos';
+    this.goToView(view, views[view], view === 'todos' ? 'todos'
+      : view === 'entidades' ? 'Entidad' : view === 'personas' ? 'Persona' : 'Medio');
+    if (params['seguir'] === '1') {
+      this.radarFormOpen = true;
+      this.radarName = typeof params['nombre'] === 'string' ? params['nombre'].slice(0, 120) : '';
+    }
+    if (params['inicio']) {
+      this.filterStartDate = this.parseDate(params['inicio']) ?? this.filterStartDate;
+      this.filterEndDate = this.parseDate(params['fin']);
+      this.filterSelectedUsers = typeof params['cuentas'] === 'string'
+        ? params['cuentas'].split(',').filter((id: string) => /^\d+$/.test(id)) : [];
+      this.filterSelectedTopics = typeof params['temas'] === 'string'
+        ? params['temas'].split(',').map(Number).filter((id: number) => Number.isSafeInteger(id) && id > 0) : [];
+      this.filterSearchText = typeof params['buscar'] === 'string' ? params['buscar'] : '';
+      const kind = params['tipoEntidad'];
+      if ((view === 'personas' || view === 'entidades') && typeof params['entidad'] === 'string' &&
+          (kind === 'PER' || kind === 'ORG' || kind === 'LOC')) {
+        this.appliedEntity = params['entidad'].slice(0, 255);
+        this.appliedEntityType = kind;
+      }
+      if (!this.aplicarFechas()) this.resetFiltros();
+    }
     this.loadTopics();
+  }
+
+  applyDashboardSelection(selection: DashboardSelection): void {
+    this.filterStartDate = this.appliedStartDate;
+    this.filterEndDate = this.appliedEndDate;
+    this.filterSearchText = this.appliedSearchText;
+    this.filterSelectedUsers = selection.sourceId ? [selection.sourceId] : [...this.appliedSelectedUsers];
+    this.filterSelectedTopics = selection.topicId ? [selection.topicId] : [...this.appliedSelectedTopics];
+    if (selection.entity && selection.entityType) {
+      this.appliedEntity = selection.entity;
+      this.appliedEntityType = selection.entityType;
+    }
+    if (selection.bucket) {
+      this.filterStartDate = this.parseDate(selection.bucket.slice(0, 10));
+      this.filterEndDate = null;
+    }
+    this.aplicarFechas();
+  }
+
+  applyPreset(days: number): void {
+    const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/La_Paz',
+      year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
+    const part = (type: string) => parts.find(item => item.type === type)?.value ?? '';
+    const today = this.parseDate(part('year') + '-' + part('month') + '-' + part('day'));
+    if (!today) return;
+    const start = new Date(today);
+    start.setDate(start.getDate() - days + 1);
+    this.filterStartDate = start;
+    this.filterEndDate = today;
+    this.aplicarFechas();
+  }
+
+  removeAppliedFilter(filter: 'accounts' | 'topics' | 'search' | 'entity'): void {
+    this.filterStartDate = this.appliedStartDate;
+    this.filterEndDate = this.appliedEndDate;
+    this.filterSelectedUsers = filter === 'accounts' ? [] : [...this.appliedSelectedUsers];
+    this.filterSelectedTopics = filter === 'topics' ? [] : [...this.appliedSelectedTopics];
+    this.filterSearchText = filter === 'search' ? '' : this.appliedSearchText;
+    if (filter === 'entity') {
+      this.appliedEntity = '';
+      this.appliedEntityType = undefined;
+    }
+    this.aplicarFechas();
+  }
+
+  radarName = '';
+  radarFormOpen = false;
+  radarSaving = false;
+  radarMessage = '';
+
+  saveRadarWatch(): void {
+    const name = this.radarName.trim();
+    const accounts = this.appliedSelectedUsers.length ? this.appliedSelectedUsers
+      : this.users.map(account => String(account.idTweetUser));
+    if (!name || !accounts.length || this.radarSaving) return;
+    this.radarSaving = true;
+    this.radarMessage = '';
+    this.apiService.createRadarWatch(name, {
+      view: this.selectedComponent, users: accounts, topic_ids: this.appliedSelectedTopics,
+      search: this.appliedSearchText, entidad: this.appliedEntity || undefined, entity_type: this.appliedEntityType
+    }).subscribe({
+      next: response => {
+        this.radarSaving = false;
+        this.router.navigate(['/radar'], { queryParams: { seguimiento: response.id } });
+      },
+      error: error => {
+        this.radarSaving = false;
+        this.radarMessage = error.error?.error || 'No se pudo crear el seguimiento.';
+      }
+    });
+  }
+
+  private parseDate(value: unknown): Date | null {
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+    const [year, month, day] = value.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? date : null;
   }
 
   toggleFilters(): void {
@@ -209,6 +318,8 @@ export class EstadisticasComponent implements OnInit {
   }
 
   private resetFiltrosInterno(): void {
+    this.appliedEntity = '';
+    this.appliedEntityType = undefined;
     this.filterStartDate = new Date();
     this.filterEndDate = null;
     this.filterSelectedUsers = [];

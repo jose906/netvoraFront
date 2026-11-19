@@ -143,7 +143,6 @@ mailError = false;
   this.cargando = true;
 
   try {
-    const token = await this.AuthService.getIdToken();
 
     this.apiService.getAdminXSources().subscribe({
       next: (data: XAccount[]) => {
@@ -195,7 +194,6 @@ mailError = false;
   this.mailError = false;
 
   try {
-    const token = await this.AuthService.getIdToken();
 
     this.apiService.sendAdminUserEmail(
       u.id,
@@ -203,8 +201,7 @@ mailError = false;
         tipo: this.mailTipo,
         asunto: this.mailAsunto,
         mensaje: this.mailMensaje
-      },
-      token
+      }
     ).subscribe({
       next: (response) => {
         this.mailSending = false;
@@ -287,7 +284,6 @@ mailError = false;
     try {
       this.creatingSub = true;
       this.subMsg = '';
-      const token = await this.AuthService.getIdToken();
       const body = {
         user_id: this.selectedUserId,
         plan_id: this.selectedPlanId,
@@ -295,7 +291,7 @@ mailError = false;
         end_date: this.endDate
       };
 
-      this.apiService.createUserPlan(body, token).subscribe({
+      this.apiService.createUserPlan(body).subscribe({
         next: () => {
           this.subMsg = '✅ Suscripción creada correctamente.';
           this.creatingSub = false;
@@ -324,14 +320,13 @@ mailError = false;
   async registrarUsuario(): Promise<void> {
     try {
       await this.AuthService.register(this.email, this.password);
-      const token = await this.AuthService.getIdToken();
       const body = {
         name: this.nombre2,
         email: this.email,
         tipeUser: this.tipo,
         estadoUser: this.estado
       };
-      this.apiService.syncUsers(body, token).subscribe({
+      this.apiService.syncUsers(body).subscribe({
         next: () => {
           this.loadAppUsers();
           this.resetNewUserForm();

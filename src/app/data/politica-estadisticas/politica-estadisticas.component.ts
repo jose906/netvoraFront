@@ -1,4 +1,4 @@
-import { DashboardEvidenceComponent } from '../dashboard-evidence.component';
+import { DashboardEvidenceComponent } from '../dashboard-evidence/dashboard-evidence.component';
 import { DashboardSelection } from '../../interfaces/dashboard-evidence';
 import { ElementRef, EventEmitter, Output } from '@angular/core';
 import {

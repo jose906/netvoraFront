@@ -1,5 +1,5 @@
 import { RadarComponent } from './radar/radar.component';
-import { DashboardEvidenceComponent } from './data/dashboard-evidence.component';
+import { DashboardEvidenceComponent } from './data/dashboard-evidence/dashboard-evidence.component';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule,Routes} from '@angular/router';

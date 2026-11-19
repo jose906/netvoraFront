@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { ApiService } from '../services/api.service';
-import { users } from '../interfaces/users';
-import { DashboardEntityType, DashboardEvidence, DashboardEvidenceFilters, DashboardSelection } from '../interfaces/dashboard-evidence';
+import { ApiService } from '../../services/api.service';
+import { users } from '../../interfaces/users';
+import { DashboardEntityType, DashboardEvidence, DashboardEvidenceFilters, DashboardSelection } from '../../interfaces/dashboard-evidence';
 
 @Component({
   standalone: true,

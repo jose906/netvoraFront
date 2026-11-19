@@ -1,7 +1,7 @@
 import { SimpleChange } from '@angular/core';
 import { Subject } from 'rxjs';
-import { DashboardEvidence } from '../interfaces/dashboard-evidence';
-import { ApiService } from '../services/api.service';
+import { DashboardEvidence } from '../../interfaces/dashboard-evidence';
+import { ApiService } from '../../services/api.service';
 import { DashboardEvidenceComponent } from './dashboard-evidence.component';
 
 describe('DashboardEvidenceComponent', () => {

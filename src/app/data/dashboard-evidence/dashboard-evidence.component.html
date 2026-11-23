@@ -29,7 +29,7 @@
     <div><h3>{{ selection.entity || entity ? 'Publicaciones que mencionan a ' + (selection.entity || entity) : 'Publicaciones' }}</h3><p>{{ selection.bucket || 'Período seleccionado' }}<span *ngIf="selection.label"> · {{ selection.label }}</span></p></div>
     <button type="button" (click)="close()">Cerrar detalle</button>
   </div>
-  <div *ngIf="loading" class="nv-loading-state" role="status">Cargando publicaciones…</div>
+  <div *ngIf="loading" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando publicaciones…</span></div>
   <p *ngIf="error" role="alert" class="nv-error-state">No se pudo cargar el detalle. <button type="button" (click)="load(page)">Reintentar</button></p>
   <ng-container *ngIf="result as data">
     <div class="evidence-summary">

@@ -190,7 +190,7 @@ loadingLogin: boolean = false;
       } else {
         this.signupMsg = 'No se pudo completar el registro. Intenta nuevamente.';
       }
-    } finally {
+    } finally { 
       this.loadingSignup = false;
     }
   }

@@ -706,11 +706,7 @@
 
         </mat-hint>
 
-        <mat-hint *ngIf="loadingUsers">
-
-          Cargando cuentas...
-
-        </mat-hint>
+        <mat-hint *ngIf="loadingUsers"><span class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando cuentas</span></span></mat-hint>
 
       </mat-form-field>
 
@@ -737,7 +733,8 @@
           </span>
         </mat-option>
       </mat-select>
-      <mat-hint>{{ loadingTopics ? 'Cargando tópicos...' : 'Opcional; puedes elegir varios' }}</mat-hint>
+      <mat-hint *ngIf="!loadingTopics">Opcional; puedes elegir varios</mat-hint>
+      <mat-hint *ngIf="loadingTopics"><span class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando tópicos</span></span></mat-hint>
     </mat-form-field>
 
     <!-- BÚSQUEDA -->

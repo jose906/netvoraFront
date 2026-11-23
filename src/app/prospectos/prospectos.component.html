@@ -66,8 +66,9 @@
     </div>
     <div class="crm-form-actions">
       <button type="button" class="crm-btn crm-secondary" [disabled]="guardando" (click)="cancelarEdicion()">Cancelar</button>
-      <button type="button" class="crm-btn crm-primary" [disabled]="guardando" (click)="guardar()">
-        <mat-icon>save</mat-icon> {{ guardando ? 'Guardando...' : 'Guardar prospecto' }}
+      <button [class.is-loading]="guardando" [attr.aria-busy]="guardando" type="button" class="crm-btn crm-primary nv-progress-button" [disabled]="guardando" (click)="guardar()">
+        <span class="nv-progress-label"><mat-icon>save</mat-icon> Guardar prospecto</span>
+        <span *ngIf="guardando" class="nv-loading-indicator" aria-hidden="true"></span>
       </button>
     </div>
   </section>
@@ -87,7 +88,7 @@
       <button type="button" class="crm-btn crm-secondary" (click)="filtrar()"><mat-icon>filter_alt</mat-icon> Buscar</button>
     </div>
 
-    <div *ngIf="cargando" class="nv-loading-state" role="status">Cargando prospectos…</div>
+    <div *ngIf="cargando" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando prospectos…</span></div>
     <div *ngIf="!cargando && errorLista" class="nv-error-state" role="alert">
       {{ errorLista }} <button class="nv-retry" type="button" (click)="cargar()">Reintentar</button>
     </div>
@@ -156,8 +157,9 @@
       </div>
       <div class="crm-form-actions">
         <button type="button" class="crm-btn crm-secondary" [disabled]="enviando" (click)="cerrarCorreo()">Cancelar</button>
-        <button type="button" class="crm-btn crm-primary" [disabled]="enviando" (click)="enviarCorreo()">
-          <mat-icon>send</mat-icon> {{ enviando ? 'Enviando...' : 'Confirmar envío' }}
+        <button [class.is-loading]="enviando" [attr.aria-busy]="enviando" type="button" class="crm-btn crm-primary nv-progress-button" [disabled]="enviando" (click)="enviarCorreo()">
+          <span class="nv-progress-label"><mat-icon>send</mat-icon> Confirmar envío</span>
+          <span *ngIf="enviando" class="nv-loading-indicator" aria-hidden="true"></span>
         </button>
       </div>
     </div>

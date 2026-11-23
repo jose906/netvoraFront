@@ -4,10 +4,11 @@
       <h2>Posturas de la audiencia</h2>
       <p>Explora cómo se posicionan los comentarios frente a publicaciones y tópicos.</p>
     </div>
-    <button class="sv-button sv-refresh dashboard-primary" type="button" (click)="reload()"
+    <button [class.is-loading]="loadingDashboard || loadingTimeline" [attr.aria-busy]="loadingDashboard || loadingTimeline" class="sv-button sv-refresh dashboard-primary nv-progress-button" type="button" (click)="reload()"
       [disabled]="!isReady || loadingDashboard || loadingTimeline" aria-label="Actualizar análisis">
-      <span class="sv-refresh-icon" [class.is-spinning]="loadingDashboard || loadingTimeline" aria-hidden="true">↻</span>
-      {{ loadingDashboard || loadingTimeline ? 'Actualizando' : 'Actualizar datos' }}
+      <span class="nv-progress-label"><span class="sv-refresh-icon" aria-hidden="true">↻</span>
+      Actualizar datos</span>
+      <span *ngIf="loadingDashboard || loadingTimeline" class="nv-loading-indicator" aria-hidden="true"></span>
     </button>
   </header>
 
@@ -70,7 +71,7 @@
       </article>
     </div>
     <ng-template #svKpiLoading>
-      <div class="nv-loading-state" role="status">Cargando indicadores…</div>
+      <div class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando indicadores…</span></div>
     </ng-template>
 
     <div class="sv-insight" *ngIf="!loadingSummary && leadingStance as dominant">
@@ -156,7 +157,7 @@
           </div>
         </div>
         <ng-template #svNoTimeline>
-          <div *ngIf="loadingTimeline" class="nv-loading-state" role="status">Cargando evolución temporal…</div>
+          <div *ngIf="loadingTimeline" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando evolución temporal…</span></div>
           <p class="sv-empty" *ngIf="!loadingTimeline && !timelineError">Sin evaluaciones en este intervalo.</p>
         </ng-template>
         <div class="sv-card-footer sv-chart-footer">
@@ -247,7 +248,7 @@
         </div>
         <button type="button" class="sv-button" (click)="closeEvidence()">Cerrar detalle</button>
       </div>
-      <div *ngIf="evidenceLoading" class="nv-loading-state" role="status">Cargando comentarios…</div>
+      <div *ngIf="evidenceLoading" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando comentarios…</span></div>
       <p *ngIf="evidenceError" role="alert" class="nv-error-state">No se pudieron cargar los comentarios.
         <button type="button" class="sv-text-action" (click)="showEvidence(selected.stance, selected.topic)">Reintentar</button>
       </p>
@@ -328,7 +329,7 @@
         </table>
       </div>
       <ng-template #svNoSources>
-        <div *ngIf="loadingSources" class="nv-loading-state" role="status">Cargando cuentas…</div>
+        <div *ngIf="loadingSources" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando cuentas…</span></div>
         <p class="sv-empty" *ngIf="!loadingSources && !sourcesError">
           {{ sources.length ? 'No hay cuentas que coincidan con tu búsqueda.' : 'No hay datos por fuente para los filtros aplicados.' }}
         </p>

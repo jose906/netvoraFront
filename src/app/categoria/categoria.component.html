@@ -1,5 +1,5 @@
 
-<div class="page nv-page">
+<div class="page nv-page nv-explore-page">
 
   <!-- ENCABEZADO -->
   <header class="signal-hero nv-feed-heading">
@@ -7,10 +7,6 @@
 
       <div class="signal-heading">
         <h1>{{ categoriaLabel }}</h1>
-
-        <p class="signal-description">
-          Publicaciones, actividad y comentarios de la categoría.
-        </p>
       </div>
 
       <!-- Selector de categoría: se conserva -->
@@ -44,54 +40,37 @@
       <div class="pulse-summary">
         <div class="pulse-section-head">
           <div>
-            <h2>Estado de la conversación</h2>
+            <h2>Resumen</h2>
           </div>
 
-          <span *ngIf="cargandoPulse" class="nv-loading-state" role="status">Cargando actividad…</span>
+          <span *ngIf="cargandoPulse" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando actividad…</span></span>
         </div>
 
         <div class="pulse-metrics">
 
           <div class="pulse-metric">
-            <span class="pulse-metric-label">
-              PUBLICACIONES
-            </span>
+            <span class="pulse-metric-label">Publicaciones</span>
             <strong class="pulse-metric-value">
-              {{ totalPublicaciones }}
+              {{ totalPublicaciones | number }}
             </strong>
-            <span class="pulse-metric-caption">
-              en el período
-            </span>
           </div>
 
           <div class="pulse-metric">
-            <span class="pulse-metric-label">
-              MEDIOS
-            </span>
+            <span class="pulse-metric-label">Medios</span>
             <strong class="pulse-metric-value">
-              {{ totalMedios }}
+              {{ totalMedios | number }}
             </strong>
-            <span class="pulse-metric-caption">
-              participando
-            </span>
           </div>
 
           <div class="pulse-metric">
-            <span class="pulse-metric-label">
-              COMENTARIOS
-            </span>
+            <span class="pulse-metric-label">Comentarios</span>
             <strong class="pulse-metric-value">
-              {{ totalComentarios }}
+              {{ totalComentarios | number }}
             </strong>
-            <span class="pulse-metric-caption">
-              detectados
-            </span>
           </div>
 
           <div class="pulse-metric">
-            <span class="pulse-metric-label">
-              TONO DOMINANTE
-            </span>
+            <span class="pulse-metric-label">Tono dominante</span>
 
             <strong
               class="pulse-metric-value pulse-tone"
@@ -102,10 +81,6 @@
               }">
               {{ sentimientoDominante }}
             </strong>
-
-            <span class="pulse-metric-caption">
-              en publicaciones
-            </span>
           </div>
 
         </div>
@@ -115,14 +90,11 @@
       <div class="pulse-activity">
         <div class="pulse-block-head">
           <div>
-            <span class="pulse-block-kicker">
-              PULSO · 7 DÍAS
-            </span>
-            <h3>Actividad de la conversación</h3>
+            <h3>Actividad de los últimos 7 días</h3>
           </div>
 
           <div class="pulse-average">
-            <strong>{{ pulseAverage7d }}</strong>
+            <strong>{{ pulseAverage7d | number }}</strong>
             <span>promedio diario</span>
           </div>
         </div>
@@ -154,7 +126,7 @@
 
         <div
           class="pulse-chart-empty"
-          *ngIf="pulseActivity.length === 0">
+          *ngIf="!cargandoPulse && pulseActivity.length === 0">
           Sin actividad registrada en los últimos 7 días.
         </div>
       </div>
@@ -163,7 +135,6 @@
       <div class="pulse-sentiment">
         <div class="pulse-block-head">
           <div>
-            <span class="pulse-block-kicker">TONO</span>
             <h3>Sentimiento</h3>
           </div>
         </div>
@@ -185,7 +156,7 @@
           </div>
 
           <span class="sentiment-count">
-            {{ positivos }} publicaciones
+            {{ positivos | number }} publicaciones
           </span>
         </div>
 
@@ -206,7 +177,7 @@
           </div>
 
           <span class="sentiment-count">
-            {{ neutros }} publicaciones
+            {{ neutros | number }} publicaciones
           </span>
         </div>
 
@@ -227,7 +198,7 @@
           </div>
 
           <span class="sentiment-count">
-            {{ negativos }} publicaciones
+            {{ negativos | number }} publicaciones
           </span>
         </div>
       </div>
@@ -242,14 +213,14 @@
   </header>
 
   <!-- FILTROS -->
-  <section class="category-controls">
-    <div class="filters">
+  <section class="nv-filter-panel" aria-label="Filtros de publicaciones">
+    <div class="nv-filter-grid">
 
       <mat-form-field
         appearance="outline"
         class="filter-date">
 
-        <mat-label>Fechas</mat-label>
+        <mat-label>Período</mat-label>
 
         <mat-date-range-input [rangePicker]="picker">
           <input
@@ -298,14 +269,13 @@
         appearance="outline"
         class="filter-search">
 
-        <mat-label>Buscar</mat-label>
+        <mat-label>Buscar publicaciones</mat-label>
 
         <input
           matInput
           [(ngModel)]="searchText"
           [ngModelOptions]="{ standalone: true }"
-          [placeholder]="'Buscar en ' + categoriaLabel"
-          (keyup.enter)="filtrar()">
+          (keyup.enter)="!cargando && filtrar()">
 
         <button
           *ngIf="searchText"
@@ -319,7 +289,7 @@
         </button>
       </mat-form-field>
 
-      <div class="filter-actions">
+      <div class="nv-filter-actions">
         <button
           type="button"
           class="btn btn-primary"
@@ -360,7 +330,7 @@
   </div>
 
   <!-- CARGANDO -->
-  <div *ngIf="cargando" class="nv-loading-state" role="status">Cargando publicaciones…</div>
+  <div *ngIf="cargando" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando publicaciones…</span></div>
 
   <!-- SIN RESULTADOS -->
   <section
@@ -513,7 +483,7 @@
       <ng-container
         *ngIf="!accessLoading && canViewReplies">
 
-        <div *ngIf="repliesLoading" class="nv-loading-state" role="status">Cargando comentarios y sentimiento…</div>
+        <div *ngIf="repliesLoading" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando comentarios y sentimiento…</span></div>
 
         <div class="conversation-summary nv-error-state" *ngIf="!repliesLoading && repliesError" role="alert">
           {{ repliesError }}
@@ -584,7 +554,7 @@
               <span class="stance-post-kicker">STANCE · POSTURAS</span>
               <h3>Posición de los comentarios</h3>
             </div>
-            <span *ngIf="stanceLoading" class="nv-loading-state" role="status">Cargando posturas…</span>
+            <span *ngIf="stanceLoading" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando posturas…</span></span>
           </div>
 
           <ng-container *ngIf="getStance(item.tweetid) as stance; else stanceSinResultado">
@@ -632,7 +602,7 @@
                 <strong>Comentarios de esta publicación</strong>
                 <button type="button" class="stance-detail-toggle" (click)="closeStanceComments()">Cerrar</button>
               </div>
-              <div *ngIf="stanceCommentsLoading" class="nv-loading-state" role="status">Cargando comentarios…</div>
+              <div *ngIf="stanceCommentsLoading" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando comentarios…</span></div>
               <p class="stance-post-note stance-error nv-error-state" *ngIf="stanceCommentsError" role="alert">{{ stanceCommentsError }}</p>
               <div class="stance-comment" *ngFor="let comment of stanceComments">
                 <p>{{ comment.comment_text }}</p>
@@ -660,7 +630,7 @@
           </ng-container>
 
           <ng-template #stanceSinResultado>
-            <div *ngIf="stanceLoading" class="nv-loading-state" role="status">Cargando análisis de Stance…</div>
+            <div *ngIf="stanceLoading" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando análisis de Stance…</span></div>
             <p class="stance-post-note" *ngIf="!stanceLoading && !stanceError">Sin análisis de Stance disponible para esta publicación.</p>
             <p class="stance-post-note stance-error nv-error-state" *ngIf="!stanceLoading && stanceError" role="alert">No se pudo cargar Stance.</p>
           </ng-template>

@@ -1,5 +1,5 @@
 
-<div class="page nv-page">
+<div class="page nv-page nv-explore-page">
 
   <!-- ==========================================
        ENCABEZADO · NETVORA SIGNAL
@@ -11,20 +11,12 @@
 
       <div class="signal-heading">
         <h1>
-          {{ topicName || 'Explorar conversaciones' }}
+          {{ topicName || 'Tópicos' }}
         </h1>
 
-        <p class="signal-description">
-          <ng-container *ngIf="topicName; else noTopicDescription">
-            Sigue las publicaciones, actividad y reacción
-            alrededor de esta conversación.
-          </ng-container>
-
-          <ng-template #noTopicDescription>
-            Selecciona un tópico para explorar las publicaciones,
-            fuentes y conversación asociada.
-          </ng-template>
-        </p>
+        <a *ngIf="topicId" class="nv-radar-link" routerLink="/estadisticas" [queryParams]="radarParams">
+          Seguir en Radar
+        </a>
 
       </div>
 
@@ -32,15 +24,14 @@
 
       <div class="hero-category-switch">
 
-        <span class="hero-category-label">
-          EXPLORANDO
-        </span>
+        <span class="hero-category-label">Tópico</span>
 
         <mat-form-field
           appearance="outline"
           class="hero-category-select">
 
           <mat-select
+            aria-label="Tópico"
             [(ngModel)]="topicId"
             [ngModelOptions]="{ standalone: true }"
             (selectionChange)="cambiarTopico()"
@@ -74,10 +65,10 @@
 
           <div>
 
-            <h2>Estado de la conversación</h2>
+            <h2>Resumen</h2>
           </div>
 
-          <span *ngIf="cargandoPulse" class="nv-loading-state" role="status">Cargando actividad…</span>
+          <span *ngIf="cargandoPulse" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando actividad…</span></span>
 
         </div>
 
@@ -87,63 +78,40 @@
 
           <div class="pulse-metric">
 
-            <span class="pulse-metric-label">
-              PUBLICACIONES
-            </span>
+            <span class="pulse-metric-label">Publicaciones</span>
 
             <strong class="pulse-metric-value">
               {{ totalPublicaciones | number }}
             </strong>
-
-            <span class="pulse-metric-caption">
-              dentro del tópico
-            </span>
-
           </div>
 
           <!-- MEDIOS -->
 
           <div class="pulse-metric">
 
-            <span class="pulse-metric-label">
-              MEDIOS
-            </span>
+            <span class="pulse-metric-label">Medios</span>
 
             <strong class="pulse-metric-value">
               {{ totalFuentes | number }}
             </strong>
-
-            <span class="pulse-metric-caption">
-              participando
-            </span>
-
           </div>
 
           <!-- COMENTARIOS -->
 
           <div class="pulse-metric">
 
-            <span class="pulse-metric-label">
-              COMENTARIOS
-            </span>
+            <span class="pulse-metric-label">Comentarios</span>
 
             <strong class="pulse-metric-value">
               {{ totalComentarios | number }}
             </strong>
-
-            <span class="pulse-metric-caption">
-              detectados
-            </span>
-
           </div>
 
           <!-- TONO DOMINANTE -->
 
           <div class="pulse-metric">
 
-            <span class="pulse-metric-label">
-              TONO DOMINANTE
-            </span>
+            <span class="pulse-metric-label">Tono dominante</span>
 
             <strong
               class="pulse-metric-value pulse-tone"
@@ -156,11 +124,6 @@
               {{ sentimientoDominante }}
 
             </strong>
-
-            <span class="pulse-metric-caption">
-              en publicaciones
-            </span>
-
           </div>
 
         </div>
@@ -176,11 +139,7 @@
         <div class="pulse-block-head">
 
           <div>
-            <span class="pulse-block-kicker">
-              PULSO · 7 DÍAS
-            </span>
-
-            <h3>Actividad de la conversación</h3>
+            <h3>Actividad de los últimos 7 días</h3>
           </div>
 
           <div class="pulse-average">
@@ -236,10 +195,6 @@
         <div class="pulse-block-head">
 
           <div>
-            <span class="pulse-block-kicker">
-              TONO
-            </span>
-
             <h3>Sentimiento</h3>
             <p class="sentiment-count" *ngIf="!cargandoPulse && pulse">
               {{ totalSentimientos | number }} de {{ totalPublicaciones | number }} publicaciones clasificadas<span
@@ -350,28 +305,21 @@
 
   </header>
 
-  <a *ngIf="topicId" class="btn btn-ghost" routerLink="/estadisticas" [queryParams]="radarParams">
-    Seguir conversación en Radar
-  </a>
 
   <!-- ==========================================
        FILTROS
   =========================================== -->
 
-  <section class="category-controls">
-
-    <div class="filters">
-
-      <!-- FECHAS -->
+  <section *ngIf="topicId" class="nv-filter-panel" aria-label="Filtros de publicaciones">
+    <div class="nv-filter-grid">
 
       <mat-form-field
         appearance="outline"
         class="filter-date">
 
-        <mat-label>Fechas</mat-label>
+        <mat-label>Período</mat-label>
 
         <mat-date-range-input [rangePicker]="picker">
-
           <input
             matStartDate
             placeholder="Inicio"
@@ -383,7 +331,6 @@
             placeholder="Fin"
             [(ngModel)]="endDate"
             [ngModelOptions]="{ standalone: true }">
-
         </mat-date-range-input>
 
         <mat-datepicker-toggle
@@ -393,10 +340,7 @@
 
         <mat-date-range-picker #picker>
         </mat-date-range-picker>
-
       </mat-form-field>
-
-      <!-- MEDIOS -->
 
       <mat-form-field
         appearance="outline"
@@ -416,23 +360,19 @@
           </mat-option>
 
         </mat-select>
-
       </mat-form-field>
-
-      <!-- BÚSQUEDA -->
 
       <mat-form-field
         appearance="outline"
         class="filter-search">
 
-        <mat-label>Buscar</mat-label>
+        <mat-label>Buscar publicaciones</mat-label>
 
         <input
           matInput
           [(ngModel)]="searchText"
           [ngModelOptions]="{ standalone: true }"
-          placeholder="Buscar en publicaciones"
-          (keyup.enter)="filtrar()">
+          (keyup.enter)="!cargando && filtrar()">
 
         <button
           *ngIf="searchText"
@@ -443,19 +383,14 @@
           (click)="searchText = ''">
 
           <mat-icon>close</mat-icon>
-
         </button>
-
       </mat-form-field>
 
-      <!-- ACCIONES -->
-
-      <div class="filter-actions">
-
+      <div class="nv-filter-actions">
         <button
           type="button"
           class="btn btn-primary"
-          [disabled]="cargando || !topicId"
+          [disabled]="cargando"
           (click)="filtrar()">
           Aplicar
         </button>
@@ -463,15 +398,13 @@
         <button
           type="button"
           class="btn btn-ghost"
-          [disabled]="cargando || !topicId"
+          [disabled]="cargando"
           (click)="resetFiltros()">
           Limpiar
         </button>
-
       </div>
 
     </div>
-
   </section>
 
   <!-- ==========================================
@@ -526,7 +459,7 @@
        CARGANDO PUBLICACIONES
   =========================================== -->
 
-  <div *ngIf="cargando" class="nv-loading-state" role="status">Cargando publicaciones…</div>
+  <div *ngIf="cargando" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando publicaciones…</span></div>
 
   <!-- ==========================================
        SIN RESULTADOS

@@ -292,7 +292,7 @@
           </div>
         </div>
 
-        <div *ngIf="loadingAppUsers" class="nv-loading-state" role="status">Cargando usuarios…</div>
+        <div *ngIf="loadingAppUsers" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando usuarios…</span></div>
 
        
 <div
@@ -441,7 +441,7 @@
               </div>
 
               <!-- CARGANDO -->
-              <div *ngIf="loadingSubscriptionHistory" class="nv-loading-state" role="status">Cargando suscripciones…</div>
+              <div *ngIf="loadingSubscriptionHistory" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando suscripciones…</span></div>
 
               <!-- ERROR -->
               <div
@@ -628,15 +628,16 @@
     </div>
 
     <div class="form-actions">
-      <button
+      <button [class.is-loading]="mailSending" [attr.aria-busy]="mailSending"
         type="button"
-        class="btn btn-primary"
+        class="btn btn-primary nv-progress-button"
         [disabled]="mailSending"
         (click)="enviarCorreoUsuario(u)"
       >
-        <mat-icon>send</mat-icon>
+        <span class="nv-progress-label"><mat-icon>send</mat-icon>
 
-        {{ mailSending ? 'Enviando...' : 'Enviar correo' }}
+        Enviar correo</span>
+        <span *ngIf="mailSending" class="nv-loading-indicator" aria-hidden="true"></span>
       </button>
     </div>
 
@@ -886,8 +887,8 @@
               </button>
 
 
-              <button
-                class="btn btn-primary"
+              <button [class.is-loading]="creatingSub" [attr.aria-busy]="creatingSub"
+                class="btn btn-primary nv-progress-button"
                 type="button"
                 (click)="crearSuscripcion()"
                 [disabled]="
@@ -895,15 +896,10 @@
                   creatingSub
                 "
               >
+                <span class="nv-progress-label"><mat-icon>add_card</mat-icon>
 
-                <mat-icon>add_card</mat-icon>
-
-                {{
-                  creatingSub
-                    ? 'Creando...'
-                    : 'Crear suscripción'
-                }}
-
+                Crear suscripción</span>
+                <span *ngIf="creatingSub" class="nv-loading-indicator" aria-hidden="true"></span>
               </button>
 
             </div>
@@ -1244,7 +1240,7 @@
 
         <!-- LOADING -->
 
-        <div *ngIf="cargando" class="nv-loading-state" role="status">Cargando fuentes…</div>
+        <div *ngIf="cargando" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando fuentes…</span></div>
 
 
 

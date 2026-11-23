@@ -11,15 +11,15 @@
     </div>
 
     <div class="header-actions">
-      <button
+      <button [class.is-loading]="cargandoDashboard" [attr.aria-busy]="cargandoDashboard"
         type="button"
-        class="btn dashboard-primary"
+        class="btn dashboard-primary nv-progress-button"
         (click)="cargarDatos()"
         [disabled]="cargandoDashboard || !!filterMessage">
-        <span
-          class="refresh-icon"
-          [class.nv-rotating]="cargandoDashboard">↻</span>
-        {{ cargandoDashboard ? 'Actualizando…' : 'Actualizar' }}
+        <span class="nv-progress-label"><span
+          class="refresh-icon">↻</span>
+        Actualizar</span>
+        <span *ngIf="cargandoDashboard" class="nv-loading-indicator" aria-hidden="true"></span>
       </button>
 
       <button
@@ -42,7 +42,7 @@
   <ng-container *ngIf="!filterMessage">
 
   <!-- CARGA GLOBAL -->
-  <div *ngIf="cargandoDashboard" class="nv-loading-state" role="status">Actualizando los datos del dashboard…</div>
+  <div *ngIf="cargandoDashboard" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Actualizando los datos del dashboard…</span></div>
 
   
   <!-- ========================================= -->
@@ -64,7 +64,7 @@
         {{ totalPosts | number }}
       </div>
 
-      <div *ngIf="loadingResumen" class="nv-loading-state" role="status">Cargando indicadores…</div>
+      <div *ngIf="loadingResumen" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando indicadores…</span></div>
 
 
     </article>
@@ -83,7 +83,7 @@
 
       <ng-container *ngIf="!accessLoading && canViewReplies">
 
-        <div *ngIf="cargandoVistaComentarios" class="nv-loading-state" role="status">Cargando indicadores…</div>
+        <div *ngIf="cargandoVistaComentarios" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando indicadores…</span></div>
 
         <div
           class="metric-value"
@@ -96,9 +96,7 @@
 
       <ng-container *ngIf="accessLoading">
         <div class="metric-value metric-value--muted">—</div>
-        <div class="metric-footer">
-          Verificando acceso…
-        </div>
+        <div class="metric-footer"><span class="nv-loading-state" role="status"><span class="nv-sr-only">Verificando acceso…</span></span></div>
       </ng-container>
 
       <ng-container *ngIf="!accessLoading && !canViewReplies">
@@ -127,7 +125,7 @@
         {{ currentEmergingTopics.length | number }}
       </div>
 
-      <div *ngIf="loadingTopicos" class="nv-loading-state" role="status">Cargando indicadores…</div>
+      <div *ngIf="loadingTopicos" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando indicadores…</span></div>
 
     </article>
 
@@ -243,7 +241,7 @@
 
       <ng-template #noActivity>
 
-        <div *ngIf="loadingTimeline" class="nv-loading-state" role="status">Cargando resultados…</div>
+        <div *ngIf="loadingTimeline" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando resultados…</span></div>
 
         <div class="empty-state" *ngIf="!loadingTimeline">
           <span class="material-icons">timeline</span>
@@ -273,7 +271,7 @@
       </div>
     </div>
 
-    <div *ngIf="loadingTopicos" class="nv-loading-state" role="status">Detectando conversaciones en crecimiento…</div>
+    <div *ngIf="loadingTopicos" class="nv-loading-state" role="status"><span class="nv-sr-only">Detectando conversaciones en crecimiento…</span></div>
 
     <div
       class="emerging-list"
@@ -340,7 +338,7 @@
     </div>
 
     <ng-template #noEmergingTopicsList>
-      <div *ngIf="loadingTopicos" class="nv-loading-state" role="status">Cargando resultados…</div>
+      <div *ngIf="loadingTopicos" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando resultados…</span></div>
 
       <div class="empty-state" *ngIf="!loadingTopicos">
         <span class="material-icons">insights</span>
@@ -370,7 +368,7 @@
       </div>
     </div>
 
-    <div *ngIf="loadingMedios" class="nv-loading-state" role="status">Calculando publicaciones por medio…</div>
+    <div *ngIf="loadingMedios" class="nv-loading-state" role="status"><span class="nv-sr-only">Calculando publicaciones por medio…</span></div>
 
     <article class="analysis-card chart media-card">
 
@@ -462,7 +460,7 @@
 
       <ng-template #noPostsByMedia>
 
-        <div *ngIf="loadingMedios" class="nv-loading-state" role="status">Cargando resultados…</div>
+        <div *ngIf="loadingMedios" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando resultados…</span></div>
 
         <div class="empty-state" *ngIf="!loadingMedios">
           <span class="material-icons">campaign</span>
@@ -492,7 +490,7 @@
       </div>
     </div>
 
-    <div *ngIf="loadingEntidades" class="nv-loading-state" role="status">Identificando personas, organizaciones y lugares…</div>
+    <div *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Identificando personas, organizaciones y lugares…</span></div>
 
     <div class="entities-grid">
 
@@ -543,7 +541,7 @@
         </div>
 
         <ng-template #noPersonas>
-          <div *ngIf="loadingEntidades" class="nv-loading-state" role="status">Buscando menciones…</div>
+          <div *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Buscando menciones…</span></div>
 
           <div class="entity-empty" *ngIf="!loadingEntidades">
             Sin personas detectadas
@@ -600,7 +598,7 @@
         </div>
 
         <ng-template #noOrganizaciones>
-          <div *ngIf="loadingEntidades" class="nv-loading-state" role="status">Buscando menciones…</div>
+          <div *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Buscando menciones…</span></div>
 
           <div class="entity-empty" *ngIf="!loadingEntidades">
             Sin organizaciones detectadas
@@ -655,7 +653,7 @@
         </div>
 
         <ng-template #noLugares>
-          <div *ngIf="loadingEntidades" class="nv-loading-state" role="status">Buscando menciones…</div>
+          <div *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Buscando menciones…</span></div>
 
           <div class="entity-empty" *ngIf="!loadingEntidades">
             Sin lugares detectados
@@ -681,7 +679,7 @@
       </div>
     </div>
 
-    <div *ngIf="loadingTopicos" class="nv-loading-state" role="status">Procesando análisis de tópicos…</div>
+    <div *ngIf="loadingTopicos" class="nv-loading-state" role="status"><span class="nv-sr-only">Procesando análisis de tópicos…</span></div>
 
     <!-- INSIGHTS -->
     <div class="analysis-insights">
@@ -793,7 +791,7 @@
         </div>
 
         <ng-template #noTopics>
-          <div *ngIf="loadingTopicos" class="nv-loading-state" role="status">Cargando resultados…</div>
+          <div *ngIf="loadingTopicos" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando resultados…</span></div>
 
           <div class="empty-state compact" *ngIf="!loadingTopicos">
             <span class="material-icons">topic</span>
@@ -839,7 +837,7 @@
         </div>
 
         <ng-template #noTopicSentiment>
-          <div *ngIf="loadingTopicos" class="nv-loading-state" role="status">Cargando resultados…</div>
+          <div *ngIf="loadingTopicos" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando resultados…</span></div>
 
           <div class="empty-state compact" *ngIf="!loadingTopicos">
             <span class="material-icons">sentiment_neutral</span>
@@ -890,7 +888,7 @@
         </div>
       </div>
 
-      <div *ngIf="cargandoVistaComentarios" class="nv-loading-state" role="status">Analizando comentarios…</div>
+      <div *ngIf="cargandoVistaComentarios" class="nv-loading-state" role="status"><span class="nv-sr-only">Analizando comentarios…</span></div>
 
       <!-- RESUMEN -->
       <div class="replies-summary">
@@ -1077,7 +1075,7 @@
     </ng-container>
 
     <!-- VERIFICACIÓN DE ACCESO -->
-    <div *ngIf="accessLoading" class="nv-loading-state" role="status">Verificando acceso…</div>
+    <div *ngIf="accessLoading" class="nv-loading-state" role="status"><span class="nv-sr-only">Verificando acceso…</span></div>
 
     <!-- ACCESO PRO -->
     <div
@@ -1149,7 +1147,7 @@
       </div>
     </div>
 
-    <div *ngIf="loadingTopicos" class="nv-loading-state" role="status">Generando análisis complementario…</div>
+    <div *ngIf="loadingTopicos" class="nv-loading-state" role="status"><span class="nv-sr-only">Generando análisis complementario…</span></div>
 
     <!-- ===================================== -->
     <!-- EVOLUCIÓN HORARIA DE TÓPICOS -->
@@ -1203,8 +1201,7 @@
       </div>
 
       <!-- INDICADOR DE CARGA HORARIA -->
-      <div *ngIf="loadingTopicTimeline && !loadingTopicos" class="nv-loading-state" role="status">Cargando evolución de tópicos por
-          {{ topicTimelineInterval }}…</div>
+      <div *ngIf="loadingTopicTimeline && !loadingTopicos" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando evolución de tópicos por {{ topicTimelineInterval }}…</span></div>
 
       <!-- ERROR DE EVOLUCIÓN -->
       <div
@@ -1232,7 +1229,7 @@
 
       <ng-template #noTopicsTimeline>
 
-        <div *ngIf="loadingTopicos || loadingTopicTimeline" class="nv-loading-state" role="status">Cargando resultados…</div>
+        <div *ngIf="loadingTopicos || loadingTopicTimeline" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando resultados…</span></div>
 
         <div
           class="empty-state"

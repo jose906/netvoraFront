@@ -314,25 +314,14 @@
               Los cambios solo afectan la información de tu perfil.
             </span>
 
-            <button
+            <button [class.is-loading]="loading.profile" [attr.aria-busy]="loading.profile"
               type="button"
-              class="primary-button"
+              class="primary-button nv-progress-button"
               [disabled]="loading.profile"
               (click)="saveProfile()"
             >
-
-              <ng-container *ngIf="!loading.profile">
-                Guardar cambios
-              </ng-container>
-
-              <ng-container *ngIf="loading.profile">
-
-                <span class="spinner light small"></span>
-
-                Guardando
-
-              </ng-container>
-
+              <span class="nv-progress-label">Guardar cambios</span>
+              <span *ngIf="loading.profile" class="nv-loading-indicator" aria-hidden="true"></span>
             </button>
 
           </div>
@@ -567,25 +556,14 @@
                 Se te pedirá tu contraseña actual para confirmar el cambio.
               </span>
 
-              <button
+              <button [class.is-loading]="loading.pass" [attr.aria-busy]="loading.pass"
                 type="button"
-                class="security-button"
+                class="security-button nv-progress-button"
                 [disabled]="loading.pass"
                 (click)="changePassword()"
               >
-
-                <ng-container *ngIf="!loading.pass">
-                  Cambiar contraseña
-                </ng-container>
-
-                <ng-container *ngIf="loading.pass">
-
-                  <span class="spinner small"></span>
-
-                  Actualizando
-
-                </ng-container>
-
+                <span class="nv-progress-label">Cambiar contraseña</span>
+                <span *ngIf="loading.pass" class="nv-loading-indicator" aria-hidden="true"></span>
               </button>
 
             </div>
@@ -615,7 +593,7 @@
 
         <!-- LOADING -->
 
-        <div *ngIf="loading.subscription" class="nv-loading-state" role="status">Cargando tu plan…</div>
+        <div *ngIf="loading.subscription" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando tu plan…</span></div>
 
 
         <!-- CONTENT -->
@@ -911,26 +889,14 @@
               </div>
 
 
-              <button
+              <button [class.is-loading]="loading.freeTrial" [attr.aria-busy]="loading.freeTrial"
                 type="button"
-                class="free-trial-button"
+                class="free-trial-button nv-progress-button"
                 [disabled]="loading.freeTrial"
                 (click)="activateFreeTrial()"
               >
-
-                <ng-container *ngIf="!loading.freeTrial">
-                  Activar 7 días gratis
-                </ng-container>
-
-
-                <ng-container *ngIf="loading.freeTrial">
-
-                  <span class="spinner light small"></span>
-
-                  Activando...
-
-                </ng-container>
-
+                <span class="nv-progress-label">Activar 7 días gratis</span>
+                <span *ngIf="loading.freeTrial" class="nv-loading-indicator" aria-hidden="true"></span>
               </button>
 
             </div>
@@ -1103,7 +1069,7 @@
 
         <!-- Paso 1: planes reales desde MySQL (por Flask) -->
         <ng-container *ngIf="billing.step === 'plans'">
-          <p *ngIf="billing.loadingPlans" class="billing-message">Cargando planes disponibles...</p>
+          <p *ngIf="billing.loadingPlans" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando planes disponibles...</span></p>
           <p *ngIf="!billing.loadingPlans && billing.plans.length === 0 && !billing.error"
              class="billing-message">Todavía no hay planes disponibles para pago online.</p>
 
@@ -1127,12 +1093,14 @@
                 
                 <button
                   type="button"
-                  class="billing-pay-button"
+                  class="billing-pay-button nv-progress-button"
+                  [class.is-loading]="billing.generating && billing.selectedPlan?.id === plan.id"
+                  [attr.aria-busy]="billing.generating && billing.selectedPlan?.id === plan.id"
                   [disabled]="billing.generating || plan.currency !== 'BOB'"
                   (click)="selectPlanAndGenerateQr(plan)"
                 >
-                  {{ billing.generating && billing.selectedPlan?.id === plan.id
-                    ? 'Generando QR...' : (plan.currency === 'BOB' ? 'Pagar con QR' : 'QR no habilitado') }}
+                  <span class="nv-progress-label">{{ plan.currency === 'BOB' ? 'Pagar con QR' : 'QR no habilitado' }}</span>
+                  <span *ngIf="billing.generating && billing.selectedPlan?.id === plan.id" class="nv-loading-indicator" aria-hidden="true"></span>
                 </button>
               </div>
             </article>
@@ -1174,13 +1142,15 @@
           </div>
 
           <div class="billing-qr-actions" *ngIf="payment.status === 'PENDIENTE'">
-            <button type="button" class="billing-pay-button"
+            <button [class.is-loading]="billing.checking" [attr.aria-busy]="billing.checking" type="button" class="billing-pay-button nv-progress-button"
                     [disabled]="billing.checking" (click)="checkPaymentNow()">
-              {{ billing.checking ? 'Consultando...' : 'Ya pagué · Verificar' }}
+              <span class="nv-progress-label">Ya pagué · Verificar</span>
+              <span *ngIf="billing.checking" class="nv-loading-indicator" aria-hidden="true"></span>
             </button>
-            <button type="button" class="billing-outline-button"
+            <button [class.is-loading]="billing.cancelling" [attr.aria-busy]="billing.cancelling" type="button" class="billing-outline-button nv-progress-button"
                     [disabled]="billing.cancelling" (click)="cancelQr()">
-              {{ billing.cancelling ? 'Cancelando...' : 'Cancelar este QR' }}
+              <span class="nv-progress-label">Cancelar este QR</span>
+              <span *ngIf="billing.cancelling" class="nv-loading-indicator" aria-hidden="true"></span>
             </button>
           </div>
 

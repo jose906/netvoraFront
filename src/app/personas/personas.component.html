@@ -58,7 +58,7 @@
 
           </div>
 
-          <span *ngIf="cargandoPulse" class="nv-loading-state" role="status">Cargando actividad…</span>
+          <span *ngIf="cargandoPulse" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando actividad…</span></span>
 
         </div>
 
@@ -401,9 +401,9 @@
        FILTROS
   ====================================================== -->
 
-  <section class="entity-controls">
+  <section class="nv-filter-panel" aria-label="Filtros de publicaciones">
 
-    <div class="filters">
+    <div class="nv-filter-grid">
 
       <!-- FECHAS -->
 
@@ -514,7 +514,7 @@
 
       <!-- ACCIONES -->
 
-      <div class="filter-actions">
+      <div class="nv-filter-actions">
 
         <button
           type="button"
@@ -578,7 +578,7 @@
        LOADING
   ====================================================== -->
 
-  <div *ngIf="cargando" class="nv-loading-state" role="status">Cargando publicaciones…</div>
+  <div *ngIf="cargando" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando publicaciones…</span></div>
 
 
   <!-- =====================================================
@@ -978,7 +978,7 @@
               <span class="stance-post-kicker">STANCE · POSTURAS</span>
               <h3>Posición de los comentarios</h3>
             </div>
-            <span *ngIf="stanceLoading" class="nv-loading-state" role="status">Analizando…</span>
+            <span *ngIf="stanceLoading" class="nv-loading-state" role="status"><span class="nv-sr-only">Analizando…</span></span>
           </div>
 
           <ng-container *ngIf="getStance(item.tweetid) as stance; else stanceSinResultado">
@@ -1026,7 +1026,7 @@
                 <strong>Comentarios de esta publicación</strong>
                 <button type="button" class="stance-detail-toggle" (click)="closeStanceComments()">Cerrar</button>
               </div>
-              <div *ngIf="stanceCommentsLoading" class="nv-loading-state" role="status">Cargando comentarios…</div>
+              <div *ngIf="stanceCommentsLoading" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando comentarios…</span></div>
               <p class="stance-post-note stance-error nv-error-state" *ngIf="stanceCommentsError" role="alert">{{ stanceCommentsError }}</p>
               <div class="stance-comment" *ngFor="let comment of stanceComments">
                 <p>{{ comment.comment_text }}</p>

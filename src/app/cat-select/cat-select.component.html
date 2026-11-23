@@ -47,17 +47,17 @@
        FILTROS
   ========================================= -->
 
-  <section class="filters-section nv-quiet-surface">
+  <section class="nv-filter-panel" aria-label="Filtros de publicaciones">
 
     <div class="filters-header">
       <div>
         <h2>Filtros de publicaciones</h2>
       </div>
 
-      <span *ngIf="cargandoUsuarios" class="nv-loading-state" role="status">Cargando cuentas…</span>
+      <span *ngIf="cargandoUsuarios" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando cuentas…</span></span>
     </div>
 
-    <div class="filters-row">
+    <div class="nv-filter-grid">
 
       <!-- FECHAS -->
       <mat-form-field
@@ -145,14 +145,13 @@
       </mat-form-field>
 
       <!-- BOTONES -->
-      <div class="filter-buttons">
+      <div class="nv-filter-actions">
 
         <button
           type="button"
           class="btn btn-primary"
           [disabled]="cargando || cargandoUsuarios || guardandoCambio"
           (click)="filtrar()">
-          <mat-icon>search</mat-icon>
           Aplicar
         </button>
 
@@ -200,7 +199,7 @@
        CARGANDO
   ========================================= -->
 
-  <div *ngIf="cargando" class="nv-loading-state" role="status">Cargando publicaciones…</div>
+  <div *ngIf="cargando" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando publicaciones…</span></div>
 
   <!-- ========================================
        SIN RESULTADOS
@@ -559,17 +558,13 @@
           Cancelar
         </button>
 
-        <button
+        <button [class.is-loading]="guardandoCambio" [attr.aria-busy]="guardandoCambio"
           type="button"
-          class="btn btn-primary"
+          class="btn btn-primary nv-progress-button"
           [disabled]="guardandoCambio"
           (click)="confirmarCambio()">
-
-          {{
-            guardandoCambio
-              ? 'Guardando…'
-              : 'Confirmar cambio'
-          }}
+          <span class="nv-progress-label">Confirmar cambio</span>
+          <span *ngIf="guardandoCambio" class="nv-loading-indicator" aria-hidden="true"></span>
         </button>
 
       </div>

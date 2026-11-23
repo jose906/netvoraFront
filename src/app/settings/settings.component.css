@@ -1979,54 +1979,6 @@
 }
 
 
-/* =========================================================
-   SPINNER
-========================================================= */
-
-.spinner {
-  width: 17px;
-  height: 17px;
-
-  flex: 0 0 auto;
-
-  border:
-    2px solid
-    rgba(15,23,42,.12);
-
-  border-top-color:
-    var(--accent);
-
-  border-radius: 50%;
-
-  animation:
-    spin .75s linear infinite;
-}
-
-
-.spinner.small {
-  width: 11px;
-  height: 11px;
-
-  border-width: 2px;
-}
-
-
-.spinner.light {
-  border-color:
-    rgba(255,255,255,.35);
-
-  border-top-color: #fff;
-}
-
-
-@keyframes spin {
-
-  to {
-    transform:
-      rotate(360deg);
-  }
-}
-
 
 /* =========================================================
    TOAST

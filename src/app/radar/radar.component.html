@@ -1,28 +1,39 @@
 <main class="radar-shell nv-page">
   <header class="radar-head nv-page-heading">
-    <div class="radar-brand">
-      <div class="radar-mark" aria-hidden="true"><i class="fa-solid fa-satellite-dish"></i></div>
-      <div>
-        <h1>Radar</h1>
-        <p>Revisa las señales y publicaciones de tus seguimientos.</p>
-      </div>
-    </div>
+    <h1>Radar</h1>
     <a class="radar-button primary" routerLink="/estadisticas">
       <i class="fa-solid fa-plus" aria-hidden="true"></i> Nuevo seguimiento
     </a>
   </header>
 
-  <div *ngIf="loading" class="nv-loading-state" role="status">Cargando seguimientos…</div>
-  <div *ngIf="error" class="radar-notice nv-error-state" role="alert">
-    {{ error }}
-    <button *ngIf="!watches.length" type="button" class="nv-retry" (click)="loadWatches()">Reintentar</button>
+  <ng-template #loadingPreview let-message let-layout="layout">
+    <div class="radar-loading" [class.radar-loading-compact]="layout === 'compact'" role="status">
+      <span class="nv-sr-only">{{ message }}</span>
+      <span class="radar-loading-mark nv-loading-indicator" aria-hidden="true"></span>
+      <div *ngIf="layout !== 'compact'" class="radar-loading-preview" [class.radar-loading-metrics]="layout === 'metrics'" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </ng-template>
+  <ng-container *ngIf="loading">
+    <ng-container *ngTemplateOutlet="loadingPreview; context: { $implicit: 'Cargando seguimientos', layout: 'metrics' }"></ng-container>
+  </ng-container>
+  <ng-template #errorNotice let-message>
+    <p *ngIf="message" class="radar-error" role="alert">
+      <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+      <span>{{ message }}</span>
+    </p>
+  </ng-template>
+  <div *ngIf="errors.watches" class="radar-error-row">
+    <ng-container *ngTemplateOutlet="errorNotice; context: { $implicit: errors.watches }"></ng-container>
+    <button type="button" (click)="loadWatches()">Reintentar</button>
   </div>
-  <div *ngIf="notice" class="radar-notice radar-notice-success" role="status">{{ notice }}</div>
-  <section *ngIf="!loading && !watches.length && !error" class="radar-card radar-empty">
+  <div *ngIf="notice && tab !== 'evidence'" class="radar-notice radar-notice-success" role="status">{{ notice }}</div>
+  <section *ngIf="!loading && !watches.length && !errors.watches" class="radar-card radar-empty">
     <i class="fa-solid fa-satellite-dish" aria-hidden="true"></i>
     <h2>Añade tu primer seguimiento</h2>
-    <p *ngIf="!error">Elige un tema o un conjunto de fuentes en Estadísticas y selecciona «Seguir conversación».</p>
-    <a *ngIf="!error" class="radar-button primary" routerLink="/estadisticas">Ir a Estadísticas</a>
+    <p>Elige un tema o un conjunto de fuentes en Estadísticas y selecciona «Seguir conversación».</p>
+    <a class="radar-button primary" routerLink="/estadisticas">Ir a Estadísticas</a>
   </section>
 
   <div class="radar-grid" *ngIf="watches.length">
@@ -42,116 +53,259 @@
             <small class="watch-status" [class.paused]="watch.paused">{{ watch.paused ? 'En pausa' : 'Activo' }}</small>
           </div>
           <div class="radar-toolbar">
-          <button class="primary" type="button" [disabled]="loadingHistory || saving" (click)="loadHistory(true)">
-            <i class="fa-solid fa-rotate" aria-hidden="true"></i> {{ loadingHistory ? 'Cargando…' : 'Evaluar último día' }}
-          </button>
-          <button type="button" [disabled]="saving" (click)="configure({paused: !watch.paused})">{{ watch.paused ? 'Reanudar' : 'Pausar' }}</button>
+            <button class="primary" type="button" [disabled]="loadingHistory || saving" (click)="loadHistory(true)">
+              Evaluar último día
+            </button>
           </div>
         </div>
-        <div class="radar-toolbar radar-filters">
-          <span>{{ watch.filters.users.length | number }} cuentas</span>
-          <span *ngIf="watch.filters.topic_ids.length">{{ watch.filters.topic_ids.length | number }} tópicos</span>
-          <span *ngIf="watch.filters.entidad">{{ watch.filters.entidad }}</span>
-          <span *ngIf="watch.filters.search">«{{ watch.filters.search }}»</span>
-          <label class="radar-cadence">Informe por correo
-            <select [ngModel]="watch.cadence" [disabled]="saving" (ngModelChange)="configure({cadence: $event})">
-              <option value="none">Desactivado</option><option value="daily">Diario</option><option value="weekly">Semanal</option>
-            </select>
-          </label>
-        </div>
+        <details class="radar-settings">
+          <summary>Configurar seguimiento</summary>
+          <div class="radar-toolbar radar-filters">
+            <span *ngIf="watch.filters.users.length">{{ watch.filters.users.length | number }} cuentas filtradas</span>
+            <span *ngIf="watch.filters.topic_ids.length">{{ watch.filters.topic_ids.length | number }} tópicos</span>
+            <span *ngIf="watch.filters.entidad">{{ watch.filters.entidad }}</span>
+            <span *ngIf="watch.filters.search">«{{ watch.filters.search }}»</span>
+            <button type="button" [disabled]="saving" (click)="configure({paused: !watch.paused})">
+              {{ watch.paused ? 'Reanudar seguimiento' : 'Pausar seguimiento' }}
+            </button>
+            <label class="radar-cadence">Informe por correo
+              <select [ngModel]="watch.cadence" [disabled]="saving" (ngModelChange)="configure({cadence: $event})">
+                <option value="none">Desactivado</option><option value="daily">Diario</option><option value="weekly">Semanal</option>
+              </select>
+            </label>
+          </div>
+          <ng-container *ngTemplateOutlet="errorNotice; context: { $implicit: errors.settings }"></ng-container>
+        </details>
         <nav class="radar-tabs" aria-label="Análisis del seguimiento">
-          <button type="button" [attr.aria-pressed]="tab === 'signals'" (click)="openTab('signals')"><i class="fa-solid fa-wave-square" aria-hidden="true"></i> Señales</button>
-          <button type="button" [attr.aria-pressed]="tab === 'stories'" (click)="openTab('stories')"><i class="fa-solid fa-layer-group" aria-hidden="true"></i> Historias</button>
-          <button type="button" [attr.aria-pressed]="tab === 'actors'" (click)="openTab('actors')"><i class="fa-solid fa-users" aria-hidden="true"></i> Actores</button>
-          <button type="button" [attr.aria-pressed]="tab === 'brief'" (click)="openTab('brief')"><i class="fa-solid fa-file-lines" aria-hidden="true"></i> Informe</button>
+          <button type="button" [attr.aria-pressed]="tab === 'signals'" (click)="openTab('signals')">Resumen</button>
+          <button type="button" [attr.aria-pressed]="tab === 'evidence'" (click)="openTab('evidence')">Evidencia</button>
+          <button type="button" [attr.aria-pressed]="tab === 'stories'" (click)="openTab('stories')">Historias</button>
+          <button type="button" [attr.aria-pressed]="tab === 'actors'" (click)="openTab('actors')">Actores</button>
+          <button type="button" [attr.aria-pressed]="tab === 'brief'" (click)="openTab('brief')">Informe</button>
         </nav>
       </section>
 
-      <section *ngIf="tab === 'signals'" class="radar-card nv-quiet-surface">
-        <div *ngIf="loadingHistory" class="nv-loading-state" role="status">Cargando evaluaciones…</div>
-        <div *ngIf="!loadingHistory && !history.length" class="radar-empty">
-          <i class="fa-solid fa-wave-square" aria-hidden="true"></i>
+      <ng-container *ngIf="tab !== 'stories' && loadingHistory">
+        <ng-container *ngTemplateOutlet="loadingPreview; context: {
+          $implicit: 'Cargando evaluaciones', layout: snapshot ? 'compact' : 'metrics'
+        }"></ng-container>
+      </ng-container>
+
+      <div *ngIf="tab !== 'stories' && errors.history" class="radar-error-row">
+        <ng-container *ngTemplateOutlet="errorNotice; context: { $implicit: errors.history }"></ng-container>
+        <button type="button" (click)="loadHistory()">Recargar historial</button>
+      </div>
+
+      <div *ngIf="tab !== 'stories' && snapshot as day" class="radar-card radar-toolbar radar-daybar">
+        <label for="radar-observation-day">Día observado</label>
+        <select id="radar-observation-day" [ngModel]="day" [disabled]="loadingHistory" (ngModelChange)="selectDay($event)">
+          <option *ngFor="let item of history" [ngValue]="item">
+            {{ item.observation_day | date:'dd/MM/yyyy':'UTC' }} · {{ reviewLabels[item.review_state] }}
+          </option>
+        </select>
+        <button class="radar-pdf-button nv-progress-button" type="button" [disabled]="exporting || loadingHistory"
+          [class.is-loading]="exporting" (click)="downloadPdf()">
+          <span class="nv-progress-label"><i class="fa-solid fa-arrow-down-to-line" aria-hidden="true"></i> Descargar PDF</span>
+          <span *ngIf="exporting" class="nv-loading-indicator" aria-hidden="true"></span>
+        </button>
+        <span class="nv-sr-only" role="status">{{ exporting ? 'Generando PDF' : '' }}</span>
+        <div *ngIf="errors.pdf" class="radar-error-wide">
+          <ng-container *ngTemplateOutlet="errorNotice; context: { $implicit: errors.pdf }"></ng-container>
+        </div>
+      </div>
+
+      <ng-container *ngIf="tab === 'signals'">
+        <section *ngIf="!snapshot && !loadingHistory && !errors.history" class="radar-card radar-empty">
           <h3>Aún no hay evaluaciones</h3>
           <p>Evalúa el último día completo para consultar señales y publicaciones.</p>
-        </div>
+        </section>
         <ng-container *ngIf="snapshot as day">
-          <div class="radar-toolbar radar-daybar">
-            <label>Día observado <select [ngModel]="day" (ngModelChange)="selectDay($event)">
-              <option *ngFor="let item of history" [ngValue]="item">{{ item.observation_day }} · {{ reviewLabels[item.review_state] }}</option>
-            </select></label>
-            <a class="radar-button" routerLink="/estadisticas" [queryParams]="analyticsParams()">Explorar en Estadísticas <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
-          </div>
-          <div class="radar-metrics">
-            <div class="radar-metric volume"><span>Publicaciones</span><strong>{{ day.evidence.total | number }}</strong></div>
-            <div class="radar-metric"><span>Fuentes activas</span><strong>{{ day.evidence.quality.active_sources ?? 0 | number }}</strong></div>
-            <div class="radar-metric"><span>Con sentimiento clasificado</span><strong>{{ day.evidence.quality.classified ?? 0 | number }}</strong></div>
-          </div>
-
-          <section class="radar-activity" *ngIf="recentActivity.length > 1" aria-label="Actividad de los últimos días evaluados">
-            <div class="radar-panel-heading"><h3>Actividad reciente</h3><small>Selecciona un día</small></div>
-            <div class="radar-activity-grid">
-              <button *ngFor="let entry of recentActivity" type="button" class="radar-activity-day"
-                [attr.aria-pressed]="entry.day === day" (click)="selectDay(entry.day)">
-                <strong>{{ entry.day.evidence.total | number }}</strong>
-                <span class="radar-activity-track" aria-hidden="true"><span [style.height.%]="entry.height"></span></span>
-                <small>{{ entry.day.observation_day | date:'dd/MM':'UTC' }}</small>
-              </button>
+          <section class="radar-card radar-overview">
+            <div class="radar-panel-heading">
+              <h3>Resumen del día</h3>
+              <a class="radar-analysis-link" routerLink="/estadisticas" [queryParams]="analyticsParams()">
+                Ver en Estadísticas <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+              </a>
             </div>
+            <div class="radar-metrics">
+              <div class="radar-metric volume">
+                <span>Publicaciones</span><strong>{{ day.evidence.total | number }}</strong>
+                <small>Referencia habitual · {{ day.evidence.baseline | number }}</small>
+                <small *ngIf="volumeDifference != null" class="radar-volume-difference">
+                  <ng-container *ngIf="volumeDifference > 0">+{{ volumeDifference | number }} frente a la referencia</ng-container>
+                  <ng-container *ngIf="volumeDifference < 0">{{ volumeDifference | number }} frente a la referencia</ng-container>
+                  <ng-container *ngIf="volumeDifference === 0">En línea con la referencia</ng-container>
+                </small>
+              </div>
+              <div class="radar-metric">
+                <span>Fuentes activas</span><strong>{{ day.evidence.quality.active_sources == null ? 'Sin dato' : (day.evidence.quality.active_sources | number) }}</strong>
+              </div>
+              <div class="radar-metric">
+                <span>Sentimiento clasificado</span>
+                <strong>{{ classificationShare == null ? '—' : (classificationShare | percent:'1.0-1') }}</strong>
+                <small *ngIf="classificationShare != null">
+                  {{ day.evidence.quality.classified | number }} de {{ day.evidence.total | number }} publicaciones
+                </small>
+                <div *ngIf="classificationShare != null" class="radar-coverage-track" aria-hidden="true">
+                  <span [style.width.%]="classificationShare * 100"></span>
+                </div>
+              </div>
+            </div>
+
           </section>
+          <div class="radar-summary-grid">
+            <section class="radar-card radar-signals" aria-labelledby="radar-signals-title">
+              <div class="radar-panel-heading radar-section-heading">
+                <h3 id="radar-signals-title">Señales del día</h3><span>{{ day.evidence.signals.length | number }}</span>
+              </div>
+              <p class="radar-inline-state" *ngIf="!day.evidence.signals.length">No se detectaron cambios que superaran el umbral de señal.</p>
+              <p class="radar-inline-state" *ngIf="day.evidence.active_history < 4">Hay pocos días comparables. Interpreta las señales con ese contexto.</p>
+              <article class="radar-signal" [attr.data-kind]="signal.kind" *ngFor="let signal of day.evidence.signals">
+                <small class="radar-signal-type">{{ signalLabels[signal.kind] }}</small><h4>{{ signal.title }}</h4>
+                <p *ngIf="signal.kind === 'volume'">{{ signal.observed | number }} publicaciones · referencia {{ signal.expected | number }} · umbral {{ signal.threshold | number }}</p>
+                <p *ngIf="signal.kind === 'topic'">{{ signal.observed | number }} publicaciones · {{ signal.sources | number }} fuentes · primera aparición en 29 días</p>
+                <p *ngIf="signal.kind === 'stance'">{{ signal.observed | number }}% en contra frente a {{ signal.expected | number }}%.
+                  {{ signal.processed | number }} / {{ signal.previous_processed | number }} clasificados por período.
+                  Cobertura {{ signal.coverage | number }}% / {{ signal.previous_coverage | number }}%.</p>
+                <a *ngIf="signal.topic_id" [routerLink]="['/topics', signal.topic_id]" [queryParams]="{fecha: day.observation_day}">Abrir tópico</a>
+              </article>
 
-          <div class="radar-panel-heading radar-section-heading">
-            <h3>Señales detectadas</h3><span>{{ day.evidence.signals.length | number }}</span>
-          </div>
-          <p class="radar-inline-state" *ngIf="!day.evidence.signals.length">No se detectaron cambios que superaran el umbral de señal.</p>
-          <p class="radar-inline-state" *ngIf="day.evidence.active_history < 4">Hay pocos días comparables. Interpreta las señales con ese contexto.</p>
-          <article class="radar-signal" [attr.data-kind]="signal.kind" *ngFor="let signal of day.evidence.signals">
-            <small class="radar-signal-type">{{ signalLabels[signal.kind] }}</small><h4>{{ signal.title }}</h4>
-            <p *ngIf="signal.kind === 'volume'">{{ signal.observed | number }} publicaciones · referencia {{ signal.expected | number }} · umbral {{ signal.threshold | number }}</p>
-            <p *ngIf="signal.kind === 'topic'">{{ signal.observed | number }} publicaciones · {{ signal.sources | number }} fuentes · primera aparición en 29 días</p>
-            <p *ngIf="signal.kind === 'stance'">{{ signal.observed | number }}% en contra frente a {{ signal.expected | number }}%.
-              {{ signal.processed | number }} / {{ signal.previous_processed | number }} clasificados por período.
-              Cobertura {{ signal.coverage | number }}% / {{ signal.previous_coverage | number }}%.</p>
-            <a *ngIf="signal.topic_id" [routerLink]="['/topics', signal.topic_id]" [queryParams]="{fecha: day.observation_day}">Abrir tópico</a>
-          </article>
-          <div class="radar-breakdown">
-            <section><h3>Fuentes que publicaron</h3>
-              <div class="radar-row" *ngFor="let source of day.evidence.evidence.sources">
-                <a routerLink="/estadisticas" [queryParams]="analyticsParams(source.id)">{{ source.name }}</a>
-                <span>{{ source.total | number }} frente a {{ source.previous | number }}
-                  <small *ngIf="day.evidence.total"> · {{ source.total / day.evidence.total | percent:'1.0-1' }} del volumen observado</small>
-                </span>
+              <button type="button" class="radar-evidence-link" (click)="openTab('evidence', evidencePanel)">
+                Revisar evidencia <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+              </button>
+            </section>
+            <section class="radar-card radar-activity" *ngIf="recentActivity.length" aria-label="Volumen de los días evaluados">
+              <div class="radar-panel-heading">
+                <h3>Volumen por día</h3>
+                <label for="radar-activity-limit">Evaluaciones
+                  <select id="radar-activity-limit" [ngModel]="activityLimit" (ngModelChange)="setActivityLimit($event)">
+                    <option [ngValue]="7">Últimas 7</option>
+                    <option [ngValue]="14">Últimas 14</option>
+                    <option [ngValue]="30">Últimas 30</option>
+                  </select>
+                </label>
+              </div>
+              <div class="radar-chart-toolbar">
+                <button type="button" aria-controls="radar-activity-data"
+                  (click)="showActivityTable = !showActivityTable">{{ showActivityTable ? 'Ver gráfica' : 'Ver tabla' }}</button>
+              </div>
+              <div class="radar-legend" *ngIf="!showActivityTable">
+                <span>Publicaciones</span><span>Referencia habitual</span>
+              </div>
+              <div id="radar-activity-data" class="radar-activity-data">
+                <div *ngIf="!showActivityTable; else activityTable" class="radar-activity-grid" [style.--activity-columns]="recentActivity.length">
+                  <button *ngFor="let entry of recentActivity" type="button" class="radar-activity-day"
+                    [attr.aria-pressed]="entry.day === day" (click)="selectDay(entry.day)"
+                    [attr.aria-label]="entry.day.observation_day + ': ' + entry.day.evidence.total + ' publicaciones, referencia ' + entry.day.evidence.baseline"
+                    [title]="entry.day.evidence.total + ' publicaciones · referencia ' + entry.day.evidence.baseline">
+                    <strong>{{ entry.day.evidence.total | number }}</strong>
+                    <span class="radar-activity-track" aria-hidden="true">
+                      <span [style.height.%]="entry.height"></span>
+                      <span [style.height.%]="entry.baselineHeight"></span>
+                    </span>
+                    <small>{{ entry.day.observation_day | date:'dd/MM':'UTC' }}</small>
+                    <span class="radar-day-indicator" aria-hidden="true"></span>
+                  </button>
+                </div>
+                <ng-template #activityTable>
+                  <table class="radar-activity-table">
+                    <caption class="nv-sr-only">Publicaciones y referencia por día evaluado</caption>
+                    <thead><tr><th scope="col">Día</th><th scope="col">Publicaciones</th><th scope="col">Referencia habitual</th></tr></thead>
+                    <tbody>
+                      <tr *ngFor="let entry of recentActivity">
+                        <th scope="row">
+                          <button type="button" [attr.aria-pressed]="entry.day === day" (click)="selectDay(entry.day)">
+                            {{ entry.day.observation_day | date:'dd/MM/yyyy':'UTC' }}
+                          </button>
+                        </th>
+                        <td>{{ entry.day.evidence.total | number }}</td>
+                        <td>{{ entry.day.evidence.baseline | number }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </ng-template>
               </div>
             </section>
-            <section><h3>Temas del día</h3>
-              <div class="radar-row" *ngFor="let topic of day.evidence.evidence.topics">
-                <a [routerLink]="['/topics', topic.topic_id]" [queryParams]="{fecha: day.observation_day}">{{ topic.topic_name }}</a>
-                <span>{{ topic.total | number }} frente a {{ topic.previous | number }}</span>
+
+          </div>
+            <section class="radar-card radar-comparisons">
+              <div class="radar-panel-heading">
+                <h3>Fuentes y tópicos</h3>
+                <div class="radar-legend"><span>Día observado</span><span>Mismo día de la semana anterior</span></div>
+              </div>
+              <ng-template #comparisonBars let-item let-scale="scale">
+                <div class="radar-comparison-bars">
+                  <div>
+                    <span class="radar-comparison-track" aria-hidden="true"><span [style.width.%]="item.total / scale * 100"></span></span>
+                    <span [attr.aria-label]="item.total + ' publicaciones en el día observado'">{{ item.total | number }}</span>
+                  </div>
+                  <div>
+                    <span class="radar-comparison-track" aria-hidden="true"><span [style.width.%]="item.previous / scale * 100"></span></span>
+                    <span [attr.aria-label]="item.previous + ' publicaciones el mismo día de la semana anterior'">{{ item.previous | number }}</span>
+                  </div>
+                </div>
+              </ng-template>
+              <div class="radar-breakdown">
+                <section>
+                  <h4>Fuentes principales</h4>
+                  <p *ngIf="!day.evidence.evidence.sources.length">Sin fuentes para este día.</p>
+                  <div class="radar-comparison-item" *ngFor="let source of day.evidence.evidence.sources">
+                    <a routerLink="/estadisticas" [queryParams]="analyticsParams(source.id)">{{ source.name }}</a>
+                    <ng-container *ngTemplateOutlet="comparisonBars; context: { $implicit: source, scale: sourceScale }"></ng-container>
+                  </div>
+                </section>
+                <section>
+                  <h4>Tópicos principales</h4>
+                  <p *ngIf="!day.evidence.evidence.topics.length">Sin tópicos para este día.</p>
+                  <div class="radar-comparison-item" *ngFor="let topic of day.evidence.evidence.topics">
+                    <a [routerLink]="['/topics', topic.topic_id]" [queryParams]="{fecha: day.observation_day}">{{ topic.topic_name }}</a>
+                    <ng-container *ngTemplateOutlet="comparisonBars; context: { $implicit: topic, scale: topicScale }"></ng-container>
+                  </div>
+                </section>
               </div>
             </section>
-          </div>
-          <details class="radar-details"><summary>Publicaciones de evidencia</summary>
-            <article class="radar-post" *ngFor="let post of day.evidence.evidence.posts">
-              <strong>{{ post.source }}</strong><p>{{ post.text }}</p>
-              <a *ngIf="post.url" [href]="post.url" target="_blank" rel="noopener noreferrer">Abrir original</a>
-            </article>
-            <p *ngIf="!day.evidence.evidence.posts.length">Sin publicaciones en este día.</p>
-          </details>
-          <details class="radar-details"><summary>Cobertura de fuentes</summary>
-            <p>Última publicación observada por fuente. Se muestran hasta 20 fuentes, con prioridad a las menos recientes.</p>
-            <div class="radar-row" *ngFor="let source of day.evidence.sources">
-              <span>{{ source.name }}</span><span>{{ source.last_publication || 'Sin registro reciente' }}</span>
-            </div>
-          </details>
-          <form class="radar-review" (ngSubmit)="saveReview()">
-            <h3>Revisión del día</h3>
-            <label>Estado <select name="state" [(ngModel)]="reviewState">
-              <option value="new">Nuevo</option><option value="reviewing">En curso</option><option value="resolved">Resuelto</option>
-            </select></label>
-            <label>Nota <textarea name="note" [(ngModel)]="note" maxlength="1000" rows="3"></textarea></label>
-            <button class="primary" type="submit" [disabled]="saving">Guardar revisión</button>
-          </form>
         </ng-container>
-      </section>
+      </ng-container>
+
+      <div #evidencePanel class="radar-evidence-panel">
+        <section class="radar-card" *ngIf="tab === 'evidence'">
+          <div class="radar-panel-heading radar-section-heading">
+            <h3 tabindex="-1">Evidencia del día</h3>
+            <a *ngIf="snapshot" class="radar-analysis-link" routerLink="/estadisticas" [queryParams]="analyticsParams()">Ver en Estadísticas</a>
+          </div>
+          <p *ngIf="!snapshot && !loadingHistory && !errors.history">Evalúa un día para consultar sus publicaciones.</p>
+          <ng-container *ngIf="snapshot as day">
+            <section class="radar-evidence-posts" aria-label="Publicaciones de evidencia">
+              <article class="radar-post" *ngFor="let post of day.evidence.evidence.posts">
+                <strong>{{ post.source }}</strong><p>{{ post.text }}</p>
+                <a *ngIf="post.url" [href]="post.url" target="_blank" rel="noopener noreferrer">Abrir original</a>
+              </article>
+              <p class="radar-inline-state" *ngIf="!day.evidence.evidence.posts.length">Sin publicaciones de evidencia para este día.</p>
+            </section>
+            <details class="radar-details"><summary>Cobertura de fuentes</summary>
+              <p>Última publicación observada por fuente. Se muestran hasta 20 fuentes, con prioridad a las menos recientes.</p>
+              <div class="radar-row" *ngFor="let source of day.evidence.sources">
+                <span>{{ source.name }}</span><span>{{ source.last_publication || 'Sin registro reciente' }}</span>
+              </div>
+            </details>
+            <form class="radar-review" (ngSubmit)="saveReview()">
+              <h3>Revisión del día</h3>
+              <label>Estado <select name="state" [(ngModel)]="reviewState">
+                <option value="new">Nuevo</option><option value="reviewing">En curso</option><option value="resolved">Resuelto</option>
+              </select></label>
+              <label>Nota <textarea name="note" [(ngModel)]="note" maxlength="1000" rows="3"></textarea></label>
+              <button class="primary nv-progress-button" type="submit" [class.is-loading]="saving"
+                [disabled]="saving || (reviewState === day.review_state && note.trim() === day.note)">
+                <span class="nv-progress-label">Guardar revisión</span>
+                <span *ngIf="saving" class="nv-loading-indicator" aria-hidden="true"></span>
+              </button>
+              <span class="nv-sr-only" role="status">{{ saving ? 'Guardando revisión' : '' }}</span>
+              <p *ngIf="notice" role="status">{{ notice }}</p>
+              <ng-container *ngTemplateOutlet="errorNotice; context: { $implicit: reviewError }"></ng-container>
+            </form>
+          </ng-container>
+        </section>
+      </div>
 
       <section class="radar-card" *ngIf="tab === 'stories'">
         <h3>Historias de la conversación</h3>
@@ -159,9 +313,12 @@
           <input name="query" [(ngModel)]="query" maxlength="200" aria-label="Buscar historias" placeholder="Buscar texto o variantes con |">
           <button class="primary" type="submit" [disabled]="loadingStories"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Buscar</button>
         </form>
-        <div *ngIf="loadingStories" class="nv-loading-state" role="status">Buscando publicaciones…</div>
-        <p *ngIf="!loadingStories">{{ scanned | number }} publicaciones revisadas de los últimos 7 días · hasta 150 recientes.</p>
-        <p class="radar-inline-state" *ngIf="!loadingStories && !stories.length && !error">No se encontraron historias. Prueba con otras palabras.</p>
+        <ng-container *ngIf="loadingStories">
+          <ng-container *ngTemplateOutlet="loadingPreview; context: { $implicit: 'Buscando publicaciones', layout: 'rows' }"></ng-container>
+        </ng-container>
+        <ng-container *ngTemplateOutlet="errorNotice; context: { $implicit: errors.stories }"></ng-container>
+        <p *ngIf="!loadingStories && !errors.stories">{{ scanned | number }} publicaciones revisadas de los últimos 7 días · hasta 150 recientes.</p>
+        <p class="radar-inline-state" *ngIf="!loadingStories && !stories.length && !errors.stories">No se encontraron historias. Prueba con otras palabras.</p>
         <div class="radar-breakdown stories-layout" *ngIf="!loadingStories && stories.length">
           <div class="story-list">
             <button *ngFor="let story of stories" type="button" class="watch" [attr.aria-pressed]="story === selectedStory" (click)="selectedStory = story">
@@ -170,6 +327,7 @@
             </button>
           </div>
           <div *ngIf="selectedStory as story">
+            <ng-container *ngTemplateOutlet="errorNotice; context: { $implicit: errors.correction }"></ng-container>
             <h3>Cronología observada</h3><p>{{ story.pieces | number }} agrupaciones de URL o texto en esta historia.</p>
             <article class="radar-post" *ngFor="let post of story.posts; let first = first">
               <strong>{{ post.source }}</strong>
@@ -186,11 +344,8 @@
 
       <section class="radar-card" *ngIf="tab === 'actors'">
         <h3>Actores de la conversación</h3>
-        <p *ngIf="!snapshot">Evalúa un día para consultar quién publicó y quién fue mencionado.</p>
+        <p *ngIf="!snapshot && !loadingHistory && !errors.history">Evalúa un día para consultar quién publicó y quién fue mencionado.</p>
         <ng-container *ngIf="snapshot as day">
-          <label>Día observado <select [ngModel]="day" (ngModelChange)="selectDay($event)">
-            <option *ngFor="let item of history" [ngValue]="item">{{ item.observation_day }}</option>
-          </select></label>
           <div class="radar-breakdown">
             <div><h4>Quién publicó</h4>
               <div class="radar-row" *ngFor="let source of day.evidence.evidence.sources">
@@ -200,8 +355,11 @@
               <small>Porcentaje del total publicado dentro del seguimiento.</small>
             </div>
             <div><h4>Quién fue mencionado</h4>
-              <div *ngIf="loadingActors" class="nv-loading-state" role="status">Buscando menciones…</div>
-              <p *ngIf="!loadingActors && !actors.length">No se detectaron personas u organizaciones en este día.</p>
+              <ng-container *ngIf="loadingActors">
+                <ng-container *ngTemplateOutlet="loadingPreview; context: { $implicit: 'Buscando menciones', layout: 'rows' }"></ng-container>
+              </ng-container>
+              <ng-container *ngTemplateOutlet="errorNotice; context: { $implicit: errors.actors }"></ng-container>
+              <p *ngIf="!loadingActors && !actors.length && !errors.actors">No se detectaron personas u organizaciones en este día.</p>
               <button *ngFor="let item of actors" type="button" class="watch"
                 [attr.aria-pressed]="actor === item" (click)="exploreActor(item)">
                 <strong>{{ item.name }}</strong>
@@ -211,8 +369,11 @@
           </div>
           <section *ngIf="actor as selectedActor">
             <h4>Publicaciones que mencionan a {{ selectedActor.name }}</h4>
-            <div *ngIf="loadingActorPosts" class="nv-loading-state" role="status">Buscando publicaciones…</div>
-            <p *ngIf="!loadingActorPosts && !actorPosts.length && !error" class="radar-inline-state">No hay publicaciones para esta mención.</p>
+            <ng-container *ngIf="loadingActorPosts">
+              <ng-container *ngTemplateOutlet="loadingPreview; context: { $implicit: 'Buscando publicaciones', layout: 'rows' }"></ng-container>
+            </ng-container>
+            <ng-container *ngTemplateOutlet="errorNotice; context: { $implicit: errors.actorPosts }"></ng-container>
+            <p *ngIf="!loadingActorPosts && !actorPosts.length && !errors.actorPosts" class="radar-inline-state">No hay publicaciones para esta mención.</p>
             <article class="radar-post" *ngFor="let post of actorPosts">
               <strong>{{ post.source }}</strong><p>{{ post.text }}</p>
               <a *ngIf="post.url" [href]="post.url" target="_blank" rel="noopener noreferrer">Abrir original</a>
@@ -222,27 +383,32 @@
       </section>
 
       <section class="radar-card" *ngIf="tab === 'brief'">
-        <div class="radar-toolbar"><h3>Informe del seguimiento</h3>
-          <button type="button" [disabled]="!snapshot" (click)="copyReport()">Copiar informe del día</button>
-          <button type="button" [disabled]="!snapshot" (click)="downloadReport()">Descargar informe</button>
+        <div class="radar-panel-heading radar-section-heading">
+          <h3>Informe del día</h3>
+          <div class="radar-toolbar" *ngIf="snapshot">
+            <button type="button" (click)="copyReport()">Copiar resumen</button>
+            <button type="button" (click)="downloadReport()">Descargar TXT</button>
+          </div>
         </div>
-        <div class="radar-row" *ngFor="let day of history">
-          <button type="button" (click)="selectDay(day)">{{ day.observation_day }}</button>
-          <span>{{ day.evidence.total | number }} publicaciones · {{ day.evidence.signals.length | number }} señales</span>
-        </div>
-        <p *ngIf="!history.length">Evalúa un día para generar el primer informe.</p>
+        <ng-container *ngTemplateOutlet="errorNotice; context: { $implicit: errors.copy }"></ng-container>
+        <p *ngIf="!history.length && !loadingHistory && !errors.history">Evalúa un día para generar el primer informe.</p>
         <ng-container *ngIf="snapshot as day">
-          <h4>{{ day.observation_day }}</h4>
-          <p>{{ day.evidence.total | number }} publicaciones de {{ day.evidence.quality.active_sources || 0 | number }} fuentes.</p>
-          <p *ngIf="day.note">{{ day.note }}</p>
-          <ul *ngIf="day.evidence.signals.length"><li *ngFor="let signal of day.evidence.signals">{{ signal.title }}</li></ul>
+          <div class="radar-brief-summary">
+            <h4>{{ day.observation_day | date:'dd/MM/yyyy':'UTC' }} · {{ reviewLabels[day.review_state] }}</h4>
+            <p>{{ day.evidence.total | number }} publicaciones · {{ (day.evidence.quality.active_sources ?? 0) | number }} fuentes · {{ day.evidence.signals.length | number }} señales</p>
+            <p *ngIf="day.note">{{ day.note }}</p>
+            <ul *ngIf="day.evidence.signals.length"><li *ngFor="let signal of day.evidence.signals">{{ signal.title }}</li></ul>
+          </div>
           <h4>Consultar la evidencia</h4>
           <div class="radar-toolbar">
             <button type="button" [disabled]="explaining" (click)="explain('changes')">¿Qué cambió?</button>
             <button type="button" [disabled]="explaining" (click)="explain('sources')">¿Qué fuentes publicaron?</button>
             <button type="button" [disabled]="explaining" (click)="explain('coverage')">¿Qué cobertura tenemos?</button>
           </div>
-          <div *ngIf="explaining" class="nv-loading-state" role="status">Preparando respuesta…</div>
+          <ng-container *ngIf="explaining">
+            <ng-container *ngTemplateOutlet="loadingPreview; context: { $implicit: 'Preparando respuesta', layout: 'compact' }"></ng-container>
+          </ng-container>
+          <ng-container *ngTemplateOutlet="errorNotice; context: { $implicit: errors.explanation }"></ng-container>
           <div *ngIf="explanation as answer" class="radar-signal" aria-live="polite">
             <p *ngFor="let sentence of answer.text">{{ sentence }}</p>
             <a *ngFor="let citation of answer.citations" class="radar-citation" [href]="citation.url"

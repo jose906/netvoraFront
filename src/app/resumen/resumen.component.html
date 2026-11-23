@@ -1,6 +1,6 @@
 <section class="nv-page">
   <header class="nv-page-heading"><h1>Resumen de la publicación</h1></header>
-  <div *ngIf="isLoading" class="nv-loading-state" role="status">Cargando resumen…</div>
+  <div *ngIf="isLoading" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando resumen…</span></div>
 
   <div *ngIf="!isLoading" class="detalle-container">
     <p *ngIf="error" role="alert" class="nv-error-state">{{ error }}</p>

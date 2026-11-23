@@ -139,11 +139,8 @@
           </span>
 
           <strong class="plan-name">
-            {{
-              accessLoading
-                ? '...'
-                : planDisplayName
-            }}
+            <ng-container *ngIf="!accessLoading">{{ planDisplayName }}</ng-container>
+            <span *ngIf="accessLoading" class="nv-loading-state" role="status"><span class="nv-sr-only">Verificando plan</span></span>
           </strong>
 
         </div>
@@ -271,7 +268,7 @@
          LOADING
     ==================================================== -->
 
-    <div *ngIf="cargando" class="nv-loading-state" role="status">Cargando fuentes…</div>
+    <div *ngIf="cargando" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando fuentes…</span></div>
 
 
     <!-- ===================================================
@@ -570,7 +567,7 @@
     "
   >
 
-    <div class="nv-loading-state" role="status">Verificando acceso…</div>
+    <div class="nv-loading-state" role="status"><span class="nv-sr-only">Verificando acceso…</span></div>
 
   </div>
 
@@ -779,7 +776,8 @@
 
         <button
           type="button"
-          class="drawer-primary"
+          class="drawer-primary nv-progress-button"
+          [class.is-loading]="searching" [attr.aria-busy]="searching"
           [disabled]="searching"
           (click)="
             buscar(
@@ -789,21 +787,8 @@
           "
         >
 
-          <ng-container
-            *ngIf="!searching"
-          >
-            Buscar en X
-          </ng-container>
-
-          <ng-container
-            *ngIf="searching"
-          >
-
-            <span class="spinner light small"></span>
-
-            Buscando
-
-          </ng-container>
+          <span class="nv-progress-label">Buscar en X</span>
+          <span *ngIf="searching" class="nv-loading-indicator" aria-hidden="true"></span>
 
         </button>
 
@@ -931,7 +916,8 @@
 
         <button
           type="button"
-          class="add-final-button"
+          class="add-final-button nv-progress-button"
+          [class.is-loading]="adding" [attr.aria-busy]="adding"
           [disabled]="adding"
           (click)="
             agregar(
@@ -943,21 +929,8 @@
           "
         >
 
-          <ng-container
-            *ngIf="!adding"
-          >
-            Agregar fuente
-          </ng-container>
-
-          <ng-container
-            *ngIf="adding"
-          >
-
-            <span class="spinner small light"></span>
-
-            Agregando
-
-          </ng-container>
+          <span class="nv-progress-label">Agregar fuente</span>
+          <span *ngIf="adding" class="nv-loading-indicator" aria-hidden="true"></span>
 
         </button>
 

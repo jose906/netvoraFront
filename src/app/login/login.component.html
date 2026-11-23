@@ -57,9 +57,11 @@
           </button>
         </div>
 
-        <button class="btn" type="submit" [disabled]="loginForm.invalid">
-          <span>Iniciar sesión</span>
-          <span class="arrow">→</span>
+        <button class="btn nv-progress-button" type="submit" [disabled]="loginForm.invalid || loadingLogin"
+          [class.is-loading]="loadingLogin" [attr.aria-busy]="loadingLogin">
+          <span class="nv-progress-label">Iniciar sesión</span>
+          <span class="nv-progress-label arrow" aria-hidden="true">→</span>
+          <span *ngIf="loadingLogin" class="nv-loading-indicator" aria-hidden="true"></span>
         </button>
         <p class="login-msg nv-error-state" *ngIf="loginMsg" role="alert">{{ loginMsg }}</p>
 
@@ -103,8 +105,9 @@
         />
       </div>
 
-      <button class="nv-modal-btn" type="button" (click)="sendReset()" [disabled]="loading">
-        {{ loading ? 'Enviando…' : 'Enviar enlace' }}
+      <button [class.is-loading]="loading" [attr.aria-busy]="loading" class="nv-modal-btn nv-progress-button" type="button" (click)="sendReset()" [disabled]="loading">
+        <span class="nv-progress-label">Enviar enlace</span>
+        <span *ngIf="loading" class="nv-loading-indicator" aria-hidden="true"></span>
       </button>
 
       <p class="nv-modal-msg" *ngIf="msg" [class.nv-error-state]="!resetSent" [attr.role]="resetSent ? 'status' : 'alert'">{{ msg }}</p>
@@ -233,12 +236,13 @@
         </div>
 
         <div class="actions nv-actions">
-          <button
-            class="nv-modal-btn"
+          <button [class.is-loading]="loadingSignup" [attr.aria-busy]="loadingSignup"
+            class="nv-modal-btn nv-progress-button"
             type="submit"
             [disabled]="loadingSignup || (!sincronizacionPendiente && (signupForm.invalid || passwordConfirm2 !== password2))"
           >
-            {{ loadingSignup ? 'Registrando…' : (sincronizacionPendiente ? 'Reintentar sincronización' : 'Registrar') }}
+            <span class="nv-progress-label">{{ (sincronizacionPendiente ? 'Reintentar sincronización' : 'Registrar') }}</span>
+            <span *ngIf="loadingSignup" class="nv-loading-indicator" aria-hidden="true"></span>
           </button>
 
           <button class="btn btn-ghost" type="button" (click)="clearSignup()" [disabled]="loadingSignup || sincronizacionPendiente">

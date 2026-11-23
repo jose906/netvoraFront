@@ -19,7 +19,7 @@
        ESTADOS
   ======================================================== -->
 
-  <div *ngIf="cargando" class="nv-loading-state" role="status">Cargando el resumen…</div>
+  <div *ngIf="cargando" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando el resumen…</span></div>
 
 
   <div
@@ -299,7 +299,7 @@
 
       <div *ngIf="dayPostsOpen" id="activity-posts" class="activity-posts" aria-live="polite">
         <h3>Publicaciones del {{ selectedDay ? formatActivityDate(selectedDay.fecha) : '' }}</h3>
-        <div *ngIf="dayPostsLoading" class="nv-loading-state" role="status">Cargando publicaciones…</div>
+        <div *ngIf="dayPostsLoading" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando publicaciones…</span></div>
         <p *ngIf="dayPostsError">No se pudieron cargar las publicaciones.
           <button type="button" class="activity-link" (click)="loadDayPosts(dayPostsPage)">Reintentar</button>
         </p>

@@ -6,6 +6,10 @@ import { Subscription } from 'rxjs';
 import { RadarActor, RadarCadence, RadarPost, RadarSnapshot, RadarState, RadarStory, RadarWatch } from '../interfaces/radar';
 import { ApiService } from '../services/api.service';
 
+type RadarTab = 'signals' | 'evidence' | 'stories' | 'actors' | 'brief';
+type RadarErrorArea = 'watches' | 'history' | 'settings' | 'stories' | 'correction'
+  | 'actors' | 'actorPosts' | 'explanation' | 'pdf' | 'copy';
+
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
@@ -17,11 +21,17 @@ export class RadarComponent implements OnInit, OnDestroy {
   watches: RadarWatch[] = [];
   selected?: RadarWatch;
   history: RadarSnapshot[] = [];
-  recentActivity: { day: RadarSnapshot; height: number }[] = [];
+  recentActivity: { day: RadarSnapshot; height: number; baselineHeight: number }[] = [];
+  activityLimit = 7;
+  sourceScale = 1;
+  topicScale = 1;
+  classificationShare?: number;
+  volumeDifference?: number;
   snapshot?: RadarSnapshot;
   stories: RadarStory[] = [];
   selectedStory?: RadarStory;
-  tab: 'signals' | 'stories' | 'actors' | 'brief' = 'signals';
+  tab: RadarTab = 'signals';
+  showActivityTable = false;
   query = '';
   note = '';
   reviewState: RadarState = 'new';
@@ -40,8 +50,10 @@ export class RadarComponent implements OnInit, OnDestroy {
   private actorsRequest?: Subscription;
   private actorPostsRequest?: Subscription;
   saving = false;
-  error = '';
+  exporting = false;
+  errors: Partial<Record<RadarErrorArea, string>> = {};
   notice = '';
+  reviewError = '';
   private watchesRequest?: Subscription;
   private historyRequest?: Subscription;
   private storiesRequest?: Subscription;
@@ -59,7 +71,7 @@ export class RadarComponent implements OnInit, OnDestroy {
   loadWatches(): void {
     this.watchesRequest?.unsubscribe();
     this.loading = true;
-    this.error = '';
+    delete this.errors.watches;
     this.watchesRequest = this.api.getRadarWatches().subscribe({
       next: ({ watches }) => {
         this.watches = watches;
@@ -68,7 +80,7 @@ export class RadarComponent implements OnInit, OnDestroy {
         const watch = watches.find(item => item.id === id) ?? watches[0];
         if (watch) this.select(watch);
       },
-      error: () => { this.loading = false; this.error = 'No se pudieron cargar los seguimientos.'; }
+      error: () => { this.loading = false; this.errors.watches = 'No se pudieron cargar los seguimientos.'; }
     });
   }
 
@@ -76,6 +88,7 @@ export class RadarComponent implements OnInit, OnDestroy {
     this.historyRequest?.unsubscribe();
     this.storiesRequest?.unsubscribe();
     this.clearActors();
+    this.errors = {};
     this.selected = watch;
     this.history = [];
     this.recentActivity = [];
@@ -95,16 +108,11 @@ export class RadarComponent implements OnInit, OnDestroy {
     if (!watch) return;
     this.historyRequest?.unsubscribe();
     this.loadingHistory = true;
-    this.error = '';
+    delete this.errors.history;
     this.historyRequest = this.api.getRadarHistory(watch.id, refresh).subscribe({
       next: ({ history }) => {
         this.history = [...history].sort((a, b) => b.observation_day.localeCompare(a.observation_day));
-        const latestDays = this.history.slice(0, 7).reverse();
-        const peak = Math.max(1, ...latestDays.map(day => day.evidence.total));
-        this.recentActivity = latestDays.map(day => ({
-          day,
-          height: day.evidence.total / peak * 100
-        }));
+        this.setActivityLimit(this.activityLimit);
         this.loadingHistory = false;
         if (this.history.length) this.selectDay(this.history[0]);
         else {
@@ -113,16 +121,35 @@ export class RadarComponent implements OnInit, OnDestroy {
           this.clearExplanation();
         }
       },
-      error: () => { this.loadingHistory = false; this.error = 'No se pudo cargar el historial.'; }
+      error: () => { this.loadingHistory = false; this.errors.history = 'No se pudo cargar el historial.'; }
     });
+  }
+
+  setActivityLimit(limit: number): void {
+    this.activityLimit = limit;
+    const days = this.history.slice(0, limit).reverse();
+    const peak = Math.max(1, ...days.flatMap(({ evidence }) => [evidence.total, evidence.baseline]));
+    this.recentActivity = days.map(day => ({
+      day,
+      height: day.evidence.total / peak * 100,
+      baselineHeight: day.evidence.baseline / peak * 100
+    }));
   }
 
   selectDay(snapshot: RadarSnapshot): void {
     this.clearExplanation();
     this.notice = '';
+    this.reviewError = '';
+    delete this.errors.pdf;
+    delete this.errors.copy;
     this.snapshot = snapshot;
     this.note = snapshot.note;
     this.reviewState = snapshot.review_state;
+    const { total, baseline, active_history, quality, evidence } = snapshot.evidence;
+    this.sourceScale = Math.max(1, ...evidence.sources.flatMap(source => [source.total, source.previous]));
+    this.topicScale = Math.max(1, ...evidence.topics.flatMap(topic => [topic.total, topic.previous]));
+    this.classificationShare = total > 0 && quality.classified != null ? quality.classified / total : undefined;
+    this.volumeDifference = active_history >= 4 ? total - baseline : undefined;
     if (this.tab === 'actors') this.loadActors();
   }
 
@@ -133,7 +160,7 @@ export class RadarComponent implements OnInit, OnDestroy {
     const note = this.note.trim();
     const state = this.reviewState;
     this.saving = true;
-    this.error = '';
+    this.reviewError = '';
     this.notice = '';
     this.saveRequest = this.api.reviewRadarDay(watch.id, snapshot.observation_day, state, note).subscribe({
       next: () => {
@@ -142,7 +169,10 @@ export class RadarComponent implements OnInit, OnDestroy {
         this.saving = false;
         if (this.snapshot === snapshot) this.notice = 'Revisión guardada.';
       },
-      error: () => { this.saving = false; this.error = 'No se pudo guardar la revisión.'; }
+      error: () => {
+        this.saving = false;
+        if (this.snapshot === snapshot) this.reviewError = 'No se pudo guardar la revisión. Intenta de nuevo.';
+      }
     });
   }
 
@@ -150,16 +180,17 @@ export class RadarComponent implements OnInit, OnDestroy {
     const watch = this.selected;
     if (!watch || this.saving) return;
     this.saving = true;
-    this.error = '';
+    delete this.errors.settings;
     this.notice = '';
     this.saveRequest = this.api.updateRadarWatch(watch.id, changes).subscribe({
       next: () => { Object.assign(watch, changes); this.saving = false; },
-      error: () => { this.saving = false; this.error = 'No se pudo actualizar el seguimiento.'; }
+      error: () => { this.saving = false; if (this.selected === watch) this.errors.settings = 'No se pudo actualizar el seguimiento.'; }
     });
   }
 
-  openTab(tab: 'signals' | 'stories' | 'actors' | 'brief'): void {
+  openTab(tab: RadarTab, panel?: HTMLElement): void {
     this.tab = tab;
+    if (panel) setTimeout(() => panel.querySelector<HTMLElement>('h3')?.focus());
     if (tab === 'stories' && !this.stories.length) this.loadStories();
     if (tab === 'actors') this.loadActors();
   }
@@ -168,7 +199,7 @@ export class RadarComponent implements OnInit, OnDestroy {
     if (!this.selected) return;
     this.storiesRequest?.unsubscribe();
     this.loadingStories = true;
-    this.error = '';
+    delete this.errors.stories;
     this.selectedStory = undefined;
     this.storiesRequest = this.api.getRadarStories(this.selected.id, this.query.trim()).subscribe({
       next: response => {
@@ -177,7 +208,7 @@ export class RadarComponent implements OnInit, OnDestroy {
         this.selectedStory = response.stories[0];
         this.loadingStories = false;
       },
-      error: () => { this.loadingStories = false; this.error = 'No se pudieron cargar las historias.'; }
+      error: () => { this.loadingStories = false; this.errors.stories = 'No se pudieron cargar las historias.'; }
     });
   }
 
@@ -185,18 +216,20 @@ export class RadarComponent implements OnInit, OnDestroy {
     const watch = this.selected;
     if (!watch || this.saving) return;
     this.saving = true;
-    this.error = '';
+    delete this.errors.correction;
     this.notice = '';
     this.saveRequest = this.api.correctRadarStory(watch.id, post.tweetid, split).subscribe({
       next: () => {
         this.saving = false;
         if (this.selected?.id === watch.id) this.loadStories();
       },
-      error: () => { this.saving = false; this.error = 'No se pudo guardar la corrección.'; }
+      error: () => { this.saving = false; if (this.selected === watch) this.errors.correction = 'No se pudo guardar la corrección.'; }
     });
   }
 
   private clearActors(): void {
+    delete this.errors.actors;
+    delete this.errors.actorPosts;
     this.actorsRequest?.unsubscribe();
     this.actorPostsRequest?.unsubscribe();
     this.actors = [];
@@ -212,7 +245,7 @@ export class RadarComponent implements OnInit, OnDestroy {
     this.loadingActors = true;
     this.actorsRequest = this.api.getRadarActors(this.selected.id, this.snapshot.observation_day).subscribe({
       next: ({ mentions }) => { this.actors = mentions; this.loadingActors = false; },
-      error: () => { this.loadingActors = false; this.error = 'No se pudieron cargar las menciones.'; }
+      error: () => { this.loadingActors = false; this.errors.actors = 'No se pudieron cargar las menciones.'; }
     });
   }
 
@@ -221,6 +254,7 @@ export class RadarComponent implements OnInit, OnDestroy {
     const day = this.snapshot?.observation_day;
     if (!watch || !day) return;
     this.actorPostsRequest?.unsubscribe();
+    delete this.errors.actorPosts;
     this.actor = actor;
     this.actorPosts = [];
     this.loadingActorPosts = true;
@@ -231,7 +265,7 @@ export class RadarComponent implements OnInit, OnDestroy {
       type_user, entidad: actor.name, entity_type: actor.type, interval: '1d', page: 1
     }).subscribe({
       next: result => { this.actorPosts = result.posts; this.loadingActorPosts = false; },
-      error: () => { this.loadingActorPosts = false; this.error = 'No se pudieron abrir las publicaciones del actor.'; }
+      error: () => { this.loadingActorPosts = false; this.errors.actorPosts = 'No se pudieron abrir las publicaciones del actor.'; }
     });
   }
 
@@ -246,6 +280,7 @@ export class RadarComponent implements OnInit, OnDestroy {
   }
 
   private clearExplanation(): void {
+    delete this.errors.explanation;
     this.explanationRequest?.unsubscribe();
     this.explanation = undefined;
     this.explaining = false;
@@ -257,8 +292,24 @@ export class RadarComponent implements OnInit, OnDestroy {
     this.explaining = true;
     this.explanationRequest = this.api.explainRadarDay(this.selected.id, this.snapshot.observation_day, mode).subscribe({
       next: response => { this.explanation = response; this.explaining = false; },
-      error: () => { this.explaining = false; this.error = 'No se pudo preparar la respuesta.'; }
+      error: () => { this.explaining = false; this.errors.explanation = 'No se pudo preparar la respuesta.'; }
     });
+  }
+
+  async downloadPdf(): Promise<void> {
+    const { snapshot, selected } = this;
+    if (!snapshot || !selected || this.exporting) return;
+    const days = this.history.filter(day => day.observation_day <= snapshot.observation_day).slice(0, 7).reverse();
+    this.exporting = true;
+    delete this.errors.pdf;
+    try {
+      const { createRadarPdf } = await import('./radar-report');
+      createRadarPdf(selected, snapshot, days).save('radar-' + snapshot.observation_day + '.pdf');
+    } catch {
+      if (this.snapshot === snapshot) this.errors.pdf = 'No se pudo generar el PDF. Intenta de nuevo.';
+    } finally {
+      this.exporting = false;
+    }
   }
 
   downloadReport(): void {
@@ -296,12 +347,12 @@ export class RadarComponent implements OnInit, OnDestroy {
       ...data.evidence.posts.filter(post => post.url).map(post => post.source + ': ' + post.url)
     ];
     this.notice = '';
-    this.error = '';
+    delete this.errors.copy;
     try {
       await navigator.clipboard.writeText(lines.join('\n'));
       this.notice = 'Informe copiado.';
     } catch {
-      this.error = 'No se pudo copiar el informe. Puedes descargarlo.';
+      if (this.snapshot === snapshot) this.errors.copy = 'No se pudo copiar el informe. Puedes descargarlo.';
     }
   }
 

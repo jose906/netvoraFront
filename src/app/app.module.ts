@@ -1,6 +1,7 @@
 import { RadarComponent } from './radar/radar.component';
 import { DashboardEvidenceComponent } from './data/dashboard-evidence/dashboard-evidence.component';
 import { NgModule } from '@angular/core';
+import { LoadMoreDirective } from './directives/load-more.directive';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule,Routes} from '@angular/router';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -22,6 +23,7 @@ import { TodosComponent } from './data/todos/todos.component';
 import { PoliticaEstadisticasComponent } from './data/politica-estadisticas/politica-estadisticas.component';
 import {NgChartsModule} from 'ng2-charts'
 import { MatSelectModule } from '@angular/material/select';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCardModule } from '@angular/material/card';
 
 
@@ -114,6 +116,7 @@ const routes: Routes = [
     
   ],
   imports: [
+    LoadMoreDirective,
     DashboardEvidenceComponent,
     BrowserModule,
     RouterModule.forRoot(routes),
@@ -129,6 +132,7 @@ const routes: Routes = [
     MatToolbarModule,
     NgChartsModule,
     MatSelectModule,
+    MatAutocompleteModule,
     MatCardModule, 
     AngularFireModule.initializeApp(environment.firebase),
    AngularFireAuthModule,

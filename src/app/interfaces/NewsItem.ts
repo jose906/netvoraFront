@@ -35,6 +35,8 @@ export interface TopicOption {
   topic_id: number;
   topic_name: string;
   last_seen: string;
+  first_seen: string | null;
+  total_posts: number;
 }
 
 export interface PulseActivity {

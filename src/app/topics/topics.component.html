@@ -24,26 +24,43 @@
 
       <div class="hero-category-switch">
 
-        <span class="hero-category-label">Tópico</span>
-
         <mat-form-field
           appearance="outline"
           class="hero-category-select">
+          <mat-label>Buscar tópico</mat-label>
+          <mat-icon matIconPrefix aria-hidden="true">search</mat-icon>
 
-          <mat-select
-            aria-label="Tópico"
-            [(ngModel)]="topicId"
-            [ngModelOptions]="{ standalone: true }"
-            (selectionChange)="cambiarTopico()"
-            placeholder="Seleccionar tópico">
+          <input
+            #topicInput
+            matInput
+            aria-label="Buscar y seleccionar tópico"
+            placeholder="Escribe el nombre del tópico"
+            [value]="topicName"
+            [matAutocomplete]="topicAutocomplete"
+            (focus)="topicInput.select()"
+            (input)="filtrarTopicos(topicInput.value)">
 
-            <mat-option
-              *ngFor="let topic of topics"
-              [value]="topic.topic_id">
-              {{ topic.topic_name }}
+          <mat-autocomplete
+            #topicAutocomplete="matAutocomplete"
+            [displayWith]="mostrarTopico"
+            (optionSelected)="cambiarTopico($event.option.value)"
+            (closed)="restablecerBusqueda(topicInput)">
+
+            <mat-option class="topic-option" *ngFor="let topic of filteredTopics" [value]="topic">
+              <span class="topic-option-name">{{ topic.topic_name }}</span>
+              <span class="topic-option-details">
+                <span class="topic-option-count" *ngIf="topic.total_posts != null">
+                  {{ topic.total_posts | number }} {{ topic.total_posts === 1 ? 'tweet' : 'tweets' }}
+                </span>
+                <span *ngIf="topic.first_seen">Primera detección · {{ topic.first_seen | date:'dd/MM/yyyy' }}</span>
+              </span>
             </mat-option>
 
-          </mat-select>
+            <mat-option *ngIf="filteredTopics.length === 0" disabled>
+              No se encontraron tópicos
+            </mat-option>
+
+          </mat-autocomplete>
 
         </mat-form-field>
 
@@ -459,7 +476,7 @@
        CARGANDO PUBLICACIONES
   =========================================== -->
 
-  <div *ngIf="cargando" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando publicaciones…</span></div>
+  <div *ngIf="cargando && datos.length === 0" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando publicaciones…</span></div>
 
   <!-- ==========================================
        SIN RESULTADOS
@@ -497,19 +514,8 @@
   =========================================== -->
 
   <section
-    *ngIf="!cargando && datos.length > 0"
+    *ngIf="datos.length > 0"
     class="results">
-
-    <!-- ENCABEZADO DE RESULTADOS -->
-
-    <div class="results-header">
-
-      <div class="results-page">
-        <span>Página</span>
-        <strong>{{ currentPage }}</strong>
-      </div>
-
-    </div>
 
     <!-- ==========================================
          PUBLICACIONES
@@ -824,53 +830,17 @@
 
     </article>
 
-    <!-- ==========================================
-         PAGINACIÓN
-    =========================================== -->
+    <div *ngIf="hasMore && !cargando && !loadMoreError"
+      (appLoadMore)="loadNextPage()" aria-hidden="true"></div>
 
-    <nav
-      class="pagination"
-      aria-label="Páginas de publicaciones">
+    <div *ngIf="cargando" class="nv-loading-state" role="status">
+      <span class="nv-sr-only">Cargando más publicaciones…</span>
+    </div>
 
-      <!-- ANTERIOR -->
-
-      <button
-        type="button"
-        class="pagination-button"
-        [disabled]="currentPage <= 1 || cargando"
-        (click)="loadPreviousPage()">
-
-        <mat-icon>chevron_left</mat-icon>
-        Anterior
-
-      </button>
-
-      <!-- PÁGINA ACTUAL -->
-
-      <div class="pagination-current">
-
-        <span>PÁGINA</span>
-
-        <strong>
-          {{ currentPage }}
-        </strong>
-
-      </div>
-
-      <!-- SIGUIENTE -->
-
-      <button
-        type="button"
-        class="pagination-button"
-        [disabled]="!hasMore || cargando"
-        (click)="loadNextPage()">
-
-        Siguiente
-        <mat-icon>chevron_right</mat-icon>
-
-      </button>
-
-    </nav>
+    <div *ngIf="loadMoreError" class="feedback feedback-error nv-error-state" role="alert">
+      <span>No se pudieron cargar más publicaciones.</span>
+      <button type="button" (click)="loadNextPage()">Reintentar</button>
+    </div>
 
   </section>
 

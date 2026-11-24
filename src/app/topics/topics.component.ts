@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { ApiService } from '../services/api.service';
@@ -54,7 +55,7 @@ interface PulseData {
   templateUrl: './topics.component.html',
   styleUrl: './topics.component.css'
 })
-export class TopicsComponent implements OnInit {
+export class TopicsComponent implements OnInit, OnDestroy {
 
 
   // =========================================================
@@ -62,6 +63,15 @@ export class TopicsComponent implements OnInit {
   // =========================================================
 
   datos: TopicItem[] = [];
+
+  private postsSub?: Subscription;
+  private repliesSub = new Subscription();
+
+  ngOnDestroy(): void {
+    this.postsSub?.unsubscribe();
+    this.repliesSub.unsubscribe();
+  }
+
 
   cargando: boolean = false;
   error: string = '';
@@ -72,6 +82,7 @@ export class TopicsComponent implements OnInit {
   // =========================================================
 
   topics: TopicOption[] = [];
+  filteredTopics: TopicOption[] = [];
 
   topicId: number | null = null;
   topicName: string = '';
@@ -110,6 +121,8 @@ export class TopicsComponent implements OnInit {
   // PAGINACIÓN
   // =========================================================
 
+  loadMoreError = false;
+  private postsQuery?: Parameters<ApiService['getTopic']>[0];
   currentPage: number = 1;
 
   pageSize: number = 10;
@@ -699,6 +712,8 @@ export class TopicsComponent implements OnInit {
               : [];
 
 
+          this.filteredTopics = this.topics;
+
           /*
            * Si recargamos /topics/:id,
            * buscamos el nombre.
@@ -740,8 +755,8 @@ export class TopicsComponent implements OnInit {
           );
 
 
-          this.topics =
-            [];
+          this.topics = [];
+          this.filteredTopics = [];
 
         }
 
@@ -754,33 +769,29 @@ export class TopicsComponent implements OnInit {
   // CAMBIAR TÓPICO
   // =========================================================
 
-  cambiarTopico(): void {
+  filtrarTopicos(texto: string): void {
+    const query = this.normalizarBusqueda(texto.trim());
+    this.filteredTopics = query
+      ? this.topics.filter(topic => this.normalizarBusqueda(topic.topic_name).includes(query))
+      : this.topics;
+  }
 
-    if (
-      !this.topicId
-    ) {
+  private normalizarBusqueda(texto: string): string {
+    return texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
 
-      return;
+  mostrarTopico(topic: TopicOption | null): string {
+    return topic?.topic_name ?? '';
+  }
 
-    }
+  restablecerBusqueda(input: HTMLInputElement): void {
+    input.value = this.topicName;
+    this.filteredTopics = this.topics;
+  }
 
-
-    const selected =
-      this.topics.find(
-        topic =>
-          Number(
-            topic.topic_id
-          ) ===
-          Number(
-            this.topicId
-          )
-      );
-
-
-    this.topicName =
-      selected?.topic_name ??
-      '';
-
+  cambiarTopico(selected: TopicOption): void {
+    this.topicId = selected.topic_id;
+    this.topicName = selected.topic_name;
 
     this.currentPage =
       1;
@@ -1144,19 +1155,6 @@ export class TopicsComponent implements OnInit {
     }
 
 
-    this.cargando =
-      true;
-
-    this.error =
-      '';
-
-    this.datos =
-      [];
-
-    this.repliesByTweet =
-      {};
-
-
     const body: {
 
       topicId: number;
@@ -1260,135 +1258,60 @@ export class TopicsComponent implements OnInit {
     }
 
 
-    // =======================================================
-    // API
-    // =======================================================
+    this.postsQuery = body;
+    this.fetchPosts(body);
+  }
 
-    this.apiService
-      .getTopic(
-        body
-      )
-      .subscribe({
+  private fetchPosts(body: Parameters<ApiService['getTopic']>[0], append = false): void {
+    this.postsSub?.unsubscribe();
+    this.cargando = true;
+    this.error = '';
+    this.loadMoreError = false;
 
-        next: (
-          data: any
-        ) => {
+    if (!append) {
+      this.repliesSub.unsubscribe();
+      this.repliesSub = new Subscription();
+      this.repliesByTweet = {};
+      this.datos = [];
+    }
 
+    this.postsSub = this.apiService.getTopic(body).subscribe({
+      next: (data: any) => {
+        const page: TopicItem[] = Array.isArray(data)
+          ? data
+          : data?.resultado ?? data?.items ?? data?.data ?? [];
+        const existingIds = new Set(this.datos.map(post => String(post.tweetid)));
+        const newPosts = page.filter(post => {
+          const id = String(post.tweetid);
+          if (existingIds.has(id)) return false;
+          existingIds.add(id);
+          return true;
+        });
+        this.datos = [...this.datos, ...newPosts];
+        this.currentPage = body.page ?? 1;
+        this.hasMore = newPosts.length > 0 &&
+          (typeof data?.hasMore === 'boolean' ? data.hasMore : page.length === this.pageSize);
+        this.cargando = false;
 
-          // ===============================================
-          // NORMALIZAR RESPUESTA
-          // ===============================================
-
-          if (
-            Array.isArray(data)
-          ) {
-
-            this.datos =
-              data;
-
-
-            this.currentPage =
-              pageToLoad;
-
-          }
-
-          else {
-
-            this.datos =
-              data?.resultado ??
-              data?.items ??
-              data?.data ??
-              [];
-
-
-            this.currentPage =
-              Number(
-                data?.page ??
-                pageToLoad
-              );
-
-          }
-
-
-          // ===============================================
-          // NOMBRE DEL TÓPICO
-          // ===============================================
-
-          if (
-            this.datos.length > 0 &&
-            this.datos[0].topic_name
-          ) {
-
-            this.topicName =
-              this.datos[0]
-                .topic_name;
-
-          }
-
-
-          // ===============================================
-          // PAGINACIÓN
-          // ===============================================
-
-          this.hasMore =
-            this.datos.length ===
-            this.pageSize;
-
-
-          // ===============================================
-          // REPLIES
-          // ===============================================
-
-          if (
-            this.canViewReplies
-          ) {
-
-            this.cargarReplies();
-
-          }
-
-          else {
-
-            this.repliesByTweet =
-              {};
-
-          }
-
-
-          this.cargando =
-            false;
-
-        },
-
-
-        error: (error) => {
-
-          console.error(
-            'Error cargando tópico:',
-            error
-          );
-
-
-          this.error =
-            'No se pudieron cargar las publicaciones.';
-
-
-          this.datos =
-            [];
-
-          this.hasMore =
-            false;
-
-          this.repliesByTweet =
-            {};
-
-          this.cargando =
-            false;
-
+        if (this.datos[0]?.topic_name) {
+          this.topicName = this.datos[0].topic_name;
         }
 
-      });
-
+        if (newPosts.length && this.canViewReplies) {
+          this.cargarReplies(newPosts);
+        }
+      },
+      error: error => {
+        console.error('Error cargando publicaciones:', error);
+        this.cargando = false;
+        if (append) {
+          this.loadMoreError = true;
+        } else {
+          this.error = 'No se pudieron cargar las publicaciones.';
+          this.hasMore = false;
+        }
+      }
+    });
   }
 
 
@@ -1396,7 +1319,7 @@ export class TopicsComponent implements OnInit {
   // REPLIES
   // =========================================================
 
-  cargarReplies(): void {
+  cargarReplies(posts = this.datos): void {
 
     // =======================================================
     // CONTROL DE PLAN
@@ -1419,7 +1342,7 @@ export class TopicsComponent implements OnInit {
     // =======================================================
 
     const tweetIds =
-      this.datos.map(
+      posts.map(
         item =>
           String(
             item.tweetid
@@ -1443,7 +1366,7 @@ export class TopicsComponent implements OnInit {
     // API
     // =======================================================
 
-    this.apiService
+    this.repliesSub.add(this.apiService
       .getRepliesSummaryMany(
         tweetIds
       )
@@ -1542,8 +1465,7 @@ export class TopicsComponent implements OnInit {
           }
 
 
-          this.repliesByTweet =
-            map;
+          this.repliesByTweet = { ...this.repliesByTweet, ...map };
 
         },
 
@@ -1556,12 +1478,9 @@ export class TopicsComponent implements OnInit {
           );
 
 
-          this.repliesByTweet =
-            {};
-
         }
 
-      });
+      }));
 
   }
 
@@ -1988,62 +1907,9 @@ export class TopicsComponent implements OnInit {
   // =========================================================
 
   loadNextPage(): void {
+    if (!this.postsQuery || !this.hasMore || this.cargando) return;
 
-    if (
-      !this.hasMore ||
-      this.cargando
-    ) {
-
-      return;
-
-    }
-
-
-    const nextPage =
-      this.currentPage +
-      1;
-
-
-    this.load(
-      this.startDate,
-      this.endDate,
-      this.selectedUsers,
-      nextPage,
-      this.searchText
-    );
-
-  }
-
-
-  // =========================================================
-  // PÁGINA ANTERIOR
-  // =========================================================
-
-  loadPreviousPage(): void {
-
-    if (
-      this.currentPage <= 1 ||
-      this.cargando
-    ) {
-
-      return;
-
-    }
-
-
-    const previousPage =
-      this.currentPage -
-      1;
-
-
-    this.load(
-      this.startDate,
-      this.endDate,
-      this.selectedUsers,
-      previousPage,
-      this.searchText
-    );
-
+    this.fetchPosts({ ...this.postsQuery, page: this.currentPage + 1 }, true);
   }
 
 

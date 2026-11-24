@@ -138,6 +138,8 @@ errorPulse = '';
   // PAGINACIÓN
   // =========================================================
 
+  loadMoreError = false;
+  private postsQuery?: Parameters<ApiService['getPostsCategoria']>[0];
   currentPage: number = 1;
   pageSize: number = 10;
   hasMore: boolean = false;
@@ -184,6 +186,10 @@ errorPulse = '';
   private repliesReady = false;
   repliesLoading = false;
   repliesError = '';
+  private replyBatchIds = new Set<string>();
+  private stanceBatchIds = new Set<string>();
+  repliesErrorsByTweet = new Map<string, string>();
+  stanceErrorsByTweet = new Set<string>();
 
   ngOnDestroy(): void {
     ++this.stanceLoadToken;
@@ -195,6 +201,14 @@ errorPulse = '';
     this.usersSub?.unsubscribe();
     this.pulseSub?.unsubscribe();
     this.accessSub?.unsubscribe();
+  }
+
+  isLoadingReplies(tweetid: string | number): boolean {
+    return this.repliesLoading && this.replyBatchIds.has(String(tweetid));
+  }
+
+  isLoadingStance(tweetid: string | number): boolean {
+    return this.stanceLoading && this.stanceBatchIds.has(String(tweetid));
   }
 
   getStance(tweetid: string | number): StancePublication | null {
@@ -212,9 +226,8 @@ errorPulse = '';
     }
   }
 
-  cargarStanceBatch(): void {
+  cargarStanceBatch(posts = this.datos): void {
     this.stanceBatchSub?.unsubscribe();
-    this.stanceByTweet = {};
     this.stanceError = '';
 
     if (!this.canViewReplies) {
@@ -222,12 +235,14 @@ errorPulse = '';
       return;
     }
 
-    const ids = [...new Set(this.datos.map(item => String(item.tweetid)).filter(Boolean))];
+    const ids = [...new Set(posts.map(item => String(item.tweetid)).filter(Boolean))];
     if (!ids.length) {
       this.stanceLoading = false;
       return;
     }
 
+    this.stanceBatchIds = new Set(ids);
+    ids.forEach(id => this.stanceErrorsByTweet.delete(id));
     const token = this.stanceLoadToken;
     this.stanceLoading = true;
 
@@ -238,16 +253,16 @@ errorPulse = '';
     }).subscribe({
       next: response => {
         if (token !== this.stanceLoadToken) return;
-        this.stanceByTweet = response?.batch?.items ?? {};
+        this.stanceByTweet = { ...this.stanceByTweet, ...response?.batch?.items };
         this.stanceLoading = false;
         this.cdr.markForCheck();
-        this.revisarCoherenciaReplies();
+        this.revisarCoherenciaReplies(posts);
       },
       error: error => {
         if (token !== this.stanceLoadToken) return;
         console.error('Error cargando Stance por publicación:', error);
-        this.stanceByTweet = {};
         this.stanceError = 'No se pudo consultar Stance para estas publicaciones.';
+        ids.forEach(id => this.stanceErrorsByTweet.add(id));
         this.stanceLoading = false;
         this.cdr.markForCheck();
       }
@@ -659,28 +674,6 @@ private inicializarContenido(): void {
     }
 
 
-    this.cargando = true;
-    this.error = '';
-
-    // Invalidar los resultados de Stance de la página anterior.
-    ++this.stanceLoadToken;
-    this.postsSub?.unsubscribe();
-    this.repliesSub?.unsubscribe();
-    this.stanceBatchSub?.unsubscribe();
-    this.closeStanceComments();
-    this.stanceByTweet = {};
-    this.stanceLoading = false;
-    this.stanceError = '';
-    this.repliesByTweet = {};
-    this.repliesLoading = false;
-    this.repliesError = '';
-    this.repliesRetryCount = 0;
-    this.repliesReady = false;
-    const tokenActual = this.stanceLoadToken;
-
-    this.datos = [];
-
-
     const body: {
       categoria: string;
       startDate?: string;
@@ -754,60 +747,74 @@ private inicializarContenido(): void {
       'con filtros:',
       body
     );
-    // =======================================================
-    // API
-    // =======================================================
+    this.postsQuery = body;
+    this.fetchPosts(body);
+  }
 
-    this.postsSub = this.apiService
-      .getPostsCategoria(body)
-      .subscribe({
+  private fetchPosts(body: Parameters<ApiService['getPostsCategoria']>[0], append = false): void {
+    this.postsSub?.unsubscribe();
+    this.cargando = true;
+    this.error = '';
+    this.loadMoreError = false;
 
-        next: (data: any) => {
-          if (tokenActual !== this.stanceLoadToken) return;
-          console.log('Datos recibidos de la API:', data);
-          this.datos =
-            data?.resultado ??
-            data?.items ??
-            data?.data ??
-            [];
+    if (!append) {
+      ++this.stanceLoadToken;
+      this.repliesSub?.unsubscribe();
+      this.stanceBatchSub?.unsubscribe();
+      this.closeStanceComments();
+      this.stanceByTweet = {};
+      this.stanceLoading = false;
+      this.stanceError = '';
+      this.repliesByTweet = {};
+      this.repliesLoading = false;
+      this.repliesError = '';
+      this.repliesRetryCount = 0;
+      this.repliesReady = false;
+      this.repliesErrorsByTweet.clear();
+      this.stanceErrorsByTweet.clear();
+      this.datos = [];
+    }
+    const tokenActual = this.stanceLoadToken;
 
-          this.currentPage =
-            Number(
-              data?.page ??
-              pageToLoad
-            );
+    this.postsSub = this.apiService.getPostsCategoria(body).subscribe({
+      next: (data: any) => {
+        if (tokenActual !== this.stanceLoadToken) return;
+        const page: NewsItem[] = Array.isArray(data)
+          ? data
+          : data?.resultado ?? data?.items ?? data?.data ?? [];
+        const existingIds = new Set(this.datos.map(post => String(post.tweetid)));
+        const newPosts = page.filter(post => {
+          const id = String(post.tweetid);
+          if (existingIds.has(id)) return false;
+          existingIds.add(id);
+          return true;
+        });
+        this.datos = [...this.datos, ...newPosts];
+        this.currentPage = body.page ?? 1;
+        this.hasMore = newPosts.length > 0 &&
+          (typeof data?.hasMore === 'boolean' ? data.hasMore : page.length === this.pageSize);
+        this.cargando = false;
 
-          this.hasMore =
-            this.datos.length ===
-            this.pageSize;
-
-          this.cargando = false;
-          // Los dos análisis se cargan solos, en paralelo, para la página actual.
-          this.cargarReplies();
-          this.cargarStanceBatch();
-          this.cdr.markForCheck();
-        },
-
-        error: (error) => {
-          if (tokenActual !== this.stanceLoadToken) return;
-
-          console.error(
-            `Error cargando categoría ${this.categoria}:`,
-            error
-          );
-
-          this.error =
-            'No se pudieron cargar las publicaciones.';
-
-          this.datos = [];
-          this.hasMore = false;
-          this.repliesByTweet = {};
-          this.repliesLoading = false;
-          this.cargando = false;
-          this.cdr.markForCheck();
+        if (newPosts.length) {
+          this.repliesRetryCount = 0;
+          this.cargarReplies(newPosts);
+          this.cargarStanceBatch(newPosts);
         }
-
-      });
+        this.cdr.markForCheck();
+      },
+      error: error => {
+        if (tokenActual !== this.stanceLoadToken) return;
+        console.error('Error cargando publicaciones:', error);
+        this.cargando = false;
+        if (append) {
+          this.loadMoreError = true;
+        } else {
+          this.error = 'No se pudieron cargar las publicaciones.';
+          this.hasMore = false;
+        }
+        this.cdr.markForCheck();
+      }
+    });
   }
 
 
@@ -820,18 +827,17 @@ private inicializarContenido(): void {
 // Solo disponible para PLAN PRO
 // =========================================================
 
-cargarReplies(): void {
+cargarReplies(posts = this.datos): void {
   this.repliesSub?.unsubscribe();
   this.repliesError = '';
   this.repliesReady = false;
-  this.repliesByTweet = {};
 
   if (!this.canViewReplies) {
     this.repliesLoading = false;
     return;
   }
 
-  const tweetIds = [...new Set(this.datos.map(item => String(item.tweetid)).filter(Boolean))];
+  const tweetIds = [...new Set(posts.map(item => String(item.tweetid)).filter(Boolean))];
   if (!tweetIds.length) {
     this.repliesLoading = false;
     return;
@@ -839,6 +845,8 @@ cargarReplies(): void {
 
   const token = this.stanceLoadToken;
   const permitidos = new Set(tweetIds);
+  this.replyBatchIds = permitidos;
+  tweetIds.forEach(id => this.repliesErrorsByTweet.delete(id));
   this.repliesLoading = true;
   this.cdr.markForCheck();
 
@@ -853,8 +861,8 @@ cargarReplies(): void {
 
       if (!Array.isArray(rows)) {
         console.error('Formato inesperado en resumen de comentarios:', response);
-        this.repliesByTweet = {};
         this.repliesError = 'El servidor devolvió un formato inválido de comentarios.';
+        tweetIds.forEach(id => this.repliesErrorsByTweet.set(id, this.repliesError));
         this.repliesLoading = false;
         this.repliesReady = false;
         this.cdr.markForCheck();
@@ -884,16 +892,17 @@ cargarReplies(): void {
         }
       }
 
-      this.repliesByTweet = map;
+      this.repliesByTweet = { ...this.repliesByTweet, ...map };
       this.repliesLoading = false;
       this.repliesReady = true;
       this.cdr.markForCheck();
-      this.revisarCoherenciaReplies();
+      this.revisarCoherenciaReplies(posts);
     },
     error: error => {
       if (token !== this.stanceLoadToken) return;
       console.error('Error cargando comentarios:', error);
       this.repliesError = 'No se pudo cargar el resumen de comentarios.';
+      tweetIds.forEach(id => this.repliesErrorsByTweet.set(id, this.repliesError));
       this.repliesLoading = false;
       this.repliesReady = false;
       this.cdr.markForCheck();
@@ -912,11 +921,11 @@ private totalReplies(tweetid: string | number): number {
 
 // Si Stance indica que existen comentarios clasificados, pero la API de
 // sentimiento respondió 0, repetir UNA vez sin pedir que se recargue la página.
-private revisarCoherenciaReplies(): void {
+private revisarCoherenciaReplies(posts: NewsItem[]): void {
   if (!this.repliesReady || this.repliesLoading || this.stanceLoading ||
       this.repliesRetryCount > 0 || this.repliesError || this.stanceError) return;
 
-  const inconsistente = this.datos.some(item => {
+  const inconsistente = posts.some(item => {
     const stance = this.getStance(item.tweetid);
     return (stance?.stance_summary?.processed ?? 0) > 0 &&
            this.totalReplies(item.tweetid) === 0;
@@ -924,14 +933,15 @@ private revisarCoherenciaReplies(): void {
 
   if (inconsistente) {
     this.repliesRetryCount++;
-    this.cargarReplies();
+    this.cargarReplies(posts);
   }
 }
 
 // No mostrar "0 comentarios" cuando Stance confirma datos
 // y el resumen de sentimiento sigue sin reflejarlos.
 hasRepliesStanceMismatch(tweetid: string | number): boolean {
-  return this.repliesReady && !this.repliesLoading &&
+  return !this.isLoadingReplies(tweetid) &&
+    !this.repliesErrorsByTweet.has(String(tweetid)) &&
     (this.getStance(tweetid)?.stance_summary?.processed ?? 0) > 0 &&
     this.totalReplies(tweetid) === 0;
 }
@@ -1348,34 +1358,9 @@ formatPulseDate(date: string): string {
   // =========================================================
 
   loadNextPage(): void {
+    if (!this.postsQuery || !this.hasMore || this.cargando || this.repliesLoading || this.stanceLoading) return;
 
-    if (!this.hasMore) {
-      return;
-    }
-
-    this.load(
-      this.startDate,
-      this.endDate,
-      this.selectedUsers,
-      this.currentPage + 1,
-      this.searchText
-    );
-  }
-
-
-  loadPreviousPage(): void {
-
-    if (this.currentPage <= 1) {
-      return;
-    }
-
-    this.load(
-      this.startDate,
-      this.endDate,
-      this.selectedUsers,
-      this.currentPage - 1,
-      this.searchText
-    );
+    this.fetchPosts({ ...this.postsQuery, page: this.currentPage + 1 }, true);
   }
 
 

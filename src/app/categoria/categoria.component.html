@@ -330,7 +330,7 @@
   </div>
 
   <!-- CARGANDO -->
-  <div *ngIf="cargando" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando publicaciones…</span></div>
+  <div *ngIf="cargando && datos.length === 0" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando publicaciones…</span></div>
 
   <!-- SIN RESULTADOS -->
   <section
@@ -359,17 +359,8 @@
 
   <!-- RESULTADOS -->
   <section
-    *ngIf="!cargando && datos.length > 0"
+    *ngIf="datos.length > 0"
     class="results">
-
-    <div class="results-header">
-     
-
-      <div class="results-page">
-        <span>Página</span>
-        <strong>{{ currentPage }}</strong>
-      </div>
-    </div>
 
     <!-- PUBLICACIONES -->
     <article
@@ -483,18 +474,18 @@
       <ng-container
         *ngIf="!accessLoading && canViewReplies">
 
-        <div *ngIf="repliesLoading" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando comentarios y sentimiento…</span></div>
+        <div *ngIf="isLoadingReplies(item.tweetid)" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando comentarios y sentimiento…</span></div>
 
-        <div class="conversation-summary nv-error-state" *ngIf="!repliesLoading && repliesError" role="alert">
-          {{ repliesError }}
+        <div class="conversation-summary nv-error-state" *ngIf="repliesErrorsByTweet.get(item.tweetid.toString()) as replyError" role="alert">
+          {{ replyError }}
         </div>
 
         <div class="conversation-summary"
-          *ngIf="!repliesLoading && !repliesError && hasRepliesStanceMismatch(item.tweetid)" role="status">
+          *ngIf="!isLoadingReplies(item.tweetid) && !repliesErrorsByTweet.get(item.tweetid.toString()) && hasRepliesStanceMismatch(item.tweetid)" role="status">
           Los comentarios tienen Stance registrado, pero el resumen de sentimiento no coincide.
         </div>
 
-        <ng-container *ngIf="!repliesLoading && !repliesError && !hasRepliesStanceMismatch(item.tweetid)">
+        <ng-container *ngIf="!isLoadingReplies(item.tweetid) && !repliesErrorsByTweet.get(item.tweetid.toString()) && !hasRepliesStanceMismatch(item.tweetid)">
           <div
             class="conversation-summary"
             *ngIf="getRepliesCounts(item.tweetid) as replies">
@@ -554,7 +545,7 @@
               <span class="stance-post-kicker">STANCE · POSTURAS</span>
               <h3>Posición de los comentarios</h3>
             </div>
-            <span *ngIf="stanceLoading" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando posturas…</span></span>
+            <span *ngIf="isLoadingStance(item.tweetid)" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando posturas…</span></span>
           </div>
 
           <ng-container *ngIf="getStance(item.tweetid) as stance; else stanceSinResultado">
@@ -630,9 +621,9 @@
           </ng-container>
 
           <ng-template #stanceSinResultado>
-            <div *ngIf="stanceLoading" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando análisis de Stance…</span></div>
-            <p class="stance-post-note" *ngIf="!stanceLoading && !stanceError">Sin análisis de Stance disponible para esta publicación.</p>
-            <p class="stance-post-note stance-error nv-error-state" *ngIf="!stanceLoading && stanceError" role="alert">No se pudo cargar Stance.</p>
+            <div *ngIf="isLoadingStance(item.tweetid)" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando análisis de Stance…</span></div>
+            <p class="stance-post-note" *ngIf="!isLoadingStance(item.tweetid) && !stanceErrorsByTweet.has(item.tweetid.toString())">Sin análisis de Stance disponible para esta publicación.</p>
+            <p class="stance-post-note stance-error nv-error-state" *ngIf="!isLoadingStance(item.tweetid) && stanceErrorsByTweet.has(item.tweetid.toString())" role="alert">No se pudo cargar Stance.</p>
           </ng-template>
         </section>
       </ng-container>
@@ -670,35 +661,17 @@
 
     </article>
 
-    <!-- PAGINACIÓN -->
-    <nav class="pagination" aria-label="Páginas de publicaciones">
+    <div *ngIf="hasMore && !cargando && !loadMoreError && !repliesLoading && !stanceLoading"
+      (appLoadMore)="loadNextPage()" aria-hidden="true"></div>
 
-      <button
-        type="button"
-        class="pagination-button"
-        [disabled]="currentPage <= 1"
-        (click)="loadPreviousPage()">
+    <div *ngIf="cargando" class="nv-loading-state" role="status">
+      <span class="nv-sr-only">Cargando más publicaciones…</span>
+    </div>
 
-        <mat-icon>chevron_left</mat-icon>
-        Anterior
-      </button>
-
-      <div class="pagination-current">
-        <span>PÁGINA</span>
-        <strong>{{ currentPage }}</strong>
-      </div>
-
-      <button
-        type="button"
-        class="pagination-button"
-        [disabled]="!hasMore"
-        (click)="loadNextPage()">
-
-        Siguiente
-        <mat-icon>chevron_right</mat-icon>
-      </button>
-
-    </nav>
+    <div *ngIf="loadMoreError" class="feedback feedback-error nv-error-state" role="alert">
+      <span>No se pudieron cargar más publicaciones.</span>
+      <button type="button" (click)="loadNextPage()">Reintentar</button>
+    </div>
 
   </section>
 </div>

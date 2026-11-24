@@ -90,11 +90,7 @@
   width: 180px;
   height: 3px;
 
-  background: linear-gradient(
-    90deg,
-    var(--nv-purple),
-    transparent
-  );
+  background: var(--theme-primary);
 }
 
 .signal-hero-top {
@@ -447,11 +443,7 @@
   width: 100%;
   min-height: 2px;
 
-  background: linear-gradient(
-    180deg,
-    #7c3aed,
-    #c4b5fd
-  );
+  background: var(--theme-primary);
 
   border-radius: 5px 5px 1px 1px;
   transform-origin: bottom;

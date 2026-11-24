@@ -386,6 +386,10 @@ export class StanceComentariosComponent implements OnInit, OnChanges, OnDestroy 
     return 100 * (Number(row.total) || 0) / this.maxTimeline;
   }
 
+  timelineComposition(row: StanceTimelineRow): string {
+    return this.stances.map(stance => `${this.labels[stance]}: ${row[stance] ?? 0}`).join(', ');
+  }
+
   timelineStanceWidth(row: StanceTimelineRow, stance: StanceValue): number {
     return Number(row.total) > 0
       ? 100 * (Number(row[stance]) || 0) / Number(row.total)

@@ -28,7 +28,7 @@
         (click)="downloadAllCharts()"
         [disabled]="cargandoDashboard || !!filterMessage">
 
-        <span class="material-icons">download</span>
+        <i class="fas fa-download" aria-hidden="true"></i>
         Descargar gráficos
       </button>
     </div>
@@ -239,7 +239,7 @@
           class="iconbtn"
           (click)="downloadChart($event)"
           title="Descargar gráfico">
-          <span class="material-icons">download</span>
+          <i class="fas fa-download" aria-hidden="true"></i>
         </button>
       </div>
 
@@ -249,6 +249,7 @@
 
         <canvas role="img" aria-label="Evolución de publicaciones por intervalo"
           baseChart
+          [plugins]="rankingPlugins"
           [type]="'line'"
           [data]="timelineData"
           [options]="lineOptions"
@@ -312,7 +313,7 @@
           class="iconbtn"
           (click)="downloadChart($event)"
           title="Descargar gráfico">
-          <span class="material-icons">download</span>
+          <i class="fas fa-download" aria-hidden="true"></i>
         </button>
       </div>
 
@@ -320,8 +321,9 @@
         class="chart-wrap chart-wrap--large"
         *ngIf="topTopicsData.labels?.length; else noTopTopics">
 
-        <canvas
+        <canvas role="img" aria-label="Publicaciones por tópico"
           baseChart
+          [plugins]="rankingPlugins"
           [type]="'bar'"
           [data]="topTopicsData"
           [options]="topTopicsOptions"
@@ -612,7 +614,7 @@
             class="iconbtn"
             (click)="downloadChart($event)"
             title="Descargar gráfico">
-            <span class="material-icons">download</span>
+            <i class="fas fa-download" aria-hidden="true"></i>
           </button>
         </div>
 
@@ -620,8 +622,9 @@
           class="chart-wrap chart-wrap--media"
           *ngIf="postsByMedia.length; else noPostsByMedia">
 
-          <canvas
+          <canvas role="img" aria-label="Volumen de publicaciones por medio"
             baseChart
+            [plugins]="rankingPlugins"
             [type]="'bar'"
             [data]="postsByMediaChartData"
             [options]="postsByMediaChartOptions"
@@ -812,12 +815,12 @@
           <div class="card-actions">
             <select
               class="select"
-              [(ngModel)]="sentimentChartType">
+              aria-label="Tipo de gráfico de sentimiento" [(ngModel)]="sentimentChartType">
 
               <option
                 *ngFor="let t of sentimentTypeOptions"
                 [ngValue]="t">
-                {{ t }}
+                {{ t === 'bar' ? 'Barras' : t === 'pie' ? 'Circular' : 'Anillo' }}
               </option>
             </select>
 
@@ -826,7 +829,7 @@
               class="iconbtn"
               (click)="downloadChart($event)"
               title="Descargar gráfico">
-              <span class="material-icons">download</span>
+              <i class="fas fa-download" aria-hidden="true"></i>
             </button>
           </div>
         </div>
@@ -837,11 +840,12 @@
           class="chart-wrap chart-wrap--analysis"
           *ngIf="!loadingResumen">
 
-          <canvas
+          <canvas role="img" aria-label="Distribución del sentimiento en publicaciones"
             baseChart
+            [plugins]="rankingPlugins"
             [type]="sentimentChartType"
             [data]="sentimentData"
-            [options]="commonOptions">
+            [options]="sentimentChartType === 'bar' ? breakdownBars : commonOptions">
           </canvas>
         </div>
       </article>
@@ -861,7 +865,7 @@
             class="iconbtn"
             (click)="downloadChart($event)"
             title="Descargar gráfico">
-            <span class="material-icons">download</span>
+            <i class="fas fa-download" aria-hidden="true"></i>
           </button>
         </div>
 
@@ -876,8 +880,9 @@
           class="chart-wrap chart-wrap--analysis"
           *ngIf="!loadingResumen">
 
-          <canvas
+          <canvas role="img" aria-label="Sentimiento de las publicaciones por fuente"
             baseChart
+            [plugins]="rankingPlugins"
             [type]="'bar'"
             [data]="toneData"
             [options]="toneOptions">
@@ -1020,14 +1025,15 @@
             class="iconbtn"
             (click)="downloadChart($event)"
             title="Descargar gráfico">
-            <span class="material-icons">download</span>
+            <i class="fas fa-download" aria-hidden="true"></i>
           </button>
         </div>
 
         <div class="replies-chart-content">
           <div class="replies-chart-visual">
-            <canvas
+            <canvas role="img" aria-label="Distribución del sentimiento en comentarios"
               baseChart
+              [plugins]="rankingPlugins"
               [data]="repliesChartData"
               [type]="'doughnut'"
               [options]="repliesChartOptions">
@@ -1170,7 +1176,7 @@
       class="iconbtn"
       (click)="downloadChart($event)"
       title="Descargar gráfico">
-      <span class="material-icons">download</span>
+      <i class="fas fa-download" aria-hidden="true"></i>
     </button>
 
   </div>
@@ -1228,8 +1234,9 @@
       else noTopicsTimeline
     ">
 
-    <canvas
+    <canvas role="img" aria-label="Evolución de publicaciones por tópico"
       baseChart
+      [plugins]="rankingPlugins"
       [type]="'line'"
       [data]="topicsTimelineData"
       [options]="topicsTimelineOptions">
@@ -1418,7 +1425,7 @@
             class="iconbtn"
             (click)="downloadChart($event)"
             title="Descargar gráfico">
-            <span class="material-icons">download</span>
+            <i class="fas fa-download" aria-hidden="true"></i>
           </button>
         </div>
 
@@ -1441,8 +1448,9 @@
           class="chart-wrap explore-small-chart"
           *ngIf="!loadingResumen && userIndice.length">
 
-          <canvas
+          <canvas role="img" aria-label="Índice de sentimiento por fuente"
             baseChart
+            [plugins]="rankingPlugins"
             [type]="'bar'"
             [data]="userIndiceChartData"
             [options]="userIndiceChartOptions">

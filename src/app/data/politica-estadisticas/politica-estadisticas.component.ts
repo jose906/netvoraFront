@@ -1,3 +1,4 @@
+import { statisticsBreakdownBars, statisticsChartOptions, statisticsRankingValues } from '../statistics-chart';
 import { DashboardEvidenceComponent } from '../dashboard-evidence/dashboard-evidence.component';
 import { DashboardSelection } from '../../interfaces/dashboard-evidence';
 import { ElementRef, EventEmitter, Output } from '@angular/core';
@@ -53,6 +54,8 @@ type TopicEntityType =
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PoliticaEstadisticasComponent implements OnChanges, OnDestroy {
+  readonly breakdownBars = statisticsBreakdownBars;
+  readonly rankingPlugins = [statisticsRankingValues];
   @Input() startDate!: Date | null;
   @Input() endDate!: Date | null;
   @Input() selectedUsers: string[] = [];
@@ -183,7 +186,7 @@ mediaTop5Share = 0;
           data: fechas.map(fecha => valores.get(`${id}|${fecha}`) ?? 0),
           borderColor: color,
           backgroundColor: color,
-          tension: 0.35,
+          tension: 0.25,
           fill: false,
           pointRadius: 3,
           pointHoverRadius: 5,
@@ -251,7 +254,7 @@ mediaTop5Share = 0;
   @ViewChild(DashboardEvidenceComponent) private evidence?: DashboardEvidenceComponent;
   evidenceTopics: { topic_id: number; topic_name: string }[] = [];
   sentimentShare = false;
-  private readonly sentimentShareOptions: ChartOptions<'bar'> = {
+  private readonly sentimentShareOptions: ChartOptions<'bar'> = statisticsChartOptions<'bar'>({
     indexAxis: 'y', responsive: true, maintainAspectRatio: false,
     scales: {
       x: { stacked: true, min: 0, max: 100, ticks: { callback: value => value + '%' } },
@@ -260,7 +263,7 @@ mediaTop5Share = 0;
     plugins: { tooltip: { callbacks: {
       label: item => `${item.dataset.label}: ${Number(item.raw).toFixed(1)}%`
     } } }
-  };
+  });
 
   get toneOptions(): ChartOptions<'bar'> {
     return this.sentimentShare ? this.sentimentShareOptions : this.sentVsUserOptions;
@@ -303,9 +306,9 @@ mediaTop5Share = 0;
        borderColor: NETVORA_PALETTE.timeline.line,
           backgroundColor: NETVORA_PALETTE.timeline.fill,
           pointBackgroundColor: NETVORA_PALETTE.timeline.point,
-            tension: 0.35,
+            tension: 0.25,
             fill: false,
-            pointRadius: 2,
+            pointRadius: 3,
             pointHoverRadius: 4,
             borderWidth: 2
      }]
@@ -338,7 +341,7 @@ postsByMediaChartData: ChartData<'bar'> = {
     }
   ]
 };
-postsByMediaChartOptions: ChartOptions<'bar'> = {
+postsByMediaChartOptions: ChartOptions<'bar'> = statisticsChartOptions<'bar'>({
   responsive: true,
   maintainAspectRatio: false,
   indexAxis: 'y',
@@ -374,8 +377,8 @@ postsByMediaChartOptions: ChartOptions<'bar'> = {
       }
     }
   }
-};
-readonly topicsTimelineOptions: ChartOptions<'line'> = {
+});
+readonly topicsTimelineOptions: ChartOptions<'line'> = statisticsChartOptions<'line'>({
   responsive: true,
   maintainAspectRatio: false,
   interaction: {
@@ -431,12 +434,12 @@ readonly topicsTimelineOptions: ChartOptions<'line'> = {
       }
     }
   }
-};
+});
 topicsByUserData: ChartData<'bar'> = {
   labels: [],
   datasets: []
 };
-readonly topicsByUserOptions: ChartOptions<'bar'> = {
+readonly topicsByUserOptions: ChartOptions<'bar'> = statisticsChartOptions<'bar'>({
   responsive: true,
   maintainAspectRatio: false,
   indexAxis: 'y',
@@ -498,8 +501,8 @@ readonly topicsByUserOptions: ChartOptions<'bar'> = {
       }
     }
   }
-};
-  readonly lineOptions: ChartOptions<'line'> = {
+});
+  readonly lineOptions: ChartOptions<'line'> = statisticsChartOptions<'line'>({
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
@@ -541,17 +544,17 @@ readonly topicsByUserOptions: ChartOptions<'bar'> = {
         }
       }
     }
-  };
+  });
   // ===== Sentimientos (tipo variable) =====
   sentimentData: ChartData = {
     labels: ['Negativo', 'Neutro', 'Positivo'],
     datasets: [{ label: 'Publicaciones', data: [0, 0, 0] }]
   };
-  readonly commonOptions: ChartOptions = {
+  readonly commonOptions: ChartOptions = statisticsChartOptions({
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { display: true }, tooltip: { enabled: true } }
-  };
+  });
    repliesChartData: ChartData<'doughnut'> = {
   labels: ['Negativo', 'Neutro', 'Positivo'],
   datasets: [{
@@ -564,7 +567,7 @@ readonly topicsByUserOptions: ChartOptions<'bar'> = {
     borderWidth: 0
   }]
 };
-readonly topTopicsOptions: ChartOptions<'bar'> = {
+readonly topTopicsOptions: ChartOptions<'bar'> = statisticsChartOptions<'bar'>({
   responsive: true,
   maintainAspectRatio: false,
   indexAxis: 'y',
@@ -615,8 +618,8 @@ readonly topTopicsOptions: ChartOptions<'bar'> = {
       }
     }
   }
-};
- readonly repliesChartOptions: ChartOptions<'doughnut'> = {
+});
+ readonly repliesChartOptions: ChartOptions<'doughnut'> = statisticsChartOptions<'doughnut'>({
     responsive: true,
     maintainAspectRatio: false,
     cutout: '72%',
@@ -655,7 +658,7 @@ readonly topTopicsOptions: ChartOptions<'bar'> = {
         hoverOffset: 5
       }
     }
-  };
+  });
   // ===== SentVsUser (bar apilado) =====
   sentVsUserData: ChartData<'bar'> = {
     labels: [],
@@ -683,7 +686,7 @@ readonly topTopicsOptions: ChartOptions<'bar'> = {
     }
   ]
   };
-  sentVsUserOptions: ChartOptions<'bar'> = {
+  sentVsUserOptions: ChartOptions<'bar'> = statisticsChartOptions<'bar'>({
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { display: true }, tooltip: { enabled: true } },
@@ -691,7 +694,7 @@ readonly topTopicsOptions: ChartOptions<'bar'> = {
       x: { stacked: true, ticks: { maxRotation: 0 } },
       y: { stacked: true, beginAtZero: true }
     }
-  };
+  });
   // wordCloud
   wordcloudRequested = false;
   private wordcloudSubscription?: Subscription;
@@ -701,7 +704,7 @@ readonly topTopicsOptions: ChartOptions<'bar'> = {
 indiceSent: IndiceSentItem[] = [];
 // Chart (horizontal bar)
 userIndiceChartData: ChartData<'bar'> = { labels: [], datasets: [{ label: 'Índice (%)', data: [] }] };
-userIndiceChartOptions: ChartOptions<'bar'> = {
+userIndiceChartOptions: ChartOptions<'bar'> = statisticsChartOptions<'bar'>({
   responsive: true,
   maintainAspectRatio: false,
   indexAxis: 'y',
@@ -724,7 +727,7 @@ userIndiceChartOptions: ChartOptions<'bar'> = {
     },
     y: { ticks: { autoSkip: false } }
   }
-};
+});
   // ===== Acceso a comentarios =====
   accessLoading = true;
   currentRole: UserRole = 'viewer';
@@ -970,7 +973,7 @@ private getUsersToSend(): string[] {
         {
           label: 'Publicaciones',
           data: timelineRows.map((x: any) => Number(x.total ?? 0)),
-          tension: 0.35,
+          tension: 0.25,
           fill: false,
           pointRadius: timelineRows.map((x: any) =>
             graphicPeak > 0 && Number(x.total ?? 0) === graphicPeak ? 5 : 2

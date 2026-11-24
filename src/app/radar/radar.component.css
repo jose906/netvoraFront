@@ -415,8 +415,9 @@ button:hover:not(:disabled), button[aria-pressed="true"] {
 }
 
 .radar-legend > span + span::before {
-  border: 1px solid var(--radar-comparison);
-  background: repeating-linear-gradient(135deg, var(--radar-comparison) 0 1px, transparent 1px 3px);
+  box-sizing: border-box;
+  border: 1px dashed var(--radar-comparison);
+  background: var(--theme-surface);
 }
 
 .radar-activity-grid {
@@ -453,8 +454,9 @@ button:hover:not(:disabled), button[aria-pressed="true"] {
 }
 
 .radar-activity-track > span + span {
-  box-shadow: inset 0 0 0 1px var(--radar-comparison);
-  background: repeating-linear-gradient(135deg, var(--radar-comparison) 0 1px, transparent 1px 3px);
+  outline: 1px dashed var(--radar-comparison);
+  outline-offset: -1px;
+  background: var(--theme-surface);
 }
 
 .radar-day-indicator {
@@ -524,7 +526,9 @@ button:hover:not(:disabled), button[aria-pressed="true"] {
 }
 
 .radar-comparison-bars > div + div .radar-comparison-track > span {
-  background: repeating-linear-gradient(135deg, var(--radar-comparison) 0 1px, transparent 1px 3px);
+  outline: 1px dashed var(--radar-comparison);
+  outline-offset: -1px;
+  background: var(--theme-surface);
 }
 
 .radar-brief-summary {
@@ -735,4 +739,16 @@ textarea { width: 100%; }
   height: clamp(42px, 7vw, 70px);
   background: var(--theme-surface-soft);
   border: 1px solid var(--radar-line);
+}
+
+
+@container radar (max-width: 420px) {
+  .radar-activity .radar-panel-heading {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .radar-activity .radar-panel-heading label {
+    margin-inline-start: 0;
+  }
 }

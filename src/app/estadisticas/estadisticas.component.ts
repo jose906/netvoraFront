@@ -41,7 +41,7 @@ interface ApiTopicOption {
 })
 export class EstadisticasComponent implements OnInit {
   selectedComponent: VistaDashboard = 'todos';
-  selectedCategoria = 'Panel principal';
+  selectedCategoria = 'Estadísticas generales';
 
   // Estado editable del formulario: no modifica los dashboards hasta Aplicar.
   filterStartDate: Date | null = new Date();
@@ -77,7 +77,7 @@ export class EstadisticasComponent implements OnInit {
   ngOnInit(): void {
     const params = this.router.parseUrl(this.router.url).queryParams;
     const views: Record<VistaDashboard, string> = {
-      todos: 'Panel principal', politica: 'Política', economia: 'Economía', seguridad: 'Seguridad',
+      todos: 'Estadísticas generales', politica: 'Política', economia: 'Economía', seguridad: 'Seguridad',
       deportes: 'Deportes', sociedad: 'Sociedad', ambiente: 'Ambiente', salud: 'Salud',
       educacion: 'Educación', gestiones: 'Gestiones', otros: 'Otros', entidades: 'Entidades', personas: 'Personas'
     };

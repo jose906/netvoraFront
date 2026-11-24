@@ -244,6 +244,70 @@
          CONTENIDO PRINCIPAL
     ====================================================== -->
 
+    <section class="changes">
+
+      <div class="changes-heading">
+
+        <h2>
+          Qué cambió hoy
+        </h2>
+
+        <p>
+          Comparación con ayer. El conteo de hoy es parcial.
+        </p>
+
+      </div>
+
+
+      <p *ngIf="!insights.length">Todavía no hay cambios destacados.</p>
+      <div class="changes-grid">
+
+        <article
+          class="change-card"
+          *ngFor="
+            let insight of insights;
+            trackBy: trackByIndex
+          "
+        >
+
+          <div
+            class="change-icon"
+            [ngClass]="{
+              'change-up': insight.icon === 'up',
+              'change-down': insight.icon === 'down',
+              'change-new': insight.icon === 'new'
+            }"
+          >
+
+            <span *ngIf="insight.icon === 'up'">
+              ↑
+            </span>
+
+            <span *ngIf="insight.icon === 'down'">
+              ↓
+            </span>
+
+            <span *ngIf="insight.icon === 'new'">
+              +
+            </span>
+
+          </div>
+
+
+          <div class="change-copy">
+
+            <strong>{{ insight.topic.topic_name }}</strong>
+            <p>{{ insight.title }} · {{ insight.topic.tweets_hoy | number }} hoy · {{ insight.topic.tweets_ayer | number }} ayer</p>
+            <button type="button" class="activity-link" (click)="irATopico(insight.topic, todayLabel)">Ver tema</button>
+
+          </div>
+
+        </article>
+
+      </div>
+
+    </section>
+
     <section class="panel activity-panel" aria-labelledby="activity-title">
       <div class="panel-header activity-header">
         <div>
@@ -254,14 +318,13 @@
         </div>
         <div class="activity-total">
           <strong>{{ activityTotal | number }}</strong>
-          <span>publicaciones en el período</span>
+          <span>publicaciones</span>
         </div>
       </div>
 
       <div *ngIf="activity.length" class="activity-body">
         <div class="activity-chart" role="group" aria-label="Publicaciones por día">
           <button *ngFor="let day of activity" type="button" class="activity-day"
-            [class.activity-day-peak]="day === peakDay"
             [attr.aria-pressed]="day === selectedDay"
             [attr.aria-label]="formatActivityDate(day.fecha) + ', ' + day.total + ' publicaciones' + (day.parcial ? ', hoy parcial' : '')"
             (click)="selectActivityDay(day)">
@@ -269,8 +332,8 @@
             <span class="activity-track" aria-hidden="true">
               <span class="activity-bar" [style.height.%]="day.total / activityScale * 100"></span>
             </span>
-            <span class="activity-date">{{ formatActivityDate(day.fecha) }}</span>
-            <span class="activity-partial">{{ day.parcial ? 'Hoy, parcial' : '' }}</span>
+            <span class="activity-date" [title]="formatActivityDate(day.fecha)">{{ day.fecha | date:'dd/MM':'UTC' }}</span>
+            <span class="activity-partial">{{ day.parcial ? 'Parcial' : '' }}</span>
           </button>
         </div>
 
@@ -582,100 +645,10 @@
           No hay entidades disponibles.
         </div>
 
-
-        <div class="entity-summary">
-
-          <div class="entity-summary-icon">
-            N
-          </div>
-
-          <div>
-
-            <strong>
-              ¿Qué significa?
-            </strong>
-
-            <p>
-              Estas son las entidades que tienen mayor presencia
-              en las publicaciones analizadas hoy.
-            </p>
-
-          </div>
-
-        </div>
-
       </article>
 
     </section>
 
-
-    <!-- =====================================================
-         QUÉ CAMBIÓ
-    ====================================================== -->
-
-    <section class="changes">
-
-      <div class="changes-heading">
-
-        <h2>
-          Qué cambió hoy
-        </h2>
-
-        <p>
-          Comparación con ayer. El conteo de hoy es parcial.
-        </p>
-
-      </div>
-
-
-      <p *ngIf="!insights.length">Todavía no hay cambios destacados.</p>
-      <div class="changes-grid">
-
-        <article
-          class="change-card"
-          *ngFor="
-            let insight of insights;
-            trackBy: trackByIndex
-          "
-        >
-
-          <div
-            class="change-icon"
-            [ngClass]="{
-              'change-up': insight.icon === 'up',
-              'change-down': insight.icon === 'down',
-              'change-new': insight.icon === 'new'
-            }"
-          >
-
-            <span *ngIf="insight.icon === 'up'">
-              ↑
-            </span>
-
-            <span *ngIf="insight.icon === 'down'">
-              ↓
-            </span>
-
-            <span *ngIf="insight.icon === 'new'">
-              +
-            </span>
-
-          </div>
-
-
-          <div class="change-copy">
-
-            <strong>{{ insight.topic.topic_name }}</strong>
-            <p>{{ insight.title }} · {{ insight.topic.tweets_hoy | number }} hoy · {{ insight.topic.tweets_ayer | number }} ayer</p>
-            <button type="button" class="activity-link" (click)="irATopico(insight.topic, todayLabel)">Ver tema</button>
-
-          </div>
-
-        </article>
-
-      </div>
-
-    </section>
 
 
   </main>

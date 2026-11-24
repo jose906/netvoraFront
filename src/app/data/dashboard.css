@@ -54,7 +54,7 @@
 
 .nv-dashboard-page :is(.metric-card--accent, .sv-kpi-accent) {
   border-color: var(--theme-primary-border);
-  background: linear-gradient(135deg, var(--theme-primary-soft), var(--theme-surface));
+  background: var(--theme-surface);
 }
 
 .nv-dashboard-page :is(.dashboard-notice, .sv-notice) {
@@ -176,4 +176,77 @@
   .nv-dashboard-page .sv-kpis .sv-kpi:nth-child(n + 3) {
     border-block-start: 1px solid var(--theme-line);
   }
+}
+
+.nv-dashboard-page :is(.chart-wrap, .replies-chart-visual, .wordcloud-body) {
+  box-sizing: border-box;
+  min-width: 0;
+  border: 1px solid #e5e7f2;
+  border-radius: 14px;
+  background: var(--theme-surface);
+}
+
+.nv-dashboard-page :is(.activity-chart, .analysis-card, .explore-main-card, .explore-secondary-card, .replies-chart-panel) {
+  min-width: 0;
+}
+
+.nv-dashboard-page :is(.chart-wrap--main, .explore-timeline-chart) {
+  height: clamp(320px, 46vw, 425px);
+  min-height: 320px;
+}
+
+.nv-dashboard-page :is(.chart-wrap--analysis, .explore-small-chart) {
+  height: clamp(320px, 39vw, 380px);
+  min-height: 320px;
+}
+
+.nv-dashboard-page :is(.chart-wrap--large, .media-chart, .chart-wrap--media, .chart-wrap--accounts) {
+  height: clamp(370px, 44vw, 440px);
+  min-height: 370px;
+}
+
+.nv-dashboard-page .replies-chart-visual {
+  height: clamp(255px, 34vw, 315px);
+}
+
+.nv-dashboard-page :is(.replies-bar, .entity-progress, .share-progress, .account-share-progress) {
+  height: 10px;
+}
+
+.nv-dashboard-page :is(.replies-bar-legend, .replies-chart-side-label) {
+  color: var(--theme-text-soft);
+  font-size: 12px;
+}
+
+@media (max-width: 600px) {
+  .nv-dashboard-page :is(.chart-wrap, .replies-chart-visual, .wordcloud-body) {
+    border-radius: 11px;
+  }
+}
+
+@media (max-width: 440px) {
+  .nv-dashboard-page .explore-main-card .card-head {
+    flex-wrap: wrap;
+  }
+
+  .nv-dashboard-page .explore-main-card .card-head > :first-child {
+    flex-basis: 100%;
+  }
+}
+
+.nv-dashboard-page .replies-bar-segment.negative {
+  background: #b93949;
+}
+
+.nv-dashboard-page .replies-bar-segment.neutral {
+  background: #64748b;
+}
+
+.nv-dashboard-page .replies-bar-segment.positive {
+  background: #087e5d;
+}
+
+
+.nv-dashboard-page .iconbtn .fa-download {
+  font-size: 14px;
 }

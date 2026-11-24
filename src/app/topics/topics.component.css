@@ -478,21 +478,13 @@
   overflow: hidden;
   border-bottom: 1px solid var(--nv-line-strong);
   border-radius: 5px 5px 0 0;
-  background: linear-gradient(
-    to top,
-    rgba(109, 40, 217, 0.035),
-    transparent
-  );
+  background: var(--theme-surface);
 }
 
 .pulse-bar {
   width: 100%;
   min-height: 0;
-  background: linear-gradient(
-    180deg,
-    #8b5cf6,
-    var(--nv-purple)
-  );
+  background: var(--theme-primary);
   border-radius: 5px 5px 1px 1px;
   transition: height 220ms ease;
 }

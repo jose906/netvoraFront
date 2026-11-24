@@ -1,3 +1,4 @@
+import { statisticsBreakdownBars, statisticsChartOptions, statisticsRankingValues } from '../statistics-chart';
 import { DashboardEvidenceComponent } from '../dashboard-evidence/dashboard-evidence.component';
 import { DashboardEntityType, DashboardSelection } from '../../interfaces/dashboard-evidence';
 import { ElementRef, EventEmitter, Output } from '@angular/core';
@@ -99,6 +100,8 @@ type TopicEntityType =
 })
 export class EstadisticasEntiPersonasComponent
   implements OnInit, OnChanges, OnDestroy {
+  readonly breakdownBars = statisticsBreakdownBars;
+  readonly rankingPlugins = [statisticsRankingValues];
 
   // =====================================================
   // INPUTS
@@ -294,7 +297,7 @@ loadingComentarios = false;
   @ViewChild(DashboardEvidenceComponent) private evidence?: DashboardEvidenceComponent;
   evidenceTopics: { topic_id: number; topic_name: string }[] = [];
   sentimentShare = false;
-  private readonly sentimentShareOptions: ChartOptions<'bar'> = {
+  private readonly sentimentShareOptions: ChartOptions<'bar'> = statisticsChartOptions<'bar'>({
     indexAxis: 'y', responsive: true, maintainAspectRatio: false,
     scales: {
       x: { stacked: true, min: 0, max: 100, ticks: { callback: value => value + '%' } },
@@ -303,7 +306,7 @@ loadingComentarios = false;
     plugins: { tooltip: { callbacks: {
       label: item => `${item.dataset.label}: ${Number(item.raw).toFixed(1)}%`
     } } }
-  };
+  });
 
   get toneOptions(): ChartOptions<'bar'> {
     return this.sentimentShare ? this.sentimentShareOptions : this.sentVsUserOptions;
@@ -349,9 +352,9 @@ loadingComentarios = false;
     datasets: [{
       label: 'Publicaciones',
       data: [],
-      tension: 0.35,
+      tension: 0.25,
       fill: false,
-      pointRadius: 2,
+      pointRadius: 3,
       borderColor: NETVORA_PALETTE.timeline.line,
       backgroundColor: NETVORA_PALETTE.timeline.fill,
       pointBackgroundColor: NETVORA_PALETTE.timeline.point,
@@ -360,7 +363,7 @@ loadingComentarios = false;
     }]
   };
 
-  readonly lineOptions: ChartOptions<'line'> = {
+  readonly lineOptions: ChartOptions<'line'> = statisticsChartOptions<'line'>({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -375,7 +378,7 @@ loadingComentarios = false;
         beginAtZero: true
       }
     }
-  };
+  });
 
   // =====================================================
   // TOP TÓPICOS
@@ -394,7 +397,7 @@ loadingComentarios = false;
     }]
   };
 
-  readonly topTopicsOptions: ChartOptions<'bar'> = {
+  readonly topTopicsOptions: ChartOptions<'bar'> = statisticsChartOptions<'bar'>({
     responsive: true,
     maintainAspectRatio: false,
     indexAxis: 'y',
@@ -445,7 +448,7 @@ loadingComentarios = false;
         }
       }
     }
-  };
+  });
 
   // =====================================================
   // PUBLICACIONES POR CUENTA
@@ -459,7 +462,7 @@ loadingComentarios = false;
     }]
   };
 
-  readonly postsByAccountChartOptions: ChartOptions<'bar'> = {
+  readonly postsByAccountChartOptions: ChartOptions<'bar'> = statisticsChartOptions<'bar'>({
     responsive: true,
     maintainAspectRatio: false,
     indexAxis: 'y',
@@ -499,7 +502,7 @@ loadingComentarios = false;
         }
       }
     }
-  };
+  });
 
   // =====================================================
   // EVOLUCIÓN DE TÓPICOS
@@ -537,7 +540,7 @@ loadingComentarios = false;
         borderColor: colors[i % colors.length],
         backgroundColor: colors[i % colors.length],
         pointBackgroundColor: colors[i % colors.length],
-        tension: 0.35,
+        tension: 0.25,
         fill: false,
         pointRadius: 3,
         borderWidth: 2
@@ -593,7 +596,7 @@ loadingComentarios = false;
     datasets: []
   };
 
-  readonly topicsTimelineOptions: ChartOptions<'line'> = {
+  readonly topicsTimelineOptions: ChartOptions<'line'> = statisticsChartOptions<'line'>({
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
@@ -651,7 +654,7 @@ loadingComentarios = false;
         }
       }
     }
-  };
+  });
 
   // =====================================================
   // TÓPICOS POR USUARIO
@@ -662,7 +665,7 @@ loadingComentarios = false;
     datasets: []
   };
 
-  readonly topicsByUserOptions: ChartOptions<'bar'> = {
+  readonly topicsByUserOptions: ChartOptions<'bar'> = statisticsChartOptions<'bar'>({
     responsive: true,
     maintainAspectRatio: false,
     indexAxis: 'y',
@@ -726,13 +729,13 @@ loadingComentarios = false;
         }
       }
     }
-  };
+  });
 
   // =====================================================
   // COMENTARIOS: GRÁFICO
   // =====================================================
 
-  readonly repliesChartOptions: ChartOptions<'doughnut'> = {
+  readonly repliesChartOptions: ChartOptions<'doughnut'> = statisticsChartOptions<'doughnut'>({
     responsive: true,
     maintainAspectRatio: false,
     cutout: '65%',
@@ -754,7 +757,7 @@ loadingComentarios = false;
         hoverOffset: 6
       }
     }
-  };
+  });
 
   repliesChartData: ChartData<'doughnut'> = {
     labels: ['Negativo', 'Neutro', 'Positivo'],
@@ -781,7 +784,7 @@ loadingComentarios = false;
     }]
   };
 
-  readonly commonOptions: ChartOptions = {
+  readonly commonOptions: ChartOptions = statisticsChartOptions({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -792,7 +795,7 @@ loadingComentarios = false;
         enabled: true
       }
     }
-  };
+  });
 
   // =====================================================
   // SENTIMIENTO POR USUARIO
@@ -828,7 +831,7 @@ loadingComentarios = false;
     ]
   };
 
-  sentVsUserOptions: ChartOptions<'bar'> = {
+  sentVsUserOptions: ChartOptions<'bar'> = statisticsChartOptions<'bar'>({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -851,7 +854,7 @@ loadingComentarios = false;
         beginAtZero: true
       }
     }
-  };
+  });
 
   // =====================================================
   // ÍNDICE DE SENTIMIENTO
@@ -867,7 +870,7 @@ loadingComentarios = false;
     }]
   };
 
-  userIndiceChartOptions: ChartOptions<'bar'> = {
+  userIndiceChartOptions: ChartOptions<'bar'> = statisticsChartOptions<'bar'>({
     responsive: true,
     maintainAspectRatio: false,
     indexAxis: 'y',
@@ -900,7 +903,7 @@ loadingComentarios = false;
         }
       }
     }
-  };
+  });
 
   indiceSent: IndiceSentItem[] = [];
 
@@ -2046,7 +2049,7 @@ loadingComentarios = false;
         data: graphicRows.map(
           x => x.total
         ),
-        tension: 0.35,
+        tension: 0.25,
         fill: false,
         pointRadius:
           graphicRows.length > 80 ? 0 : 2,

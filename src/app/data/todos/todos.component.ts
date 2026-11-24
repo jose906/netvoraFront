@@ -1,3 +1,4 @@
+import { statisticsBreakdownBars, statisticsChartOptions, statisticsRankingValues } from '../statistics-chart';
 import { DashboardSelection } from '../../interfaces/dashboard-evidence';
 import { ElementRef, EventEmitter, Output } from '@angular/core';
 
@@ -93,6 +94,8 @@ type MediaPostItem = {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TodosComponent implements OnInit, OnChanges, OnDestroy {
+  readonly breakdownBars = statisticsBreakdownBars;
+  readonly rankingPlugins = [statisticsRankingValues];
 
   // =======================================================
   // INPUTS
@@ -255,7 +258,7 @@ loadingComentarios = false;
     }]
   };
 
-  readonly postsByMediaOptions: ChartOptions<'bar'> = {
+  readonly postsByMediaOptions: ChartOptions<'bar'> = statisticsChartOptions<'bar'>({
     responsive: true,
     maintainAspectRatio: false,
     indexAxis: 'y',
@@ -323,7 +326,7 @@ loadingComentarios = false;
         }
       }
     }
-  };
+  });
 
   // =======================================================
   // GRÁFICOS GENERALES
@@ -370,7 +373,7 @@ loadingComentarios = false;
     }]
   };
 
-  readonly commonCardChartOptions: ChartOptions = {
+  readonly commonCardChartOptions: ChartOptions = statisticsChartOptions({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -381,7 +384,7 @@ loadingComentarios = false;
         enabled: true
       }
     }
-  };
+  });
 
   // =======================================================
   // TIMELINE
@@ -408,16 +411,16 @@ loadingComentarios = false;
       data: [],
       borderColor: NETVORA_PALETTE.accent,
       backgroundColor: 'rgba(109,40,217,0.08)',
-      tension: 0.35,
-      fill: true,
-      pointRadius: 2,
+      tension: 0.25,
+      fill: false,
+      pointRadius: 3,
       pointBackgroundColor: NETVORA_PALETTE.accent,
       pointHoverRadius: 4,
       borderWidth: 2
     }]
   };
 
-  readonly lineOptions: ChartOptions<'line'> = {
+  readonly lineOptions: ChartOptions<'line'> = statisticsChartOptions<'line'>({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -438,7 +441,7 @@ loadingComentarios = false;
         beginAtZero: true
       }
     }
-  };
+  });
 
   activityAverage = 0;
   activityPeak = 0;
@@ -463,7 +466,7 @@ loadingComentarios = false;
     }]
   };
 
-  readonly topTopicsOptions: ChartOptions<'bar'> = {
+  readonly topTopicsOptions: ChartOptions<'bar'> = statisticsChartOptions<'bar'>({
     responsive: true,
     maintainAspectRatio: false,
     indexAxis: 'y',
@@ -516,14 +519,14 @@ loadingComentarios = false;
         }
       }
     }
-  };
+  });
 
   topicsTimelineData: ChartData<'line'> = {
     labels: [],
     datasets: []
   };
 
-  readonly topicsTimelineOptions: ChartOptions<'line'> = {
+  readonly topicsTimelineOptions: ChartOptions<'line'> = statisticsChartOptions<'line'>({
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
@@ -577,7 +580,7 @@ loadingComentarios = false;
         }
       }
     }
-  };
+  });
 
   // =======================================================
   // TÓPICOS EMERGENTES
@@ -596,7 +599,7 @@ loadingComentarios = false;
     }]
   };
 
-  readonly emergingTopicsOptions: ChartOptions<'bar'> = {
+  readonly emergingTopicsOptions: ChartOptions<'bar'> = statisticsChartOptions<'bar'>({
     responsive: true,
     maintainAspectRatio: false,
     indexAxis: 'y',
@@ -675,7 +678,7 @@ loadingComentarios = false;
         }
       }
     }
-  };
+  });
 
   // =======================================================
   // SENTIMIENTO POR TÓPICO
@@ -686,7 +689,7 @@ loadingComentarios = false;
     datasets: []
   };
 
-  readonly topicSentimentOptions: ChartOptions<'bar'> = {
+  readonly topicSentimentOptions: ChartOptions<'bar'> = statisticsChartOptions<'bar'>({
     responsive: true,
     maintainAspectRatio: false,
     indexAxis: 'y',
@@ -754,7 +757,7 @@ loadingComentarios = false;
         }
       }
     }
-  };
+  });
 
   // =======================================================
   // COMENTARIOS
@@ -773,7 +776,7 @@ loadingComentarios = false;
     }]
   };
 
-  readonly repliesChartOptions: ChartOptions<'doughnut'> = {
+  readonly repliesChartOptions: ChartOptions<'doughnut'> = statisticsChartOptions<'doughnut'>({
     responsive: true,
     maintainAspectRatio: false,
     cutout: '72%',
@@ -820,7 +823,7 @@ loadingComentarios = false;
         hoverOffset: 5
       }
     }
-  };
+  });
 
   // =======================================================
   // CONSTRUCTOR
@@ -2038,7 +2041,7 @@ return {
   pointHoverBorderWidth: 2,
 
   // Apariencia
-  tension: 0.35,
+  tension: 0.25,
   fill: false,
   pointRadius: 3,
   pointHoverRadius: 5,
@@ -2305,8 +2308,8 @@ return {
         ),
         borderColor: NETVORA_PALETTE.accent,
         backgroundColor: 'rgba(109,40,217,0.08)',
-        fill: true,
-        tension: 0.35,
+        fill: false,
+        tension: 0.25,
         borderWidth: 2,
         pointRadius: graphicRows.map(
           item => item.total === graphicPeak ? 5 : 2

@@ -41,49 +41,35 @@ export const NETVORA_PALETTE = {
   border: 'rgba(15,23,42,.10)',
   surface: '#ffffff',
 
-  // Sentimiento (semántico)
+  // Sentimiento
   sentiment: {
-    negativo: '#ef4444',
-    neutro: '#94a3b8',
-    positivo: '#22c55e',
+    negativo: '#b93949',
+    neutro: '#64748b',
+    positivo: '#087e5d'
   },
 
-  // Timeline (line)
   timeline: {
     line: '#6d28d9',
     point: '#6d28d9',
-    fill: 'rgba(109,40,217,.12)',
+    fill: 'rgba(109,40,217,.14)'
   },
 
-  // Bars (categorías o comparaciones)
   categories: [
-  '#6d28d9', // morado principal (base)
-  '#0f172a', // azul gris oscuro (neutral fuerte)
-  '#334155', // slate medio
-  '#64748b', // slate claro
-  '#22c55e', // verde positivo
-  '#16a34a', // verde oscuro
-  '#f59e0b', // ámbar
-  '#ea580c', // naranja intenso
-  '#ef4444', // rojo
-  '#06b6d4', // cian
-  '#14b8a6', // teal
-  '#a78bfa', // lavanda suave (secundario)
-]
-,
+    '#6d28d9', '#2563eb', '#007f92', '#14764e',
+    '#99520e', '#b93949', '#ad3375', '#4e548d',
+    '#925836', '#126b68', '#63388c', '#475569'
+  ],
 
-  // SentVsUser (stacked)
   sentVsUser: {
-    negativo: 'rgba(239,68,68,.85)',
-    neutro: 'rgba(148,163,184,.85)',
-    positivo: 'rgba(34,197,94,.85)',
+    negativo: '#b93949',
+    neutro: '#64748b',
+    positivo: '#087e5d'
   },
 
-  // Índice (horizontal): negativo vs positivo
   indice: {
-    positivo: 'rgba(109,40,217,.85)',
-    negativo: 'rgba(239,68,68,.75)',
-    neutral: 'rgba(148,163,184,.85)',
+    positivo: '#6d28d9',
+    negativo: '#b93949',
+    neutral: '#64748b'
   }
 };
 

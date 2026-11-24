@@ -1000,15 +1000,6 @@
   background: var(--nv-surface);
   border: 1px solid var(--nv-line);
   border-radius: 16px;
-
-  transition:
-    border-color 0.18s ease,
-    box-shadow 0.18s ease;
-}
-
-.news-card:hover {
-  border-color: #d4c7ed;
-  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.045);
 }
 
 .news-card-header {
@@ -1773,15 +1764,6 @@
   box-shadow: none;
 
   overflow: visible;
-
-  transition: none;
-}
-
-.news-card:hover {
-  background: transparent;
-  border-color: var(--nv-line);
-  box-shadow: none;
-  transform: none;
 }
 
 .news-card:last-of-type {
@@ -2260,33 +2242,57 @@ button.mat-mdc-icon-button.icon-action:disabled {
    Mantiene el diseño editorial sin tarjetas adicionales.
 ========================================================= */
 .stance-post {
-  margin-top: 18px;
-  padding-top: 18px;
-  border-top: 1px solid var(--nv-line);
   min-width: 0;
 }
-.stance-post-head, .stance-comments-heading {
+
+.stance-summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.stance-summary::-webkit-details-marker {
+  display: none;
+}
+
+.stance-summary:focus-visible {
+  outline: 2px solid var(--nv-purple);
+  outline-offset: 3px;
+}
+
+.stance-summary .stance-mini-track {
+  width: clamp(48px, 12vw, 112px);
+  height: 5px;
+  margin: 0;
+}
+
+.stance-chevron {
+  color: var(--nv-purple);
+}
+
+.stance-post[open] .stance-chevron {
+  transform: rotate(180deg);
+}
+
+.stance-detail {
+  margin-top: 6px;
+  padding-inline-start: 12px;
+  border-inline-start: 2px solid var(--nv-line);
+}
+
+.stance-comments-heading {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 14px;
   flex-wrap: wrap;
 }
-.stance-post-kicker {
-  display: block;
-  color: var(--nv-purple);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: .08em;
-  margin-bottom: 4px;
-}
-.stance-post-head h3 { margin: 0; font-size: 13px; font-weight: 750; color: var(--nv-text-soft); }
-.stance-loading-label, .stance-post-note { color: var(--nv-muted); font-size: 12px; }
+
+.stance-post-note { color: var(--nv-muted); font-size: 12px; }
 .stance-post-note { margin: 12px 0 0; line-height: 1.5; }
 .stance-error { color: var(--nv-red); }
 .stance-target { display: flex; flex-wrap: wrap; gap: 5px 7px; font-size: 12px; margin: 12px 0 14px; color: var(--nv-muted); }
 .stance-target strong { color: var(--nv-text-soft); font-weight: 700; }
-.stance-mini-track { display: flex; overflow: hidden; width: 100%; height: 10px; background: var(--nv-line); border-radius: 50px; margin-top: 16px; }
+.stance-mini-track { display: flex; overflow: hidden; background: var(--nv-line); border-radius: 50px; }
 .stance-fill { display: block; height: 100%; min-width: 0; }
 .stance-fill.favor, .stance-mini-dot.favor { background: #16a34a; }
 .stance-fill.contra, .stance-mini-dot.contra { background: #dc2626; }

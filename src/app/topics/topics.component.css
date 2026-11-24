@@ -912,14 +912,6 @@
   border: 1px solid var(--nv-line);
   border-radius: var(--nv-radius-lg);
   box-shadow: var(--nv-shadow-sm);
-  transition:
-    border-color 180ms ease,
-    box-shadow 180ms ease;
-}
-
-.news-card:hover {
-  border-color: var(--nv-line-strong);
-  box-shadow: var(--nv-shadow-md);
 }
 
 .news-card-header {

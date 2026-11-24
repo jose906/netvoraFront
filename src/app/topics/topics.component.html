@@ -515,7 +515,7 @@
 
   <section
     *ngIf="datos.length > 0"
-    class="results">
+    class="results nv-post-feed">
 
     <!-- ==========================================
          PUBLICACIONES
@@ -523,7 +523,7 @@
 
     <article
       *ngFor="let item of datos"
-      class="news-card nv-quiet-surface"
+      class="news-card nv-feed-post"
       #newsCard>
 
       <!-- HEADER DE PUBLICACIÓN -->
@@ -702,130 +702,19 @@
 
       </div>
 
-      <!-- ==========================================
-           CONVERSACIÓN · PRO / ADMIN
-      =========================================== -->
-
-      <ng-container
-        *ngIf="!accessLoading && canViewReplies">
-
-        <div
-          class="conversation-summary"
-          *ngIf="getRepliesCounts(item.tweetid) as replies">
-
-          <div class="conversation-head">
-
-            <div>
-
-              <span class="conversation-kicker">
-                CONVERSACIÓN
-              </span>
-
-              <h3>Reacción de la audiencia</h3>
-
-            </div>
-
-            <span class="conversation-total">
-              {{
-                replies.positivo +
-                replies.neutro +
-                replies.negativo
-              }}
-              comentarios
-            </span>
-
-          </div>
-
-          <div class="conversation-stats">
-
-            <!-- POSITIVOS -->
-
-            <div class="conversation-stat positive">
-
-              <span class="conversation-stat-label">
-                <span class="conversation-dot"></span>
-                Positivos
-              </span>
-
-              <strong>
-                {{ replies.positivo }}
-              </strong>
-
-            </div>
-
-            <!-- NEUTROS -->
-
-            <div class="conversation-stat neutral">
-
-              <span class="conversation-stat-label">
-                <span class="conversation-dot"></span>
-                Neutros
-              </span>
-
-              <strong>
-                {{ replies.neutro }}
-              </strong>
-
-            </div>
-
-            <!-- NEGATIVOS -->
-
-            <div class="conversation-stat negative">
-
-              <span class="conversation-stat-label">
-                <span class="conversation-dot"></span>
-                Negativos
-              </span>
-
-              <strong>
-                {{ replies.negativo }}
-              </strong>
-
-            </div>
-
-          </div>
-
+      <div *ngIf="!accessLoading && canViewReplies" class="nv-post-analysis">
+        <div class="nv-post-analysis-row" *ngIf="getRepliesCounts(item.tweetid) as replies"
+          role="group" aria-label="Sentimiento de los comentarios">
+          <strong class="nv-post-analysis-label">Sentimiento</strong>
+          <span class="nv-post-analysis-value positive">Positivos <b>{{ replies.positivo | number }}</b></span>
+          <span class="nv-post-analysis-value neutral">Neutros <b>{{ replies.neutro | number }}</b></span>
+          <span class="nv-post-analysis-value negative">Negativos <b>{{ replies.negativo | number }}</b></span>
         </div>
+      </div>
 
-      </ng-container>
-
-      <!-- ==========================================
-           CONVERSACIÓN BLOQUEADA
-      =========================================== -->
-
-      <div
-        *ngIf="!accessLoading && !canViewReplies"
-        class="conversation-locked">
-
-        <div class="locked-copy">
-
-          <span class="locked-kicker">
-            ANÁLISIS DE COMENTARIOS
-          </span>
-
-          <strong>
-            Descubre cómo reacciona la audiencia
-          </strong>
-
-          <p>
-            Analiza el sentimiento de los comentarios
-            y detecta cómo evoluciona la conversación.
-          </p>
-
-        </div>
-
-        <div
-          class="locked-preview"
-          aria-hidden="true">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-
-        <span class="pro-badge">
-          PRO
-        </span>
-
+      <div *ngIf="!accessLoading && !canViewReplies" class="nv-post-analysis nv-post-analysis-row">
+        <mat-icon aria-hidden="true">lock_outline</mat-icon>
+        <span>Análisis de comentarios disponible con Pro</span>
       </div>
 
     </article>

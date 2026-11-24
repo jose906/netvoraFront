@@ -360,12 +360,12 @@
   <!-- RESULTADOS -->
   <section
     *ngIf="datos.length > 0"
-    class="results">
+    class="results nv-post-feed">
 
     <!-- PUBLICACIONES -->
     <article
       *ngFor="let item of datos"
-      class="news-card nv-quiet-surface"
+      class="news-card nv-feed-post"
       #cardRef>
 
       <header class="news-card-header">
@@ -470,99 +470,54 @@
         </div>
       </div>
 
-      <!-- CONVERSACIÓN: PRO / ADMIN -->
-      <ng-container
-        *ngIf="!accessLoading && canViewReplies">
-
-        <div *ngIf="isLoadingReplies(item.tweetid)" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando comentarios y sentimiento…</span></div>
-
-        <div class="conversation-summary nv-error-state" *ngIf="repliesErrorsByTweet.get(item.tweetid.toString()) as replyError" role="alert">
+      <div *ngIf="!accessLoading && canViewReplies" class="nv-post-analysis">
+        <div class="nv-post-analysis-row" *ngIf="isLoadingReplies(item.tweetid)" role="status">
+          <strong class="nv-post-analysis-label">Sentimiento</strong>
+          <span class="nv-loading-indicator" aria-hidden="true"></span>
+          <span class="nv-sr-only">Cargando sentimiento…</span>
+        </div>
+        <div class="nv-post-analysis-row nv-error-state" *ngIf="repliesErrorsByTweet.get(item.tweetid.toString()) as replyError" role="alert">
           {{ replyError }}
         </div>
-
-        <div class="conversation-summary"
-          *ngIf="!isLoadingReplies(item.tweetid) && !repliesErrorsByTweet.get(item.tweetid.toString()) && hasRepliesStanceMismatch(item.tweetid)" role="status">
-          Los comentarios tienen Stance registrado, pero el resumen de sentimiento no coincide.
+        <div class="nv-post-analysis-row"
+          *ngIf="hasRepliesStanceMismatch(item.tweetid)" role="status">
+          El resumen de sentimiento no coincide con los comentarios clasificados en Stance.
         </div>
 
         <ng-container *ngIf="!isLoadingReplies(item.tweetid) && !repliesErrorsByTweet.get(item.tweetid.toString()) && !hasRepliesStanceMismatch(item.tweetid)">
-          <div
-            class="conversation-summary"
-            *ngIf="getRepliesCounts(item.tweetid) as replies">
-
-          <div class="conversation-head">
-            <div>
-              <span class="conversation-kicker">
-                CONVERSACIÓN
-              </span>
-              <h3>Reacción de la audiencia</h3>
-            </div>
-
-            <span class="conversation-total">
-              {{
-                replies.positivo +
-                replies.neutro +
-                replies.negativo
-              }}
-              comentarios
-            </span>
-          </div>
-
-          <div class="conversation-stats">
-
-            <div class="conversation-stat positive">
-              <span class="conversation-stat-label">
-                <span class="conversation-dot"></span>
-                Positivos
-              </span>
-              <strong>{{ replies.positivo }}</strong>
-            </div>
-
-            <div class="conversation-stat neutral">
-              <span class="conversation-stat-label">
-                <span class="conversation-dot"></span>
-                Neutros
-              </span>
-              <strong>{{ replies.neutro }}</strong>
-            </div>
-
-            <div class="conversation-stat negative">
-              <span class="conversation-stat-label">
-                <span class="conversation-dot"></span>
-                Negativos
-              </span>
-              <strong>{{ replies.negativo }}</strong>
-            </div>
-
-          </div>
+          <div class="nv-post-analysis-row" *ngIf="getRepliesCounts(item.tweetid) as replies"
+            role="group" aria-label="Sentimiento de los comentarios">
+            <strong class="nv-post-analysis-label">Sentimiento</strong>
+            <span class="nv-post-analysis-value positive">Positivos <b>{{ replies.positivo | number }}</b></span>
+            <span class="nv-post-analysis-value neutral">Neutros <b>{{ replies.neutro | number }}</b></span>
+            <span class="nv-post-analysis-value negative">Negativos <b>{{ replies.negativo | number }}</b></span>
           </div>
         </ng-container>
 
-        <!-- STANCE POR TWEET · Solo Pro/Admin (mismo bloqueo que sentimiento) -->
-        <section class="stance-post" aria-label="Posturas de los comentarios">
-          <div class="stance-post-head">
-            <div>
-              <span class="stance-post-kicker">STANCE · POSTURAS</span>
-              <h3>Posición de los comentarios</h3>
-            </div>
-            <span *ngIf="isLoadingStance(item.tweetid)" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando posturas…</span></span>
-          </div>
+        <details class="stance-post" *ngIf="getStance(item.tweetid) as stance; else stanceSinResultado">
+          <summary class="nv-post-analysis-row stance-summary">
+            <strong class="nv-post-analysis-label">Stance</strong>
+            <span *ngIf="stance.stance_summary.processed > 0; else stanceStatus">
+              {{ stance.stance_summary.processed | number }} de {{ stance.stance_summary.total | number }} clasificados
+            </span>
+            <ng-template #stanceStatus><span>{{ stanceStatusText(stance) }}</span></ng-template>
+            <span class="stance-mini-track" *ngIf="stance.stance_summary.processed > 0" aria-hidden="true">
+              <span *ngFor="let s of stanceLabels"
+                [class]="'stance-fill ' + s.tone"
+                [style.width.%]="stance.stance_summary.percentages[s.key]"
+                [title]="s.label + ': ' + (stance.stance_summary.percentages[s.key] | number:'1.0-1') + '%'">
+              </span>
+            </span>
+            <mat-icon class="stance-chevron" aria-hidden="true">expand_more</mat-icon>
+          </summary>
 
-          <ng-container *ngIf="getStance(item.tweetid) as stance; else stanceSinResultado">
+          <div class="stance-detail">
             <div class="stance-target" *ngIf="stance.main_target">
               <span>Respecto a:</span>
               <strong>{{ stance.main_target }}</strong>
             </div>
 
-            <ng-container *ngIf="stance.stance_summary.processed > 0; else stancePendiente">
-              <div class="stance-mini-track" role="img" aria-label="Distribución de las cinco posturas">
-                <span *ngFor="let s of stanceLabels"
-                  [class]="'stance-fill ' + s.tone"
-                  [style.width.%]="stance.stance_summary.percentages[s.key]"
-                  [title]="s.label + ': ' + (stance.stance_summary.percentages[s.key] | number:'1.0-1') + '%'">
-                </span>
-              </div>
-
+            <ng-container *ngIf="stance.stance_summary.processed > 0">
               <div class="stance-mini-legend">
                 <div class="stance-mini-item" *ngFor="let s of stanceLabels">
                   <span [class]="'stance-mini-dot ' + s.tone"></span>
@@ -573,15 +528,12 @@
               </div>
             </ng-container>
 
-            <ng-template #stancePendiente>
-              <p class="stance-post-note">{{ stanceStatusText(stance) }}</p>
-            </ng-template>
-
             <div class="stance-post-footer">
-              <span>{{ stance.stance_summary.processed | number }} de {{ stance.stance_summary.total | number }} comentarios clasificados</span>
+              <span *ngIf="!stance.stance_summary.processed && stance.stance_summary.total > 0">{{ stance.stance_summary.total | number }} comentarios</span>
               <span *ngIf="stance.stance_summary.processed > 0">Cobertura: {{ stance.stance_summary.coverage_percent | number:'1.0-1' }}%</span>
               <button type="button" class="stance-detail-toggle"
                 *ngIf="stance.stance_summary.total > 0 && stance.status !== 'not_applicable'"
+                [attr.aria-expanded]="stanceOpenId === item.tweetid.toString()"
                 (click)="toggleStanceComments(item.tweetid)">
                 {{ stanceOpenId === item.tweetid.toString() ? 'Ocultar comentarios' : 'Ver comentarios' }}
                 <mat-icon>{{ stanceOpenId === item.tweetid.toString() ? 'expand_less' : 'expand_more' }}</mat-icon>
@@ -618,45 +570,24 @@
                 </div>
               </div>
             </div>
-          </ng-container>
+          </div>
+        </details>
 
-          <ng-template #stanceSinResultado>
-            <div *ngIf="isLoadingStance(item.tweetid)" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando análisis de Stance…</span></div>
-            <p class="stance-post-note" *ngIf="!isLoadingStance(item.tweetid) && !stanceErrorsByTweet.has(item.tweetid.toString())">Sin análisis de Stance disponible para esta publicación.</p>
-            <p class="stance-post-note stance-error nv-error-state" *ngIf="!isLoadingStance(item.tweetid) && stanceErrorsByTweet.has(item.tweetid.toString())" role="alert">No se pudo cargar Stance.</p>
-          </ng-template>
-        </section>
-      </ng-container>
+        <ng-template #stanceSinResultado>
+          <div class="nv-post-analysis-row" *ngIf="isLoadingStance(item.tweetid)" role="status">
+            <strong class="nv-post-analysis-label">Stance</strong>
+            <span class="nv-loading-indicator" aria-hidden="true"></span>
+            <span class="nv-sr-only">Cargando Stance…</span>
+          </div>
+          <div class="nv-post-analysis-row nv-error-state" *ngIf="stanceErrorsByTweet.has(item.tweetid.toString())" role="alert">
+            No se pudo cargar Stance.
+          </div>
+        </ng-template>
+      </div>
 
-      <!-- ANÁLISIS BLOQUEADO -->
-      <div
-        *ngIf="!accessLoading && !canViewReplies"
-        class="conversation-locked">
-
-        <div class="locked-copy">
-          <span class="locked-kicker">
-            ANÁLISIS DE COMENTARIOS
-          </span>
-
-          <strong>
-            Descubre cómo reacciona la audiencia
-          </strong>
-
-          <p>
-            Analiza el sentimiento y las posturas de los comentarios
-            para entender las reacciones de la audiencia.
-          </p>
-        </div>
-
-        <div
-          class="locked-preview"
-          aria-hidden="true">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-
-        <span class="pro-badge">PRO</span>
+      <div *ngIf="!accessLoading && !canViewReplies" class="nv-post-analysis nv-post-analysis-row">
+        <mat-icon aria-hidden="true">lock_outline</mat-icon>
+        <span>Análisis de comentarios disponible con Pro</span>
       </div>
 
     </article>

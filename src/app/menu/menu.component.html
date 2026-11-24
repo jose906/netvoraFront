@@ -2,15 +2,20 @@
 <!-- BOTÓN MOBILE -->
 <!-- ===================================================== -->
 
-<button
-  class="menu-toggle"
-  type="button"
-  (click)="toggleSidebar()"
-  aria-label="Abrir menú"
-  [attr.aria-expanded]="isSidebarOpen"
->
-  <i class="fas fa-bars"></i>
-</button>
+<header class="mobile-header">
+  <button
+    #menuToggle
+    class="menu-toggle"
+    type="button"
+    (click)="openSidebar()"
+    aria-label="Abrir menú"
+    aria-controls="main-navigation"
+    [attr.aria-expanded]="isSidebarOpen"
+  >
+    <i class="fas fa-bars" aria-hidden="true"></i>
+  </button>
+  <span class="mobile-brand">NetVora</span>
+</header>
 
 
 <!-- ===================================================== -->
@@ -20,7 +25,8 @@
 <div
   class="sidebar-overlay"
   *ngIf="isSidebarOpen"
-  (click)="toggleSidebar()"
+  (click)="closeSidebar()"
+  aria-hidden="true"
 ></div>
 
 
@@ -30,7 +36,12 @@
 
 <nav
   class="sidebar"
+  id="main-navigation"
+  aria-label="Navegación principal"
   [class.open]="isSidebarOpen"
+  [cdkTrapFocus]="isSidebarOpen"
+  [cdkTrapFocusAutoCapture]="isSidebarOpen"
+  (keydown.escape)="closeSidebar()"
 >
 
   <!-- =================================================== -->
@@ -38,6 +49,10 @@
   <!-- =================================================== -->
 
   <div class="sidebar-header">
+    <button class="menu-toggle menu-close" type="button" aria-label="Cerrar menú"
+      cdkFocusInitial (click)="closeSidebar()">
+      <i class="fas fa-xmark" aria-hidden="true"></i>
+    </button>
 
     <div class="app-logo">
 

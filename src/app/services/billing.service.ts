@@ -57,21 +57,6 @@ export interface QrPaymentCheck {
 }
 
 
-interface CobraFacilQrResponse {
-  success: boolean;
-  data?: {
-    paymentId: string;
-    orderId: string;
-    qrId?: string;
-    qrImageBase64: string;
-    status: string;
-    expiresAt?: string | null;
-    amount: number;
-    currency: string;
-  };
-  message?: string;
-}
-
 @Injectable({ providedIn: 'root' })
 export class BillingService {
 

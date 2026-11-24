@@ -559,7 +559,7 @@
 
 .sources-list {
   max-height:
-    calc(100vh - 350px);
+    max(160px, calc(100dvh - 350px));
 
   overflow-y: auto;
 }
@@ -1086,7 +1086,7 @@
     100vw
   );
 
-  height: 100vh;
+  height: 100dvh;
 
   display: flex;
 

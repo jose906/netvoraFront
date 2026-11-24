@@ -164,11 +164,11 @@
                   Seleccionar rol
                 </option>
 
-                <option value="Admin">
+                <option value="admin">
                   Administrador
                 </option>
 
-                <option value="Usuario">
+                <option value="viewer">
                   Usuario
                 </option>
               </select>
@@ -220,6 +220,8 @@
           </div>
 
 
+          <p *ngIf="createUserError" class="nv-error-state" role="alert">{{ createUserError }}</p>
+
           <!-- ACCIONES -->
 
           <div class="form-actions vertical-actions">
@@ -227,6 +229,7 @@
             <button
               class="btn btn-primary btn-full"
               type="button"
+              [disabled]="creatingUser"
               (click)="registrarUsuario()"
             >
 
@@ -297,6 +300,9 @@
        
 <div
   class="admin-table-scroll"
+  role="region"
+  aria-label="Usuarios de la aplicación"
+  tabindex="0"
   *ngIf="!loadingAppUsers && filteredAppUsers.length"
 >
   <table class="admin-table">

@@ -1,7 +1,7 @@
 /* login.component.css */
 :host{
   display: block;
-  height: 100dvh;
+  min-height: 100dvh;
 }
 
 /* Variables locales del login (no dependas de :root global) */
@@ -15,13 +15,12 @@
   --accentHover: var(--theme-primary-dark);
   --focus: rgba(109, 40, 217, 0.18);
 
-  height: 100%;
+  min-height: 100dvh;
   width: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   background: var(--theme-bg);
   color: var(--text);
-  overflow: hidden;
 
   font-family: var(--theme-font);
 }
@@ -30,8 +29,8 @@
 .left {
   box-sizing: border-box;
   display: flex;
-  overflow: auto;
-  padding: clamp(16px, 4vw, 48px);
+  padding: max(16px, env(safe-area-inset-top)) max(clamp(12px, 4vw, 48px), env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom)) max(clamp(12px, 4vw, 48px), env(safe-area-inset-left));
 }
 
 .left-inner {
@@ -122,8 +121,9 @@
   outline: none;
   background: transparent;
   color: var(--text);
-  font-size: 0.98rem;
+  font-size: 1rem;
   width: 100%;
+  min-width: 0;
 }
 
 .control input::placeholder{
@@ -132,6 +132,7 @@
 
 .row{
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
@@ -215,8 +216,10 @@
 }
 
 .footer{
-  margin-top: 14px;
+  margin-top: 8px;
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
   gap: 8px;
   font-size: 0.92rem;
@@ -244,14 +247,20 @@
   z-index: 999;
   display: grid;
   place-items: center;
-  padding: 18px;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
 
   background: rgba(2, 6, 23, 0.52);
   backdrop-filter: blur(8px);
 }
 
 .nv-modal-card{
-  width: min(420px, 92vw);
+  box-sizing: border-box;
+  width: min(420px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
   border-radius: 18px;
   background: rgba(255,255,255,0.92);
   border: 1px solid rgba(15,23,42,0.10);
@@ -290,6 +299,7 @@
 
 .nv-modal-title{
   margin: 4px 0 4px;
+  padding-inline-end: 38px;
   font-size: 16px;
   font-weight: 950;
   color: var(--text);
@@ -318,6 +328,7 @@
 }
 
 .nv-modal-field input{
+  box-sizing: border-box;
   width: 100%;
   border-radius: 14px;
   border: 1px solid rgba(148,163,184,0.35);
@@ -325,7 +336,7 @@
   outline: none;
   background: rgba(248,250,252,0.95);
   transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 
 .nv-modal-field input:focus{
@@ -376,7 +387,7 @@
 
 /* ===================== SIGNUP (MODAL) ===================== */
 .nv-signup{
-  width: min(560px, 94vw);
+  width: min(560px, 100%);
 }
 
 .nv-modal-head{
@@ -439,8 +450,7 @@
   outline: none;
   background: transparent;
   color: var(--text);
-  font-size: 0.95rem;
-  appearance: none;
+  font-size: 1rem;
 }
 
 /* Error suave (password mismatch) */
@@ -468,14 +478,18 @@
   .nv-actions{
     grid-template-columns: 1fr;
   }
-}
 
-/* ===================== Responsive ===================== */
-@media (max-width: 900px){
-  .login-split{
-    grid-template-columns: 1fr;
+  .link,
+  .remember {
+    min-height: 44px;
   }
-  .left{
-    padding: 22px;
+
+  .nv-switch {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .nv-modal-head {
+    flex-direction: column;
   }
 }

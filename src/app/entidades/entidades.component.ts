@@ -61,7 +61,6 @@ export class EntidadesComponent extends StancePublicaciones implements OnInit {
   cargandoPulse = false;
   errorPulse = '';
 
-  private usersLoaded = false;
 
 
   // =========================================================
@@ -300,7 +299,6 @@ private async loadAccess(): Promise<void> {
       next: (data: users[]) => {
 
         this.users = data ?? [];
-        this.usersLoaded = true;
 
         this.currentPage = 1;
 
@@ -326,7 +324,6 @@ private async loadAccess(): Promise<void> {
           err
         );
 
-        this.usersLoaded = true;
 
       }
 
@@ -585,9 +582,7 @@ private async loadAccess(): Promise<void> {
               pageToLoad
             );
 
-          this.hasMore =
-            this.datos.length ===
-            this.pageSize;
+          this.hasMore = data.hasMore ?? (this.datos.length === this.pageSize);
 
           if (this.canViewReplies) {
 
@@ -1276,37 +1271,14 @@ formatPulseDate(date: string): string {
 
 
   cargarGuardados(): void {
-
-    this.apiService
-      .getGuardados()
-      .subscribe({
-
-        next: (res: any) => {
-
-          const rows =
-            res?.items ??
-            res?.resultado ??
-            [];
-
-
-          this.guardados =
-            new Set(
-              rows.map(
-                (row: any) =>
-                  String(row.tweetid)
-              )
-            );
-
-        },
-
-        error: () => {
-
-          this.guardados =
-            new Set<string>();
-
-        }
-
-      });
+    this.apiService.getSavedMap().subscribe({
+      next: response => {
+        this.guardados = new Set(Object.keys(response.saved));
+      },
+      error: () => {
+        this.guardados = new Set<string>();
+      }
+    });
   }
 
 

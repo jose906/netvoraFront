@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { ApiService } from '../services/api.service';
-import { user, users,AdminUserSubscription,AdminUserSubscriptionsResponse } from '../interfaces/users';
-import { AuthService } from '../services/auth.service';
+import { user, users,AdminUserSubscription } from '../interfaces/users';
 
 type AdminTab = 'sistema' | 'x';
 
@@ -63,6 +61,8 @@ export class AdministradorComponent implements OnInit {
   nombre2 = '';
   estado = '';
   tipo = '';
+  creatingUser = false;
+  createUserError = '';
 
   selectedUserId: number | null = null;
   selectedPlanId: number | null = null;
@@ -94,11 +94,7 @@ mailError = false;
 
 
 
-  constructor(
-    private apiService: ApiService,
-    private router: Router,
-    private AuthService: AuthService
-  ) {}
+  constructor(private apiService: ApiService) {}
 
   ngOnInit(): void {
     this.loadUsers();
@@ -310,35 +306,35 @@ mailError = false;
     }
   }
 
-  agregarUsuario(name: string, mail: string, tipo: string, estado: string): void {
-    this.apiService.createNewUser({ name, mail, tipo, estado }).subscribe({
-      next: () => this.loadUsers(),
-      error: err => console.error('Error al agregar usuario:', err)
+  registrarUsuario(): void {
+    if (this.creatingUser) return;
+
+    const name = this.nombre2.trim();
+    const email = this.email.trim();
+    if (!name || !email || this.password.length < 6 || !this.tipo || !this.estado) {
+      this.createUserError = 'Completa el nombre, correo, rol y estado. La contraseña debe tener al menos seis caracteres.';
+      return;
+    }
+
+    this.creatingUser = true;
+    this.createUserError = '';
+    this.apiService.createSystemUser({
+      name, email, password: this.password, role: this.tipo, state: this.estado
+    }).subscribe({
+      next: () => {
+        this.creatingUser = false;
+        this.resetNewUserForm();
+        this.loadAppUsers();
+      },
+      error: err => {
+        this.creatingUser = false;
+        this.createUserError = err.error?.error || 'No se pudo crear el usuario.';
+      }
     });
   }
 
-  async registrarUsuario(): Promise<void> {
-    try {
-      await this.AuthService.register(this.email, this.password);
-      const body = {
-        name: this.nombre2,
-        email: this.email,
-        tipeUser: this.tipo,
-        estadoUser: this.estado
-      };
-      this.apiService.syncUsers(body).subscribe({
-        next: () => {
-          this.loadAppUsers();
-          this.resetNewUserForm();
-        },
-        error: err => console.error('Error al sincronizar usuario:', err)
-      });
-    } catch (err) {
-      console.error('Error al registrar usuario:', err);
-    }
-  }
-
   resetNewUserForm(): void {
+    this.createUserError = '';
     this.nombre2 = '';
     this.email = '';
     this.password = '';
@@ -357,7 +353,7 @@ mailError = false;
 
     if (nameTrim) {
       this.apiService.searchbyname(nameTrim).subscribe({
-        next: (data: user) => this.user = data,
+        next: data => this.user = data,
         error: err => {
           console.error('Error al buscar por nombre:', err);
           this.user = null;
@@ -367,8 +363,8 @@ mailError = false;
     }
 
     if (idTrim) {
-      this.apiService.searchbyid(Number(idTrim)).subscribe({
-        next: (data: user) => this.user = data,
+      this.apiService.searchbyid(idTrim).subscribe({
+        next: data => this.user = data,
         error: err => {
           console.error('Error al buscar por ID:', err);
           this.user = null;

@@ -10,7 +10,7 @@ import { AccountMeResponse } from '../interfaces/me';
 import { linkifyText } from '../utils/helpers';
 import { StanceComment, StancePublication, StanceValue } from '../interfaces/stance';
 import { toPng } from 'html-to-image';
-import { AuthzService,UserRole } from '../services/authz.service';
+import { UserRole } from '../services/authz.service';
 
 interface CategoryOption {
   label: string;
@@ -364,7 +364,6 @@ currentRole: UserRole = 'viewer';
  constructor(
   private apiService: ApiService,
   private accountService: AccountService,
-  private authzService: AuthzService,
   private route: ActivatedRoute,
   private router: Router,
   private cdr: ChangeDetectorRef
@@ -645,13 +644,6 @@ loadPulse(): void {
 
 
 
-
-private inicializarContenido(): void {
-
-  this.loadUsers();
-  this.cargarGuardados();
-
-}
 
   // =========================================================
   // CARGAR PUBLICACIONES
@@ -1436,36 +1428,14 @@ formatPulseDate(date: string): string {
 
 
   cargarGuardados(): void {
-
-    this.apiService
-      .getGuardados()
-      .subscribe({
-
-        next: (res: any) => {
-
-          const rows =
-            res?.items ??
-            res?.resultado ??
-            [];
-
-          this.guardados =
-            new Set(
-              rows.map(
-                (row: any) =>
-                  String(row.tweetid)
-              )
-            );
-
-        },
-
-        error: () => {
-
-          this.guardados =
-            new Set<string>();
-
-        }
-
-      });
+    this.apiService.getSavedMap().subscribe({
+      next: response => {
+        this.guardados = new Set(Object.keys(response.saved));
+      },
+      error: () => {
+        this.guardados = new Set<string>();
+      }
+    });
   }
 
   

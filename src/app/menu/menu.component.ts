@@ -1,15 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { Observable, map, of } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { AuthzService } from '../services/authz.service';
-import { Router } from '@angular/router';
+import { NavigationEnd, NavigationSkipped, Router } from '@angular/router';
 
 @Component({
   selector: 'app-menu',
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.css'
 })
-export class MenuComponent implements OnInit {
+export class MenuComponent {
 
   // =========================================================
   // USUARIO
@@ -23,13 +25,24 @@ export class MenuComponent implements OnInit {
   // SIDEBAR MOBILE
   // =========================================================
 
+  @ViewChild('menuToggle') private menuToggle?: ElementRef<HTMLButtonElement>;
   isSidebarOpen = false;
 
   constructor(
     private authService: AuthService,
     public authz: AuthzService,
-    private router: Router
+    private router: Router,
+    breakpoints: BreakpointObserver
   ) {
+    this.router.events.pipe(takeUntilDestroyed()).subscribe(event => {
+      if (event instanceof NavigationEnd || event instanceof NavigationSkipped) {
+        this.closeSidebar();
+      }
+    });
+
+    breakpoints.observe('(max-width: 900px)').pipe(takeUntilDestroyed()).subscribe(state => {
+      if (!state.matches) this.closeSidebar();
+    });
 
     const user$ = (this.authService as any).user$ as Observable<any> | undefined;
 
@@ -61,13 +74,6 @@ export class MenuComponent implements OnInit {
         )
       );
     }
-  }
-
-  async ngOnInit() {
-
-    // Si AuthzService necesita cargar role:
-    // await this.authz.loadRole?.();
-
   }
 
   // =========================================================
@@ -102,8 +108,15 @@ export class MenuComponent implements OnInit {
   // MOBILE SIDEBAR
   // =========================================================
 
-  toggleSidebar() {
-    this.isSidebarOpen = !this.isSidebarOpen;
+  openSidebar(): void {
+    this.isSidebarOpen = true;
+  }
+
+  closeSidebar(): void {
+    if (!this.isSidebarOpen) return;
+
+    this.isSidebarOpen = false;
+    this.menuToggle?.nativeElement.focus();
   }
 
 }

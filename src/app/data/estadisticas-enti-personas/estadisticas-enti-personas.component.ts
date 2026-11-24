@@ -288,8 +288,6 @@ loadingComentarios = false;
 
     this.timelineInterval = interval;
 
-    const filters = this.buildFilters();
-
     this.cargarSoloTimeline();
   }
 

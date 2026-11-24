@@ -3,10 +3,8 @@ import { StancePublicaciones } from '../utils/stance-publicaciones';
 import { OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../services/api.service';
-import { NewsData } from '../interfaces/NewsData';
 import { NewsItem } from '../interfaces/NewsItem';
 import { users } from '../interfaces/users';
-import { Dateformater } from '../utils/dateformater';
 import { linkifyText } from '../utils/helpers'
 import { toPng } from 'html-to-image';
 import {
@@ -63,7 +61,6 @@ export class PersonasComponent extends StancePublicaciones implements OnInit {
     cargandoPulse = false;
     errorPulse = '';
   
-    private usersLoaded = false;
   
   
     // =========================================================
@@ -303,7 +300,6 @@ private async loadAccess(): Promise<void> {
         next: (data: users[]) => {
   
           this.users = data ?? [];
-          this.usersLoaded = true;
   
           this.currentPage = 1;
   
@@ -329,7 +325,6 @@ private async loadAccess(): Promise<void> {
             err
           );
   
-          this.usersLoaded = true;
   
         }
   
@@ -588,9 +583,7 @@ private async loadAccess(): Promise<void> {
                 pageToLoad
               );
   
-            this.hasMore =
-              this.datos.length ===
-              this.pageSize;
+            this.hasMore = data.hasMore ?? (this.datos.length === this.pageSize);
   
             if (this.canViewReplies) {
 
@@ -1280,37 +1273,14 @@ get canViewReplies(): boolean {
   
   
     cargarGuardados(): void {
-  
-      this.apiService
-        .getGuardados()
-        .subscribe({
-  
-          next: (res: any) => {
-  
-            const rows =
-              res?.items ??
-              res?.resultado ??
-              [];
-  
-  
-            this.guardados =
-              new Set(
-                rows.map(
-                  (row: any) =>
-                    String(row.tweetid)
-                )
-              );
-  
-          },
-  
-          error: () => {
-  
-            this.guardados =
-              new Set<string>();
-  
-          }
-  
-        });
+      this.apiService.getSavedMap().subscribe({
+        next: response => {
+          this.guardados = new Set(Object.keys(response.saved));
+        },
+        error: () => {
+          this.guardados = new Set<string>();
+        }
+      });
     }
   
   

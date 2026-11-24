@@ -1656,8 +1656,15 @@
   }
 }
 
-@media (max-width: 600px) {
+@container netvora-page (max-width: 400px) {
+  .pagination {
+    gap: 8px;
+  }
 
+  .pagination-button {
+    min-width: 0;
+    padding-inline: 10px;
+  }
 }
 
 @container netvora-page (max-width: 360px) {
@@ -1672,15 +1679,6 @@
 
   .pulse-metric:last-child {
     border-bottom: 0;
-  }
-
-  .pagination {
-    gap: 8px;
-  }
-
-  .pagination-button {
-    min-width: 0;
-    padding: 0 10px;
   }
 
   .conversation-locked {

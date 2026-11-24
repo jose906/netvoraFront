@@ -2030,42 +2030,14 @@ export class TopicsComponent implements OnInit, OnDestroy {
   // =========================================================
 
   cargarGuardados(): void {
-
-    this.apiService
-      .getGuardados()
-      .subscribe({
-
-        next: (
-          res: any
-        ) => {
-
-          const rows =
-            res?.items ??
-            res?.resultado ??
-            [];
-
-
-          this.guardados =
-            new Set(
-              rows.map(
-                (row: any) =>
-                  String(
-                    row.tweetid
-                  )
-              )
-            );
-
-        },
-
-
-        error: () => {
-
-          this.guardados =
-            new Set<string>();
-
-        }
-
-      });
+    this.apiService.getSavedMap().subscribe({
+      next: response => {
+        this.guardados = new Set(Object.keys(response.saved));
+      },
+      error: () => {
+        this.guardados = new Set<string>();
+      }
+    });
 
   }
 

@@ -139,10 +139,7 @@ loadingLogin: boolean = false;
 
   private registroPendiente: {
     name: string;
-    email: string;
     organizacion: string;
-    tipeUser: string;
-    estadoUser: string;
   } | null = null;
 
   get sincronizacionPendiente(): boolean {
@@ -168,10 +165,7 @@ loadingLogin: boolean = false;
 
         const datos = {
           name: this.nombre2.trim(),
-          email,
-          organizacion: this.organizacion2.trim(),
-          tipeUser: 'Usuario',
-          estadoUser: 'Activo'
+          organizacion: this.organizacion2.trim()
         };
         await this.auth.register(email, this.password2);
         this.registroPendiente = datos;

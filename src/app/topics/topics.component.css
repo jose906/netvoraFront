@@ -1712,8 +1712,9 @@
   }
 
   .pagination-button {
+    min-height: 44px;
     padding: 0 9px;
-    font-size: 11px;
+    font-size: 12px;
   }
 }
 

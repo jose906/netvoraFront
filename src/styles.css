@@ -608,3 +608,28 @@ span.nv-loading-state {
   height: 16px;
   font-size: 16px;
 }
+
+@media (max-width: 900px) {
+  :root {
+    --theme-page-gutter: clamp(12px, 3.5vw, 24px);
+  }
+
+  .nv-page,
+  .nv-section {
+    padding-left: max(var(--theme-page-gutter), env(safe-area-inset-left));
+    padding-right: max(var(--theme-page-gutter), env(safe-area-inset-right));
+  }
+}
+
+@media (max-width: 600px) {
+  .nv-button {
+    min-height: 44px;
+    white-space: normal;
+  }
+
+  :is(.nv-page, .nv-section) :is(input:not([type="checkbox"], [type="radio"]), select, textarea) {
+    min-width: 0;
+    max-width: 100%;
+    font-size: 16px;
+  }
+}

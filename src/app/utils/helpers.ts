@@ -99,14 +99,6 @@ export function buildDatasetSent(label: string, data: number[], colors: string) 
   };
 }
 
-export function buildLineDataset(label: string, data: number[], i: number) {
-  return {
-    label,
-    data,
-    fill: false,
-    borderWidth: 2
-  };
-}
 export function exportCanvasWithWhiteBg(canvas: HTMLCanvasElement): string {
   const tmpCanvas = document.createElement('canvas');
   tmpCanvas.width = canvas.width;

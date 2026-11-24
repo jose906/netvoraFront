@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../services/api.service';
-import { Router } from '@angular/router';
 import { NewsItem } from '../interfaces/NewsItem';
 import { users } from '../interfaces/users';
 import { Observable } from 'rxjs';
@@ -95,7 +94,6 @@ subscriptionStatus = '';
 
  constructor(
   private apiService: ApiService,
-  private router: Router,
   private accountService: AccountService
 ) {}
 
@@ -207,7 +205,7 @@ private loadAccess(): void {
   loadUsers(): void {
     this.apiService.getUsers('Medio').subscribe({
       next: (data) => (this.users = data),
-      error: (err) => {},
+      error: () => {},
     });
   }
 
@@ -261,57 +259,27 @@ private loadAccess(): void {
     apiCall(this.pageSize, offset).subscribe({
       next: (data) => {
         this.datos = data.items || [];
-        // ✅ inicializar notas (vienen en data.items desde ut.note)
-this.notesByTweet.clear(); // opcional: para no mezclar páginas
-// this.noteDraft = {};     // opcional: si quieres reset total por página
-
-    for (const it of this.datos) {
-      const id = this.tid(it.tweetid);
-      const note = (it.note ?? '').toString();   // 👈 viene del backend
-      this.notesByTweet.set(id, note);
-
-      // solo setea draft si aún no existe (para no pisar lo que el usuario está escribiendo)
-      if (this.noteDraft[id] === undefined) {
-        this.noteDraft[id] = note;
-      }
-    }
-        
-        this.currentPage = page;
-         this.guardados = new Set(
-      this.datos.map(d => String(d.tweetid))
-        );
-        const tweetIds = this.datos.map(x => x.tweetid);
+        this.notesByTweet.clear();
+        for (const item of this.datos) {
+          const id = this.tid(item.tweetid);
+          const note = (item.note ?? '').toString();
+          this.notesByTweet.set(id, note);
+          if (this.noteDraft[id] === undefined) {
+            this.noteDraft[id] = note;
+          }
+        }
 
         this.currentPage = page;
-
-this.guardados = new Set(
-  this.datos.map(d => String(d.tweetid))
-);
-
-
-// =========================================================
-// COMENTARIOS
-// =========================================================
-
-if (this.canViewReplies) {
-
-  this.cargarReplies();
-
-} else {
-
-  this.repliesByTweet = {};
-
-}
-
-
-this.hasMore =
-  this.datos.length === this.pageSize;
-
-this.cargando = false;
-        this.hasMore = (this.datos.length === this.pageSize);
+        this.guardados = new Set(this.datos.map(item => String(item.tweetid)));
+        if (this.canViewReplies) {
+          this.cargarReplies();
+        } else {
+          this.repliesByTweet = {};
+        }
+        this.hasMore = this.datos.length === this.pageSize;
         this.cargando = false;
       },
-      error: (err) => {
+      error: () => {
         
         this.error = 'Error al cargar los datos';
         this.cargando = false;
@@ -450,7 +418,7 @@ cargarReplies(): void {
           this.guardados.delete(id);
           this.savingIds.delete(id);
         },
-        error: (e) => {
+        error: () => {
           
           this.errorGuardar = 'No se pudo quitar de guardados.';
           this.savingIds.delete(id);
@@ -465,7 +433,7 @@ cargarReplies(): void {
         this.guardados.add(id);
         this.savingIds.delete(id);
       },
-      error: (e) => {
+      error: () => {
         
         this.errorGuardar = 'No se pudo guardar.';
         this.savingIds.delete(id);
@@ -481,7 +449,7 @@ cargarReplies(): void {
       
       
     },
-    error: (e) => {}
+    error: () => {}
   });
 }
 
@@ -586,7 +554,7 @@ guardarNota(tweetid: any) {
       }
       this.savingNoteIds.delete(id);
     },
-    error: (e) => {
+    error: () => {
       
       this.savingNoteIds.delete(id);
     }
@@ -605,7 +573,7 @@ borrarNota(tweetid: any) {
       }
       this.savingNoteIds.delete(id);
     },
-    error: (e) => {
+    error: () => {
     
       this.savingNoteIds.delete(id);
     }

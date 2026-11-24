@@ -653,6 +653,9 @@ textarea { width: 100%; }
   .radar-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .radar-metric.volume { grid-column: 1 / -1; }
   .radar-pdf-button { width: 100%; }
+  .radar-chart-toolbar button,
+  .radar-activity-table button { min-height: 44px; }
+  .radar-activity-table :is(th, td) { overflow-wrap: anywhere; }
 }
 
 .radar-error,

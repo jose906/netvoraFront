@@ -46,16 +46,28 @@ app-menu {
 
 @media (max-width: 900px) {
   .container {
-    box-sizing: border-box;
-    padding-top: 60px;
+    flex-direction: column;
     background: var(--theme-surface);
   }
 
   .content {
-    border-top: 1px solid var(--theme-line);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   app-menu {
-    flex-basis: 0;
+    flex: 0 0 auto;
+  }
+
+  .container:has(.sub-warning) .content {
+    padding-bottom: 0;
+  }
+
+  .sub-warning {
+    position: static;
+    flex: 0 0 auto;
+    max-width: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
   }
 }

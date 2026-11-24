@@ -2776,7 +2776,7 @@ background .15s ease,
 }
 .billing-dialog {
   width: min(100%, 570px);
-  max-height: min(90vh, 780px);
+  max-height: min(calc(100dvh - 32px), 780px);
   display: flex;
   flex-direction: column;
   overflow: hidden;

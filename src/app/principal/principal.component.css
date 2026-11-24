@@ -1766,6 +1766,9 @@
 }
 
 .modal {
+  box-sizing: border-box;
+  max-height: 100%;
+  overflow-y: auto;
   width: 100%;
   max-width: 430px;
 
@@ -1930,7 +1933,7 @@
 .topics-modal {
   width: 100%;
   max-width: 800px;
-  max-height: 84vh;
+  max-height: min(84dvh, 100%);
 
   display: flex;
   flex-direction: column;

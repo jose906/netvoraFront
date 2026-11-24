@@ -17,7 +17,7 @@ import { ApiService } from '../../services/api.service';
 import { BaseChartDirective } from 'ng2-charts';
 import { NETVORA_PALETTE, exportCanvasWithWhiteBg } from '../../utils/helpers';
 import { users } from '../../interfaces/users';
-import { AuthzService, UserRole } from '../../services/authz.service';
+import { UserRole } from '../../services/authz.service';
 import { AccountService } from '../../services/account.service';
 type TimelineInterval = '1h' | '3h' | '6h' | '12h' | '1d';
 type EntItem = { entidad: string; total: number };
@@ -743,7 +743,6 @@ userIndiceChartOptions: ChartOptions<'bar'> = {
     private readonly host: ElementRef<HTMLElement>,
     private apiService: ApiService,
     private cdr: ChangeDetectorRef,
-    private authzService: AuthzService,
     private accountService: AccountService
   ) {
     this.loadAccess();

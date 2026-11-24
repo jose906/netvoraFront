@@ -98,7 +98,7 @@
       <span>Agregá un contacto nuevo o ajustá los filtros.</span>
     </div>
 
-    <div class="crm-table-scroll" *ngIf="!cargando && !errorLista && prospectos.length">
+    <div class="crm-table-scroll" role="region" aria-label="Lista de prospectos" tabindex="0" *ngIf="!cargando && !errorLista && prospectos.length">
       <table class="crm-table">
         <thead><tr>
           <th>Contacto</th><th>Organización</th><th>Estado</th><th>Último correo</th><th>Acciones</th>

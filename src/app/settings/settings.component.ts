@@ -1126,14 +1126,7 @@ export class SettingsComponent implements OnInit {
     // BUSCAR POR ID
     // =======================================================
 
-    const numId =
-      Number(idTrim);
-
-
-    if (
-      Number.isNaN(numId) ||
-      numId <= 0
-    ) {
+    if (!/^[0-9]+$/.test(idTrim) || !/[1-9]/.test(idTrim)) {
 
       this.searching =
         false;
@@ -1152,7 +1145,7 @@ export class SettingsComponent implements OnInit {
 
     this.apiService
       .searchbyid(
-        numId
+        idTrim
       )
       .subscribe({
 

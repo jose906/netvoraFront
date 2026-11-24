@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs';
 
 import { NewsItem } from '../interfaces/NewsItem';
 import { users } from '../interfaces/users';
-import { ApiService } from '../services/api.service';
+import { ApiService, PublicationFilters } from '../services/api.service';
 
 type CategoryKey =
   | 'inicio'
@@ -271,14 +271,14 @@ export class CatSelectComponent implements OnInit, OnDestroy {
   // =====================================================
 
   trackByTweet(
-    index: number,
+    _index: number,
     item: NewsItem
   ): string {
     return String(item.tweetid);
   }
 
   trackByCategory(
-    index: number,
+    _index: number,
     category: CategoryTab
   ): string {
     return category.key;
@@ -505,47 +505,29 @@ export class CatSelectComponent implements OnInit, OnDestroy {
   // =====================================================
 
   
-private buildBody(page: number): any {
-  const body: any = {
-    page,
-    limit: this.pageSize
-  };
+  private buildBody(page: number): PublicationFilters {
+    const users = this.appliedFilters.users.length
+      ? [...this.appliedFilters.users]
+      : this.activeCategory === 'inicio' ? undefined : this.users.map(user => String(user.idTweetUser));
 
-  const start = this.toYMD(this.appliedFilters.startDate);
-  const end = this.toYMD(this.appliedFilters.endDate);
-
-  if (start) body.startDate = start;
-  if (end) body.endDate = end;
-
-  if (this.appliedFilters.searchText) {
-    body.searchText = this.appliedFilters.searchText;
+    return {
+      page,
+      limit: this.pageSize,
+      startDate: this.toYMD(this.appliedFilters.startDate),
+      endDate: this.toYMD(this.appliedFilters.endDate),
+      searchText: this.appliedFilters.searchText || undefined,
+      users
+    };
   }
 
-  // INICIO: conservar el formato del endpoint original
-  if (this.activeCategory === 'inicio') {
-    if (this.appliedFilters.users.length) {
-      body.users = this.appliedFilters.users.map(Number);
+  private getPublications(body: PublicationFilters) {
+    if (this.activeCategory === 'inicio') return this.apiService.getAllPosts(body);
+    switch (this.activeOption.accountType) {
+      case 'Entidad': return this.apiService.getPostsEntidades(body);
+      case 'Persona': return this.apiService.getPostPer(body);
+      default: return this.apiService.getPostsCategoria({ ...body, categoria: this.activeOption.apiCategory });
     }
-
-    return body;
   }
-
-  // RESTO: endpoint unificado de categorías
-  body.categoria = this.activeOption.apiCategory;
-  body.type = this.activeOption.accountType;
-  body.type_user = this.activeOption.accountType;
-
-  body.users = this.appliedFilters.users.length
-    ? [...this.appliedFilters.users]
-    : this.users.map(user => String(user.idTweetUser));
-
-  return body;
-}
-
-
-  // =====================================================
-  // ÚNICO MÉTODO DE CONSULTA
-  // =====================================================
 
   private loadByCategory(page: number = 1): void {
     this.postsSubscription?.unsubscribe();
@@ -556,9 +538,7 @@ private buildBody(page: number): any {
     this.error = '';
 
     const body = this.buildBody(page);
-    const apiCall = this.activeCategory === 'inicio'
-  ? this.apiService.getAllPosts(body)
-  : this.apiService.getPostsCategoria(body);
+    const apiCall = this.getPublications(body);
 
     this.postsSubscription = apiCall
       .subscribe({

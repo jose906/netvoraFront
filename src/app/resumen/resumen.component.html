@@ -1,17 +1,14 @@
 <section class="nv-page">
-  <header class="nv-page-heading"><h1>Resumen de la publicación</h1></header>
-  <div *ngIf="isLoading" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando resumen…</span></div>
-
-  <div *ngIf="!isLoading" class="detalle-container">
-    <p *ngIf="error" role="alert" class="nv-error-state">{{ error }}</p>
-    <ng-container *ngIf="resumen as resultado; else sinResumen">
-      <p><strong>Categoría:</strong> {{ dato?.categoria?.[0] }}</p>
-      <p><strong>Texto:</strong> {{ dato?.texto }}</p>
-      <p><strong>Nota:</strong> {{ resultado.resumen }}</p>
+  <header class="nv-page-heading"><h1>Detalle de la publicación</h1></header>
+  <div class="detalle-container">
+    <ng-container *ngIf="dato as publicacion; else sinPublicacion">
+      <p *ngIf="publicacion.categoria?.[0]"><strong>Categoría:</strong> {{ publicacion.categoria[0] }}</p>
+      <p *ngIf="publicacion.texto">{{ publicacion.texto }}</p>
+      <p *ngIf="publicacion.url_web">
+        <a [href]="publicacion.url_web" target="_blank" rel="noopener noreferrer">Abrir publicación original</a>
+      </p>
     </ng-container>
-    <ng-template #sinResumen>
-      <p *ngIf="!error">No hay resumen disponible.</p>
-    </ng-template>
+    <ng-template #sinPublicacion><p>Selecciona una publicación para ver su detalle.</p></ng-template>
     <button type="button" class="nv-button" (click)="goBack()">Volver</button>
   </div>
 </section>

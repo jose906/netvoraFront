@@ -4,24 +4,25 @@ import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient,HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { JsonData } from '../interfaces/JsonData';
-import { ResumeInterface } from '../interfaces/ResumeInterface';
 import { NewsData } from '../interfaces/NewsData';
-import { CategoriasData } from '../interfaces/data/CategoriasData';
-import { ConteoResponse } from '../interfaces/data/AllData';
-import { Data } from '@angular/router';
-import { DataFromCategorie } from '../interfaces/data/DataFromCategorie';
-import { users,user,AdminUserSubscription,AdminUserSubscriptionsResponse } from '../interfaces/users';
-import { MainPageData } from '../interfaces/data/mainpage';
-import { NumberSymbol } from '@angular/common';
+import { users,user,AdminUserSubscriptionsResponse } from '../interfaces/users';
 import { HomePageResponse } from '../interfaces/homePage';
 import { StatsResponse } from '../interfaces/data/mainDashboard';
 import { DashboardStatsResponse } from '../interfaces/data/MediaDashboard';
-import { NewsItem, PulseResponse, TopicItem, TopicOption } from '../interfaces/NewsItem';
+import { NewsItem, PulseResponse, TopicOption } from '../interfaces/NewsItem';
 import { StanceFilters, StanceSummary, StanceTimelineRow, StanceComment, StancePublication, StanceTopic, StanceSource, StancePage } from '../interfaces/stance';
 
 
 
+
+export interface PublicationFilters {
+  startDate?: string;
+  endDate?: string;
+  users?: string[];
+  searchText?: string;
+  page?: number;
+  limit?: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -35,18 +36,14 @@ export class ApiService {
 
   
 
-  getAllPosts(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<NewsData[]>(`${this.apiUrl+'tweets'}`,body,{headers});
+  getAllPosts(body: PublicationFilters): Observable<NewsData> {
+    return this.http.post<NewsData>(this.apiUrl + 'tweets', body);
   }
-  getPostsCategoria(body: {categoria: string;startDate?: string;endDate?: string;users?: string[];searchText?: string;page?: number;limit?: number;}): Observable<any> {
 
-  const headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
+  getPostsCategoria(body: PublicationFilters & { categoria: string }): Observable<NewsData> {
+    return this.http.post<NewsData>(this.apiUrl + 'categoria', body);
+  }
 
-  return this.http.post<NewsData[]>(this.apiUrl + 'categoria',body,{ headers });
-}
 getPulse(body: {type: 'Medio' | 'Entidad' | 'Persona';categoria?: string;startDate?: string;endDate?: string;users?: string[]; searchText?: string;}): Observable<PulseResponse> {
 
   const headers = new HttpHeaders({
@@ -133,22 +130,6 @@ getRepliesSummaryMany(tweetIds: any[]) {
   
 
   
-  getResumen(dato:{url:string}):Observable<any[]>{
-  
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<ResumeInterface[]>(this.apiUrl+'resumir',dato,{headers});
-  } 
- getNews(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number, searchText?: string }): Observable<NewsData[]> {
-
-  const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-   return this.http.post<NewsData[]>(this.apiUrl+'politica',body,{headers}); 
-  }
-  updateNews(id:number, categoria:string, sentimiento:string):Observable<any>{
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    const body={categoria:categoria, sentimiento:sentimiento};
-    return this.http.post<any>(`${this.apiUrl}news/${id}`,body,{headers});
-  }
-
   getAllData(params:any):Observable<StatsResponse>{
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<StatsResponse>(this.apiUrl+'estadisticas',params,{headers});
@@ -158,30 +139,14 @@ getRepliesSummaryMany(tweetIds: any[]) {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<DashboardStatsResponse>(this.apiUrl+'categorias',params, {headers});
   }
-  getPostSalud(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {  
-
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<NewsData[]>(this.apiUrl+'salud',body, {headers});
-
+  getPostPer(body: PublicationFilters): Observable<NewsData> {
+    return this.http.post<NewsData>(this.apiUrl + 'personas', body);
   }
-  getPostPer(body: { startDate?: string; endDate?: string; users?: String[], page?: number, limit?: number }): Observable<NewsData[]> {  
 
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<NewsData[]>(this.apiUrl+'personas',body, {headers});
-
+  getPostsEntidades(body: PublicationFilters): Observable<NewsData> {
+    return this.http.post<NewsData>(this.apiUrl + 'entidades', body);
   }
-  getPostsGestiones(body: { startDate?: string; endDate?: string; users?: Number[], page?: number, limit?: number }): Observable<NewsData[]> {  
 
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<NewsData[]>(this.apiUrl+'gestiones',body,{headers});
-
-  }
-  getPostsEntidades(body: { startDate?: string; endDate?: string; users?: String[], page?: number, limit?: number }): Observable<NewsData[]> {  
-
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<NewsData[]>(this.apiUrl+'entidades',body,{headers});
-
-  }
   getTopic(body: {topicId: number;startDate?: string;endDate?: string;users?: string[];searchText?: string;page?: number;limit?: number;}): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
   return this.http.post<any>( this.apiUrl + 'get_topic',body, {headers}); 
@@ -286,23 +251,16 @@ getCategoryComentarios(params: any): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' })
     return this.http.post<users[]>(this.apiUrl+'users2',{tipo:tipo}, {headers});
   }
-  searchbyid(id:number):Observable<user>{
-    return this.http.get<user>(`${this.apiUrl}users/${id}`);
+  searchbyid(id: string): Observable<user | null> {
+    return this.http.post<user | null>(this.apiUrl + 'user', { id });
   }
-  searchbyname(usernNme:string):Observable<user>{
+  searchbyname(username: string): Observable<user | null>{
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<user>(this.apiUrl+'user', {username:usernNme}, {headers});
+    return this.http.post<user | null>(this.apiUrl + 'user', { username }, { headers });
   }
   addUser(user:users):Observable<users>{
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<users>(this.apiUrl+'add_user',user,{headers});
-  }
-  deleteUser(id:number):Observable<any>{
-    return this.http.delete<any>(`${this.apiUrl}users/${id}`);
-  } 
-
-  getMainPageData(): Observable<MainPageData> {
-    return this.http.get<MainPageData>(this.apiUrl);
   }
   updateCategory(body: { idTweet: string; oldCategory?: string, newCategory?: string, text?: string }): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
@@ -316,14 +274,20 @@ getCategoryComentarios(params: any): Observable<any> {
     
   }
 
-  createNewUser(body: { name?: string; mail?: string; estado?: string, tipo: string}): Observable<any> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<any>(this.apiUrl+'create_user',body, {headers});
+  createSystemUser(body: {
+    name: string;
+    email: string;
+    password: string;
+    role: string;
+    state: string;
+  }): Observable<{ ok: boolean; uid: string }> {
+    return this.http.post<{ ok: boolean; uid: string }>(this.apiUrl + 'admin/system-users', body);
   }
-  syncUsers(body: any): Observable<any> {
-    return this.http.post<any>(this.apiUrl + 'sync', body);
-  
-  }   
+
+  syncUsers(body: { name: string; organizacion: string }): Observable<unknown> {
+    return this.http.post(this.apiUrl + 'sync', body);
+  }
+
   getDashboardEvidence(filters: DashboardEvidenceFilters): Observable<DashboardEvidence> {
     return this.http.post<DashboardEvidence>(this.apiUrl + 'estadisticas/evidencia', filters);
   }
@@ -428,13 +392,7 @@ getSavedMap(category?: string) {
     return this.http.delete(`${this.apiUrl}unsave_post/${tweetid}`);
   }
 
-  // api.service.ts
-getUserTweetsByTweetIds(tweetids: string[]) {
-  const params = { tweetids: tweetids.join(',') };
-  return this.http.get<{ ok: boolean; rows: any[] }>(`${this.apiUrl}user_tweets`, { params });
-}
-
-upsertNote(tweetid: string, note: string) {
+  upsertNote(tweetid: string, note: string) {
   return this.http.post<{ ok: boolean }>(`${this.apiUrl}user_tweets/note`, { tweetid, note });
 }
 
@@ -472,18 +430,6 @@ getFollowedTweetUsers() {
     );
   }
 
-  getStancePublicaciones(body: StanceFilters): Observable<{ ok: boolean; publications: StancePage<StancePublication> }> {
-    return this.http.post<{ ok: boolean; publications: StancePage<StancePublication> }>(
-      `${this.apiUrl}api/stance/publicaciones`, body
-    );
-  }
-
-  getStancePublicacion(body: StanceFilters): Observable<{ ok: boolean; found: boolean; publication?: StancePublication; comments?: StancePage<StanceComment>; summary_filtered?: StanceSummary }> {
-    return this.http.post<{ ok: boolean; found: boolean; publication?: StancePublication; comments?: StancePage<StanceComment>; summary_filtered?: StanceSummary }>(
-      `${this.apiUrl}api/stance/publicacion`, body
-    );
-  }
-
   
   getStanceTopicos(body: StanceFilters): Observable<{
   ok: boolean;
@@ -499,21 +445,9 @@ getFollowedTweetUsers() {
   );
 }
 
-  getStanceTopico(body: StanceFilters): Observable<{ ok: boolean; found: boolean; topic?: StanceTopic; summary?: StanceSummary; comments?: StancePage<StanceComment> }> {
-    return this.http.post<{ ok: boolean; found: boolean; topic?: StanceTopic; summary?: StanceSummary; comments?: StancePage<StanceComment> }>(
-      `${this.apiUrl}api/stance/topico`, body
-    );
-  }
-
   getStanceFuentes(body: StanceFilters): Observable<{ ok: boolean; sources: StanceSource[] }> {
     return this.http.post<{ ok: boolean; sources: StanceSource[] }>(
       `${this.apiUrl}api/stance/fuentes`, body
-    );
-  }
-
-  getStanceEstado(body: StanceFilters): Observable<{ ok: boolean; state: Record<string, unknown> }> {
-    return this.http.post<{ ok: boolean; state: Record<string, unknown> }>(
-      `${this.apiUrl}api/stance/estado`, body
     );
   }
 

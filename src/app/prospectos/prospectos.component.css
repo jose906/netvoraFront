@@ -97,7 +97,7 @@
 .crm-pagination { display: flex; align-items: center; justify-content: space-between; gap: 14px; border-top: 1px solid var(--crm-line); padding: 14px 20px; color: var(--crm-muted); font-size: 11px; }
 .crm-pagination > div { display: flex; gap: 7px; }
 .crm-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.55); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px; }
-.crm-modal { max-width: 560px; width: 100%; max-height: calc(100vh - 32px); overflow-y: auto; border-radius: 15px; background: white; box-shadow: 0 22px 55px rgba(15,23,42,.22); }
+.crm-modal { max-width: 560px; width: 100%; max-height: calc(100dvh - 32px); overflow-y: auto; border-radius: 15px; background: white; box-shadow: 0 22px 55px rgba(15,23,42,.22); }
 .crm-modal-body { display: flex; flex-direction: column; gap: 18px; padding: 23px; }
 .crm-template-note { display: flex; align-items: flex-start; gap: 11px; padding: 14px; background: var(--crm-primary-soft); border: 1px solid #e9ddff; border-radius: 10px; color: #5b21b6; font-size: 12px; line-height: 1.6; }
 .crm-template-note mat-icon { flex: 0 0 19px; font-size: 19px; width: 19px; height: 19px; }

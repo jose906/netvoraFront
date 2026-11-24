@@ -208,4 +208,13 @@ tbody tr + tr {
   .evidence-secondary-actions {
     margin-inline-start: 0;
   }
+
+  .evidence-controls > label {
+    width: 100%;
+  }
+
+  button,
+  select {
+    min-height: 44px;
+  }
 }

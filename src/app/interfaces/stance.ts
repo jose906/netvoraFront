@@ -103,8 +103,3 @@ export interface StancePage<T> {
   limit: number;
   items: T[];
 }
-
-export interface StanceResponse<T> {
-  ok: boolean;
-  [key: string]: unknown;
-}

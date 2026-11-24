@@ -40,6 +40,7 @@ import { EntidadesComponent } from './entidades/entidades.component';
 import { CatSelectComponent } from './cat-select/cat-select.component';
 import { RoleGuard } from './core/guards/role.guard';
 import { EstadisticasEntiPersonasComponent } from './data/estadisticas-enti-personas/estadisticas-enti-personas.component';
+import { A11yModule } from '@angular/cdk/a11y';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { PerfilComponent } from './perfil/perfil.component';
 import { SubscriptionInterceptor } from './core/interceptor/subscription.interceptor';
@@ -136,6 +137,7 @@ const routes: Routes = [
     MatCardModule, 
     AngularFireModule.initializeApp(environment.firebase),
    AngularFireAuthModule,
+    A11yModule,
     MatTooltipModule,
     StanceComentariosComponent,
     

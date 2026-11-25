@@ -1,9 +1,10 @@
 
-<section class="dash nv-dashboard-page overview">
+<section class="dash nv-dashboard-page overview breakdown-dashboard">
 
   <!-- HEADER -->
-  <div class="overview-actions" role="group" aria-label="Acciones de estadísticas generales">
-    <div class="header-actions">
+  <header *ngIf="!filterMessage" class="breakdown-toolbar">
+    <h2>Indicadores del período</h2>
+    <div class="header-actions" role="group" aria-label="Acciones del informe">
       <button [class.is-loading]="cargandoDashboard" [attr.aria-busy]="cargandoDashboard"
         type="button"
         class="btn dashboard-primary nv-progress-button"
@@ -23,14 +24,14 @@
         ↓ Descargar gráficos
       </button>
     </div>
-  </div>
+  </header>
 
   <div class="dashboard-notice" *ngIf="filterMessage" role="status">{{ filterMessage }}</div>
   <div class="dashboard-notice dashboard-notice-error nv-error-state" *ngIf="errorMsg" role="alert">{{ errorMsg }}</div>
-  <details class="dashboard-notice dashboard-notice-error nv-error-state" *ngIf="errorsPorSeccion | keyvalue as errors" [hidden]="!errors.length">
-    <summary>Algunas secciones no se pudieron cargar ({{ errors.length }})</summary>
+  <div class="dashboard-notice dashboard-notice-error nv-error-state" *ngIf="errorsPorSeccion | keyvalue as errors" [hidden]="!errors.length" role="alert">
+    <strong>Algunas secciones no se pudieron cargar ({{ errors.length }})</strong>
     <ul><li *ngFor="let entry of errors">{{ entry.value }}</li></ul>
-  </details>
+  </div>
 
   <ng-container *ngIf="!filterMessage">
 
@@ -42,7 +43,7 @@
   <!-- INDICADORES PRINCIPALES -->
   <!-- ========================================= -->
 
-  <section class="metrics-grid overview-metrics" aria-label="Indicadores del período">
+  <section data-statistics-section="summary" class="metrics-grid overview-metrics" aria-label="Indicadores del período">
 
     <!-- PUBLICACIONES -->
     <article class="metric-card nv-quiet-surface">
@@ -143,11 +144,7 @@
 
   </section>
 
-  <!-- ========================================= -->
-  <!-- ACTIVIDAD Y LÍNEA DE TIEMPO -->
-  <!-- ========================================= -->
-
-  <section class="section-block activity-section">
+  <section data-statistics-section="activity" class="section-block activity-section">
     <!-- GRÁFICO DE ACTIVIDAD -->
     <div class="activity-chart overview-activity chart">
       <div class="activity-chart-header overview-chart-header">
@@ -172,7 +169,7 @@
         <div class="overview-chart-actions">
           <div class="timeline-interval-control">
             <label for="todos-timeline-interval">
-              Intervalo
+              Agrupar por
             </label>
 
             <select
@@ -242,7 +239,7 @@
           <div>
             <strong>No hay actividad disponible</strong>
             <p>
-              No existen publicaciones para el período seleccionado.
+              No hay publicaciones para las fechas elegidas.
             </p>
           </div>
         </div>
@@ -250,14 +247,10 @@
     </div>
   </section>
 
-  <!-- ========================================= -->
-  <!-- CONVERSACIONES EN CRECIMIENTO -->
-  <!-- ========================================= -->
+  <ng-container *ngTemplateOutlet="insights?.activity ?? null"></ng-container>
 
-  <details class="nv-dashboard-disclosure">
-    <summary>Conversaciones en crecimiento</summary>
-    <section class="section-block overview-topics">
-
+  <section data-statistics-section="topics" class="section-block overview-topics">
+    <div class="section-heading"><h2>Conversaciones en crecimiento</h2></div>
 
     <div *ngIf="loadingTopicos" class="nv-loading-state" role="status"><span class="nv-sr-only">Detectando conversaciones en crecimiento…</span></div>
 
@@ -289,8 +282,7 @@
             </span>
             <span class="meta-separator">·</span>
             <span>
-              período anterior:
-              {{ topic.total_anterior | number }}
+              {{ topic.total_anterior | number }} en los días previos<ng-container *ngIf="previousDatesLabel as dates"> ({{ dates }})</ng-container>
             </span>
           </div>
         </div>
@@ -301,7 +293,7 @@
             <span
               class="trend-badge trend-new"
               *ngIf="topic.tendencia === 'NUEVO'">
-              NUEVO
+              Sin publicaciones en los días previos
             </span>
 
             <span
@@ -334,333 +326,19 @@
           <strong>No hay conversaciones emergentes</strong>
           <p>
             No se detectaron tópicos con crecimiento
-            frente al período anterior.
+            frente a los días previos.
           </p>
         </div>
       </div>
     </ng-template>
   </section>
-  </details>
 
-  <!-- ========================================= -->
-  <!-- PUBLICACIONES POR MEDIO -->
-  <!-- ========================================= -->
-
-  <section class="section-block media-section">
+  <section data-statistics-section="topics" class="section-block">
     <div class="section-heading">
       <div>
-        <h2>Publicaciones por medio</h2>
+        <h2>Tópicos principales</h2>
         <p>
-          Medios con mayor volumen de publicaciones durante
-          el período seleccionado.
-        </p>
-      </div>
-    </div>
-
-    <div *ngIf="loadingMedios" class="nv-loading-state" role="status"><span class="nv-sr-only">Calculando publicaciones por medio…</span></div>
-
-    <article class="analysis-card chart media-card">
-
-      <!-- SHARE OF VOICE -->
-      <div class="media-insights" *ngIf="postsByMedia.length">
-
-        <div class="media-insight media-insight--leader">
-          <div class="media-insight-label">
-            <span class="material-icons">campaign</span>
-            Medio líder
-          </div>
-
-          <div class="media-insight-main">
-            <strong>{{ topMediaName }}</strong>
-            <span>{{ topMediaShare | number:'1.1-1' }}%</span>
-          </div>
-
-          <small>
-            {{ topMediaPosts | number:'1.0-0' }} publicaciones
-          </small>
-        </div>
-
-        <div class="media-insight">
-          <span class="media-insight-label">
-            Concentración Top 3
-          </span>
-
-          <strong class="media-insight-value">
-            {{ top3MediaShare | number:'1.1-1' }}%
-          </strong>
-
-          <small>del volumen de medios</small>
-        </div>
-
-        <div class="media-insight">
-          <span class="media-insight-label">
-            Concentración Top 5
-          </span>
-
-          <strong class="media-insight-value">
-            {{ top5MediaShare | number:'1.1-1' }}%
-          </strong>
-
-          <small>del volumen de medios</small>
-        </div>
-
-        <div class="media-insight">
-          <span class="media-insight-label">
-            Publicaciones de medios
-          </span>
-
-          <strong class="media-insight-value">
-            {{ mediaTotalPosts | number:'1.0-0' }}
-          </strong>
-
-          <small>en el período seleccionado</small>
-        </div>
-      </div>
-
-      <!-- GRÁFICA DE MEDIOS -->
-      <div class="card-head">
-        <div>
-          <div class="card-title">Publicaciones por medio</div>
-          <div class="card-sub">
-            Top 10 medios según cantidad de publicaciones detectadas
-          </div>
-        </div>
-
-        <button
-          type="button"
-          class="iconbtn"
-          (click)="downloadChart($event)"
-          title="Descargar gráfico">
-          <i class="fas fa-download" aria-hidden="true"></i>
-        </button>
-      </div>
-
-      <div
-        class="chart-wrap media-chart"
-        *ngIf="postsByMedia.length; else noPostsByMedia">
-
-        <canvas role="img" aria-label="Volumen de publicaciones por medio"
-          baseChart
-          [plugins]="rankingPlugins"
-          [type]="'bar'"
-          [data]="postsByMediaData"
-          [options]="postsByMediaOptions">
-        </canvas>
-      </div>
-
-      <ng-template #noPostsByMedia>
-
-        <div *ngIf="loadingMedios" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando resultados…</span></div>
-
-        <div class="empty-state" *ngIf="!loadingMedios">
-          <span class="material-icons">campaign</span>
-          <div>
-            <strong>No hay publicaciones de medios</strong>
-            <p>
-              No se encontraron publicaciones para el período
-              y filtros seleccionados.
-            </p>
-          </div>
-        </div>
-      </ng-template>
-    </article>
-  </section>
-
-  <!-- ========================================= -->
-  <!-- ENTIDADES -->
-  <!-- ========================================= -->
-
-  <details class="nv-dashboard-disclosure">
-    <summary>Entidades más mencionadas</summary>
-    <section class="section-block">
-
-
-    <div *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Identificando personas, organizaciones y lugares…</span></div>
-
-    <div class="entities-grid">
-
-      <!-- PERSONAS -->
-      <article class="entity-panel">
-        <header class="entity-panel-header">
-          <div class="entity-heading">
-            <span class="entity-icon">
-              <span class="material-icons">person</span>
-            </span>
-
-            <div>
-              <span>Personas</span>
-              <small>Más mencionadas</small>
-            </div>
-          </div>
-        </header>
-
-        <div
-          class="entity-ranking"
-          *ngIf="topPersona.length; else noPersonas">
-
-          <div
-            class="entity-row entity-row--visual"
-            *ngFor="let it of topPersona; let i = index; trackBy: trackByEntidad">
-
-            <span class="entity-position">{{ i + 1 }}</span>
-
-            <div class="entity-info">
-              <div class="entity-info-top">
-                <span class="entity-name" [title]="it.entidad">
-                  {{ it.entidad }}
-                </span>
-
-                <strong class="entity-total">
-                  {{ it.total | number }}
-                </strong>
-              </div>
-
-              <div class="entity-progress">
-                <span
-                  class="entity-progress-bar"
-                  [style.width.%]="getEntityPercent(topPersona, it.total)">
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <ng-template #noPersonas>
-          <div *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Buscando menciones…</span></div>
-
-          <div class="entity-empty" *ngIf="!loadingEntidades">
-            Sin personas detectadas
-          </div>
-        </ng-template>
-      </article>
-
-      <!-- ORGANIZACIONES -->
-      <article class="entity-panel">
-        <header class="entity-panel-header">
-          <div class="entity-heading">
-            <span class="entity-icon">
-              <span class="material-icons">domain</span>
-            </span>
-
-            <div>
-              <span>Organizaciones</span>
-              <small>Más mencionadas</small>
-            </div>
-          </div>
-        </header>
-
-        <div
-          class="entity-ranking"
-          *ngIf="topOrganizacion.length; else noOrganizaciones">
-
-          <div
-            class="entity-row entity-row--visual"
-            *ngFor="let it of topOrganizacion; let i = index; trackBy: trackByEntidad">
-
-            <span class="entity-position">{{ i + 1 }}</span>
-
-            <div class="entity-info">
-              <div class="entity-info-top">
-                <span class="entity-name" [title]="it.entidad">
-                  {{ it.entidad }}
-                </span>
-
-                <strong class="entity-total">
-                  {{ it.total | number }}
-                </strong>
-              </div>
-
-              <div class="entity-progress">
-                <span
-                  class="entity-progress-bar"
-                  [style.width.%]="
-                    getEntityPercent(topOrganizacion, it.total)
-                  ">
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <ng-template #noOrganizaciones>
-          <div *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Buscando menciones…</span></div>
-
-          <div class="entity-empty" *ngIf="!loadingEntidades">
-            Sin organizaciones detectadas
-          </div>
-        </ng-template>
-      </article>
-
-      <!-- LUGARES -->
-      <article class="entity-panel">
-        <header class="entity-panel-header">
-          <div class="entity-heading">
-            <span class="entity-icon">
-              <span class="material-icons">location_on</span>
-            </span>
-
-            <div>
-              <span>Lugares</span>
-              <small>Más mencionados</small>
-            </div>
-          </div>
-        </header>
-
-        <div
-          class="entity-ranking"
-          *ngIf="topLocacion.length; else noLugares">
-
-          <div
-            class="entity-row entity-row--visual"
-            *ngFor="let it of topLocacion; let i = index; trackBy: trackByEntidad">
-
-            <span class="entity-position">{{ i + 1 }}</span>
-
-            <div class="entity-info">
-              <div class="entity-info-top">
-                <span class="entity-name" [title]="it.entidad">
-                  {{ it.entidad }}
-                </span>
-
-                <strong class="entity-total">
-                  {{ it.total | number }}
-                </strong>
-              </div>
-
-              <div class="entity-progress">
-                <span
-                  class="entity-progress-bar"
-                  [style.width.%]="getEntityPercent(topLocacion, it.total)">
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <ng-template #noLugares>
-          <div *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Buscando menciones…</span></div>
-
-          <div class="entity-empty" *ngIf="!loadingEntidades">
-            Sin lugares detectados
-          </div>
-        </ng-template>
-      </article>
-
-    </div>
-  </section>
-  </details>
-
-  <!-- ========================================= -->
-  <!-- ANÁLISIS PRINCIPAL -->
-  <!-- ========================================= -->
-
-  <section class="section-block">
-    <div class="section-heading">
-      <div>
-        <h2>Sentimiento de las publicaciones</h2>
-        <p>
-          Tópicos principales, sentimiento y comportamiento
-          de los comentarios.
+          Volumen y sentimiento de las publicaciones de cada tópico.
         </p>
       </div>
     </div>
@@ -842,11 +520,532 @@
     </div>
   </section>
 
-  <!-- ========================================= -->
-  <!-- ANÁLISIS DE COMENTARIOS -->
-  <!-- ========================================= -->
+  <section data-statistics-section="topics" class="section-block explore-section">
+    <div class="section-heading">
+      <div>
+        <h2>Evolución de temas</h2>
+        <p>
+          Profundiza en la evolución y composición general
+          de la conversación.
+        </p>
+      </div>
+    </div>
 
-  <section class="section-block comments-section">
+    <div *ngIf="loadingTopicos" class="nv-loading-state" role="status"><span class="nv-sr-only">Generando análisis complementario…</span></div>
+
+    <!-- ===================================== -->
+    <!-- EVOLUCIÓN HORARIA DE TÓPICOS -->
+    <!-- ===================================== -->
+
+    <article class="explore-main-card chart">
+      <div class="card-head">
+        <div>
+          <div class="explore-card-label">
+            <span class="material-icons">timeline</span>
+            EVOLUCIÓN
+          </div>
+
+          <div class="card-title">
+            Evolución de los principales tópicos
+          </div>
+
+          <div class="card-sub">
+            Cómo cambió la actividad de los 5 tópicos
+            con mayor volumen, por horas o días.
+          </div>
+        </div>
+
+        <!-- SELECTOR INDEPENDIENTE -->
+        <div class="timeline-interval-control">
+          <label for="todos-topics-timeline-interval">
+            Agrupar por
+          </label>
+
+          <select
+            id="todos-topics-timeline-interval"
+            [value]="topicTimelineInterval"
+            [disabled]="loadingTopicos"
+            (change)="onTopicTimelineIntervalChange($any($event.target).value)">
+
+            <option
+              *ngFor="let item of timelineIntervals"
+              [value]="item.value">
+              {{ item.label }}
+            </option>
+          </select>
+        </div>
+
+        <button
+          type="button"
+          class="iconbtn"
+          (click)="downloadChart($event)"
+          title="Descargar gráfico">
+          <i class="fas fa-download" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <!-- INDICADOR DE CARGA HORARIA -->
+      <div *ngIf="loadingTopicTimeline && !loadingTopicos" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando evolución de tópicos por {{ topicTimelineInterval }}…</span></div>
+
+      <!-- ERROR DE EVOLUCIÓN -->
+      <div
+        class="alert nv-error-state"
+        *ngIf="errorsPorSeccion['topics_timeline']" role="alert">
+        {{ errorsPorSeccion['topics_timeline'] }}
+      </div>
+
+      <!-- GRÁFICO -->
+      <div
+        class="chart-wrap explore-timeline-chart"
+        *ngIf="
+          topicsTimelineData.datasets.length &&
+          !loadingTopicTimeline;
+          else noTopicsTimeline
+        ">
+
+        <canvas role="img" aria-label="Evolución de publicaciones por tópico"
+          baseChart
+          [plugins]="rankingPlugins"
+          [type]="'line'"
+          [data]="topicsTimelineData"
+          [options]="topicsTimelineOptions">
+        </canvas>
+      </div>
+
+      <ng-template #noTopicsTimeline>
+
+        <div *ngIf="loadingTopicos || loadingTopicTimeline" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando resultados…</span></div>
+
+        <div
+          class="empty-state"
+          *ngIf="!loadingTopicos && !loadingTopicTimeline">
+
+          <span class="material-icons">timeline</span>
+
+          <div>
+            <strong>No hay evolución disponible</strong>
+            <p>
+              Cambia el período o las cuentas seleccionadas.
+            </p>
+          </div>
+        </div>
+      </ng-template>
+    </article>
+  </section>
+
+  <ng-container *ngTemplateOutlet="insights?.topics ?? null"></ng-container>
+
+  <section data-statistics-section="sources" class="section-block media-section">
+    <div class="section-heading">
+      <div>
+        <h2>Publicaciones por medio</h2>
+        <p>
+          Medios con mayor volumen de publicaciones durante
+          el período seleccionado.
+        </p>
+      </div>
+    </div>
+
+    <div *ngIf="loadingMedios" class="nv-loading-state" role="status"><span class="nv-sr-only">Calculando publicaciones por medio…</span></div>
+
+    <article class="analysis-card chart media-card">
+
+      <!-- SHARE OF VOICE -->
+      <div class="media-insights" *ngIf="postsByMedia.length">
+
+        <div class="media-insight media-insight--leader">
+          <div class="media-insight-label">
+            <span class="material-icons">campaign</span>
+            Medio que más publicó
+          </div>
+
+          <div class="media-insight-main">
+            <strong>{{ topMediaName }}</strong>
+            <span>{{ topMediaShare | number:'1.1-1' }}%</span>
+          </div>
+
+          <small>
+            {{ topMediaPosts | number:'1.0-0' }} publicaciones
+          </small>
+        </div>
+
+        <div class="media-insight">
+          <span class="media-insight-label">
+            Los 3 medios más activos
+          </span>
+
+          <strong class="media-insight-value">
+            {{ top3MediaShare | number:'1.1-1' }}%
+          </strong>
+
+          <small>del total de publicaciones</small>
+        </div>
+
+        <div class="media-insight">
+          <span class="media-insight-label">
+            Los 5 medios más activos
+          </span>
+
+          <strong class="media-insight-value">
+            {{ top5MediaShare | number:'1.1-1' }}%
+          </strong>
+
+          <small>del total de publicaciones</small>
+        </div>
+
+        <div class="media-insight">
+          <span class="media-insight-label">
+            Publicaciones de medios
+          </span>
+
+          <strong class="media-insight-value">
+            {{ mediaTotalPosts | number:'1.0-0' }}
+          </strong>
+
+          <small>en el período seleccionado</small>
+        </div>
+      </div>
+
+      <!-- GRÁFICA DE MEDIOS -->
+      <div class="card-head">
+        <div>
+          <div class="card-title">Publicaciones por medio</div>
+          <div class="card-sub">
+            Los 10 medios que más publicaron
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="iconbtn"
+          (click)="downloadChart($event)"
+          title="Descargar gráfico">
+          <i class="fas fa-download" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div
+        class="chart-wrap media-chart"
+        *ngIf="postsByMedia.length; else noPostsByMedia">
+
+        <canvas role="img" aria-label="Volumen de publicaciones por medio"
+          baseChart
+          [plugins]="rankingPlugins"
+          [type]="'bar'"
+          [data]="postsByMediaData"
+          [options]="postsByMediaOptions">
+        </canvas>
+      </div>
+
+      <ng-template #noPostsByMedia>
+
+        <div *ngIf="loadingMedios" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando resultados…</span></div>
+
+        <div class="empty-state" *ngIf="!loadingMedios">
+          <span class="material-icons">campaign</span>
+          <div>
+            <strong>No hay publicaciones de medios</strong>
+            <p>
+              No se encontraron publicaciones para el período
+              y filtros seleccionados.
+            </p>
+          </div>
+        </div>
+      </ng-template>
+    </article>
+  </section>
+
+  <ng-container *ngTemplateOutlet="insights?.sources ?? null"></ng-container>
+
+  <section data-statistics-section="entities" class="section-block">
+    <div class="section-heading"><h2>Entidades más mencionadas</h2></div>
+
+    <div *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Identificando personas, organizaciones y lugares…</span></div>
+
+    <div class="entities-grid">
+
+      <!-- PERSONAS -->
+      <article class="entity-panel">
+        <header class="entity-panel-header">
+          <div class="entity-heading">
+            <span class="entity-icon">
+              <span class="material-icons">person</span>
+            </span>
+
+            <div>
+              <span>Personas</span>
+              <small>Más mencionadas</small>
+            </div>
+          </div>
+        </header>
+
+        <div
+          class="entity-ranking" data-report-chart="Personas más mencionadas"
+          *ngIf="topPersona.length; else noPersonas">
+
+          <div
+            class="entity-row entity-row--visual"
+            *ngFor="let it of topPersona; let i = index; trackBy: trackByEntidad">
+
+            <span class="entity-position">{{ i + 1 }}</span>
+
+            <div class="entity-info">
+              <div class="entity-info-top">
+                <span class="entity-name" [title]="it.entidad">
+                  {{ it.entidad }}
+                </span>
+
+                <strong class="entity-total">
+                  {{ it.total | number }}
+                </strong>
+              </div>
+
+              <div class="entity-progress">
+                <span
+                  class="entity-progress-bar"
+                  [style.width.%]="getEntityPercent(topPersona, it.total)">
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noPersonas>
+          <div *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Buscando menciones…</span></div>
+
+          <div class="entity-empty" *ngIf="!loadingEntidades">
+            Sin personas detectadas
+          </div>
+        </ng-template>
+      </article>
+
+      <!-- ORGANIZACIONES -->
+      <article class="entity-panel">
+        <header class="entity-panel-header">
+          <div class="entity-heading">
+            <span class="entity-icon">
+              <span class="material-icons">domain</span>
+            </span>
+
+            <div>
+              <span>Organizaciones</span>
+              <small>Más mencionadas</small>
+            </div>
+          </div>
+        </header>
+
+        <div
+          class="entity-ranking" data-report-chart="Organizaciones más mencionadas"
+          *ngIf="topOrganizacion.length; else noOrganizaciones">
+
+          <div
+            class="entity-row entity-row--visual"
+            *ngFor="let it of topOrganizacion; let i = index; trackBy: trackByEntidad">
+
+            <span class="entity-position">{{ i + 1 }}</span>
+
+            <div class="entity-info">
+              <div class="entity-info-top">
+                <span class="entity-name" [title]="it.entidad">
+                  {{ it.entidad }}
+                </span>
+
+                <strong class="entity-total">
+                  {{ it.total | number }}
+                </strong>
+              </div>
+
+              <div class="entity-progress">
+                <span
+                  class="entity-progress-bar"
+                  [style.width.%]="
+                    getEntityPercent(topOrganizacion, it.total)
+                  ">
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noOrganizaciones>
+          <div *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Buscando menciones…</span></div>
+
+          <div class="entity-empty" *ngIf="!loadingEntidades">
+            Sin organizaciones detectadas
+          </div>
+        </ng-template>
+      </article>
+
+      <!-- LUGARES -->
+      <article class="entity-panel">
+        <header class="entity-panel-header">
+          <div class="entity-heading">
+            <span class="entity-icon">
+              <span class="material-icons">location_on</span>
+            </span>
+
+            <div>
+              <span>Lugares</span>
+              <small>Más mencionados</small>
+            </div>
+          </div>
+        </header>
+
+        <div
+          class="entity-ranking" data-report-chart="Lugares más mencionados"
+          *ngIf="topLocacion.length; else noLugares">
+
+          <div
+            class="entity-row entity-row--visual"
+            *ngFor="let it of topLocacion; let i = index; trackBy: trackByEntidad">
+
+            <span class="entity-position">{{ i + 1 }}</span>
+
+            <div class="entity-info">
+              <div class="entity-info-top">
+                <span class="entity-name" [title]="it.entidad">
+                  {{ it.entidad }}
+                </span>
+
+                <strong class="entity-total">
+                  {{ it.total | number }}
+                </strong>
+              </div>
+
+              <div class="entity-progress">
+                <span
+                  class="entity-progress-bar"
+                  [style.width.%]="getEntityPercent(topLocacion, it.total)">
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noLugares>
+          <div *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Buscando menciones…</span></div>
+
+          <div class="entity-empty" *ngIf="!loadingEntidades">
+            Sin lugares detectados
+          </div>
+        </ng-template>
+      </article>
+
+    </div>
+  </section>
+
+  <section data-statistics-section="sentiment" class="section-block explore-section">
+    <div class="section-heading"><h2>Sentimiento y categorías</h2></div>
+    <div class="explore-distributions">
+
+      <!-- SENTIMIENTO GENERAL -->
+      <article class="explore-secondary-card chart">
+        <div class="card-head">
+          <div>
+            <div class="explore-card-label">
+              <span class="material-icons">sentiment_satisfied</span>
+              PERCEPCIÓN
+            </div>
+
+            <div class="card-title">
+              Sentimiento general
+            </div>
+
+            <div class="card-sub">
+              Tono de todas las publicaciones analizadas
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <select
+              class="select select--compact"
+              aria-label="Tipo de gráfico de sentimiento" [(ngModel)]="sentimentChartType">
+
+              <option
+                *ngFor="let t of sentimentTypeOptions"
+                [ngValue]="t">
+                {{ t === 'bar' ? 'Barras' : t === 'pie' ? 'Circular' : 'Anillo' }}
+              </option>
+            </select>
+
+            <button
+              type="button"
+              class="iconbtn"
+              (click)="downloadChart($event)"
+              title="Descargar gráfico">
+              <i class="fas fa-download" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="chart-wrap explore-small-chart">
+          <canvas role="img" aria-label="Distribución del sentimiento en publicaciones"
+            baseChart
+            [plugins]="rankingPlugins"
+            [type]="sentimentChartType"
+            [data]="sentimentData"
+            [options]="sentimentChartType === 'bar' ? breakdownBars : commonCardChartOptions">
+          </canvas>
+        </div>
+      </article>
+
+      <!-- CATEGORÍAS -->
+      <article class="explore-secondary-card chart">
+        <div class="card-head">
+          <div>
+            <div class="explore-card-label">
+              <span class="material-icons">category</span>
+              COMPOSICIÓN
+            </div>
+
+            <div class="card-title">
+              Categorías
+            </div>
+
+            <div class="card-sub">
+              Cómo se distribuye el volumen entre temas
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <select
+              class="select select--compact"
+              aria-label="Tipo de gráfico de categorías" [(ngModel)]="categoriesChartType">
+
+              <option
+                *ngFor="let t of categoriesTypeOptions"
+                [ngValue]="t">
+                {{ t === 'bar' ? 'Barras' : t === 'pie' ? 'Circular' : 'Anillo' }}
+              </option>
+            </select>
+
+            <button
+              type="button"
+              class="iconbtn"
+              (click)="downloadChart($event)"
+              title="Descargar gráfico">
+              <i class="fas fa-download" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="chart-wrap explore-small-chart">
+          <canvas role="img" aria-label="Publicaciones por categoría"
+            baseChart
+            [plugins]="rankingPlugins"
+            [type]="categoriesChartType"
+            [data]="categoriesData"
+            [options]="categoriesChartType === 'bar' ? breakdownBars : commonCardChartOptions">
+          </canvas>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <ng-container *ngTemplateOutlet="insights?.sentiment ?? null"></ng-container>
+
+  <section data-statistics-section="audience" class="section-block comments-section">
 
     <ng-container *ngIf="!accessLoading && canViewReplies">
 
@@ -962,7 +1161,7 @@
           </div>
 
           <small>
-            {{ repliesNegativePercent }}% del total clasificado
+            {{ repliesNegativePercent }}% de los comentarios con tono identificado
           </small>
         </div>
 
@@ -977,7 +1176,7 @@
           </div>
 
           <small>
-            {{ repliesNeutralPercent }}% del total clasificado
+            {{ repliesNeutralPercent }}% de los comentarios con tono identificado
           </small>
         </div>
 
@@ -992,7 +1191,7 @@
           </div>
 
           <small>
-            {{ repliesPositivePercent }}% del total clasificado
+            {{ repliesPositivePercent }}% de los comentarios con tono identificado
           </small>
         </div>
       </div>
@@ -1118,233 +1317,6 @@
           <strong>—</strong>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- ========================================= -->
-  <!-- ANÁLISIS COMPLEMENTARIO -->
-  <!-- ========================================= -->
-
-  <section class="section-block explore-section">
-    <div class="section-heading">
-      <div>
-        <h2>Evolución de temas</h2>
-        <p>
-          Profundiza en la evolución y composición general
-          de la conversación.
-        </p>
-      </div>
-    </div>
-
-    <div *ngIf="loadingTopicos" class="nv-loading-state" role="status"><span class="nv-sr-only">Generando análisis complementario…</span></div>
-
-    <!-- ===================================== -->
-    <!-- EVOLUCIÓN HORARIA DE TÓPICOS -->
-    <!-- ===================================== -->
-
-    <article class="explore-main-card chart">
-      <div class="card-head">
-        <div>
-          <div class="explore-card-label">
-            <span class="material-icons">timeline</span>
-            EVOLUCIÓN
-          </div>
-
-          <div class="card-title">
-            Evolución de los principales tópicos
-          </div>
-
-          <div class="card-sub">
-            Cómo cambió la actividad de los 5 tópicos
-            con mayor volumen, por horas o días.
-          </div>
-        </div>
-
-        <!-- SELECTOR INDEPENDIENTE -->
-        <div class="timeline-interval-control">
-          <label for="todos-topics-timeline-interval">
-            Intervalo
-          </label>
-
-          <select
-            id="todos-topics-timeline-interval"
-            [value]="topicTimelineInterval"
-            [disabled]="loadingTopicos"
-            (change)="onTopicTimelineIntervalChange($any($event.target).value)">
-
-            <option
-              *ngFor="let item of timelineIntervals"
-              [value]="item.value">
-              {{ item.label }}
-            </option>
-          </select>
-        </div>
-
-        <button
-          type="button"
-          class="iconbtn"
-          (click)="downloadChart($event)"
-          title="Descargar gráfico">
-          <i class="fas fa-download" aria-hidden="true"></i>
-        </button>
-      </div>
-
-      <!-- INDICADOR DE CARGA HORARIA -->
-      <div *ngIf="loadingTopicTimeline && !loadingTopicos" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando evolución de tópicos por {{ topicTimelineInterval }}…</span></div>
-
-      <!-- ERROR DE EVOLUCIÓN -->
-      <div
-        class="alert nv-error-state"
-        *ngIf="errorsPorSeccion['topics_timeline']" role="alert">
-        {{ errorsPorSeccion['topics_timeline'] }}
-      </div>
-
-      <!-- GRÁFICO -->
-      <div
-        class="chart-wrap explore-timeline-chart"
-        *ngIf="
-          topicsTimelineData.datasets.length &&
-          !loadingTopicTimeline;
-          else noTopicsTimeline
-        ">
-
-        <canvas role="img" aria-label="Evolución de publicaciones por tópico"
-          baseChart
-          [plugins]="rankingPlugins"
-          [type]="'line'"
-          [data]="topicsTimelineData"
-          [options]="topicsTimelineOptions">
-        </canvas>
-      </div>
-
-      <ng-template #noTopicsTimeline>
-
-        <div *ngIf="loadingTopicos || loadingTopicTimeline" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando resultados…</span></div>
-
-        <div
-          class="empty-state"
-          *ngIf="!loadingTopicos && !loadingTopicTimeline">
-
-          <span class="material-icons">timeline</span>
-
-          <div>
-            <strong>No hay evolución disponible</strong>
-            <p>
-              Cambia el período o las cuentas seleccionadas.
-            </p>
-          </div>
-        </div>
-      </ng-template>
-    </article>
-
-    <!-- ===================================== -->
-    <!-- DISTRIBUCIONES -->
-    <!-- ===================================== -->
-
-    <div class="explore-distributions">
-
-      <!-- SENTIMIENTO GENERAL -->
-      <article class="explore-secondary-card chart">
-        <div class="card-head">
-          <div>
-            <div class="explore-card-label">
-              <span class="material-icons">sentiment_satisfied</span>
-              PERCEPCIÓN
-            </div>
-
-            <div class="card-title">
-              Sentimiento general
-            </div>
-
-            <div class="card-sub">
-              Tono de todas las publicaciones analizadas
-            </div>
-          </div>
-
-          <div class="card-actions">
-            <select
-              class="select select--compact"
-              aria-label="Tipo de gráfico de sentimiento" [(ngModel)]="sentimentChartType">
-
-              <option
-                *ngFor="let t of sentimentTypeOptions"
-                [ngValue]="t">
-                {{ t === 'bar' ? 'Barras' : t === 'pie' ? 'Circular' : 'Anillo' }}
-              </option>
-            </select>
-
-            <button
-              type="button"
-              class="iconbtn"
-              (click)="downloadChart($event)"
-              title="Descargar gráfico">
-              <i class="fas fa-download" aria-hidden="true"></i>
-            </button>
-          </div>
-        </div>
-
-        <div class="chart-wrap explore-small-chart">
-          <canvas role="img" aria-label="Distribución del sentimiento en publicaciones"
-            baseChart
-            [plugins]="rankingPlugins"
-            [type]="sentimentChartType"
-            [data]="sentimentData"
-            [options]="sentimentChartType === 'bar' ? breakdownBars : commonCardChartOptions">
-          </canvas>
-        </div>
-      </article>
-
-      <!-- CATEGORÍAS -->
-      <article class="explore-secondary-card chart">
-        <div class="card-head">
-          <div>
-            <div class="explore-card-label">
-              <span class="material-icons">category</span>
-              COMPOSICIÓN
-            </div>
-
-            <div class="card-title">
-              Categorías
-            </div>
-
-            <div class="card-sub">
-              Cómo se distribuye el volumen entre temas
-            </div>
-          </div>
-
-          <div class="card-actions">
-            <select
-              class="select select--compact"
-              aria-label="Tipo de gráfico de categorías" [(ngModel)]="categoriesChartType">
-
-              <option
-                *ngFor="let t of categoriesTypeOptions"
-                [ngValue]="t">
-                {{ t === 'bar' ? 'Barras' : t === 'pie' ? 'Circular' : 'Anillo' }}
-              </option>
-            </select>
-
-            <button
-              type="button"
-              class="iconbtn"
-              (click)="downloadChart($event)"
-              title="Descargar gráfico">
-              <i class="fas fa-download" aria-hidden="true"></i>
-            </button>
-          </div>
-        </div>
-
-        <div class="chart-wrap explore-small-chart">
-          <canvas role="img" aria-label="Publicaciones por categoría"
-            baseChart
-            [plugins]="rankingPlugins"
-            [type]="categoriesChartType"
-            [data]="categoriesData"
-            [options]="categoriesChartType === 'bar' ? breakdownBars : commonCardChartOptions">
-          </canvas>
-        </div>
-      </article>
-
     </div>
   </section>
 

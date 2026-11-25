@@ -1,3 +1,5 @@
+import { formatStatisticsRange } from '../../estadisticas/statistics-insights';
+import type { StatisticsInsightsComponent } from '../../estadisticas/statistics-insights.component';
 import { statisticsBreakdownBars, statisticsChartOptions, statisticsRankingValues } from '../statistics-chart';
 import { DashboardEvidenceComponent } from '../dashboard-evidence/dashboard-evidence.component';
 import { DashboardSelection } from '../../interfaces/dashboard-evidence';
@@ -54,6 +56,8 @@ type TopicEntityType =
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PoliticaEstadisticasComponent implements OnChanges, OnDestroy {
+  @Input() insights?: StatisticsInsightsComponent;
+
   readonly breakdownBars = statisticsBreakdownBars;
   readonly rankingPlugins = [statisticsRankingValues];
   @Input() startDate!: Date | null;
@@ -85,8 +89,8 @@ errorsPorSeccion: Record<string, string> = {};
   // ===== KPI =====
   totalPosts = 0;
 // Comparación con período anterior
-postsChange: number | null = null;
-previousPosts = 0;
+previousPosts: number | null = null;
+readonly formatRange = formatStatisticsRange;
 previousPeriodStart = '';
 previousPeriodEnd = '';
 readonly Math = Math;
@@ -941,10 +945,8 @@ private getUsersToSend(): string[] {
     this.totalRepliesNeutro = res?.total_replies?.neutro ?? 0;
     this.totalRepliesPositivo = res?.total_replies?.positivo ?? 0; 
     // Comparación de publicaciones
-    this.postsChange =
-      res?.comparison?.posts?.change ?? null;
-    this.previousPosts =
-      Number(res?.comparison?.posts?.previous ?? 0);
+    const previousPosts = Number(res?.comparison?.posts?.previous ?? NaN);
+    this.previousPosts = Number.isFinite(previousPosts) ? previousPosts : null;
     this.previousPeriodStart =
       String(res?.comparison?.period?.previous_start ?? '');
     this.previousPeriodEnd =

@@ -73,9 +73,8 @@
   color: var(--theme-danger);
 }
 
-.dashboard-notice summary {
+.dashboard-notice > strong {
   font-weight: 650;
-  cursor: pointer;
 }
 
 .dashboard-notice ul {

@@ -1,9 +1,11 @@
 import { DashboardEntityType, DashboardSelection } from '../interfaces/dashboard-evidence';
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { users } from '../interfaces/users';
 import { ApiService } from '../services/api.service';
+import { formatCalendarDate, formatStatisticsRange, StatisticsFilters } from './statistics-insights';
+import type { StatisticsReportChart } from './statistics-report';
 
 type TipoCuenta = 'todos' | 'Medio' | 'Entidad' | 'Persona';
 
@@ -40,6 +42,22 @@ interface ApiTopicOption {
   styleUrl: './estadisticas.component.css'
 })
 export class EstadisticasComponent implements OnInit {
+  readonly views: { id: VistaDashboard; label: string; title?: string; type: TipoCuenta; icon: string }[] = [
+    { id: 'todos', label: 'General', title: 'Estadísticas generales', type: 'todos', icon: 'dashboard' },
+    { id: 'politica', label: 'Política', type: 'Medio', icon: 'account_balance' },
+    { id: 'economia', label: 'Economía', type: 'Medio', icon: 'payments' },
+    { id: 'seguridad', label: 'Seguridad', type: 'Medio', icon: 'security' },
+    { id: 'sociedad', label: 'Sociedad', type: 'Medio', icon: 'groups' },
+    { id: 'deportes', label: 'Deportes', type: 'Medio', icon: 'sports_soccer' },
+    { id: 'ambiente', label: 'Ambiente', title: 'Medio ambiente', type: 'Medio', icon: 'eco' },
+    { id: 'salud', label: 'Salud', type: 'Medio', icon: 'medical_services' },
+    { id: 'educacion', label: 'Educación', type: 'Medio', icon: 'school' },
+    { id: 'gestiones', label: 'Gestiones', title: 'Gestiones públicas', type: 'Medio', icon: 'assignment' },
+    { id: 'otros', label: 'Otros', type: 'Medio', icon: 'category' },
+    { id: 'entidades', label: 'Entidades', title: 'Entidades públicas', type: 'Entidad', icon: 'apartment' },
+    { id: 'personas', label: 'Personas', title: 'Personas públicas', type: 'Persona', icon: 'person' }
+  ];
+
   selectedComponent: VistaDashboard = 'todos';
   selectedCategoria = 'Estadísticas generales';
 
@@ -67,6 +85,34 @@ export class EstadisticasComponent implements OnInit {
   filtersOpen = false;
   filtersError = '';
 
+  readonly sections = [
+    { id: 'summary', label: 'Resumen' },
+    { id: 'activity', label: 'Actividad' },
+    { id: 'topics', label: 'Tópicos' },
+    { id: 'sources', label: 'Fuentes' },
+    { id: 'entities', label: 'Entidades' },
+    { id: 'sentiment', label: 'Sentimiento' },
+    { id: 'detail', label: 'Detalle' },
+    { id: 'audience', label: 'Audiencia' }
+  ];
+
+  get visibleSections() {
+    return this.selectedComponent === 'todos'
+      ? this.sections.filter(section => section.id !== 'detail')
+      : this.sections;
+  }
+
+  statisticsFilters?: StatisticsFilters;
+
+  @ViewChild('reportSource', { static: true }) private reportSource!: ElementRef<HTMLElement>;
+  @ViewChild('reportDialog', { static: true }) private reportDialog!: ElementRef<HTMLDialogElement>;
+  reportCharts: StatisticsReportChart[] = [];
+  reportBusy = false;
+  reportTitle = '';
+  reportNote = '';
+  reportStatus = '';
+  reportError = '';
+
   private usersRequestId = 0;
 
   constructor(
@@ -76,15 +122,8 @@ export class EstadisticasComponent implements OnInit {
 
   ngOnInit(): void {
     const params = this.router.parseUrl(this.router.url).queryParams;
-    const views: Record<VistaDashboard, string> = {
-      todos: 'Estadísticas generales', politica: 'Política', economia: 'Economía', seguridad: 'Seguridad',
-      deportes: 'Deportes', sociedad: 'Sociedad', ambiente: 'Ambiente', salud: 'Salud',
-      educacion: 'Educación', gestiones: 'Gestiones', otros: 'Otros', entidades: 'Entidades', personas: 'Personas'
-    };
-    const view: VistaDashboard = typeof params['vista'] === 'string' &&
-      Object.prototype.hasOwnProperty.call(views, params['vista']) ? params['vista'] as VistaDashboard : 'todos';
-    this.goToView(view, views[view], view === 'todos' ? 'todos'
-      : view === 'entidades' ? 'Entidad' : view === 'personas' ? 'Persona' : 'Medio');
+    const view = this.views.find(option => option.id === params['vista']) ?? this.views[0];
+    this.goToView(view.id, view.title ?? view.label, view.type);
     if (params['seguir'] === '1') {
       this.radarFormOpen = true;
       this.radarName = typeof params['nombre'] === 'string' ? params['nombre'].slice(0, 120) : '';
@@ -98,7 +137,7 @@ export class EstadisticasComponent implements OnInit {
         ? params['temas'].split(',').map(Number).filter((id: number) => Number.isSafeInteger(id) && id > 0) : [];
       this.filterSearchText = typeof params['buscar'] === 'string' ? params['buscar'] : '';
       const kind = params['tipoEntidad'];
-      if ((view === 'personas' || view === 'entidades') && typeof params['entidad'] === 'string' &&
+      if ((view.id === 'personas' || view.id === 'entidades') && typeof params['entidad'] === 'string' &&
           (kind === 'PER' || kind === 'ORG' || kind === 'LOC')) {
         this.appliedEntity = params['entidad'].slice(0, 255);
         this.appliedEntityType = kind;
@@ -328,6 +367,111 @@ export class EstadisticasComponent implements OnInit {
     this.filtersError = '';
   }
 
+  showSection(id: string): void {
+    const section = this.reportSource.nativeElement.querySelector<HTMLElement>(`[data-statistics-section="${id}"]`);
+    if (!section) return;
+    section.tabIndex = -1;
+    section.focus({ preventScroll: true });
+    section.scrollIntoView({ block: 'start' });
+  }
+
+  openReport(): void {
+    this.reportStatus = '';
+    this.reportError = '';
+    if (this.reportIsLoading()) {
+      this.reportStatus = 'Espera a que terminen de cargar las gráficas para preparar el informe.';
+      return;
+    }
+
+    this.reportCharts = Array.from(this.reportSource.nativeElement.querySelectorAll<HTMLElement>(
+      'canvas[aria-label], [data-report-chart], img.wordcloud-img'
+    )).filter(element => element.getClientRects().length > 0).map(element => ({
+      element,
+      title: element.dataset['reportChart'] || element.getAttribute('aria-label') || element.getAttribute('alt') || 'Gráfica',
+      group: this.sections.find(section =>
+        section.id === element.closest<HTMLElement>('[data-statistics-section]')?.dataset['statisticsSection'])?.label,
+      note: element.dataset['reportNote'],
+      selected: true
+    }));
+
+    if (!this.reportCharts.length) {
+      this.reportStatus = 'No hay gráficas con datos para el informe de esta vista.';
+      return;
+    }
+
+    this.reportTitle = this.selectedCategoria;
+    this.reportNote = '';
+    this.closeFilters();
+    this.reportDialog.nativeElement.showModal();
+  }
+
+  closeReport(): void {
+    if (this.reportBusy) return;
+    this.reportDialog.nativeElement.close();
+    this.reportCharts = [];
+  }
+
+  get reportCount(): number {
+    return this.reportCharts.filter(chart => chart.selected).length;
+  }
+
+  selectReportCharts(selected: boolean): void {
+    this.reportCharts.forEach(chart => chart.selected = selected);
+  }
+
+  async exportReport(): Promise<void> {
+    const filters = this.statisticsFilters;
+    if (this.reportBusy || !filters || !this.reportCount) return;
+    this.reportError = '';
+    if (this.reportIsLoading() || this.reportCharts.some(chart => chart.selected && !chart.element.isConnected)) {
+      this.reportError = 'Las gráficas se actualizaron. Cierra el informe y vuelve a abrirlo para cargar la selección actual.';
+      return;
+    }
+
+    const accountNames = new Map(this.users.map(account => [String(account.idTweetUser), account.TweetUser]));
+    const topicNames = new Map(this.availableTopics.map(topic => [topic.id, topic.name]));
+    const scope: [string, string][] = [
+      ['Vista', this.selectedCategoria],
+      ['Período', formatStatisticsRange([filters.start, filters.end]) + ' (hora de Bolivia)'],
+      ['Cuentas', filters.users.map(id => accountNames.get(id) || '#' + id).join(', ') || 'Todas las cuentas de la vista'],
+      ['Tópicos', filters.topic_ids.map(id => topicNames.get(id) || '#' + id).join(', ') || 'Todos']
+    ];
+    if (filters.entidad) scope.push(['Entidad mencionada', filters.entidad]);
+    if (filters.search) scope.push(['Búsqueda', filters.search]);
+    const warnings = Array.from(this.reportSource.nativeElement.querySelectorAll<HTMLElement>('.nv-error-state'))
+      .filter(error => error.getClientRects().length && !error.closest('app-dashboard-evidence'))
+      .map(error => error.textContent?.replace(/\s+/g, ' ').trim() ?? '')
+      .filter(Boolean);
+    const currentDay = this.reportSource.nativeElement.querySelector('.period-note')?.textContent?.trim();
+    if (currentDay) warnings.push(currentDay);
+
+    this.reportBusy = true;
+    try {
+      const { downloadStatisticsReport } = await import('./statistics-report');
+      const omitted = await downloadStatisticsReport({
+        title: this.reportTitle.trim() || this.selectedCategoria,
+        scope, note: this.reportNote.trim(), warnings: [...new Set(warnings)],
+        charts: this.reportCharts.filter(chart => chart.selected)
+      }, 'netvora-estadisticas-' + this.selectedComponent + '-' + filters.start + '.pdf');
+      this.reportStatus = omitted
+        ? `Informe descargado con ${omitted} gráficas omitidas. El PDF detalla cuáles.`
+        : 'Informe PDF descargado.';
+      this.reportDialog.nativeElement.close();
+      this.reportCharts = [];
+    } catch {
+      this.reportError = 'No se pudo generar el PDF. Intenta de nuevo con las gráficas seleccionadas.';
+    } finally {
+      this.reportBusy = false;
+    }
+  }
+
+  private reportIsLoading(): boolean {
+    const states = this.reportSource.nativeElement.querySelectorAll<HTMLElement>(
+      '.nv-loading-state, .nv-loading-indicator, .insights-status[role="status"]'
+    );
+    return Array.from(states).some(state => state.getClientRects().length && !state.closest('app-dashboard-evidence'));
+  }
+
   private syncAppliedFilters(): void {
     this.appliedStartDate = this.filterStartDate
       ? new Date(this.filterStartDate)
@@ -340,6 +484,17 @@ export class EstadisticasComponent implements OnInit {
       this.filterSelectedTopics.map(Number).filter(id => Number.isSafeInteger(id) && id > 0)
     )];
     this.appliedSearchText = this.filterSearchText.trim();
+    if (!this.appliedStartDate) return;
+    const type = this.views.find(view => view.id === this.selectedComponent)?.type;
+    this.statisticsFilters = {
+      start: formatCalendarDate(this.appliedStartDate),
+      end: formatCalendarDate(this.appliedEndDate ?? this.appliedStartDate),
+      users: this.appliedSelectedUsers, topic_ids: this.appliedSelectedTopics, search: this.appliedSearchText,
+      categoria: type === 'Medio' ? this.selectedComponent : undefined,
+      type_user: type === 'todos' ? undefined : type,
+      entidad: this.appliedEntity || undefined, entity_type: this.appliedEntityType
+    };
+    this.reportStatus = '';
   }
 
   trackByUserId = (_: number, user: users): string => String(user.idTweetUser);

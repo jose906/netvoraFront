@@ -1,3 +1,5 @@
+import { formatStatisticsRange, previousStatisticsRange } from '../../estadisticas/statistics-insights';
+import type { StatisticsInsightsComponent } from '../../estadisticas/statistics-insights.component';
 import { statisticsBreakdownBars, statisticsChartOptions, statisticsRankingValues } from '../statistics-chart';
 import { DashboardSelection } from '../../interfaces/dashboard-evidence';
 import { ElementRef, EventEmitter, Output } from '@angular/core';
@@ -94,6 +96,8 @@ type MediaPostItem = {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TodosComponent implements OnInit, OnChanges, OnDestroy {
+  @Input() insights?: StatisticsInsightsComponent;
+
   readonly breakdownBars = statisticsBreakdownBars;
   readonly rankingPlugins = [statisticsRankingValues];
 
@@ -103,6 +107,13 @@ export class TodosComponent implements OnInit, OnChanges, OnDestroy {
 
   @Input() startDate!: Date | null;
   @Input() endDate!: Date | null;
+
+  get previousDatesLabel(): string {
+    return this.startDate && Number.isFinite(this.startDate.getTime()) &&
+      (!this.endDate || (Number.isFinite(this.endDate.getTime()) && this.endDate >= this.startDate))
+      ? formatStatisticsRange(previousStatisticsRange(this.startDate, this.endDate), false)
+      : '';
+  }
   @Input() selectedUsers: string[] = [];
   @Input() searchText = '';
   @Input() users: users[] = [];
@@ -628,7 +639,7 @@ loadingComentarios = false;
 
             return [
               `Actual: ${Number(item.total_actual || 0).toLocaleString()}`,
-              `Anterior: ${Number(item.total_anterior || 0).toLocaleString()}`,
+              `${this.previousDatesLabel || "Días previos"}: ${Number(item.total_anterior || 0).toLocaleString()} publicaciones`,
               `Crecimiento: +${Number(item.diferencia || 0).toLocaleString()}`
             ];
           },

@@ -1,7 +1,7 @@
 <div class="evidence-toolbar evidence-controls" *ngIf="rows.length">
-  <label>Intervalo de publicaciones
+  <label>Fechas para ver publicaciones
     <select [ngModel]="selection.bucket || ''" (ngModelChange)="open({ bucket: $event || undefined })">
-      <option value="">Período completo</option>
+      <option value="">Todas las fechas elegidas</option>
       <option *ngFor="let row of rows" [value]="row.fecha">
         {{ row.fecha }} · {{ row.total | number }}
       </option>
@@ -15,8 +15,8 @@
 </div>
 <div class="evidence-scroll" *ngIf="showTable && rows.length">
   <table>
-    <caption>Actividad por intervalo · hora de Bolivia</caption>
-    <thead><tr><th scope="col">Intervalo</th><th scope="col">Publicaciones</th></tr></thead>
+    <caption>Publicaciones por fecha y hora de Bolivia</caption>
+    <thead><tr><th scope="col">Fecha y hora</th><th scope="col">Publicaciones</th></tr></thead>
     <tbody><tr *ngFor="let row of rows">
       <td><button type="button" (click)="open({ bucket: row.fecha })">{{ row.fecha }}</button></td>
       <td>{{ row.total | number }}</td>
@@ -26,7 +26,7 @@
 <div #detailsAnchor></div>
 <section class="evidence-panel" *ngIf="active" aria-label="Detalle de publicaciones">
   <div class="evidence-heading">
-    <div><h3>{{ selection.entity || entity ? 'Publicaciones que mencionan a ' + (selection.entity || entity) : 'Publicaciones' }}</h3><p>{{ selection.bucket || 'Período seleccionado' }}<span *ngIf="selection.label"> · {{ selection.label }}</span></p></div>
+    <div><h3>{{ selection.entity || entity ? 'Publicaciones que mencionan a ' + (selection.entity || entity) : 'Publicaciones' }}</h3><p>{{ selection.bucket || 'Fechas elegidas' }}<span *ngIf="selection.label"> · {{ selection.label }}</span></p></div>
     <button type="button" (click)="close()">Cerrar detalle</button>
   </div>
   <div *ngIf="loading" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando publicaciones…</span></div>
@@ -35,7 +35,7 @@
     <div class="evidence-summary">
       <strong>{{ data.total | number }} publicaciones</strong>
       <button *ngIf="selection.bucket || selection.sourceId || selection.topicId || selection.entity"
-        type="button" (click)="applySelection.emit(selection)">{{ selection.bucket?.length === 19 ? 'Filtrar panel por día' : 'Filtrar panel' }}</button>
+        type="button" (click)="applySelection.emit(selection)">{{ selection.bucket?.length === 19 ? 'Ver estadísticas de ese día' : 'Aplicar a las estadísticas' }}</button>
       <button *ngIf="selection.sourceId || selection.topicId || selection.entity"
         type="button" (click)="open({ bucket: selection.bucket })">Quitar selección</button>
     </div>

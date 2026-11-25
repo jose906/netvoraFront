@@ -2,7 +2,7 @@
   <header class="sv-head">
     <div class="sv-head-copy">
       <h2>Posturas de la audiencia</h2>
-      <p>Clasificación de comentarios para el período seleccionado.</p>
+      <p>¿Los comentarios están a favor, en contra o expresan otra postura?</p>
     </div>
     <button [class.is-loading]="loadingDashboard || loadingTimeline" [attr.aria-busy]="loadingDashboard || loadingTimeline" class="sv-button sv-refresh dashboard-primary nv-progress-button" type="button" (click)="reload()"
       [disabled]="!isReady || loadingDashboard || loadingTimeline" aria-label="Actualizar análisis">
@@ -31,15 +31,14 @@
     </div>
   </div>
 
-  <details class="sv-method">
-    <summary>Cómo se mide la postura</summary>
+  <div class="sv-method">
     <p *ngIf="analysisType === 'post'">
-      <strong>Postura frente a la publicación.</strong> Las etiquetas indican la posición respecto al objetivo de cada post, no el sentimiento del comentario.
+      <strong>Por publicación.</strong> Se analiza si cada comentario apoya o rechaza lo que plantea la publicación.
     </p>
     <p *ngIf="analysisType === 'topic'">
-      <strong>Postura frente al tópico.</strong> Un comentario puede contar en varios tópicos si está relacionado con más de uno; las cifras son evaluaciones comentario–tópico.
+      <strong>Por tema.</strong> Se analiza la postura frente a cada tema. Un comentario puede contar más de una vez si habla de varios temas.
     </p>
-  </details>
+  </div>
 
   <div class="sv-notice sv-warn" role="status" *ngIf="!isReady">{{ selectionMessage }}</div>
   <div class="sv-notice sv-error nv-error-state" role="alert" *ngIf="error">{{ error }}</div>
@@ -47,7 +46,7 @@
   <ng-container *ngIf="isReady">
     <dl class="sv-summary" *ngIf="!loadingSummary; else svKpiLoading">
       <div>
-        <dt>{{ analysisType === 'post' ? 'Comentarios' : 'Evaluaciones' }}</dt>
+        <dt>{{ analysisType === 'post' ? 'Comentarios' : 'Comentarios por tema' }}</dt>
         <dd>{{ summary.total | number }}</dd>
       </div>
       <div>
@@ -59,7 +58,7 @@
         <dd>{{ summary.pending | number }}</dd>
       </div>
       <div>
-        <dt>Cobertura</dt>
+        <dt>% clasificado</dt>
         <dd>{{ summary.coverage_percent | number:'1.1-1' }}%</dd>
       </div>
     </dl>
@@ -80,7 +79,8 @@
             <strong>{{ dominant.label }}</strong> es la postura más frecuente, con
             <strong>{{ dominant.percentage | number:'1.1-1' }}%</strong>
           </p>
-          <div class="sv-legend-list">
+          <div class="sv-legend-list" data-report-chart="Distribución de posturas"
+            [attr.data-report-note]="analysisType === 'post' ? 'Postura frente a la publicación.' : 'Postura frente al objetivo del tópico.'">
             <div class="sv-legend-row" *ngFor="let stance of stances; trackBy: trackByStance">
               <button type="button" class="sv-text-action sv-legend-label" [disabled]="!summary.distribution[stance]"
                 (click)="showEvidence(stance)">{{ labels[stance] }}</button>
@@ -127,7 +127,10 @@
             <span class="sv-dot" [style.backgroundColor]="colors[stance]" aria-hidden="true"></span>{{ labels[stance] }}
           </li>
         </ul>
-        <div class="sv-timeline" *ngIf="!loadingTimeline && timeline.length; else svNoTimeline">
+        <div class="sv-timeline" data-report-chart="Evolución de posturas"
+          [attr.data-report-note]="(analysisType === 'post' ? 'Por publicación' : 'Por tópico') + ' · ' +
+            interval + (timelineDisplay === 'share' ? ' · A favor (verde), en contra (rojo), mixto (ámbar), neutral (gris) y no claro (violeta).' : ' · Volumen de evaluaciones.')"
+          *ngIf="!loadingTimeline && timeline.length; else svNoTimeline">
           <div class="sv-time-row" *ngFor="let row of timeline; trackBy: trackByTimeline">
             <span class="sv-time-date" [title]="row.date">{{ row.date }}</span>
             <div class="sv-time-track">
@@ -158,43 +161,39 @@
       </article>
     </div>
 
-    <details class="sv-drilldown">
-      <summary>Posturas por tema</summary>
     <article class="sv-card sv-topics-card">
       <div class="sv-card-head sv-responsive-head">
         <div>
+          <h3>Posturas por tema</h3>
           <p>Las posturas de esta sección siempre se evalúan frente al objetivo del tópico.</p>
         </div>
-        <div class="sv-head-meta" *ngIf="totalEligibleTopics > 0">{{ totalEligibleTopics | number }} tópicos elegibles</div>
+        <div class="sv-head-meta" *ngIf="totalEligibleTopics > 0">{{ totalEligibleTopics | number }} temas disponibles para analizar</div>
       </div>
       <div class="sv-list-toolbar">
         <label class="sv-search-field"><span class="sv-search-icon" aria-hidden="true">⌕</span>
           <input type="search" [(ngModel)]="topicQuery" placeholder="Buscar entre los tópicos mostrados"
             aria-label="Buscar tópicos cargados" />
         </label>
-        <label class="sv-control-label sv-sort-label">Ordenar estos 10 por
+        <label class="sv-control-label sv-sort-label">Ordenar por
           <select [(ngModel)]="topicSort" aria-label="Ordenar tópicos consultados">
-            <option value="volume">Volumen total</option>
-            <option value="coverage">Cobertura</option>
+            <option value="volume">Cantidad de comentarios</option>
+            <option value="coverage">% clasificado</option>
             <option value="favor">% a favor</option>
             <option value="contra">% en contra</option>
           </select>
         </label>
       </div>
       <p class="sv-notice sv-error nv-error-state" role="alert" *ngIf="topicsError">{{ topicsError }}</p>
-      <div class="sv-topic-list" *ngIf="!loadingTopics && sortedTopics.length; else svNoTopics">
+      <div class="sv-topic-list" data-report-chart="Posturas por tópico" *ngIf="!loadingTopics && sortedTopics.length; else svNoTopics">
         <article class="sv-topic-row" *ngFor="let topic of sortedTopics; let i = index; trackBy: trackByTopic">
-          <button type="button" class="sv-topic-main" (click)="toggleTopic(topic.topic_id)"
-            [attr.aria-expanded]="expandedTopicId === topic.topic_id"
-            [attr.aria-controls]="'sv-topic-detail-' + topic.topic_id">
+          <div class="sv-topic-main">
             <span class="sv-topic-rank">{{ i + 1 }}</span>
             <span class="sv-topic-identity">
               <strong>{{ topic.topic_name }}</strong>
               <small *ngIf="topic.main_target">Objetivo: {{ topic.main_target }}</small>
             </span>
             <span class="sv-topic-count"><strong>{{ topicTotal(topic) | number }}</strong><small>evaluaciones</small></span>
-            <span class="sv-topic-chevron" [class.is-expanded]="expandedTopicId === topic.topic_id" aria-hidden="true">⌄</span>
-          </button>
+          </div>
           <div class="sv-topic-track" *ngIf="topicProcessed(topic) > 0; else svTopicPending"
             role="img" [attr.aria-label]="'Distribución de posturas del tópico ' + topic.topic_name">
             <span *ngFor="let stance of stances; trackBy: trackByStance"
@@ -206,12 +205,10 @@
           <ng-template #svTopicPending><p class="sv-topic-pending">Aún no hay posturas clasificadas.</p></ng-template>
           <div class="sv-topic-footer">
             <span><strong>{{ topicProcessed(topic) | number }}</strong> clasificados</span>
-            <span><strong>{{ topic.stance_summary.coverage_percent | number:'1.1-1' }}%</strong> de cobertura</span>
+            <span><strong>{{ topic.stance_summary.coverage_percent | number:'1.1-1' }}%</strong> clasificado</span>
             <span *ngIf="topicProcessed(topic) > 0">{{ topic.stance_summary.percentages.FAVOR | number:'1.0-0' }}% a favor · {{ topic.stance_summary.percentages.CONTRA | number:'1.0-0' }}% en contra</span>
           </div>
-          <div class="sv-topic-detail" [id]="'sv-topic-detail-' + topic.topic_id"
-            *ngIf="expandedTopicId === topic.topic_id">
-            <div class="sv-topic-detail-title">Desglose de evaluaciones clasificadas</div>
+          <div class="sv-topic-detail" *ngIf="topicProcessed(topic) > 0">
             <div class="sv-topic-detail-grid">
               <div *ngFor="let stance of stances; trackBy: trackByStance">
                 <span class="sv-dot" [style.backgroundColor]="colors[stance]"></span>
@@ -232,12 +229,11 @@
       </ng-template>
       <p class="sv-section-footnote">Se consultan hasta 10 tópicos, ordenados inicialmente por el servidor. Los controles de búsqueda y orden solo afectan los resultados cargados; los porcentajes con muestras pequeñas deben interpretarse con cuidado.</p>
     </article>
-    </details>
 
     <article class="sv-card sv-evidence" *ngIf="evidenceSelection as selected" aria-label="Comentarios clasificados">
       <div class="sv-card-head">
         <div><h3>{{ labels[selected.stance] }} · Comentarios clasificados</h3>
-          <p *ngIf="selected.topic as topic">{{ topic.topic_name }} · {{ topic.stance_summary.coverage_percent | number:'1.1-1' }}% de cobertura</p>
+          <p *ngIf="selected.topic as topic">{{ topic.topic_name }} · {{ topic.stance_summary.coverage_percent | number:'1.1-1' }}% clasificado</p>
         </div>
         <button type="button" class="sv-button" (click)="closeEvidence()">Cerrar detalle</button>
       </div>
@@ -250,10 +246,11 @@
         <article *ngFor="let comment of result.items" class="sv-evidence-comment">
           <strong>{{ comment.main_target || comment.topic_name || 'Objetivo de la publicación' }}</strong>
           <p>{{ comment.comment_text }}</p>
-          <details><summary>Publicación original · {{ comment.source_name }}</summary>
+          <div class="sv-original-post">
+            <strong>Publicación original · {{ comment.source_name }}</strong>
             <p>{{ comment.post_text }}</p>
             <a *ngIf="comment.post_url" [href]="comment.post_url" target="_blank" rel="noopener noreferrer">Abrir original</a>
-          </details>
+          </div>
         </article>
         <div class="sv-card-footer" *ngIf="result.total > result.limit">
           <button type="button" class="sv-button" [disabled]="result.page <= 1"
@@ -265,11 +262,10 @@
       </ng-container>
     </article>
 
-    <details class="sv-drilldown">
-      <summary>Posturas por cuenta</summary>
     <article class="sv-card sv-source-card">
       <div class="sv-card-head sv-responsive-head">
         <div>
+          <h3>Posturas por cuenta</h3>
           <p>Se analizan las respuestas recibidas en sus publicaciones, no la línea editorial de cada cuenta.</p>
         </div>
         <span class="sv-head-meta" *ngIf="sources.length">{{ sources.length | number }} cuentas</span>
@@ -282,7 +278,7 @@
         <label class="sv-control-label sv-sort-label">Ordenar por
           <select [(ngModel)]="sourceSort" aria-label="Ordenar cuentas">
             <option value="processed">Clasificados</option>
-            <option value="coverage">Cobertura</option>
+            <option value="coverage">% clasificado</option>
             <option value="favor">% a favor</option>
             <option value="contra">% en contra</option>
           </select>
@@ -290,7 +286,8 @@
       </div>
       <p class="sv-notice sv-error nv-error-state" role="alert" *ngIf="sourcesError">{{ sourcesError }}</p>
       <div class="sv-table-scroll" *ngIf="!loadingSources && filteredSources.length; else svNoSources">
-        <table class="sv-table">
+        <table class="sv-table" data-report-chart="Posturas por cuenta"
+          data-report-note="A favor (verde), en contra (rojo), mixto (ámbar), neutral (gris) y no claro (violeta).">
           <thead>
             <tr>
               <th scope="col">Cuenta</th>
@@ -298,7 +295,7 @@
               <th scope="col">Distribución</th>
               <th scope="col" class="sv-text-right">A favor</th>
               <th scope="col" class="sv-text-right">En contra</th>
-              <th scope="col" class="sv-text-right">Cobertura</th>
+              <th scope="col" class="sv-text-right">% clasificado</th>
             </tr>
           </thead>
           <tbody>
@@ -328,12 +325,11 @@
           {{ sources.length ? 'No hay cuentas que coincidan con tu búsqueda.' : 'No hay datos por fuente para los filtros aplicados.' }}
         </p>
       </ng-template>
-      <p class="sv-section-footnote">Los porcentajes por cuenta usan como denominador sus propias evaluaciones clasificadas. Comparar porcentajes de cuentas con distintos volúmenes requiere precaución.</p>
+      <p class="sv-section-footnote">El porcentaje de cada cuenta se calcula con sus comentarios clasificados. Revisa cuántos comentarios tiene cada una antes de compararlas.</p>
     </article>
-    </details>
 
     <footer class="sv-page-footer">
-      <span>La distribución reúne posturas frente a distintos objetivos. Cada fila permite consultar sus comentarios.</span>
+      <span>Selecciona una postura para leer los comentarios clasificados en ese grupo.</span>
       <span *ngIf="lastUpdated">Consultado: {{ lastUpdated | date:'dd/MM/yyyy HH:mm' }}</span>
     </footer>
   </ng-container>

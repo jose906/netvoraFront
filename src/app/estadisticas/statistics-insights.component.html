@@ -1,0 +1,265 @@
+<ng-template #activity>
+  <section class="insights" data-statistics-section="activity" aria-labelledby="insights-title">
+    <header><h2 id="insights-title">Cuándo y cuánto se publicó</h2></header>
+
+    <p *ngIf="loading" class="insights-status" role="status">Cargando la actividad…</p>
+    <p *ngIf="error" class="insights-status nv-error-state" role="alert">
+      {{ error }} <button type="button" (click)="load()">Reintentar</button>
+    </p>
+
+    <ng-container *ngIf="data as stats">
+      <p *ngIf="stats.includes_today" class="period-note">
+        Hoy todavía está en curso. Las cifras del período seleccionado pueden seguir cambiando.
+      </p>
+      <div class="insights-grid">
+        <article>
+          <h3>¿Hubo más o menos publicaciones?</h3>
+          <p>Comparamos las fechas elegidas con el mismo número de días justo antes.</p>
+          <p>
+            <strong>{{ stats.current_total | number }}</strong> publicaciones en las fechas elegidas
+            <span *ngIf="filters as dates">({{ range([dates.start, dates.end]) }})</span>
+            y <strong>{{ stats.previous_total | number }}</strong> del {{ range(stats.previous_range) }}.
+          </p>
+          <p *ngIf="stats.current_total + stats.previous_total === 0" class="insights-status">No hay publicaciones en ninguno de los dos grupos de fechas.</p>
+          <div class="insights-chart" *ngIf="stats.current_total + stats.previous_total > 0">
+            <canvas baseChart role="img" aria-label="¿Hubo más o menos publicaciones?"
+              [attr.data-report-note]="'Días previos: ' + range(stats.previous_range) + '. ' + stats.current_total + ' publicaciones frente a ' + stats.previous_total + '.'"
+              [data]="comparisonData" [options]="comparisonOptions" type="bar"></canvas>
+          </div>
+          <details *ngIf="stats.current_total + stats.previous_total > 0">
+            <summary>Ver publicaciones por fecha</summary>
+            <div class="table-scroll">
+              <table aria-label="Publicaciones en las fechas elegidas y en los días previos">
+                <thead><tr><th>Fechas elegidas</th><th>Publicaciones</th><th>Fechas previas</th><th>Publicaciones</th></tr></thead>
+                <tbody>
+                  <tr *ngFor="let bucket of stats.buckets">
+                    <th scope="row">{{ range(bucket.range) }}</th><td>{{ bucket.current | number }}</td>
+                    <td>{{ range(bucket.previous_range) }}</td><td>{{ bucket.previous | number }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </details>
+        </article>
+
+        <article>
+          <h3>Actividad por día y hora</h3>
+          <p>{{ stats.heatmap_today
+            ? 'Publicaciones de hoy en franjas de tres horas. La franja actual está en curso.'
+            : 'Promedio de publicaciones por franja de tres horas en días completos, incluidos los días sin actividad.' }}
+            Hora de Bolivia.</p>
+          <div class="table-scroll heatmap" *ngIf="heatMax > 0; else emptyHeatmap">
+            <table aria-label="Actividad por día y hora" data-report-chart="Actividad por día y hora"
+              [attr.data-report-note]="stats.heatmap_today
+                ? 'Publicaciones de hoy por franja de 3 horas (hora de Bolivia). La franja actual está en curso.'
+                : 'Promedio por franja de 3 horas y día de la semana. Incluye días completos sin actividad. Hora de Bolivia.'">
+              <thead>
+                <tr><th scope="col">Día</th><th *ngFor="let hour of hours" scope="col">{{ hour }} h</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of stats.heatmap; index as day">
+                  <th scope="row" [title]="row.days + ' días incluidos'">{{ weekdays[day] }} <small>({{ row.days }})</small></th>
+                  <td *ngFor="let cell of row.cells"
+                    [style.--heat]="cell ? cell.average / heatMax : 0"
+                    [class.heat-empty]="!cell" [class.heat-strong]="cell && cell.average / heatMax >= 0.65"
+                    [title]="cell ? (cell.posts | number) + ' publicaciones en ' + row.days + ' días' : 'Fuera del período observado'">
+                    {{ cell ? number.format(cell.average) : '—' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #emptyHeatmap><p class="insights-status">Sin actividad en las franjas observadas.</p></ng-template>
+        </article>
+
+      </div>
+    </ng-container>
+  </section>
+</ng-template>
+
+<ng-template #topics>
+  <section *ngIf="data as stats" class="insights" data-statistics-section="topics" aria-labelledby="topic-insights-title">
+    <header><h2 id="topic-insights-title">Cambios y coincidencias entre temas</h2></header>
+    <div class="insights-grid">
+      <article *ngIf="stats.agenda_change as agenda">
+        <h3>¿Qué temas aparecieron más o menos?</h3>
+        <p>Se compara el porcentaje de publicaciones sobre cada tema. Por ejemplo, pasar del 10 % al 15 % es subir 5 puntos porcentuales.</p>
+        <div class="insights-chart" *ngIf="agenda.length; else noAgenda"
+          [style.height.px]="Math.max(180, 52 + agenda.length * 40)">
+          <canvas baseChart role="img" aria-label="Cambio en la proporción de publicaciones por tema"
+            [attr.data-report-note]="'Hasta cuatro alzas y cuatro bajas, medidas en puntos porcentuales. Fechas previas del ' +
+              range(stats.previous_range) + '. Una publicación puede incluir varios temas.'"
+            [data]="agendaData" [options]="agendaOptions" type="bar"></canvas>
+        </div>
+        <ng-template #noAgenda>
+          <p class="insights-status">{{ stats.current_total && stats.previous_total
+            ? 'La proporción de publicaciones por tema no cambió.'
+            : 'Se necesitan publicaciones en ambos grupos de fechas para comparar.' }}</p>
+        </ng-template>
+        <details *ngIf="agenda.length">
+          <summary>Ver porcentajes y publicaciones</summary>
+          <div class="table-scroll">
+            <table aria-label="Cambio en la proporción de publicaciones por tema">
+              <thead><tr><th>Tópico</th><th>Fechas previas</th><th>Fechas elegidas</th><th>Cambio</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let topic of agenda">
+                  <th scope="row">{{ topic.topic_name }}</th>
+                  <td>{{ number.format(topic.previous_share) }}% ({{ topic.previous_posts | number }})</td>
+                  <td>{{ number.format(topic.current_share) }}% ({{ topic.posts | number }})</td>
+                  <td>{{ signed(topic.change) }} puntos porcentuales</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </article>
+
+      <article *ngIf="stats.topic_overlap">
+        <h3>Qué tópicos aparecen juntos</h3>
+        <p>De las publicaciones que incluyen al menos uno de los dos temas, ¿qué porcentaje menciona ambos?</p>
+        <ol class="overlap-ranking" *ngIf="overlapRows.length; else noOverlap"
+          data-report-chart="Coincidencia entre tópicos"
+          data-report-note="Publicaciones que tienen ambos tópicos sobre las que tienen al menos uno. Se muestran hasta seis pares.">
+          <li *ngFor="let pair of overlapRows | slice:0:6">
+            <div class="overlap-label">
+              <strong>{{ pair.first }} + {{ pair.second }}</strong>
+              <span>{{ number.format(pair.percentage) }}%</span>
+            </div>
+            <div class="overlap-track" aria-hidden="true"><span [style.width.%]="pair.percentage"></span></div>
+            <small>{{ pair.shared | number }} de {{ pair.union | number }} publicaciones</small>
+          </li>
+        </ol>
+        <ng-template #noOverlap>
+          <p class="insights-status">{{ stats.topics.length < 2
+            ? 'Se necesitan al menos dos tópicos con publicaciones.'
+            : 'Los tópicos mostrados no compartieron publicaciones.' }}</p>
+        </ng-template>
+      </article>
+
+      <article *ngIf="stats.topic_coverage as coverage">
+        <h3>Cuántas publicaciones tienen tópico</h3>
+        <p>Cada publicación puede tener uno, varios o ningún tema asignado.</p>
+        <div class="insights-chart" *ngIf="stats.current_total; else noCoverage">
+          <canvas baseChart role="img" aria-label="Publicaciones según cuántos temas incluyen"
+            [attr.data-report-note]="(coverage[0].posts | number) + ' publicaciones sin tópico visible de ' +
+              (stats.current_total | number) + ' publicaciones filtradas.'"
+            [data]="coverageData" [options]="coverageOptions" type="bar"></canvas>
+        </div>
+        <ng-template #noCoverage><p class="insights-status">Sin publicaciones en este período.</p></ng-template>
+        <details *ngIf="stats.current_total">
+          <summary>Ver cantidades y porcentajes</summary>
+          <div class="table-scroll">
+            <table aria-label="Clasificación temática de las publicaciones">
+              <thead><tr><th>Tópicos vinculados</th><th>Publicaciones</th><th>Proporción</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let level of coverage">
+                  <th scope="row">{{ coverageLabels[level.labels] }}</th>
+                  <td>{{ level.posts | number }}</td>
+                  <td>{{ number.format(level.share) }}%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </article>
+
+      <article>
+        <h3>Cuántas cuentas cubren cada tópico</h3>
+        <p>Cada cuenta se cuenta una sola vez por tema. Se muestran hasta ocho temas.</p>
+        <div *ngIf="stats.topics.length; else noTopics" class="insights-chart"
+          [style.height.px]="Math.max(180, 50 + stats.topics.length * 41)">
+          <canvas baseChart role="img" aria-label="Cuentas distintas por tópico"
+            data-report-note="Hasta ocho tópicos ordenados por publicaciones. Cada cuenta se cuenta una sola vez por tópico."
+            [data]="sourcesData" [options]="sourcesOptions" type="bar"></canvas>
+        </div>
+        <ng-template #noTopics><p class="insights-status">Sin tópicos asociados a estas publicaciones.</p></ng-template>
+        <details *ngIf="stats.topics.length">
+          <summary>Ver recuentos y filtrar por tópico</summary>
+          <div class="table-scroll">
+            <table aria-label="Cuentas y publicaciones por tópico">
+              <thead><tr><th>Tópico</th><th>Cuentas</th><th>Publicaciones</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let topic of stats.topics">
+                  <th scope="row"><button type="button" (click)="topicSelected.emit(topic.topic_id)">{{ topic.topic_name }}</button></th>
+                  <td>{{ topic.sources | number }}</td><td>{{ topic.posts | number }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </article>
+    </div>
+  </section>
+</ng-template>
+
+<ng-template #sources>
+  <section *ngIf="data?.source_turnover as sources" class="insights" data-statistics-section="sources" aria-labelledby="source-insights-title">
+    <header><h2 id="source-insights-title">Actividad de las cuentas entre fechas</h2></header>
+    <div class="insights-grid insights-grid--single">
+      <article>
+        <h3>¿Qué cuentas publicaron en ambos grupos de fechas?</h3>
+        <p>{{ sources.in_both | number }} en ambos grupos de fechas, {{ sources.only_current | number }} solo en las fechas elegidas
+          y {{ sources.only_previous | number }} solo en los días previos.</p>
+        <div class="insights-chart insights-chart--compact" *ngIf="sources.in_both + sources.only_current + sources.only_previous; else noSources">
+          <canvas baseChart role="img" aria-label="Continuidad de las cuentas activas"
+            [attr.data-report-note]="(sources.in_both | number) + ' cuentas en ambos grupos de fechas, ' + (sources.only_current | number) +
+              ' solo en las fechas elegidas y ' + (sources.only_previous | number) + ' solo en los días previos.'"
+            [data]="turnoverData" [options]="turnoverOptions" type="bar"></canvas>
+        </div>
+        <ng-template #noSources><p class="insights-status">Sin cuentas activas en los dos períodos observados.</p></ng-template>
+        <details *ngIf="sources.examples && sources.in_both + sources.only_current + sources.only_previous">
+          <summary>Ver las cuentas más activas de cada grupo</summary>
+          <div class="table-scroll">
+            <table aria-label="Participación de las cuentas más activas por período">
+              <thead><tr><th>Cuenta</th><th>Fechas previas</th><th>Fechas elegidas</th></tr></thead>
+              <ng-container *ngFor="let group of sourceGroups">
+                <tbody *ngIf="sources.examples[group.id].length">
+                  <tr class="source-group"><th colspan="3">{{ group.label }} · {{ sources[group.id] | number }}</th></tr>
+                  <tr *ngFor="let source of sources.examples[group.id]">
+                    <th scope="row"><button type="button" (click)="sourceSelected.emit(source.id)">{{ source.name || source.id }}</button></th>
+                    <td>{{ source.previous_posts | number }}</td><td>{{ source.current_posts | number }}</td>
+                  </tr>
+                </tbody>
+              </ng-container>
+            </table>
+          </div>
+        </details>
+      </article>
+    </div>
+  </section>
+</ng-template>
+
+<ng-template #sentiment>
+  <section *ngIf="data as stats" class="insights" data-statistics-section="sentiment" aria-label="Composición del sentimiento por intervalo">
+    <div class="insights-grid insights-grid--single">
+      <article>
+        <h3>Cómo cambió el sentimiento</h3>
+        <p>Porcentajes positivo, neutro y negativo, calculados solo entre las publicaciones con tono identificado.</p>
+        <div class="insights-chart" *ngIf="stats.buckets.some(hasClassifications); else noTone">
+          <canvas baseChart role="img" aria-label="Composición del sentimiento por intervalo"
+            data-report-note="Cada barra incluye solo las publicaciones con tono identificado. Los espacios vacíos indican que no hay clasificaciones."
+            [data]="toneData" [options]="toneOptions" type="bar"></canvas>
+        </div>
+        <ng-template #noTone><p class="insights-status">Sin publicaciones con sentimiento clasificado.</p></ng-template>
+        <details *ngIf="stats.current_total > 0">
+          <summary>Ver porcentajes y cuántas publicaciones se clasificaron</summary>
+          <div class="table-scroll">
+            <table aria-label="Tono y cantidad de publicaciones clasificadas por fecha">
+              <thead><tr><th>Intervalo</th><th>Positivo</th><th>Neutro</th><th>Negativo</th><th>Clasificadas</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let bucket of stats.buckets">
+                  <th scope="row">{{ range(bucket.range) }}</th>
+                  <td>{{ bucket.classified ? (percentage(bucket.positive, bucket.classified) | number:'1.0-1') + '%' : '—' }}</td>
+                  <td>{{ bucket.classified ? (percentage(bucket.neutral, bucket.classified) | number:'1.0-1') + '%' : '—' }}</td>
+                  <td>{{ bucket.classified ? (percentage(bucket.negative, bucket.classified) | number:'1.0-1') + '%' : '—' }}</td>
+                  <td>{{ bucket.classified | number }} / {{ bucket.current | number }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </article>
+
+    </div>
+  </section>
+</ng-template>

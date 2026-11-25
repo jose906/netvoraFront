@@ -759,25 +759,3 @@
     justify-content: space-between;
   }
 }
-
-.overview-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 16px;
-}
-
-.nv-dashboard-disclosure {
-  margin-block: 18px;
-  border-block-start: 1px solid var(--theme-line);
-}
-
-.nv-dashboard-disclosure > summary {
-  padding-block: 12px;
-  color: var(--theme-primary-dark);
-  font-weight: 650;
-  cursor: pointer;
-}
-
-.nv-dashboard-disclosure > .section-block {
-  margin-top: 10px;
-}

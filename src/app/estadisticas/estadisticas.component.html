@@ -31,6 +31,11 @@
     <!-- ACCIONES DERECHA -->
 
     <div class="toolbar-actions">
+      <button type="button" class="toolbar-filter-button nv-banner-action report-trigger"
+        aria-haspopup="dialog" (click)="openReport()">
+        <mat-icon aria-hidden="true">picture_as_pdf</mat-icon>
+        <span>Informe PDF</span>
+      </button>
 
       <button
 
@@ -64,427 +69,60 @@
 
   </header>
 
+  <p *ngIf="reportStatus" class="report-status" role="status">{{ reportStatus }}</p>
+
+  <dialog #reportDialog class="report-dialog" aria-labelledby="report-title"
+    [attr.aria-busy]="reportBusy" (cancel)="$event.preventDefault(); closeReport()">
+    <header>
+      <div>
+        <h2 id="report-title">Preparar informe PDF</h2>
+        <p>{{ selectedCategoria }} · {{ reportCount }} de {{ reportCharts.length }} gráficas seleccionadas</p>
+      </div>
+      <button type="button" class="report-close" aria-label="Cerrar informe" [disabled]="reportBusy" (click)="closeReport()">
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    </header>
+    <fieldset [disabled]="reportBusy">
+      <label>Título <input type="text" maxlength="120" [(ngModel)]="reportTitle" autofocus></label>
+      <label>Notas del informe <textarea rows="2" maxlength="800" [(ngModel)]="reportNote" placeholder="Opcional"></textarea></label>
+      <div class="report-selection">
+        <strong>Gráficas incluidas</strong>
+        <button type="button" (click)="selectReportCharts(reportCount !== reportCharts.length)">
+          {{ reportCount === reportCharts.length ? 'Quitar selección' : 'Seleccionar todas' }}
+        </button>
+      </div>
+      <div class="report-chart-list">
+        <ng-container *ngFor="let chart of reportCharts; let index = index">
+          <strong class="report-group" *ngIf="chart.group && chart.group !== reportCharts[index - 1]?.group">
+            {{ chart.group }}
+          </strong>
+          <label><input type="checkbox" [(ngModel)]="chart.selected"> {{ chart.title }}</label>
+        </ng-container>
+      </div>
+    </fieldset>
+    <p *ngIf="reportError" class="report-error" role="alert">{{ reportError }}</p>
+    <footer>
+      <span>{{ reportBusy ? 'Generando PDF…' : 'Incluye el período y los filtros aplicados.' }}</span>
+      <button type="button" class="filter-action filter-action--apply" [disabled]="reportBusy || !reportCount" (click)="exportReport()">
+        <mat-icon aria-hidden="true">download</mat-icon> Descargar PDF
+      </button>
+    </footer>
+  </dialog>
+
   <!-- =====================================================
 
        NAVEGACIÓN DE CATEGORÍAS
 
   ====================================================== -->
 
-  <nav
-
-    class="category-navigation"
-
-    aria-label="Categorías y análisis">
-
-    <!-- PANEL -->
-
-    <button
-
-      type="button"
-
-      class="category-tab"
-
-      [class.is-active]="selectedComponent === 'todos'"
-      [attr.aria-pressed]="selectedComponent === 'todos'"
-
-      (click)="goToView('todos', 'Estadísticas generales', 'todos')">
-
-      <mat-icon>dashboard</mat-icon>
-
-      <span>General</span>
-
+  <nav class="category-navigation" aria-label="Vistas de estadísticas">
+    <button *ngFor="let view of views" type="button" class="category-tab"
+      [class.is-active]="selectedComponent === view.id"
+      [attr.aria-pressed]="selectedComponent === view.id"
+      (click)="selectedComponent !== view.id && goToView(view.id, view.title ?? view.label, view.type)">
+      <mat-icon aria-hidden="true">{{ view.icon }}</mat-icon>
+      <span>{{ view.label }}</span>
     </button>
-
-    <!-- POLÍTICA -->
-
-    <button
-
-      type="button"
-
-      class="category-tab"
-
-      [class.is-active]="selectedComponent === 'politica'"
-      [attr.aria-pressed]="selectedComponent === 'politica'"
-
-      (click)="goToView('politica', 'Política', 'Medio')">
-
-      <mat-icon>account_balance</mat-icon>
-
-      <span>Política</span>
-
-    </button>
-
-    <!-- ECONOMÍA -->
-
-    <button
-
-      type="button"
-
-      class="category-tab"
-
-      [class.is-active]="selectedComponent === 'economia'"
-      [attr.aria-pressed]="selectedComponent === 'economia'"
-
-      (click)="goToView('economia', 'Economía', 'Medio')">
-
-      <mat-icon>payments</mat-icon>
-
-      <span>Economía</span>
-
-    </button>
-
-    <!-- SEGURIDAD -->
-
-    <button
-
-      type="button"
-
-      class="category-tab"
-
-      [class.is-active]="selectedComponent === 'seguridad'"
-      [attr.aria-pressed]="selectedComponent === 'seguridad'"
-
-      (click)="goToView('seguridad', 'Seguridad', 'Medio')">
-
-      <mat-icon>security</mat-icon>
-
-      <span>Seguridad</span>
-
-    </button>
-
-    <!-- SOCIEDAD -->
-
-    <button
-
-      type="button"
-
-      class="category-tab"
-
-      [class.is-active]="selectedComponent === 'sociedad'"
-      [attr.aria-pressed]="selectedComponent === 'sociedad'"
-
-      (click)="goToView('sociedad', 'Sociedad', 'Medio')">
-
-      <mat-icon>groups</mat-icon>
-
-      <span>Sociedad</span>
-
-    </button>
-
-    <!-- =================================================
-
-         MÁS CATEGORÍAS
-
-    ================================================== -->
-
-    <details class="nav-dropdown">
-
-      <summary
-
-        class="category-tab dropdown-trigger"
-
-        [class.is-active]="
-
-          selectedComponent === 'deportes' ||
-
-          selectedComponent === 'ambiente' ||
-
-          selectedComponent === 'salud' ||
-
-          selectedComponent === 'educacion' ||
-
-          selectedComponent === 'gestiones' ||
-
-          selectedComponent === 'otros'
-
-        ">
-
-        <mat-icon>apps</mat-icon>
-
-        <span>Más</span>
-
-        <mat-icon class="dropdown-chevron">
-
-          expand_more
-
-        </mat-icon>
-
-      </summary>
-
-      <div class="dropdown-menu">
-
-        <div class="dropdown-heading">
-
-          Más categorías
-
-        </div>
-
-        <button
-
-          type="button"
-
-          class="dropdown-item"
-
-          [class.is-active]="selectedComponent === 'deportes'"
-      [attr.aria-pressed]="selectedComponent === 'deportes'"
-
-          (click)="goToView('deportes', 'Deportes', 'Medio')">
-
-          <span class="dropdown-icon">
-
-            <mat-icon>sports_soccer</mat-icon>
-
-          </span>
-
-          <span class="dropdown-copy">
-
-            <strong>Deportes</strong>
-
-            <small>Actividad deportiva y competencias</small>
-
-          </span>
-
-        </button>
-
-        <button
-
-          type="button"
-
-          class="dropdown-item"
-
-          [class.is-active]="selectedComponent === 'ambiente'"
-      [attr.aria-pressed]="selectedComponent === 'ambiente'"
-
-          (click)="goToView('ambiente', 'Medio ambiente', 'Medio')">
-
-          <span class="dropdown-icon">
-
-            <mat-icon>eco</mat-icon>
-
-          </span>
-
-          <span class="dropdown-copy">
-
-            <strong>Medio ambiente</strong>
-
-            <small>Clima, recursos y medio ambiente</small>
-
-          </span>
-
-        </button>
-
-        <button
-
-          type="button"
-
-          class="dropdown-item"
-
-          [class.is-active]="selectedComponent === 'salud'"
-      [attr.aria-pressed]="selectedComponent === 'salud'"
-
-          (click)="goToView('salud', 'Salud', 'Medio')">
-
-          <span class="dropdown-icon">
-
-            <mat-icon>medical_services</mat-icon>
-
-          </span>
-
-          <span class="dropdown-copy">
-
-            <strong>Salud</strong>
-
-            <small>Salud pública y actualidad sanitaria</small>
-
-          </span>
-
-        </button>
-
-        <button
-
-          type="button"
-
-          class="dropdown-item"
-
-          [class.is-active]="selectedComponent === 'educacion'"
-      [attr.aria-pressed]="selectedComponent === 'educacion'"
-
-          (click)="goToView('educacion', 'Educación', 'Medio')">
-
-          <span class="dropdown-icon">
-
-            <mat-icon>school</mat-icon>
-
-          </span>
-
-          <span class="dropdown-copy">
-
-            <strong>Educación</strong>
-
-            <small>Educación y comunidad académica</small>
-
-          </span>
-
-        </button>
-
-        <button
-
-          type="button"
-
-          class="dropdown-item"
-
-          [class.is-active]="selectedComponent === 'gestiones'"
-      [attr.aria-pressed]="selectedComponent === 'gestiones'"
-
-          (click)="goToView('gestiones', 'Gestiones públicas', 'Medio')">
-
-          <span class="dropdown-icon">
-
-            <mat-icon>fact_check</mat-icon>
-
-          </span>
-
-          <span class="dropdown-copy">
-
-            <strong>Gestiones públicas</strong>
-
-            <small>Acciones y decisiones institucionales</small>
-
-          </span>
-
-        </button>
-
-        <button
-
-          type="button"
-
-          class="dropdown-item"
-
-          [class.is-active]="selectedComponent === 'otros'"
-      [attr.aria-pressed]="selectedComponent === 'otros'"
-
-          (click)="goToView('otros', 'Otros', 'Medio')">
-
-          <span class="dropdown-icon">
-
-            <mat-icon>category</mat-icon>
-
-          </span>
-
-          <span class="dropdown-copy">
-
-            <strong>Otros temas</strong>
-
-            <small>Conversaciones fuera de las categorías principales</small>
-
-          </span>
-
-        </button>
-
-      </div>
-
-    </details>
-
-    <div class="navigation-divider"></div>
-
-    <!-- =================================================
-
-         ANÁLISIS
-
-    ================================================== -->
-
-    <details class="nav-dropdown analysis-dropdown">
-
-      <summary
-
-        class="category-tab dropdown-trigger"
-
-        [class.is-active]="
-
-          selectedComponent === 'entidades' ||
-
-          selectedComponent === 'personas'
-
-        ">
-
-        <mat-icon>analytics</mat-icon>
-
-        <span>Análisis</span>
-
-        <mat-icon class="dropdown-chevron">
-
-          expand_more
-
-        </mat-icon>
-
-      </summary>
-
-      <div class="dropdown-menu dropdown-menu--right">
-
-        <div class="dropdown-heading">
-
-          Análisis especializado
-
-        </div>
-
-        <button
-
-          type="button"
-
-          class="dropdown-item"
-
-          [class.is-active]="selectedComponent === 'entidades'"
-      [attr.aria-pressed]="selectedComponent === 'entidades'"
-
-          (click)="goToView('entidades', 'Entidades públicas', 'Entidad')">
-
-          <span class="dropdown-icon">
-
-            <mat-icon>domain</mat-icon>
-
-          </span>
-
-          <span class="dropdown-copy">
-
-            <strong>Entidades públicas</strong>
-
-            <small>Actividad y conversación institucional</small>
-
-          </span>
-
-        </button>
-
-        <button
-
-          type="button"
-
-          class="dropdown-item"
-
-          [class.is-active]="selectedComponent === 'personas'"
-      [attr.aria-pressed]="selectedComponent === 'personas'"
-
-          (click)="goToView('personas', 'Personas públicas', 'Persona')">
-
-          <span class="dropdown-icon">
-
-            <mat-icon>person</mat-icon>
-
-          </span>
-
-          <span class="dropdown-copy">
-
-            <strong>Personas públicas</strong>
-
-            <small>Actividad de actores públicos</small>
-
-          </span>
-
-        </button>
-
-      </div>
-
-    </details>
-
   </nav>
 
   <!-- =====================================================
@@ -817,9 +455,18 @@
 
 ========================================================= -->
 
+<nav class="statistics-section-nav nv-page" aria-label="Secciones de estadísticas">
+  <button *ngFor="let section of visibleSections" type="button" (click)="showSection(section.id)">
+    {{ section.label }}
+  </button>
+</nav>
+
 <section class="chart-section nv-section">
 
-  <div class="chart-container">
+  <div class="chart-container" #reportSource>
+    <app-statistics-insights #insights [filters]="statisticsFilters"
+      (topicSelected)="applyDashboardSelection({ topicId: $event })"
+      (sourceSelected)="applyDashboardSelection({ sourceId: $event })"></app-statistics-insights>
 
     <!-- =====================================================
 
@@ -828,6 +475,7 @@
     ====================================================== -->
 
     <app-todos
+      [insights]="insights"
       (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'todos'"
@@ -854,6 +502,7 @@
 
     <app-politica-estadisticas
 
+      [insights]="insights"
       (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'politica'"
@@ -882,6 +531,7 @@
 
     <app-politica-estadisticas
 
+      [insights]="insights"
       (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'economia'"
@@ -910,6 +560,7 @@
 
     <app-politica-estadisticas
 
+      [insights]="insights"
       (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'deportes'"
@@ -938,6 +589,7 @@
 
     <app-politica-estadisticas
 
+      [insights]="insights"
       (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'seguridad'"
@@ -966,6 +618,7 @@
 
     <app-politica-estadisticas
 
+      [insights]="insights"
       (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'sociedad'"
@@ -994,6 +647,7 @@
 
     <app-politica-estadisticas
 
+      [insights]="insights"
       (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'ambiente'"
@@ -1022,6 +676,7 @@
 
     <app-politica-estadisticas
 
+      [insights]="insights"
       (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'salud'"
@@ -1050,6 +705,7 @@
 
     <app-politica-estadisticas
 
+      [insights]="insights"
       (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'educacion'"
@@ -1078,6 +734,7 @@
 
     <app-politica-estadisticas
 
+      [insights]="insights"
       (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'gestiones'"
@@ -1106,6 +763,7 @@
 
     <app-politica-estadisticas
 
+      [insights]="insights"
       (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'otros'"
@@ -1134,6 +792,7 @@
 
     <app-estadisticas-enti-personas
 
+      [insights]="insights"
       (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'entidades'"
@@ -1163,6 +822,7 @@
 
     <app-estadisticas-enti-personas
 
+      [insights]="insights"
       (applyDashboardSelection)="applyDashboardSelection($event)"
 
       *ngIf="selectedComponent === 'personas'"

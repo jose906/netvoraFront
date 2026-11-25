@@ -1,3 +1,4 @@
+import { StatisticsInsightsComponent } from './estadisticas/statistics-insights.component';
 import { RadarComponent } from './radar/radar.component';
 import { DashboardEvidenceComponent } from './data/dashboard-evidence/dashboard-evidence.component';
 import { NgModule } from '@angular/core';
@@ -120,6 +121,7 @@ const routes: Routes = [
     
   ],
   imports: [
+    StatisticsInsightsComponent,
     LoadMoreDirective,
     DashboardEvidenceComponent,
     BrowserModule,

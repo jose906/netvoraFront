@@ -1,3 +1,5 @@
+import { formatStatisticsRange } from '../../estadisticas/statistics-insights';
+import type { StatisticsInsightsComponent } from '../../estadisticas/statistics-insights.component';
 import { statisticsBreakdownBars, statisticsChartOptions, statisticsRankingValues } from '../statistics-chart';
 import { DashboardEvidenceComponent } from '../dashboard-evidence/dashboard-evidence.component';
 import { DashboardEntityType, DashboardSelection } from '../../interfaces/dashboard-evidence';
@@ -100,6 +102,8 @@ type TopicEntityType =
 })
 export class EstadisticasEntiPersonasComponent
   implements OnInit, OnChanges, OnDestroy {
+  @Input() insights?: StatisticsInsightsComponent;
+
   readonly breakdownBars = statisticsBreakdownBars;
   readonly rankingPlugins = [statisticsRankingValues];
 
@@ -192,8 +196,8 @@ loadingComentarios = false;
 
   totalPosts = 0;
 
-  postsChange: number | null = null;
-  previousPosts = 0;
+  previousPosts: number | null = null;
+  readonly formatRange = formatStatisticsRange;
   previousPeriodStart = '';
   previousPeriodEnd = '';
 
@@ -1815,12 +1819,8 @@ loadingComentarios = false;
     // COMPARACIÓN DE PUBLICACIONES
     // ===================================================
 
-    this.postsChange =
-      res?.comparison?.posts?.change ?? null;
-
-    this.previousPosts = Number(
-      res?.comparison?.posts?.previous ?? 0
-    );
+    const previousPosts = Number(res?.comparison?.posts?.previous ?? NaN);
+    this.previousPosts = Number.isFinite(previousPosts) ? previousPosts : null;
 
     this.previousPeriodStart = String(
       res?.comparison?.period?.previous_start ?? ''

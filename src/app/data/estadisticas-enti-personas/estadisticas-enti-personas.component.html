@@ -31,10 +31,10 @@
 
   <div class="dashboard-notice" *ngIf="filterMessage" role="status">{{ filterMessage }}</div>
   <div class="dashboard-notice dashboard-notice-error nv-error-state" *ngIf="errorMsg" role="alert">{{ errorMsg }}</div>
-  <details class="dashboard-notice dashboard-notice-error nv-error-state" *ngIf="errorsPorSeccion | keyvalue as errors" [hidden]="!errors.length">
-    <summary>Algunas secciones no se pudieron cargar ({{ errors.length }})</summary>
+  <div class="dashboard-notice dashboard-notice-error nv-error-state" *ngIf="errorsPorSeccion | keyvalue as errors" [hidden]="!errors.length" role="alert">
+    <strong>Algunas secciones no se pudieron cargar ({{ errors.length }})</strong>
     <ul><li *ngFor="let entry of errors">{{ entry.value }}</li></ul>
-  </details>
+  </div>
 
   <ng-container *ngIf="!filterMessage">
 
@@ -43,7 +43,7 @@
 
 
   <!-- INDICADORES -->
-  <section class="metrics-grid" aria-label="Indicadores principales">
+  <section data-statistics-section="summary" class="metrics-grid" aria-label="Indicadores principales">
 
     <article class="metric-card nv-quiet-surface">
       <div class="metric-top">
@@ -59,22 +59,16 @@
 
       <div *ngIf="loadingResumen" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando indicadores…</span></div>
 
-      <div class="metric-footer metric-footer--comparison">
-        <ng-container *ngIf="postsChange !== null">
-          <span
-            class="metric-change"
-            [class.metric-change--up]="postsChange > 0"
-            [class.metric-change--down]="postsChange < 0">
-            {{ postsChange > 0 ? '↑' : postsChange < 0 ? '↓' : '' }}
-            {{ Math.abs(postsChange) | number:'1.1-1' }}%
-          </span>
-          <span class="metric-compare-text">
-            vs. período anterior
-          </span>
-        </ng-container>
-
-        <span *ngIf="postsChange === null">
-          Sin comparación disponible
+      <div class="metric-footer metric-footer--comparison" *ngIf="!loadingResumen && previousPosts !== null && previousPeriodStart && previousPeriodEnd">
+        <span class="metric-change"
+          [class.metric-change--up]="totalPosts > previousPosts"
+          [class.metric-change--down]="totalPosts < previousPosts">
+          {{ totalPosts === previousPosts ? 'Misma cantidad' :
+            (Math.abs(totalPosts - previousPosts) | number) + (totalPosts > previousPosts ? ' más' : ' menos') }}
+        </span>
+        <span class="metric-compare-text">
+          {{ previousPosts | number }} {{ previousPeriodStart === previousPeriodEnd ? 'el' : 'del' }}
+          {{ formatRange([previousPeriodStart, previousPeriodEnd], previousPeriodStart.slice(0, 4) !== previousPeriodEnd.slice(0, 4)) }}
         </span>
       </div>
     </article>
@@ -147,8 +141,7 @@
 
   </section>
 
-  <!-- TÓPICOS PRINCIPALES -->
-  <section class="section-block activity-section">
+  <section data-statistics-section="activity" class="section-block activity-section">
 
     <div *ngIf="loadingTimeline" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando sección…</span></div>
 
@@ -159,7 +152,7 @@
 
         <!-- SELECTOR DE INTERVALOS -->
         <label class="timeline-interval-picker">
-          <span>Intervalo</span>
+          <span>Agrupar por</span>
 
           <select
             class="select"
@@ -223,7 +216,9 @@
 
   </section>
 
-  <section class="section-block topics-section">
+  <ng-container *ngTemplateOutlet="insights?.activity ?? null"></ng-container>
+
+  <section data-statistics-section="topics" class="section-block topics-section">
 
     <div class="section-heading">
       <h2>Tópicos</h2>
@@ -274,7 +269,7 @@
         <h3 class="card-title">Evolución de los tópicos</h3>
 
         <label class="timeline-interval-picker">
-          <span>Intervalo</span>
+          <span>Agrupar por</span>
           <select class="select" [ngModel]="topicTimelineInterval"
                   (ngModelChange)="onTopicTimelineIntervalChange($event)"
                   [disabled]="loadingTopicTimeline"
@@ -315,169 +310,9 @@
     </article>
   </section>
 
-  <!-- ACTIVIDAD CON SELECTOR POR HORAS -->
+  <ng-container *ngTemplateOutlet="insights?.topics ?? null"></ng-container>
 
-
-  <!-- ENTIDADES MENCIONADAS -->
-  <section class="section-block">
-
-    <div class="section-heading">
-      <div>
-        <h2>Entidades más mencionadas</h2>
-        <p>Personas, organizaciones y lugares más mencionados.</p>
-      </div>
-    </div>
-
-    <div *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando sección…</span></div>
-
-    <div class="entities-grid">
-
-      <!-- PERSONAS -->
-      <article class="entity-panel">
-        <header class="entity-panel-header">
-          <div class="entity-heading">
-            <span class="entity-icon">
-              <span class="material-icons">person</span>
-            </span>
-            <div>
-              <span>Personas</span>
-              <small>Más mencionadas</small>
-            </div>
-          </div>
-        </header>
-
-        <div class="entity-ranking" *ngIf="topPersona.length; else noPersons">
-          <div
-            class="entity-row entity-row--visual"
-            *ngFor="let it of topPersona.slice(0, 5); let i = index; trackBy: trackByEntidad">
-
-            <span class="entity-position">{{ i + 1 }}</span>
-
-            <div class="entity-info">
-              <div class="entity-info-top">
-                <button type="button" class="entity-name stats-mention-link" [title]="it.entidad"
-                  (click)="exploreMention(it.entidad, 'PER')">{{ it.entidad }}</button>
-                <strong class="entity-total">{{ it.total | number }}</strong>
-              </div>
-
-              <div class="entity-progress">
-                <span
-                  class="entity-progress-bar"
-                  [style.width.%]="topPersona[0].total ? it.total / topPersona[0].total * 100 : 0">
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <ng-template #noPersons>
-          <div class="entity-empty">
-            <span *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando...</span></span>
-            <ng-container *ngIf="!loadingEntidades">Sin personas detectadas</ng-container>
-          </div>
-        </ng-template>
-      </article>
-
-      <!-- ORGANIZACIONES -->
-      <article class="entity-panel">
-        <header class="entity-panel-header">
-          <div class="entity-heading">
-            <span class="entity-icon">
-              <span class="material-icons">domain</span>
-            </span>
-            <div>
-              <span>Organizaciones</span>
-              <small>Más mencionadas</small>
-            </div>
-          </div>
-        </header>
-
-        <div
-          class="entity-ranking"
-          *ngIf="topOrganizacion.length; else noOrganizations">
-
-          <div
-            class="entity-row entity-row--visual"
-            *ngFor="let it of topOrganizacion.slice(0, 5); let i = index; trackBy: trackByEntidad">
-
-            <span class="entity-position">{{ i + 1 }}</span>
-
-            <div class="entity-info">
-              <div class="entity-info-top">
-                <button type="button" class="entity-name stats-mention-link" [title]="it.entidad"
-                  (click)="exploreMention(it.entidad, 'ORG')">{{ it.entidad }}</button>
-                <strong class="entity-total">{{ it.total | number }}</strong>
-              </div>
-
-              <div class="entity-progress">
-                <span
-                  class="entity-progress-bar"
-                  [style.width.%]="topOrganizacion[0].total ? it.total / topOrganizacion[0].total * 100 : 0">
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <ng-template #noOrganizations>
-          <div class="entity-empty">
-            <span *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando...</span></span>
-            <ng-container *ngIf="!loadingEntidades">Sin organizaciones detectadas</ng-container>
-          </div>
-        </ng-template>
-      </article>
-
-      <!-- LUGARES -->
-      <article class="entity-panel">
-        <header class="entity-panel-header">
-          <div class="entity-heading">
-            <span class="entity-icon">
-              <span class="material-icons">location_on</span>
-            </span>
-            <div>
-              <span>Lugares</span>
-              <small>Más mencionados</small>
-            </div>
-          </div>
-        </header>
-
-        <div class="entity-ranking" *ngIf="topLocacion.length; else noLocations">
-          <div
-            class="entity-row entity-row--visual"
-            *ngFor="let it of topLocacion.slice(0, 5); let i = index; trackBy: trackByEntidad">
-
-            <span class="entity-position">{{ i + 1 }}</span>
-
-            <div class="entity-info">
-              <div class="entity-info-top">
-                <button type="button" class="entity-name stats-mention-link" [title]="it.entidad"
-                  (click)="exploreMention(it.entidad, 'LOC')">{{ it.entidad }}</button>
-                <strong class="entity-total">{{ it.total | number }}</strong>
-              </div>
-
-              <div class="entity-progress">
-                <span
-                  class="entity-progress-bar"
-                  [style.width.%]="topLocacion[0].total ? it.total / topLocacion[0].total * 100 : 0">
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <ng-template #noLocations>
-          <div class="entity-empty">
-            <span *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando...</span></span>
-            <ng-container *ngIf="!loadingEntidades">Sin lugares detectados</ng-container>
-          </div>
-        </ng-template>
-      </article>
-
-    </div>
-  </section>
-
-  <!-- CUENTAS Y SHARE OF VOICE -->
-  <section class="section-block accounts-section">
+  <section data-statistics-section="sources" class="section-block accounts-section">
 
     <div class="section-heading">
       <h2>Cuentas y participación</h2>
@@ -541,7 +376,7 @@
           <span class="material-icons">campaign</span>
         </div>
 
-        <div class="account-share-content" *ngIf="postsByAccount.length">
+        <div class="account-share-content" data-report-chart="Parte del total publicada por las cuentas más activas" *ngIf="postsByAccount.length">
 
           <div class="account-share-leader">
             <div class="account-share-leader-top">
@@ -573,7 +408,7 @@
           <div class="account-share-metrics-grid">
             <div class="account-share-metric-item">
               <div class="account-share-metric-content">
-                <span class="account-share-metric-label">Top 3 cuentas</span>
+                <span class="account-share-metric-label">Las 3 cuentas más activas</span>
                 <strong class="account-share-metric-value">
                   {{ accountTop3Share | number:'1.1-1' }}%
                 </strong>
@@ -582,7 +417,7 @@
 
             <div class="account-share-metric-item">
               <div class="account-share-metric-content">
-                <span class="account-share-metric-label">Top 5 cuentas</span>
+                <span class="account-share-metric-label">Las 5 cuentas más activas</span>
                 <strong class="account-share-metric-value">
                   {{ accountTop5Share | number:'1.1-1' }}%
                 </strong>
@@ -627,8 +462,166 @@
     </div>
   </section>
 
-  <!-- SENTIMIENTO -->
-  <section class="section-block">
+  <ng-container *ngTemplateOutlet="insights?.sources ?? null"></ng-container>
+
+  <section data-statistics-section="entities" class="section-block">
+
+    <div class="section-heading">
+      <div>
+        <h2>Entidades más mencionadas</h2>
+        <p>Personas, organizaciones y lugares más mencionados.</p>
+      </div>
+    </div>
+
+    <div *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando sección…</span></div>
+
+    <div class="entities-grid">
+
+      <!-- PERSONAS -->
+      <article class="entity-panel">
+        <header class="entity-panel-header">
+          <div class="entity-heading">
+            <span class="entity-icon">
+              <span class="material-icons">person</span>
+            </span>
+            <div>
+              <span>Personas</span>
+              <small>Más mencionadas</small>
+            </div>
+          </div>
+        </header>
+
+        <div class="entity-ranking" data-report-chart="Personas más mencionadas" *ngIf="topPersona.length; else noPersons">
+          <div
+            class="entity-row entity-row--visual"
+            *ngFor="let it of topPersona.slice(0, 5); let i = index; trackBy: trackByEntidad">
+
+            <span class="entity-position">{{ i + 1 }}</span>
+
+            <div class="entity-info">
+              <div class="entity-info-top">
+                <button type="button" class="entity-name stats-mention-link" [title]="it.entidad"
+                  (click)="exploreMention(it.entidad, 'PER')">{{ it.entidad }}</button>
+                <strong class="entity-total">{{ it.total | number }}</strong>
+              </div>
+
+              <div class="entity-progress">
+                <span
+                  class="entity-progress-bar"
+                  [style.width.%]="topPersona[0].total ? it.total / topPersona[0].total * 100 : 0">
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noPersons>
+          <div class="entity-empty">
+            <span *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando...</span></span>
+            <ng-container *ngIf="!loadingEntidades">Sin personas detectadas</ng-container>
+          </div>
+        </ng-template>
+      </article>
+
+      <!-- ORGANIZACIONES -->
+      <article class="entity-panel">
+        <header class="entity-panel-header">
+          <div class="entity-heading">
+            <span class="entity-icon">
+              <span class="material-icons">domain</span>
+            </span>
+            <div>
+              <span>Organizaciones</span>
+              <small>Más mencionadas</small>
+            </div>
+          </div>
+        </header>
+
+        <div
+          class="entity-ranking" data-report-chart="Organizaciones más mencionadas"
+          *ngIf="topOrganizacion.length; else noOrganizations">
+
+          <div
+            class="entity-row entity-row--visual"
+            *ngFor="let it of topOrganizacion.slice(0, 5); let i = index; trackBy: trackByEntidad">
+
+            <span class="entity-position">{{ i + 1 }}</span>
+
+            <div class="entity-info">
+              <div class="entity-info-top">
+                <button type="button" class="entity-name stats-mention-link" [title]="it.entidad"
+                  (click)="exploreMention(it.entidad, 'ORG')">{{ it.entidad }}</button>
+                <strong class="entity-total">{{ it.total | number }}</strong>
+              </div>
+
+              <div class="entity-progress">
+                <span
+                  class="entity-progress-bar"
+                  [style.width.%]="topOrganizacion[0].total ? it.total / topOrganizacion[0].total * 100 : 0">
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noOrganizations>
+          <div class="entity-empty">
+            <span *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando...</span></span>
+            <ng-container *ngIf="!loadingEntidades">Sin organizaciones detectadas</ng-container>
+          </div>
+        </ng-template>
+      </article>
+
+      <!-- LUGARES -->
+      <article class="entity-panel">
+        <header class="entity-panel-header">
+          <div class="entity-heading">
+            <span class="entity-icon">
+              <span class="material-icons">location_on</span>
+            </span>
+            <div>
+              <span>Lugares</span>
+              <small>Más mencionados</small>
+            </div>
+          </div>
+        </header>
+
+        <div class="entity-ranking" data-report-chart="Lugares más mencionados" *ngIf="topLocacion.length; else noLocations">
+          <div
+            class="entity-row entity-row--visual"
+            *ngFor="let it of topLocacion.slice(0, 5); let i = index; trackBy: trackByEntidad">
+
+            <span class="entity-position">{{ i + 1 }}</span>
+
+            <div class="entity-info">
+              <div class="entity-info-top">
+                <button type="button" class="entity-name stats-mention-link" [title]="it.entidad"
+                  (click)="exploreMention(it.entidad, 'LOC')">{{ it.entidad }}</button>
+                <strong class="entity-total">{{ it.total | number }}</strong>
+              </div>
+
+              <div class="entity-progress">
+                <span
+                  class="entity-progress-bar"
+                  [style.width.%]="topLocacion[0].total ? it.total / topLocacion[0].total * 100 : 0">
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noLocations>
+          <div class="entity-empty">
+            <span *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando...</span></span>
+            <ng-container *ngIf="!loadingEntidades">Sin lugares detectados</ng-container>
+          </div>
+        </ng-template>
+      </article>
+
+    </div>
+  </section>
+
+  <section data-statistics-section="sentiment" class="section-block">
 
     <div class="section-heading">
       <div>
@@ -713,8 +706,301 @@
     </div>
   </section>
 
-  <!-- COMENTARIOS PRO -->
-  <section class="section-block comments-section">
+  <ng-container *ngTemplateOutlet="insights?.sentiment ?? null"></ng-container>
+
+  <section data-statistics-section="detail" class="section-block explore-section">
+
+    <div class="section-heading">
+      <h2>Análisis detallado</h2>
+    </div>
+
+    <!-- ENTIDADES POR TÓPICO -->
+    <article class="explore-main-card">
+
+      <div class="card-head">
+        <div>
+          <div class="card-title">Entidades por tópico</div>
+          <div class="card-sub">
+            Personas, organizaciones y lugares relacionados
+          </div>
+        </div>
+
+        <div class="entity-topic-toggle">
+          <button
+            type="button"
+            [class.active]="selectedTopicEntityType === 'persona'"
+            (click)="selectedTopicEntityType = 'persona'">
+            Personas
+          </button>
+
+          <button
+            type="button"
+            [class.active]="selectedTopicEntityType === 'organizacion'"
+            (click)="selectedTopicEntityType = 'organizacion'">
+            Organizaciones
+          </button>
+
+          <button
+            type="button"
+            [class.active]="selectedTopicEntityType === 'locacion'"
+            (click)="selectedTopicEntityType = 'locacion'">
+            Lugares
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="loadingCruces" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando sección…</span></div>
+
+      <div
+        class="topic-entities-grid" data-report-chart="Entidades mencionadas por tópico"
+        *ngIf="groupedEntitiesByTopic.length; else noTopicEntities">
+
+        <article
+          class="topic-entity-card"
+          *ngFor="let topic of groupedEntitiesByTopic">
+
+          <div class="topic-entity-header">
+            <div class="topic-entity-title">
+              {{ topic.topic_name }}
+            </div>
+            <div class="topic-entity-total">
+              {{ topic.total | number }}
+            </div>
+          </div>
+
+          <div class="topic-entity-list">
+            <div
+              class="topic-entity-row"
+              *ngFor="let entity of topic.entities; let i = index">
+
+              <div class="topic-entity-rank">
+                {{ i + 1 }}
+              </div>
+
+              <div class="topic-entity-content">
+                <div class="topic-entity-line">
+                  <span class="topic-entity-name">
+                    {{ entity.entidad }}
+                  </span>
+                  <span class="topic-entity-value">
+                    {{ entity.total | number }}
+                  </span>
+                </div>
+
+                <div class="topic-entity-bar">
+                  <div
+                    class="topic-entity-bar-fill"
+                    [style.width.%]="topic.entities[0].total ? entity.total / topic.entities[0].total * 100 : 0">
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <ng-template #noTopicEntities>
+        <div class="empty-state" *ngIf="!loadingCruces">
+          <span class="material-icons">account_tree</span>
+          <div>
+            <strong>Sin entidades relacionadas</strong>
+            <p>No hay relaciones disponibles para estos filtros.</p>
+          </div>
+        </div>
+      </ng-template>
+
+    </article>
+
+    <!-- ÍNDICE Y CUENTAS ACTIVAS -->
+    <div class="explore-distributions">
+
+      <article class="explore-secondary-card chart">
+        <div class="card-head">
+          <div>
+            <div class="card-title">
+              Balance del tono por cuenta
+            </div>
+
+            <div class="card-sub">
+              Porcentaje de publicaciones positivas menos el porcentaje de negativas.
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="iconbtn"
+            (click)="downloadChart($event)"
+            title="Descargar gráfico">
+            <i class="fas fa-download" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div
+          class="chart-wrap explore-small-chart"
+          *ngIf="userIndice.length && !loadingResumen">
+
+          <canvas role="img" aria-label="Balance del tono por fuente"
+            baseChart
+            [plugins]="rankingPlugins"
+            [type]="'bar'"
+            [data]="userIndiceChartData"
+            [options]="userIndiceChartOptions">
+          </canvas>
+        </div>
+
+        <div
+          class="empty-state compact"
+          *ngIf="!userIndice.length && !loadingResumen">
+          <span class="material-icons">analytics</span>
+          <div>
+            <strong>Sin datos de sentimiento</strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="explore-secondary-card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Cuentas más activas</div>
+                      </div>
+        </div>
+
+        <div *ngIf="loadingFuentes" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando sección…</span></div>
+
+        <ol class="user-list" *ngIf="!loadingFuentes" [attr.data-report-chart]="topUsers.length ? 'Publicaciones por cuenta' : null">
+          <li
+            *ngFor="let u of topUsers; trackBy: trackByUser">
+
+            <div class="u-left">
+              <span class="u-name">{{ u.usuario }}</span>
+            </div>
+
+            <div class="u-right">
+              <span class="u-val mono">{{ u.total | number }}</span>
+              <span
+                class="u-bar"
+                [style.width.%]="calcUserBar(u.total)">
+              </span>
+            </div>
+          </li>
+        </ol>
+      </article>
+
+    </div>
+
+    <!-- DETALLE DEL ÍNDICE -->
+    <article class="explore-main-card">
+
+      <div class="card-head">
+        <div>
+          <div class="card-title">Detalle por cuenta</div>
+          <div class="card-sub">
+            Publicaciones positivas y negativas, total y balance del tono
+          </div>
+        </div>
+      </div>
+
+      <div class="table compact" data-report-chart="Detalle del tono de las publicaciones por cuenta" *ngIf="userIndice.length">
+
+        <div class="t-head">
+          <span>Cuenta</span>
+          <span class="t-num">Positivas</span>
+          <span class="t-num">Negativas</span>
+          <span class="t-num">Total</span>
+          <span class="t-num">Balance</span>
+        </div>
+
+        <div
+          class="t-row"
+          *ngFor="let it of userIndice; trackBy: trackByIndiceUser">
+
+          <div class="t-user multiline" [title]="it.TweetUser">
+            {{ it.TweetUser }}
+          </div>
+
+          <div class="t-num mono">{{ it.pos | number }}</div>
+          <div class="t-num mono">{{ it.neg | number }}</div>
+          <div class="t-num mono t-strong">
+            {{ it.total | number }}
+          </div>
+
+          <div class="t-ind">
+            <span class="t-ind-val mono">
+              {{ formatIndice(it.indice) }}
+            </span>
+
+            <span
+              class="t-ind-bar"
+              [style.width.%]="calcIndiceBar(it.indice)">
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      <div
+        class="empty-state compact"
+        *ngIf="!userIndice.length && !loadingResumen">
+        <span class="material-icons">table_chart</span>
+        <div>
+          <strong>Sin información disponible</strong>
+        </div>
+      </div>
+
+    </article>
+
+    <!-- NUBE DE PALABRAS -->
+    <article class="explore-main-card">
+
+      <div class="card-head">
+        <div>
+          <div class="card-title">Palabras más utilizadas</div>
+                  </div>
+
+        <button
+          type="button"
+          class="iconbtn nv-progress-button"
+          [class.is-loading]="loadingWordcloud" [attr.aria-busy]="loadingWordcloud"
+          (click)="loadWordcloud()"
+          [disabled]="loadingWordcloud"
+          [attr.aria-label]="wordcloudRequested ? 'Actualizar nube de palabras' : 'Generar nube de palabras'"
+          [attr.title]="wordcloudRequested ? 'Actualizar nube de palabras' : 'Generar nube de palabras'">
+          <span class="material-icons nv-progress-label" aria-hidden="true">refresh</span>
+          <span *ngIf="loadingWordcloud" class="nv-loading-indicator" aria-hidden="true"></span>
+        </button>
+      </div>
+
+      <div class="wordcloud-body">
+
+        <div *ngIf="loadingWordcloud" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando nube de palabras…</span></div>
+
+        <img
+          *ngIf="!loadingWordcloud && wordcloudUrl"
+          [src]="wordcloudUrl"
+          alt="Nube de palabras"
+          class="wordcloud-img" />
+
+        <div
+          class="wc-empty"
+          *ngIf="!loadingWordcloud && !wordcloudUrl">
+          <div class="empty-title">
+            {{ wordcloudRequested ? 'Sin datos suficientes' : 'Nube de palabras' }}
+          </div>
+          <button *ngIf="!wordcloudRequested" type="button" class="iconbtn"
+            (click)="loadWordcloud()">Generar nube</button>
+          <div class="empty-sub" *ngIf="wordcloudRequested">
+            Prueba otro período o cambia los filtros.
+          </div>
+        </div>
+
+      </div>
+
+    </article>
+
+  </section>
+
+  <section data-statistics-section="audience" class="section-block comments-section">
 
     <ng-container *ngIf="!accessLoading && canViewReplies">
 
@@ -904,299 +1190,6 @@
         </div>
       </div>
     </div>
-
-  </section>
-
-  <!-- ANÁLISIS COMPLEMENTARIO -->
-  <section class="section-block explore-section">
-
-    <div class="section-heading">
-      <h2>Análisis detallado</h2>
-    </div>
-
-    <!-- ENTIDADES POR TÓPICO -->
-    <article class="explore-main-card">
-
-      <div class="card-head">
-        <div>
-          <div class="card-title">Entidades por tópico</div>
-          <div class="card-sub">
-            Personas, organizaciones y lugares relacionados
-          </div>
-        </div>
-
-        <div class="entity-topic-toggle">
-          <button
-            type="button"
-            [class.active]="selectedTopicEntityType === 'persona'"
-            (click)="selectedTopicEntityType = 'persona'">
-            Personas
-          </button>
-
-          <button
-            type="button"
-            [class.active]="selectedTopicEntityType === 'organizacion'"
-            (click)="selectedTopicEntityType = 'organizacion'">
-            Organizaciones
-          </button>
-
-          <button
-            type="button"
-            [class.active]="selectedTopicEntityType === 'locacion'"
-            (click)="selectedTopicEntityType = 'locacion'">
-            Lugares
-          </button>
-        </div>
-      </div>
-
-      <div *ngIf="loadingCruces" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando sección…</span></div>
-
-      <div
-        class="topic-entities-grid"
-        *ngIf="groupedEntitiesByTopic.length; else noTopicEntities">
-
-        <article
-          class="topic-entity-card"
-          *ngFor="let topic of groupedEntitiesByTopic">
-
-          <div class="topic-entity-header">
-            <div class="topic-entity-title">
-              {{ topic.topic_name }}
-            </div>
-            <div class="topic-entity-total">
-              {{ topic.total | number }}
-            </div>
-          </div>
-
-          <div class="topic-entity-list">
-            <div
-              class="topic-entity-row"
-              *ngFor="let entity of topic.entities; let i = index">
-
-              <div class="topic-entity-rank">
-                {{ i + 1 }}
-              </div>
-
-              <div class="topic-entity-content">
-                <div class="topic-entity-line">
-                  <span class="topic-entity-name">
-                    {{ entity.entidad }}
-                  </span>
-                  <span class="topic-entity-value">
-                    {{ entity.total | number }}
-                  </span>
-                </div>
-
-                <div class="topic-entity-bar">
-                  <div
-                    class="topic-entity-bar-fill"
-                    [style.width.%]="topic.entities[0].total ? entity.total / topic.entities[0].total * 100 : 0">
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </article>
-      </div>
-
-      <ng-template #noTopicEntities>
-        <div class="empty-state" *ngIf="!loadingCruces">
-          <span class="material-icons">account_tree</span>
-          <div>
-            <strong>Sin entidades relacionadas</strong>
-            <p>No hay relaciones disponibles para estos filtros.</p>
-          </div>
-        </div>
-      </ng-template>
-
-    </article>
-
-    <!-- ÍNDICE Y CUENTAS ACTIVAS -->
-    <div class="explore-distributions">
-
-      <article class="explore-secondary-card chart">
-        <div class="card-head">
-          <div>
-            <div class="card-title">
-              Índice de sentimiento por cuenta
-            </div>
-
-            <div class="card-sub">
-              Comparación de las principales cuentas
-            </div>
-          </div>
-
-          <button
-            type="button"
-            class="iconbtn"
-            (click)="downloadChart($event)"
-            title="Descargar gráfico">
-            <i class="fas fa-download" aria-hidden="true"></i>
-          </button>
-        </div>
-
-        <div
-          class="chart-wrap explore-small-chart"
-          *ngIf="userIndice.length && !loadingResumen">
-
-          <canvas role="img" aria-label="Índice de sentimiento por fuente"
-            baseChart
-            [plugins]="rankingPlugins"
-            [type]="'bar'"
-            [data]="userIndiceChartData"
-            [options]="userIndiceChartOptions">
-          </canvas>
-        </div>
-
-        <div
-          class="empty-state compact"
-          *ngIf="!userIndice.length && !loadingResumen">
-          <span class="material-icons">analytics</span>
-          <div>
-            <strong>Sin datos de sentimiento</strong>
-          </div>
-        </div>
-      </article>
-
-      <article class="explore-secondary-card">
-        <div class="card-head">
-          <div>
-            <div class="card-title">Cuentas más activas</div>
-                      </div>
-        </div>
-
-        <div *ngIf="loadingFuentes" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando sección…</span></div>
-
-        <ol class="user-list" *ngIf="!loadingFuentes">
-          <li
-            *ngFor="let u of topUsers; trackBy: trackByUser">
-
-            <div class="u-left">
-              <span class="u-name">{{ u.usuario }}</span>
-            </div>
-
-            <div class="u-right">
-              <span class="u-val mono">{{ u.total | number }}</span>
-              <span
-                class="u-bar"
-                [style.width.%]="calcUserBar(u.total)">
-              </span>
-            </div>
-          </li>
-        </ol>
-      </article>
-
-    </div>
-
-    <!-- DETALLE DEL ÍNDICE -->
-    <article class="explore-main-card">
-
-      <div class="card-head">
-        <div>
-          <div class="card-title">Detalle por cuenta</div>
-          <div class="card-sub">
-            Publicaciones positivas, negativas e índice de sentimiento
-          </div>
-        </div>
-      </div>
-
-      <div class="table compact" *ngIf="userIndice.length">
-
-        <div class="t-head">
-          <span>Cuenta</span>
-          <span class="t-num">Pos</span>
-          <span class="t-num">Neg</span>
-          <span class="t-num">Total</span>
-          <span class="t-num">Índice</span>
-        </div>
-
-        <div
-          class="t-row"
-          *ngFor="let it of userIndice; trackBy: trackByIndiceUser">
-
-          <div class="t-user multiline" [title]="it.TweetUser">
-            {{ it.TweetUser }}
-          </div>
-
-          <div class="t-num mono">{{ it.pos | number }}</div>
-          <div class="t-num mono">{{ it.neg | number }}</div>
-          <div class="t-num mono t-strong">
-            {{ it.total | number }}
-          </div>
-
-          <div class="t-ind">
-            <span class="t-ind-val mono">
-              {{ formatIndice(it.indice) }}
-            </span>
-
-            <span
-              class="t-ind-bar"
-              [style.width.%]="calcIndiceBar(it.indice)">
-            </span>
-          </div>
-        </div>
-
-      </div>
-
-      <div
-        class="empty-state compact"
-        *ngIf="!userIndice.length && !loadingResumen">
-        <span class="material-icons">table_chart</span>
-        <div>
-          <strong>Sin información disponible</strong>
-        </div>
-      </div>
-
-    </article>
-
-    <!-- NUBE DE PALABRAS -->
-    <article class="explore-main-card">
-
-      <div class="card-head">
-        <div>
-          <div class="card-title">Palabras más utilizadas</div>
-                  </div>
-
-        <button
-          type="button"
-          class="iconbtn nv-progress-button"
-          [class.is-loading]="loadingWordcloud" [attr.aria-busy]="loadingWordcloud"
-          (click)="loadWordcloud()"
-          [disabled]="loadingWordcloud"
-          [attr.aria-label]="wordcloudRequested ? 'Actualizar nube de palabras' : 'Generar nube de palabras'"
-          [attr.title]="wordcloudRequested ? 'Actualizar nube de palabras' : 'Generar nube de palabras'">
-          <span class="material-icons nv-progress-label" aria-hidden="true">refresh</span>
-          <span *ngIf="loadingWordcloud" class="nv-loading-indicator" aria-hidden="true"></span>
-        </button>
-      </div>
-
-      <div class="wordcloud-body">
-
-        <div *ngIf="loadingWordcloud" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando nube de palabras…</span></div>
-
-        <img
-          *ngIf="!loadingWordcloud && wordcloudUrl"
-          [src]="wordcloudUrl"
-          alt="Nube de palabras"
-          class="wordcloud-img" />
-
-        <div
-          class="wc-empty"
-          *ngIf="!loadingWordcloud && !wordcloudUrl">
-          <div class="empty-title">
-            {{ wordcloudRequested ? 'Sin datos suficientes' : 'Nube de palabras' }}
-          </div>
-          <button *ngIf="!wordcloudRequested" type="button" class="iconbtn"
-            (click)="loadWordcloud()">Generar nube</button>
-          <div class="empty-sub" *ngIf="wordcloudRequested">
-            Prueba otro período o cambia los filtros.
-          </div>
-        </div>
-
-      </div>
-
-    </article>
 
   </section>
 

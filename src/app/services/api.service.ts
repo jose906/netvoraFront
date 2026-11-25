@@ -1,3 +1,4 @@
+import { StatisticsFilters, StatisticsInsights } from '../estadisticas/statistics-insights';
 import { RadarActor, RadarCadence, RadarFilters, RadarSnapshot, RadarState, RadarStory, RadarWatch } from '../interfaces/radar';
 import { DashboardEntityType, DashboardEvidence, DashboardEvidenceFilters } from '../interfaces/dashboard-evidence';
 import { environment } from '../../environments/environment';
@@ -75,6 +76,10 @@ getTopicPulse(body: {
   );
 
   
+}
+
+getStatisticsInsights(filters: StatisticsFilters): Observable<StatisticsInsights> {
+  return this.http.post<StatisticsInsights>(this.apiUrl + 'estadisticas/analisis', filters);
 }
 
 getStatsResumen(params: any): Observable<Partial<StatsResponse>> {

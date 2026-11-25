@@ -73,7 +73,6 @@ export class StanceComentariosComponent implements OnInit, OnChanges, OnDestroy 
   sourceSort: SourceSort = 'processed';
   sourceQuery = '';
   topicQuery = '';
-  expandedTopicId: number | null = null;
 
   loadingSummary = false;
   loadingSources = false;
@@ -261,7 +260,6 @@ export class StanceComentariosComponent implements OnInit, OnChanges, OnDestroy 
     this.sourcesError = '';
     this.timelineError = '';
     this.lastUpdated = null;
-    this.expandedTopicId = null;
     this.summary = this.emptySummary();
     this.sources = [];
     this.timeline = [];
@@ -445,10 +443,6 @@ export class StanceComentariosComponent implements OnInit, OnChanges, OnDestroy 
         return score(b) - score(a) ||
           String(a.source_name).localeCompare(String(b.source_name), 'es');
       });
-  }
-
-  toggleTopic(topicId: number): void {
-    this.expandedTopicId = this.expandedTopicId === topicId ? null : topicId;
   }
 
   topicTotal(topic: StanceTopic): number {

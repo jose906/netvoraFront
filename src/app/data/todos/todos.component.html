@@ -35,7 +35,7 @@
   <ng-container *ngIf="!filterMessage">
 
   <!-- CARGA GLOBAL -->
-  <div *ngIf="cargandoDashboard" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Actualizando los datos del dashboard…</span></div>
+  <div *ngIf="cargandoDashboard" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Actualizando los datos de estadísticas…</span></div>
 
   
   <!-- ========================================= -->
@@ -45,7 +45,7 @@
   <section class="metrics-grid overview-metrics" aria-label="Indicadores del período">
 
     <!-- PUBLICACIONES -->
-    <article class="metric-card">
+    <article class="metric-card nv-quiet-surface">
       <div class="metric-top">
         <span class="metric-label">Publicaciones</span>
         <span class="metric-icon">
@@ -64,7 +64,7 @@
 
     <!-- COMENTARIOS PRO -->
     <article
-      class="metric-card"
+      class="metric-card nv-quiet-surface"
       [class.metric-card--locked]="!accessLoading && !canViewReplies">
 
       <div class="metric-top">
@@ -123,7 +123,7 @@
     </article>
 
     <!-- CUENTAS -->
-    <article class="metric-card">
+    <article class="metric-card nv-quiet-surface">
       <div class="metric-top">
         <span class="metric-label">Cuentas analizadas</span>
         <span class="metric-icon">

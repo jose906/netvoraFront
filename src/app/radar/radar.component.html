@@ -1,7 +1,10 @@
 <main class="radar-shell nv-page">
-  <header class="radar-head nv-page-heading">
-    <h1>Radar</h1>
-    <a class="radar-button primary" routerLink="/estadisticas">
+  <header class="radar-head nv-page-heading nv-banner">
+    <div>
+      <img class="nv-wordmark" src="logo2.png" width="118" height="24" alt="NetVora">
+      <h1>Radar</h1>
+    </div>
+    <a class="radar-button primary nv-banner-action" routerLink="/estadisticas">
       <i class="fa-solid fa-plus" aria-hidden="true"></i> Nuevo seguimiento
     </a>
   </header>
@@ -29,7 +32,7 @@
     <button type="button" (click)="loadWatches()">Reintentar</button>
   </div>
   <div *ngIf="notice && tab !== 'evidence'" class="radar-notice radar-notice-success" role="status">{{ notice }}</div>
-  <section *ngIf="!loading && !watches.length && !errors.watches" class="radar-card radar-empty">
+  <section *ngIf="!loading && !watches.length && !errors.watches" class="nv-quiet-surface radar-card radar-empty">
     <i class="fa-solid fa-satellite-dish" aria-hidden="true"></i>
     <h2>Añade tu primer seguimiento</h2>
     <p>Elige un tema o un conjunto de fuentes en Estadísticas y selecciona «Seguir conversación».</p>
@@ -37,7 +40,7 @@
   </section>
 
   <div class="radar-grid" *ngIf="watches.length">
-    <aside class="radar-card radar-sidebar" aria-label="Seguimientos">
+    <aside class="nv-quiet-surface radar-card radar-sidebar" aria-label="Seguimientos">
       <div class="radar-panel-heading"><h2>Seguimientos</h2><span>{{ watches.length | number }}</span></div>
       <button *ngFor="let watch of watches" class="watch" type="button" [attr.aria-pressed]="watch.id === selected?.id"
         (click)="select(watch)">
@@ -46,7 +49,7 @@
       </button>
     </aside>
     <div class="radar-content" *ngIf="selected as watch">
-      <section class="radar-card radar-workspace nv-quiet-surface">
+      <section class="nv-quiet-surface radar-card radar-workspace">
         <div class="radar-workspace-heading">
           <div class="radar-watch-title">
             <h2>{{ watch.name }}</h2>
@@ -96,7 +99,7 @@
         <button type="button" (click)="loadHistory()">Recargar historial</button>
       </div>
 
-      <div *ngIf="tab !== 'stories' && snapshot as day" class="radar-card radar-toolbar radar-daybar">
+      <div *ngIf="tab !== 'stories' && snapshot as day" class="nv-quiet-surface radar-card radar-toolbar radar-daybar">
         <label for="radar-observation-day">Día observado</label>
         <select id="radar-observation-day" [ngModel]="day" [disabled]="loadingHistory" (ngModelChange)="selectDay($event)">
           <option *ngFor="let item of history" [ngValue]="item">
@@ -115,12 +118,12 @@
       </div>
 
       <ng-container *ngIf="tab === 'signals'">
-        <section *ngIf="!snapshot && !loadingHistory && !errors.history" class="radar-card radar-empty">
+        <section *ngIf="!snapshot && !loadingHistory && !errors.history" class="nv-quiet-surface radar-card radar-empty">
           <h3>Aún no hay evaluaciones</h3>
           <p>Evalúa el último día completo para consultar señales y publicaciones.</p>
         </section>
         <ng-container *ngIf="snapshot as day">
-          <section class="radar-card radar-overview">
+          <section class="nv-quiet-surface radar-card radar-overview">
             <div class="radar-panel-heading">
               <h3>Resumen del día</h3>
               <a class="radar-analysis-link" routerLink="/estadisticas" [queryParams]="analyticsParams()">
@@ -154,7 +157,7 @@
 
           </section>
           <div class="radar-summary-grid">
-            <section class="radar-card radar-signals" aria-labelledby="radar-signals-title">
+            <section class="nv-quiet-surface radar-card radar-signals" aria-labelledby="radar-signals-title">
               <div class="radar-panel-heading radar-section-heading">
                 <h3 id="radar-signals-title">Señales del día</h3><span>{{ day.evidence.signals.length | number }}</span>
               </div>
@@ -174,7 +177,7 @@
                 Revisar evidencia <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
               </button>
             </section>
-            <section class="radar-card radar-activity" *ngIf="recentActivity.length" aria-label="Volumen de los días evaluados">
+            <section class="nv-quiet-surface radar-card radar-activity" *ngIf="recentActivity.length" aria-label="Volumen de los días evaluados">
               <div class="radar-panel-heading">
                 <h3>Volumen por día</h3>
                 <label for="radar-activity-limit">Evaluaciones
@@ -228,7 +231,7 @@
             </section>
 
           </div>
-            <section class="radar-card radar-comparisons">
+            <section class="nv-quiet-surface radar-card radar-comparisons">
               <div class="radar-panel-heading">
                 <h3>Fuentes y tópicos</h3>
                 <div class="radar-legend"><span>Día observado</span><span>Mismo día de la semana anterior</span></div>
@@ -268,7 +271,7 @@
       </ng-container>
 
       <div #evidencePanel class="radar-evidence-panel">
-        <section class="radar-card" *ngIf="tab === 'evidence'">
+        <section class="nv-quiet-surface radar-card" *ngIf="tab === 'evidence'">
           <div class="radar-panel-heading radar-section-heading">
             <h3 tabindex="-1">Evidencia del día</h3>
             <a *ngIf="snapshot" class="radar-analysis-link" routerLink="/estadisticas" [queryParams]="analyticsParams()">Ver en Estadísticas</a>
@@ -307,7 +310,7 @@
         </section>
       </div>
 
-      <section class="radar-card" *ngIf="tab === 'stories'">
+      <section class="nv-quiet-surface radar-card" *ngIf="tab === 'stories'">
         <h3>Historias de la conversación</h3>
         <form class="radar-toolbar" (ngSubmit)="loadStories()">
           <input name="query" [(ngModel)]="query" maxlength="200" aria-label="Buscar historias" placeholder="Buscar texto o variantes con |">
@@ -342,7 +345,7 @@
         </div>
       </section>
 
-      <section class="radar-card" *ngIf="tab === 'actors'">
+      <section class="nv-quiet-surface radar-card" *ngIf="tab === 'actors'">
         <h3>Actores de la conversación</h3>
         <p *ngIf="!snapshot && !loadingHistory && !errors.history">Evalúa un día para consultar quién publicó y quién fue mencionado.</p>
         <ng-container *ngIf="snapshot as day">
@@ -382,7 +385,7 @@
         </ng-container>
       </section>
 
-      <section class="radar-card" *ngIf="tab === 'brief'">
+      <section class="nv-quiet-surface radar-card" *ngIf="tab === 'brief'">
         <div class="radar-panel-heading radar-section-heading">
           <h3>Informe del día</h3>
           <div class="radar-toolbar" *ngIf="snapshot">

@@ -12,11 +12,12 @@
 
   ====================================================== -->
 
-  <div class="toolbar-main nv-page-heading">
+  <header class="toolbar-main nv-page-heading nv-banner">
 
     <!-- TÍTULO / VISTA ACTUAL -->
 
     <div class="toolbar-title">
+      <img class="nv-wordmark" src="logo2.png" width="118" height="24" alt="NetVora">
 
 
       <div class="toolbar-title-row">
@@ -35,7 +36,7 @@
 
         type="button"
 
-        class="toolbar-filter-button"
+        class="toolbar-filter-button nv-banner-action"
         aria-label="Filtros"
         [attr.aria-expanded]="filtersOpen"
 
@@ -61,7 +62,7 @@
 
     </div>
 
-  </div>
+  </header>
 
   <!-- =====================================================
 
@@ -84,6 +85,7 @@
       class="category-tab"
 
       [class.is-active]="selectedComponent === 'todos'"
+      [attr.aria-pressed]="selectedComponent === 'todos'"
 
       (click)="goToView('todos', 'Estadísticas generales', 'todos')">
 
@@ -102,6 +104,7 @@
       class="category-tab"
 
       [class.is-active]="selectedComponent === 'politica'"
+      [attr.aria-pressed]="selectedComponent === 'politica'"
 
       (click)="goToView('politica', 'Política', 'Medio')">
 
@@ -120,6 +123,7 @@
       class="category-tab"
 
       [class.is-active]="selectedComponent === 'economia'"
+      [attr.aria-pressed]="selectedComponent === 'economia'"
 
       (click)="goToView('economia', 'Economía', 'Medio')">
 
@@ -138,6 +142,7 @@
       class="category-tab"
 
       [class.is-active]="selectedComponent === 'seguridad'"
+      [attr.aria-pressed]="selectedComponent === 'seguridad'"
 
       (click)="goToView('seguridad', 'Seguridad', 'Medio')">
 
@@ -156,6 +161,7 @@
       class="category-tab"
 
       [class.is-active]="selectedComponent === 'sociedad'"
+      [attr.aria-pressed]="selectedComponent === 'sociedad'"
 
       (click)="goToView('sociedad', 'Sociedad', 'Medio')">
 
@@ -220,6 +226,7 @@
           class="dropdown-item"
 
           [class.is-active]="selectedComponent === 'deportes'"
+      [attr.aria-pressed]="selectedComponent === 'deportes'"
 
           (click)="goToView('deportes', 'Deportes', 'Medio')">
 
@@ -246,6 +253,7 @@
           class="dropdown-item"
 
           [class.is-active]="selectedComponent === 'ambiente'"
+      [attr.aria-pressed]="selectedComponent === 'ambiente'"
 
           (click)="goToView('ambiente', 'Medio ambiente', 'Medio')">
 
@@ -272,6 +280,7 @@
           class="dropdown-item"
 
           [class.is-active]="selectedComponent === 'salud'"
+      [attr.aria-pressed]="selectedComponent === 'salud'"
 
           (click)="goToView('salud', 'Salud', 'Medio')">
 
@@ -298,6 +307,7 @@
           class="dropdown-item"
 
           [class.is-active]="selectedComponent === 'educacion'"
+      [attr.aria-pressed]="selectedComponent === 'educacion'"
 
           (click)="goToView('educacion', 'Educación', 'Medio')">
 
@@ -324,6 +334,7 @@
           class="dropdown-item"
 
           [class.is-active]="selectedComponent === 'gestiones'"
+      [attr.aria-pressed]="selectedComponent === 'gestiones'"
 
           (click)="goToView('gestiones', 'Gestiones públicas', 'Medio')">
 
@@ -350,6 +361,7 @@
           class="dropdown-item"
 
           [class.is-active]="selectedComponent === 'otros'"
+      [attr.aria-pressed]="selectedComponent === 'otros'"
 
           (click)="goToView('otros', 'Otros', 'Medio')">
 
@@ -422,6 +434,7 @@
           class="dropdown-item"
 
           [class.is-active]="selectedComponent === 'entidades'"
+      [attr.aria-pressed]="selectedComponent === 'entidades'"
 
           (click)="goToView('entidades', 'Entidades públicas', 'Entidad')">
 
@@ -448,6 +461,7 @@
           class="dropdown-item"
 
           [class.is-active]="selectedComponent === 'personas'"
+      [attr.aria-pressed]="selectedComponent === 'personas'"
 
           (click)="goToView('personas', 'Personas públicas', 'Persona')">
 
@@ -481,23 +495,16 @@
 
   <div class="filter-context">
 
-    <div class="filter-context-left">
+    <div class="filter-context-left" role="group" aria-label="Filtros aplicados">
 
       <div class="context-chip">
 
         <mat-icon>calendar_today</mat-icon>
 
-        <span *ngIf="!appliedEndDate">
-
-          Desde hoy
-
+        <span *ngIf="appliedStartDate as start; else noPeriod">
+          {{ start | date:'dd/MM/yyyy' }}<ng-container *ngIf="appliedEndDate as end"> al {{ end | date:'dd/MM/yyyy' }}</ng-container>
         </span>
-
-        <span *ngIf="appliedEndDate">
-
-          Rango seleccionado
-
-        </span>
+        <ng-template #noPeriod><span>Selecciona un período</span></ng-template>
 
       </div>
 
@@ -525,34 +532,18 @@
 
       </div>
 
-          <!-- TÓPICOS APLICADOS -->
-    <div class="context-chip" *ngIf="appliedSelectedTopics.length > 0">
-      <mat-icon>topic</mat-icon>
-      <span>
-        {{ appliedSelectedTopics.length }}
-        {{ appliedSelectedTopics.length === 1 ? 'tópico seleccionado' : 'tópicos seleccionados' }}
-      </span>
-    </div>
-
-<div
-
-        class="context-chip context-chip--search"
-
-        *ngIf="appliedSearchText">
-
-        <mat-icon>search</mat-icon>
-
-        <span>
-
-          "{{ appliedSearchText }}"
-
-        </span>
-
+      <div class="context-chip" *ngIf="appliedSelectedTopics.length as count">
+        <mat-icon aria-hidden="true">topic</mat-icon>
+        <span>{{ count }} {{ count === 1 ? 'tópico seleccionado' : 'tópicos seleccionados' }}</span>
       </div>
 
+      <div class="context-chip context-chip--search" *ngIf="appliedSearchText">
+        <mat-icon aria-hidden="true">search</mat-icon>
+        <span [title]="appliedSearchText">“{{ appliedSearchText }}”</span>
+      </div>
     </div>
 
-    <div class="stats-quick-actions">
+    <div class="stats-quick-actions" role="group" aria-label="Acciones rápidas">
       <button type="button" (click)="applyPreset(7)">7 días</button>
       <button type="button" (click)="applyPreset(30)">30 días</button>
       <button *ngIf="appliedSelectedUsers.length" type="button" (click)="removeAppliedFilter('accounts')">Quitar cuentas</button>
@@ -566,21 +557,6 @@
         <span *ngIf="radarMessage" role="alert" class="nv-error-state">{{ radarMessage }}</span>
       </form>
     </div>
-
-    <button
-
-      type="button"
-
-      class="change-filters-button"
-
-      (click)="toggleFilters()">
-
-      <mat-icon>tune</mat-icon>
-
-      Modificar filtros
-
-    </button>
-
   </div>
 
   <!-- =====================================================

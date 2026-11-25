@@ -1,13 +1,13 @@
 <div class="crm-page nv-page">
-  <header class="crm-header nv-page-heading">
+  <header class="crm-header nv-page-heading nv-banner">
     <div class="crm-brand">
-      <div class="crm-header-icon"><mat-icon>handshake</mat-icon></div>
       <div>
+        <img class="nv-wordmark" src="logo2.png" width="118" height="24" alt="NetVora">
         <h1>Clientes potenciales</h1>
-        <p>Gestioná contactos que aún no están registrados en NetVora.</p>
+        <p>Gestiona contactos que aún no tienen una cuenta en NetVora.</p>
       </div>
     </div>
-    <button type="button" class="crm-btn crm-primary" [disabled]="guardando" (click)="nuevo()">
+    <button type="button" class="crm-btn crm-primary nv-banner-action" [disabled]="guardando" (click)="nuevo()">
       <mat-icon>person_add</mat-icon> Agregar prospecto
     </button>
   </header>

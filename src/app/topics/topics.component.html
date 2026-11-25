@@ -1,736 +1,331 @@
-
-<div class="page nv-page nv-explore-page">
-
-  <!-- ==========================================
-       ENCABEZADO · NETVORA SIGNAL
-  =========================================== -->
-
-  <header class="signal-hero nv-feed-heading">
-
-    <div class="signal-hero-top nv-page-heading">
-
-      <div class="signal-heading">
-        <h1>
-          {{ topicName || 'Tópicos' }}
-        </h1>
-
-        <a *ngIf="topicId" class="nv-radar-link" routerLink="/estadisticas" [queryParams]="radarParams">
-          Seguir en Radar
-        </a>
-
-      </div>
-
-      <!-- SELECTOR DE TÓPICOS -->
-
+<main class="nv-page nv-explore-page topic-page topic-detail" aria-labelledby="topic-title">
+  <header class="nv-banner topic-hero">
+    <div>
+      <img class="nv-wordmark" src="logo2.png" width="118" height="24" alt="NetVora">
+      <a class="topic-breadcrumb" routerLink="/explorar-topicos">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Explorar tópicos
+      </a>
+      <h1 id="topic-title">{{ topicName || (topicId ? 'Detalle del tópico' : 'Tópicos emergentes') }}</h1>
+      <p *ngIf="!topicId">Elige un tema para ver qué medios lo cubren, cómo evoluciona y qué tono tienen sus publicaciones.</p>
+    </div>
+    <div class="topic-hero-actions">
       <div class="hero-category-switch">
-
-        <mat-form-field
-          appearance="outline"
-          class="hero-category-select">
-          <mat-label>Buscar tópico</mat-label>
-          <mat-icon matIconPrefix aria-hidden="true">search</mat-icon>
-
-          <input
-            #topicInput
-            matInput
-            aria-label="Buscar y seleccionar tópico"
-            placeholder="Escribe el nombre del tópico"
-            [value]="topicName"
+        <label class="topic-picker-label" for="topic-picker-input">{{ topicId ? 'Cambiar tópico' : 'Buscar tópico' }}</label>
+        <mat-form-field appearance="outline" class="topic-picker">
+          <i matIconPrefix class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          <input #topicInput matInput id="topic-picker-input"
+            placeholder="Buscar por nombre"
             [matAutocomplete]="topicAutocomplete"
-            (focus)="topicInput.select()"
             (input)="filtrarTopicos(topicInput.value)">
-
-          <mat-autocomplete
-            #topicAutocomplete="matAutocomplete"
+          <mat-autocomplete #topicAutocomplete="matAutocomplete"
             [displayWith]="mostrarTopico"
             (optionSelected)="cambiarTopico($event.option.value)"
             (closed)="restablecerBusqueda(topicInput)">
-
-            <mat-option class="topic-option" *ngFor="let topic of filteredTopics" [value]="topic">
+            <mat-option *ngFor="let topic of filteredTopics" [value]="topic" class="topic-option">
               <span class="topic-option-name">{{ topic.topic_name }}</span>
               <span class="topic-option-details">
-                <span class="topic-option-count" *ngIf="topic.total_posts != null">
-                  {{ topic.total_posts | number }} {{ topic.total_posts === 1 ? 'tweet' : 'tweets' }}
+                <span *ngIf="topic.total_posts != null">
+                  {{ topic.total_posts | number }} {{ topic.total_posts === 1 ? 'publicación' : 'publicaciones' }}
                 </span>
                 <span *ngIf="topic.first_seen">Primera detección · {{ topic.first_seen | date:'dd/MM/yyyy' }}</span>
               </span>
             </mat-option>
-
-            <mat-option *ngIf="filteredTopics.length === 0" disabled>
+            <mat-option *ngIf="loadingTopics" disabled>Cargando tópicos…</mat-option>
+            <mat-option *ngIf="errorTopics" disabled>No se pudo cargar el selector</mat-option>
+            <mat-option *ngIf="!loadingTopics && !errorTopics && !filteredTopics.length" disabled>
               No se encontraron tópicos
             </mat-option>
-
           </mat-autocomplete>
-
         </mat-form-field>
-
       </div>
-
+      <a *ngIf="topicId" class="topic-hero-link" routerLink="/estadisticas" [queryParams]="radarParams">
+        <i class="fa-solid fa-crosshairs" aria-hidden="true"></i> Seguir en Radar
+      </a>
     </div>
-
-    <!-- ==========================================
-         NETVORA PULSE
-    =========================================== -->
-
-    <section class="signal-pulse" *ngIf="topicId">
-
-      <!-- RESUMEN -->
-
-      <div class="pulse-summary">
-
-        <div class="pulse-section-head">
-
-          <div>
-
-            <h2>Resumen</h2>
-          </div>
-
-          <span *ngIf="cargandoPulse" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando actividad…</span></span>
-
-        </div>
-
-        <div class="pulse-metrics">
-
-          <!-- PUBLICACIONES -->
-
-          <div class="pulse-metric">
-
-            <span class="pulse-metric-label">Publicaciones</span>
-
-            <strong class="pulse-metric-value">
-              {{ totalPublicaciones | number }}
-            </strong>
-          </div>
-
-          <!-- MEDIOS -->
-
-          <div class="pulse-metric">
-
-            <span class="pulse-metric-label">Medios</span>
-
-            <strong class="pulse-metric-value">
-              {{ totalFuentes | number }}
-            </strong>
-          </div>
-
-          <!-- COMENTARIOS -->
-
-          <div class="pulse-metric">
-
-            <span class="pulse-metric-label">Comentarios</span>
-
-            <strong class="pulse-metric-value">
-              {{ totalComentarios | number }}
-            </strong>
-          </div>
-
-          <!-- TONO DOMINANTE -->
-
-          <div class="pulse-metric">
-
-            <span class="pulse-metric-label">Tono dominante</span>
-
-            <strong
-              class="pulse-metric-value pulse-tone"
-              [ngClass]="{
-                'positive': sentimientoDominante.toLowerCase() === 'positivo',
-                'negative': sentimientoDominante.toLowerCase() === 'negativo',
-                'neutral': sentimientoDominante.toLowerCase() === 'neutro'
-              }">
-
-              {{ sentimientoDominante }}
-
-            </strong>
-          </div>
-
-        </div>
-
-      </div>
-
-      <!-- ==========================================
-           ACTIVIDAD DE LOS ÚLTIMOS 7 DÍAS
-      =========================================== -->
-
-      <div class="pulse-activity">
-
-        <div class="pulse-block-head">
-
-          <div>
-            <h3>Actividad de los últimos 7 días</h3>
-          </div>
-
-          <div class="pulse-average">
-            <strong>{{ pulseAverage7d | number }}</strong>
-            <span>promedio diario</span>
-          </div>
-
-        </div>
-
-        <div
-          class="pulse-chart"
-          *ngIf="pulseActivity.length > 0">
-
-          <div
-            class="pulse-bar-column"
-            *ngFor="let item of pulseActivity">
-
-            <span class="pulse-bar-value">
-              {{ item.total }}
-            </span>
-
-            <div class="pulse-bar-track">
-
-              <div
-                class="pulse-bar"
-                [style.height.%]="getPulseHeight(item.total)">
-              </div>
-
-            </div>
-
-            <span class="pulse-bar-date">
-              {{ formatPulseDate(item.date) }}
-            </span>
-
-          </div>
-
-        </div>
-
-        <div
-          class="pulse-chart-empty"
-          *ngIf="!cargandoPulse && pulseActivity.length === 0">
-          Sin actividad registrada en los últimos 7 días.
-        </div>
-
-      </div>
-
-      <!-- ==========================================
-           SENTIMIENTO
-      =========================================== -->
-
-      <div class="pulse-sentiment">
-
-        <div class="pulse-block-head">
-
-          <div>
-            <h3>Sentimiento</h3>
-            <p class="sentiment-count" *ngIf="!cargandoPulse && pulse">
-              {{ totalSentimientos | number }} de {{ totalPublicaciones | number }} publicaciones clasificadas<span
-                *ngIf="publicacionesSinClasificar"> · {{ publicacionesSinClasificar | number }} sin clasificar</span>.
-              Los porcentajes se calculan sobre las clasificadas.
-            </p>
-            <a *ngIf="datos.length" href="#topic-publications" class="sentiment-count"
-              (click)="$event.preventDefault(); publicationExamples.scrollIntoView()">Ver publicaciones y su tono</a>
-          </div>
-
-        </div>
-
-        <!-- POSITIVO -->
-
-        <div class="sentiment-row">
-
-          <div class="sentiment-row-top">
-
-            <span class="sentiment-name">
-              <span class="sentiment-dot positive"></span>
-              Positivo
-            </span>
-
-            <strong>{{ porcentajePositivo }}%</strong>
-
-          </div>
-
-          <div class="sentiment-track">
-            <div
-              class="sentiment-fill positive"
-              [style.width.%]="porcentajePositivo">
-            </div>
-          </div>
-
-          <span class="sentiment-count">
-            {{ positivos | number }} publicaciones
-          </span>
-
-        </div>
-
-        <!-- NEUTRO -->
-
-        <div class="sentiment-row">
-
-          <div class="sentiment-row-top">
-
-            <span class="sentiment-name">
-              <span class="sentiment-dot neutral"></span>
-              Neutro
-            </span>
-
-            <strong>{{ porcentajeNeutro }}%</strong>
-
-          </div>
-
-          <div class="sentiment-track">
-            <div
-              class="sentiment-fill neutral"
-              [style.width.%]="porcentajeNeutro">
-            </div>
-          </div>
-
-          <span class="sentiment-count">
-            {{ neutros | number }} publicaciones
-          </span>
-
-        </div>
-
-        <!-- NEGATIVO -->
-
-        <div class="sentiment-row">
-
-          <div class="sentiment-row-top">
-
-            <span class="sentiment-name">
-              <span class="sentiment-dot negative"></span>
-              Negativo
-            </span>
-
-            <strong>{{ porcentajeNegativo }}%</strong>
-
-          </div>
-
-          <div class="sentiment-track">
-            <div
-              class="sentiment-fill negative"
-              [style.width.%]="porcentajeNegativo">
-            </div>
-          </div>
-
-          <span class="sentiment-count">
-            {{ negativos | number }} publicaciones
-          </span>
-
-        </div>
-
-      </div>
-
-      <!-- ERROR DEL PULSE -->
-
-      <div
-        *ngIf="!cargandoPulse && errorPulse"
-        class="pulse-error nv-error-state" role="alert">
-        {{ errorPulse }}
-      </div>
-
-    </section>
-
   </header>
 
+  <div *ngIf="errorTopics" class="topic-feedback nv-error-state" role="alert">
+    <span>No se pudo cargar la lista de tópicos.</span>
+    <button class="nv-retry" type="button" (click)="loadTopics()">Reintentar</button>
+  </div>
 
-  <!-- ==========================================
-       FILTROS
-  =========================================== -->
+  <ng-container *ngIf="!topicId">
+    <div *ngIf="loadingTopics" class="nv-loading-state" role="status">Cargando tópicos…</div>
 
-  <section *ngIf="topicId" class="nv-filter-panel" aria-label="Filtros de publicaciones">
-    <div class="nv-filter-grid">
+    <section *ngIf="recentTopics.length" class="topic-surface topic-recent" aria-labelledby="recent-title">
+      <div class="topic-recent-heading">
+        <h2 id="recent-title">Actividad reciente</h2>
+        <a class="topic-action" routerLink="/explorar-topicos">
+          Ver catálogo <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+        </a>
+      </div>
+      <ul>
+        <li *ngFor="let topic of recentTopics">
+          <a [routerLink]="['/topics', topic.topic_id]"
+            [queryParams]="{ periodo: 'todo' }"
+            [state]="{ topic_id: topic.topic_id, topic_name: topic.topic_name }">
+            <i class="fa-solid fa-hashtag recent-symbol" aria-hidden="true"></i>
+            <span class="recent-name">{{ topic.topic_name }}</span>
+            <span class="recent-volume">{{ topic.total_posts | number }} {{ topic.total_posts === 1 ? 'publicación' : 'publicaciones' }}</span>
+            <i class="fa-solid fa-arrow-right recent-arrow" aria-hidden="true"></i>
+          </a>
+        </li>
+      </ul>
+    </section>
 
-      <mat-form-field
-        appearance="outline"
-        class="filter-date">
+    <div *ngIf="!loadingTopics && !errorTopics && !recentTopics.length" class="topic-surface topic-empty">
+      <i class="fa-solid fa-hashtag" aria-hidden="true"></i>
+      <h2>No hay tópicos disponibles</h2>
+    </div>
+  </ng-container>
 
-        <mat-label>Período</mat-label>
+  <ng-container *ngIf="topicId">
+    <section class="topic-surface nv-filter-panel" aria-label="Filtros de cobertura">
+      <form class="nv-filter-grid" #coverageFilters="ngForm" (ngSubmit)="coverageFilters.valid && !cargando && filtrar()">
+        <mat-form-field appearance="outline">
+          <mat-label>Período</mat-label>
+          <mat-date-range-input [rangePicker]="picker">
+            <input matStartDate placeholder="Inicio" [(ngModel)]="startDate" name="startDate">
+            <input matEndDate placeholder="Fin" [(ngModel)]="endDate" name="endDate">
+          </mat-date-range-input>
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-date-range-picker #picker></mat-date-range-picker>
+        </mat-form-field>
 
-        <mat-date-range-input [rangePicker]="picker">
-          <input
-            matStartDate
-            placeholder="Inicio"
-            [(ngModel)]="startDate"
-            [ngModelOptions]="{ standalone: true }">
+        <mat-form-field appearance="outline">
+          <mat-label>Medios</mat-label>
+          <mat-select [(ngModel)]="selectedUsers" name="selectedUsers" multiple>
+            <mat-option *ngFor="let user of users" [value]="user.idTweetUser.toString()">
+              {{ user.TweetUser }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
 
-          <input
-            matEndDate
-            placeholder="Fin"
-            [(ngModel)]="endDate"
-            [ngModelOptions]="{ standalone: true }">
-        </mat-date-range-input>
+        <mat-form-field appearance="outline">
+          <mat-label>Buscar publicaciones</mat-label>
+          <input matInput [(ngModel)]="searchText" name="searchText">
+          <button *ngIf="searchText" matSuffix mat-icon-button type="button"
+            aria-label="Borrar búsqueda" (click)="searchText = ''">
+            <mat-icon aria-hidden="true">close</mat-icon>
+          </button>
+        </mat-form-field>
 
-        <mat-datepicker-toggle
-          matSuffix
-          [for]="picker">
-        </mat-datepicker-toggle>
+        <div class="nv-filter-actions">
+          <button class="topic-action topic-apply" type="submit" [disabled]="cargando">Aplicar</button>
+          <button class="topic-action" type="button" [disabled]="cargando" (click)="resetFiltros()">Limpiar</button>
+        </div>
+      </form>
+      <p *ngIf="coverageFilters.invalid && (coverageFilters.touched || coverageFilters.submitted)"
+        class="topic-filter-error" role="alert">
+        Ingresa fechas válidas en formato DD/MM/AAAA y revisa el orden del período.
+      </p>
+    </section>
 
-        <mat-date-range-picker #picker>
-        </mat-date-range-picker>
-      </mat-form-field>
-
-      <mat-form-field
-        appearance="outline"
-        class="filter-users">
-
-        <mat-label>Medios</mat-label>
-
-        <mat-select
-          [(ngModel)]="selectedUsers"
-          [ngModelOptions]="{ standalone: true }"
-          multiple>
-
-          <mat-option
-            *ngFor="let user of users"
-            [value]="user.idTweetUser.toString()">
-            {{ user.TweetUser }}
-          </mat-option>
-
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field
-        appearance="outline"
-        class="filter-search">
-
-        <mat-label>Buscar publicaciones</mat-label>
-
-        <input
-          matInput
-          [(ngModel)]="searchText"
-          [ngModelOptions]="{ standalone: true }"
-          (keyup.enter)="!cargando && filtrar()">
-
-        <button
-          *ngIf="searchText"
-          matSuffix
-          mat-icon-button
-          type="button"
-          aria-label="Borrar búsqueda"
-          (click)="searchText = ''">
-
-          <mat-icon>close</mat-icon>
-        </button>
-      </mat-form-field>
-
-      <div class="nv-filter-actions">
-        <button
-          type="button"
-          class="btn btn-primary"
-          [disabled]="cargando"
-          (click)="filtrar()">
-          Aplicar
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-ghost"
-          [disabled]="cargando"
-          (click)="resetFiltros()">
-          Limpiar
-        </button>
+    <section class="topic-surface topic-overview" aria-labelledby="overview-title">
+      <div class="topic-overview-heading">
+        <h2 id="overview-title">Resumen de cobertura</h2>
+        <span class="topic-period" *ngIf="appliedPeriod as period">
+          <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+          <ng-container *ngIf="period.startDate; else noStart">
+            {{ period.startDate | date:'dd/MM/yyyy' }}<ng-container *ngIf="period.endDate && period.endDate !== period.startDate">
+              – {{ period.endDate | date:'dd/MM/yyyy' }}
+            </ng-container>
+          </ng-container>
+          <ng-template #noStart>
+            {{ period.endDate ? 'Hasta ' + (period.endDate | date:'dd/MM/yyyy') : 'Todo el período' }}
+          </ng-template>
+        </span>
       </div>
 
-    </div>
-  </section>
+      <div *ngIf="cargandoPulse || !appliedPeriod" class="nv-loading-state topic-overview-loading" role="status">Cargando cobertura…</div>
+      <div *ngIf="!cargandoPulse && errorPulse" class="topic-feedback topic-overview-error nv-error-state" role="alert">
+        <span>{{ errorPulse }}</span>
+        <button class="nv-retry" type="button" (click)="loadPulse()">Reintentar</button>
+      </div>
+      <p *ngIf="appliedPeriod && !cargandoPulse && !errorPulse && !pulse" class="topic-overview-loading topic-note">
+        Aún no hay datos de cobertura.
+      </p>
 
-  <!-- ==========================================
-       MENSAJES DE ERROR
-  =========================================== -->
-
-  <div
-    *ngIf="error && !cargando"
-    class="feedback feedback-error nv-error-state"
-    role="alert">
-
-    <mat-icon>error_outline</mat-icon>
-
-    <span>{{ error }}</span>
-
-  </div>
-
-  <div
-    *ngIf="errorGuardar"
-    class="feedback feedback-error nv-error-state"
-    role="alert">
-
-    <mat-icon>bookmark_remove</mat-icon>
-
-    <span>{{ errorGuardar }}</span>
-
-  </div>
-
-  <!-- ==========================================
-       SIN TÓPICO SELECCIONADO
-  =========================================== -->
-
-  <section
-    *ngIf="!topicId && !cargando"
-    class="empty-state">
-
-    <div class="empty-icon">
-      <mat-icon>forum</mat-icon>
-    </div>
-
-
-    <h2>Selecciona una conversación</h2>
-
-    <p>
-      Elige uno de los tópicos monitoreados para explorar
-      publicaciones, fuentes, sentimiento y reacción.
-    </p>
-
-  </section>
-
-  <!-- ==========================================
-       CARGANDO PUBLICACIONES
-  =========================================== -->
-
-  <div *ngIf="cargando && datos.length === 0" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando publicaciones…</span></div>
-
-  <!-- ==========================================
-       SIN RESULTADOS
-  =========================================== -->
-
-  <section
-    *ngIf="!cargando && topicId && !error && datos.length === 0"
-    class="empty-state">
-
-    <div class="empty-icon">
-      <mat-icon>search_off</mat-icon>
-    </div>
-
-
-    <h2>No encontramos publicaciones</h2>
-
-    <p>
-      No hay publicaciones de esta conversación
-      que coincidan con los filtros seleccionados.
-    </p>
-
-    <button
-      type="button"
-      class="btn btn-ghost"
-      (click)="resetFiltros()">
-      Limpiar filtros
-    </button>
-
-  </section>
-
-  <div #publicationExamples id="topic-publications"></div>
-
-  <!-- ==========================================
-       RESULTADOS
-  =========================================== -->
-
-  <section
-    *ngIf="datos.length > 0"
-    class="results nv-post-feed">
-
-    <!-- ==========================================
-         PUBLICACIONES
-    =========================================== -->
-
-    <article
-      *ngFor="let item of datos"
-      class="news-card nv-feed-post"
-      #newsCard>
-
-      <!-- HEADER DE PUBLICACIÓN -->
-
-      <header class="news-card-header">
-
-        <div class="news-source">
-
-          <div class="source-avatar">
-            {{ (item.TweetUser || 'F').charAt(0).toUpperCase() }}
+      <ng-container *ngIf="!cargandoPulse && pulse">
+        <dl class="topic-metrics">
+          <div>
+            <dt><i class="fa-regular fa-file-lines" aria-hidden="true"></i> Publicaciones</dt>
+            <dd>{{ totalPublicaciones | number }}</dd>
           </div>
-
-          <div class="source-copy">
-
-            <strong class="source-name">
-              {{ item.TweetUser || 'Fuente' }}
-            </strong>
-
-            <span
-              *ngIf="item.created"
-              class="source-date">
-              {{ formatBoliviaDate(item.created) }}
-            </span>
-
+          <div>
+            <dt><i class="fa-regular fa-newspaper" aria-hidden="true"></i> Medios</dt>
+            <dd>{{ totalFuentes | number }}</dd>
           </div>
+          <div>
+            <dt><i class="fa-regular fa-comment" aria-hidden="true"></i> Comentarios</dt>
+            <dd>{{ totalComentarios | number }}</dd>
+          </div>
+          <div>
+            <dt><i class="fa-solid fa-wave-square" aria-hidden="true"></i> Tono dominante</dt>
+            <dd class="topic-tone" [attr.data-tone]="sentimientoDominante.toLowerCase()">{{ sentimientoDominante }}</dd>
+          </div>
+        </dl>
 
+        <div class="topic-insights">
+          <section class="topic-activity" aria-labelledby="activity-title">
+            <div class="topic-insight-heading">
+              <h3 id="activity-title">Actividad de los últimos 7 días</h3>
+              <span *ngIf="pulseActivity.length" class="topic-average">
+                <strong>{{ pulseAverage7d | number }}</strong> por día
+              </span>
+            </div>
+            <ul *ngIf="pulseActivity.length; else noActivity" class="topic-chart" aria-label="Publicaciones por día">
+              <li *ngFor="let item of pulseActivity">
+                <strong>{{ item.total | number }}</strong>
+                <span class="topic-chart-track" aria-hidden="true">
+                  <span class="topic-chart-bar" [style.height.%]="getPulseHeight(item.total)"></span>
+                </span>
+                <time [attr.datetime]="item.date">{{ formatPulseDate(item.date) }}</time>
+              </li>
+            </ul>
+            <ng-template #noActivity>
+              <p class="topic-note">Sin actividad registrada en los últimos 7 días.</p>
+            </ng-template>
+          </section>
+
+          <section class="topic-sentiment" aria-labelledby="sentiment-title">
+            <div class="topic-insight-heading">
+              <h3 id="sentiment-title">Sentimiento</h3>
+            </div>
+            <p class="topic-note">
+              {{ totalSentimientos | number }} de {{ totalPublicaciones | number }} publicaciones clasificadas<span
+                *ngIf="publicacionesSinClasificar"> · {{ publicacionesSinClasificar | number }} sin clasificar</span>
+            </p>
+            <ng-container *ngIf="totalSentimientos; else noSentiment">
+              <div class="topic-sentiment-bar" aria-hidden="true">
+                <span class="positive" [style.flex-grow]="positivos"></span>
+                <span class="neutral" [style.flex-grow]="neutros"></span>
+                <span class="negative" [style.flex-grow]="negativos"></span>
+              </div>
+              <dl class="topic-sentiment-legend" aria-label="Distribución de las publicaciones clasificadas">
+                <div class="positive">
+                  <dt>Positivo</dt>
+                  <dd><strong>{{ porcentajePositivo }}%</strong><span>{{ positivos | number }}</span></dd>
+                </div>
+                <div class="neutral">
+                  <dt>Neutro</dt>
+                  <dd><strong>{{ porcentajeNeutro }}%</strong><span>{{ neutros | number }}</span></dd>
+                </div>
+                <div class="negative">
+                  <dt>Negativo</dt>
+                  <dd><strong>{{ porcentajeNegativo }}%</strong><span>{{ negativos | number }}</span></dd>
+                </div>
+              </dl>
+            </ng-container>
+            <ng-template #noSentiment>
+              <p class="topic-note">Sin datos de sentimiento para esta selección.</p>
+            </ng-template>
+          </section>
         </div>
+      </ng-container>
+    </section>
 
-        <!-- ACCIONES -->
-
-        <div class="news-actions">
-
-          <!-- SENTIMIENTO -->
-
-          <span
-            *ngIf="item.sentimiento"
-            class="sentiment-chip"
-            [ngClass]="{
-              'positive': item.sentimiento === 'positivo',
-              'negative': item.sentimiento === 'negativo',
-              'neutral': item.sentimiento === 'neutro'
-            }">
-
-            <span class="sentiment-chip-dot"></span>
-
-            {{ item.sentimiento }}
-
-          </span>
-
-          <!-- GUARDAR -->
-
-          <button
-            mat-icon-button
-            type="button"
-            class="icon-action"
-            [class.active]="isGuardado(item.tweetid)"
-            [disabled]="savingIds.has(item.tweetid.toString())"
-            [attr.aria-label]="isGuardado(item.tweetid)
-              ? 'Quitar de guardados'
-              : 'Guardar publicación'"
-            (click)="toggleGuardar(item)">
-
-            <mat-icon>
-              {{ isGuardado(item.tweetid)
-                ? 'bookmark'
-                : 'bookmark_border' }}
-            </mat-icon>
-
-          </button>
-
-          <!-- DESCARGAR -->
-
-          <button
-            mat-icon-button
-            type="button"
-            class="icon-action"
-            aria-label="Descargar publicación"
-            (click)="downloadCard(newsCard, item.tweetid)">
-
-            <mat-icon>download</mat-icon>
-
-          </button>
-
-        </div>
-
+    <section class="topic-publications" aria-labelledby="publications-title">
+      <header class="topic-publications-heading">
+        <h2 id="publications-title">Publicaciones</h2>
+        <span *ngIf="datos.length">{{ datos.length | number }} {{ datos.length === 1 ? 'cargada' : 'cargadas' }}</span>
       </header>
 
-      <!-- ==========================================
-           TEXTO DE PUBLICACIÓN
-      =========================================== -->
-
-      <div
-        class="news-text"
-        [innerHTML]="formatText(item.text)">
+      <div *ngIf="error && !cargando" class="topic-feedback nv-error-state" role="alert">
+        <span>{{ error }}</span>
+        <button class="nv-retry" type="button" (click)="filtrar()">Reintentar</button>
       </div>
 
-      <!-- ==========================================
-           INFORMACIÓN ADICIONAL DEL TÓPICO
-      =========================================== -->
+      <div *ngIf="errorGuardar" class="topic-feedback nv-error-state" role="alert">{{ errorGuardar }}</div>
 
-      <div
-        class="news-meta"
-        *ngIf="item.categoria || item.url">
-
-        <span
-          *ngIf="item.categoria"
-          class="category-chip">
-          {{ item.categoria }}
-        </span>
-
-        <a
-          *ngIf="item.url"
-          class="original-link"
-          [href]="item.url"
-          target="_blank"
-          rel="noopener noreferrer">
-
-          Ver publicación original
-          <mat-icon>open_in_new</mat-icon>
-
-        </a>
-
+      <div *ngIf="(!appliedPeriod || cargando) && !datos.length" class="nv-loading-state nv-loading-preview" role="status">
+        <span class="nv-sr-only">Cargando publicaciones…</span>
       </div>
 
-      <!-- ==========================================
-           ENTIDADES MENCIONADAS
-      =========================================== -->
-
-      <div
-        *ngIf="item.Persona || item.Organizacion || item.Locacion"
-        class="entities-block">
-
-        <span class="entities-label">
-          MENCIONADOS
-        </span>
-
-        <div class="entities">
-
-          <!-- PERSONAS -->
-
-          <span
-            *ngIf="item.Persona"
-            class="entity">
-
-            <mat-icon>person</mat-icon>
-
-            {{ item.Persona }}
-
-          </span>
-
-          <!-- ORGANIZACIONES -->
-
-          <span
-            *ngIf="item.Organizacion"
-            class="entity">
-
-            <mat-icon>business</mat-icon>
-
-            {{ item.Organizacion }}
-
-          </span>
-
-          <!-- LOCACIONES -->
-
-          <span
-            *ngIf="item.Locacion"
-            class="entity">
-
-            <mat-icon>location_on</mat-icon>
-
-            {{ item.Locacion }}
-
-          </span>
-
-        </div>
-
+      <div *ngIf="appliedPeriod && !cargando && !error && !datos.length" class="topic-surface topic-empty">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <h3>No encontramos publicaciones</h3>
+        <p>Prueba con otro período, medio o término de búsqueda.</p>
+        <button class="topic-action" type="button" (click)="resetFiltros()">Limpiar filtros</button>
       </div>
 
-      <div *ngIf="!accessLoading && canViewReplies" class="nv-post-analysis">
-        <div class="nv-post-analysis-row" *ngIf="getRepliesCounts(item.tweetid) as replies"
-          role="group" aria-label="Sentimiento de los comentarios">
-          <strong class="nv-post-analysis-label">Sentimiento</strong>
-          <span class="nv-post-analysis-value positive">Positivos <b>{{ replies.positivo | number }}</b></span>
-          <span class="nv-post-analysis-value neutral">Neutros <b>{{ replies.neutro | number }}</b></span>
-          <span class="nv-post-analysis-value negative">Negativos <b>{{ replies.negativo | number }}</b></span>
+      <div *ngIf="datos.length" class="nv-post-feed">
+        <article *ngFor="let item of datos" class="topic-post nv-feed-post" #newsCard>
+          <header class="topic-post-header">
+            <div class="topic-source">
+              <div class="topic-avatar" aria-hidden="true">{{ (item.TweetUser || 'F').charAt(0).toUpperCase() }}</div>
+              <div class="topic-source-copy">
+                <strong>{{ item.TweetUser || 'Fuente' }}</strong>
+                <time *ngIf="item.created">{{ formatBoliviaDate(item.created) }}</time>
+              </div>
+            </div>
+
+            <div class="topic-post-actions">
+              <span *ngIf="item.sentimiento" class="topic-post-tone" [attr.data-tone]="item.sentimiento.toLowerCase()">
+                {{ item.sentimiento }}
+              </span>
+              <button type="button" class="topic-icon-action"
+                [attr.aria-pressed]="isGuardado(item.tweetid)"
+                [attr.title]="isGuardado(item.tweetid) ? 'Quitar de guardados' : 'Guardar publicación'"
+                [disabled]="savingIds.has(item.tweetid.toString())"
+                aria-label="Guardar publicación" (click)="toggleGuardar(item)">
+                <i [class]="isGuardado(item.tweetid) ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark'" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="topic-icon-action" aria-label="Descargar publicación"
+                title="Descargar publicación" (click)="downloadCard(newsCard, item.tweetid)">
+                <i class="fa-solid fa-download" aria-hidden="true"></i>
+              </button>
+            </div>
+          </header>
+
+          <div class="topic-post-text" [innerHTML]="formatText(item.text)"></div>
+
+          <div *ngIf="item.categoria || item.url" class="topic-post-meta">
+            <span *ngIf="item.categoria" class="topic-category">{{ item.categoria }}</span>
+            <a *ngIf="item.url" class="topic-original" [href]="item.url" target="_blank" rel="noopener noreferrer">
+              Ver publicación original <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+            </a>
+          </div>
+
+          <dl *ngIf="item.Persona || item.Organizacion || item.Locacion" class="topic-entities">
+            <dt>Menciones</dt>
+            <dd *ngIf="item.Persona">
+              <i class="fa-regular fa-user" aria-hidden="true"></i> {{ item.Persona }}
+            </dd>
+            <dd *ngIf="item.Organizacion">
+              <i class="fa-regular fa-building" aria-hidden="true"></i> {{ item.Organizacion }}
+            </dd>
+            <dd *ngIf="item.Locacion">
+              <i class="fa-solid fa-location-dot" aria-hidden="true"></i> {{ item.Locacion }}
+            </dd>
+          </dl>
+
+          <ng-container *ngIf="!accessLoading && canViewReplies">
+            <div *ngIf="getRepliesCounts(item.tweetid) as replies" class="nv-post-analysis nv-post-analysis-row"
+              role="group" aria-label="Sentimiento de los comentarios">
+              <strong class="nv-post-analysis-label">Comentarios</strong>
+              <span class="nv-post-analysis-value positive">Positivos <b>{{ replies.positivo | number }}</b></span>
+              <span class="nv-post-analysis-value neutral">Neutros <b>{{ replies.neutro | number }}</b></span>
+              <span class="nv-post-analysis-value negative">Negativos <b>{{ replies.negativo | number }}</b></span>
+            </div>
+          </ng-container>
+
+          <div *ngIf="!accessLoading && !canViewReplies" class="nv-post-analysis nv-post-analysis-row">
+            <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            <span>Análisis de comentarios disponible con Pro</span>
+          </div>
+        </article>
+
+        <div *ngIf="hasMore && !cargando && !loadMoreError"
+          (appLoadMore)="loadNextPage()" aria-hidden="true"></div>
+
+        <div *ngIf="cargando" class="nv-loading-state" role="status">Cargando más publicaciones…</div>
+
+        <div *ngIf="loadMoreError" class="topic-feedback nv-error-state" role="alert">
+          <span>No se pudieron cargar más publicaciones.</span>
+          <button class="nv-retry" type="button" (click)="loadNextPage()">Reintentar</button>
         </div>
       </div>
-
-      <div *ngIf="!accessLoading && !canViewReplies" class="nv-post-analysis nv-post-analysis-row">
-        <mat-icon aria-hidden="true">lock_outline</mat-icon>
-        <span>Análisis de comentarios disponible con Pro</span>
-      </div>
-
-    </article>
-
-    <div *ngIf="hasMore && !cargando && !loadMoreError"
-      (appLoadMore)="loadNextPage()" aria-hidden="true"></div>
-
-    <div *ngIf="cargando" class="nv-loading-state" role="status">
-      <span class="nv-sr-only">Cargando más publicaciones…</span>
-    </div>
-
-    <div *ngIf="loadMoreError" class="feedback feedback-error nv-error-state" role="alert">
-      <span>No se pudieron cargar más publicaciones.</span>
-      <button type="button" (click)="loadNextPage()">Reintentar</button>
-    </div>
-
-  </section>
-
-</div>
+    </section>
+  </ng-container>
+</main>

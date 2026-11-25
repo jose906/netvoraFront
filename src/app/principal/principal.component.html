@@ -1,1021 +1,289 @@
-<div class="page nv-page daily-overview">
-
-  <!-- =======================================================
-       HEADER
-  ======================================================== -->
-
-  <header class="topbar">
-    <div class="brand-copy">
-      <h1>Resumen de hoy</h1>
-      <p>{{ todayLabel || 'Hoy' }}<span *ngIf="users.length"> · {{ users.length | number }} {{ users.length === 1 ? 'medio monitoreado' : 'medios monitoreados' }}</span></p>
+<main class="nv-page topic-page home-page" aria-labelledby="home-title">
+  <header class="nv-banner topic-hero home-header">
+    <div>
+      <img class="nv-wordmark home-wordmark" src="logo2.png" width="138" height="28" alt="NetVora">
+      <h1 id="home-title">Panorama informativo</h1>
+      <ul *ngIf="todayLabel || users.length" class="home-scope" aria-label="Cobertura del resumen">
+        <li *ngIf="todayLabel">
+          <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+          <time [attr.datetime]="todayLabel">{{ formatSummaryDate(todayLabel) }}</time>
+        </li>
+        <li *ngIf="users.length">
+          <i class="fa-regular fa-newspaper" aria-hidden="true"></i>
+          {{ users.length | number }} {{ users.length === 1 ? 'medio monitoreado' : 'medios monitoreados' }}
+        </li>
+      </ul>
     </div>
-    <a *ngIf="radarOverview?.watches" class="overview-radar-link" routerLink="/radar">
-      Ver Radar <span *ngIf="radarOverview?.pending">{{ radarOverview?.pending | number }} pendientes</span>
-      <span aria-hidden="true">→</span>
-    </a>
+    <nav class="home-actions" aria-label="Accesos desde Inicio">
+      <a class="topic-hero-link explore-link" routerLink="/explorar-topicos">
+        Explorar tópicos <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+      </a>
+      <a *ngIf="radarOverview?.watches" class="topic-hero-link" routerLink="/radar">
+        Radar
+        <span *ngIf="radarOverview?.pending as pending" class="radar-pending">
+          {{ pending | number }} {{ pending === 1 ? 'pendiente' : 'pendientes' }}
+        </span>
+      </a>
+    </nav>
   </header>
 
-  <!-- =======================================================
-       ESTADOS
-  ======================================================== -->
+  <div *ngIf="cargando" class="nv-loading-state" role="status">Cargando el resumen…</div>
 
-  <div *ngIf="cargando" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando el resumen…</span></div>
+  <section *ngIf="!cargando && error" class="topic-surface topic-empty" role="alert">
+    <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+    <h2>{{ error }}</h2>
+    <button class="topic-action" type="button" (click)="loadUsers()">Reintentar</button>
+  </section>
 
+  <section *ngIf="!cargando && !error && !users.length" class="topic-surface topic-empty">
+    <i class="fa-regular fa-newspaper" aria-hidden="true"></i>
+    <h2>No hay medios configurados</h2>
+    <p>Agrega o activa un medio para ver sus publicaciones en el resumen.</p>
+    <a class="topic-action" routerLink="/settings">Configurar medios</a>
+  </section>
 
-  <div
-    *ngIf="!cargando && error"
-    class="state state-error nv-error-state" role="alert"
-  >
-    <span>{{ error }}</span>
-    <button class="nv-retry" type="button" (click)="loadUsers()">Reintentar</button>
-  </div>
-
-
-  <!-- =======================================================
-       CONTENIDO
-  ======================================================== -->
-
-  <main
-    *ngIf="!cargando && !error"
-    class="dashboard"
-  >
-
-
-    <!-- =====================================================
-         HERO
-    ====================================================== -->
-
-    <section class="hero">
-
-      <div class="hero-main">
-
-        <ng-container *ngIf="temaPrincipal as topic; else heroEmpty">
-
-          <div class="hero-topic-label">
-            Tema del día
-          </div>
-
-          <h2 class="hero-title">
-            {{ topic.topic_name }}
-          </h2>
-
-          <div class="hero-details">
-
-            <span
-              class="hero-trend"
-              [ngClass]="{
-                'hero-trend-up': topic.tendencia === 'SUBIO',
-                'hero-trend-down': topic.tendencia === 'BAJO',
-                'hero-trend-new': topic.tendencia === 'NUEVO',
-                'hero-trend-neutral': topic.tendencia === 'IGUAL'
-              }"
-            >
-              <span *ngIf="topic.tendencia === 'SUBIO'">↑</span>
-              <span *ngIf="topic.tendencia === 'BAJO'">↓</span>
-              <span *ngIf="topic.tendencia === 'NUEVO'">●</span>
-
-              {{ heroTrendText }}
-            </span>
-
-            <span class="hero-detail-separator">
-              •
-            </span>
-
-            <span>
-              {{ topic.tweets_hoy | number }}
-              publicaciones hoy
-            </span>
-
-          </div>
-
-          <button
-            type="button"
-            class="hero-action"
-            (click)="irATopico(topic)"
-          >
-            Ver análisis del tema
-
-            <span>→</span>
-          </button>
-
-        </ng-container>
-
-
-        <ng-template #heroEmpty>
-
-          <div class="hero-topic-label">
-            Actividad de hoy
-          </div>
-
-          <h2 class="hero-title">
-            Todavía no hay tópicos disponibles
-          </h2>
-
-          <p class="hero-description">
-            Los principales temas aparecerán aquí cuando se
-            detecte suficiente actividad.
-          </p>
-
-        </ng-template>
-
-      </div>
-
-
-      <!-- Pulso -->
-
-      <aside class="pulse-card">
-
-        <div class="pulse-header">
-
+  <ng-container *ngIf="!cargando && !error && users.length">
+    <ul class="summary-grid" aria-label="Indicadores de hoy">
+      <li class="topic-surface summary-card">
+        <i class="summary-icon fa-regular fa-file-lines" aria-hidden="true"></i>
+        <div>
+          <span class="summary-label">Publicaciones analizadas</span>
+          <strong class="summary-value">{{ stats.totalHoy | number }}</strong>
+        </div>
+      </li>
+      <li>
+        <a class="topic-surface summary-card summary-link" routerLink="/explorar-topicos" [queryParams]="newTopicParams">
+          <i class="summary-icon fa-solid fa-hashtag" aria-hidden="true"></i>
           <div>
-            <span class="section-kicker">
-              Sentimiento de hoy
-            </span>
-
-            <h3>
-              {{ sentimientoDominante }}
-            </h3>
+            <span class="summary-label">Nuevos temas</span>
+            <strong class="summary-value">{{ nuevosTopicosHoy | number }}</strong>
           </div>
+          <i class="fa-solid fa-arrow-right row-arrow" aria-hidden="true"></i>
+        </a>
+      </li>
+      <li class="topic-surface summary-card">
+        <i class="summary-icon fa-solid fa-layer-group" aria-hidden="true"></i>
+        <div>
+          <span class="summary-label">Categoría más activa</span>
+          <strong class="summary-value category-value">{{ stats.categoriaTop || 'Sin datos' }}</strong>
+        </div>
+      </li>
+    </ul>
 
-          <div class="pulse-percent">
-            {{ sentimientoDominantePorcentaje }}%
+    <div class="overview-grid">
+      <section class="topic-surface home-panel featured-panel" aria-labelledby="featured-title">
+        <h2 id="featured-title">Tema más publicado hoy</h2>
+        <ng-container *ngIf="temaPrincipal as topic; else noFeaturedTopic">
+          <h3>{{ topic.topic_name }}</h3>
+          <p class="featured-count">
+            <strong>{{ topic.tweets_hoy | number }}</strong> {{ topic.tweets_hoy === 1 ? 'publicación hoy' : 'publicaciones hoy' }}
+            <span aria-hidden="true">·</span>
+            <span>{{ topic.tweets_ayer | number }} ayer</span>
+          </p>
+          <a class="topic-action" [routerLink]="['/topics', topic.topic_id]" [queryParams]="topicDetailParams(todayLabel)"
+             [state]="{ topic_id: topic.topic_id, topic_name: topic.topic_name }">
+            Ver publicaciones del tema <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+          </a>
+        </ng-container>
+        <ng-template #noFeaturedTopic>
+          <p class="empty-copy">Aún no hay temas con publicaciones hoy.</p>
+        </ng-template>
+      </section>
+
+      <section class="topic-surface home-panel sentiment-panel" aria-labelledby="sentiment-title">
+        <h2 id="sentiment-title">Tono de las publicaciones</h2>
+        <ng-container *ngIf="totalSentimientos; else noSentiment">
+          <p class="panel-note">{{ totalSentimientos | number }} {{ totalSentimientos === 1 ? 'publicación clasificada' : 'publicaciones clasificadas' }}</p>
+          <div class="sentiment-bar" aria-hidden="true">
+            <span *ngFor="let tone of sentiments" [class]="tone.kind" [style.flex-grow]="stats[tone.key]"></span>
           </div>
-
-        </div>
-
-
-        <div class="sentiment-bar">
-
-          <div
-            class="sentiment-segment positive"
-            [style.width.%]="porcentajePositivo"
-          ></div>
-
-          <div
-            class="sentiment-segment neutral"
-            [style.width.%]="porcentajeNeutro"
-          ></div>
-
-          <div
-            class="sentiment-segment negative"
-            [style.width.%]="porcentajeNegativo"
-          ></div>
-
-        </div>
-
-
-        <div class="sentiment-legend">
-
-          <div class="sentiment-legend-item">
-
-            <div class="legend-label">
-              <span class="legend-dot positive"></span>
-              Positivo
+          <dl class="sentiment-legend">
+            <div *ngFor="let tone of sentiments">
+              <dt><span class="sentiment-dot" [class]="tone.kind" aria-hidden="true"></span>{{ tone.label }}</dt>
+              <dd>{{ stats[tone.key] / totalSentimientos | percent:'1.0-0' }}</dd>
             </div>
+          </dl>
+        </ng-container>
+        <ng-template #noSentiment>
+          <p class="empty-copy">Aún no hay publicaciones clasificadas por tono.</p>
+        </ng-template>
+      </section>
+    </div>
 
-            <strong>
-              {{ porcentajePositivo }}%
-            </strong>
-
-          </div>
-
-
-          <div class="sentiment-legend-item">
-
-            <div class="legend-label">
-              <span class="legend-dot neutral"></span>
-              Neutral
-            </div>
-
-            <strong>
-              {{ porcentajeNeutro }}%
-            </strong>
-
-          </div>
-
-
-          <div class="sentiment-legend-item">
-
-            <div class="legend-label">
-              <span class="legend-dot negative"></span>
-              Negativo
-            </div>
-
-            <strong>
-              {{ porcentajeNegativo }}%
-            </strong>
-
-          </div>
-
-        </div>
-
-        <div class="pulse-footer">
-          Basado en
-          <strong>{{ totalSentimientos | number }}</strong>
-          publicaciones clasificadas.
-        </div>
-
-      </aside>
-
-    </section>
-
-
-    <!-- =====================================================
-         KPIs
-    ====================================================== -->
-
-    <dl class="kpis overview-kpis" aria-label="Indicadores de hoy">
-      <div>
-        <dt>Publicaciones analizadas</dt>
-        <dd>{{ stats.totalHoy | number }}</dd>
-      </div>
-      <div>
-        <dt>Nuevos temas</dt>
-        <dd>{{ nuevosTopicosHoy | number }}</dd>
-      </div>
-      <div>
-        <dt>Categoría más activa</dt>
-        <dd>{{ stats.categoriaTop || '—' }}</dd>
-      </div>
-    </dl>
-
-
-    <!-- =====================================================
-         CONTENIDO PRINCIPAL
-    ====================================================== -->
-
-    <section class="changes">
-
-      <div class="changes-heading">
-
-        <h2>
-          Qué cambió hoy
-        </h2>
-
-        <p>
-          Comparación con ayer. El conteo de hoy es parcial.
-        </p>
-
-      </div>
-
-
-      <p *ngIf="!insights.length">Todavía no hay cambios destacados.</p>
-      <div class="changes-grid">
-
-        <article
-          class="change-card"
-          *ngFor="
-            let insight of insights;
-            trackBy: trackByIndex
-          "
-        >
-
-          <div
-            class="change-icon"
-            [ngClass]="{
-              'change-up': insight.icon === 'up',
-              'change-down': insight.icon === 'down',
-              'change-new': insight.icon === 'new'
-            }"
-          >
-
-            <span *ngIf="insight.icon === 'up'">
-              ↑
-            </span>
-
-            <span *ngIf="insight.icon === 'down'">
-              ↓
-            </span>
-
-            <span *ngIf="insight.icon === 'new'">
-              +
-            </span>
-
-          </div>
-
-
-          <div class="change-copy">
-
-            <strong>{{ insight.topic.topic_name }}</strong>
-            <p>{{ insight.title }} · {{ insight.topic.tweets_hoy | number }} hoy · {{ insight.topic.tweets_ayer | number }} ayer</p>
-            <button type="button" class="activity-link" (click)="irATopico(insight.topic, todayLabel)">Ver tema</button>
-
-          </div>
-
-        </article>
-
-      </div>
-
-    </section>
-
-    <section class="panel activity-panel" aria-labelledby="activity-title">
-      <div class="panel-header activity-header">
+    <section class="topic-surface home-panel activity-panel" aria-labelledby="activity-title">
+      <header class="panel-heading">
         <div>
           <h2 id="activity-title">Actividad de los últimos 7 días</h2>
-          <p *ngIf="peakDay as peak">
-            Mayor actividad: {{ formatActivityDate(peak.fecha) }} · {{ peak.total | number }} publicaciones
-          </p>
+          <p *ngIf="activity.length" class="panel-note">Selecciona un día para ver sus temas y publicaciones.</p>
         </div>
-        <div class="activity-total">
+        <div *ngIf="activity.length" class="activity-total">
           <strong>{{ activityTotal | number }}</strong>
-          <span>publicaciones</span>
+          <span>publicaciones en total</span>
         </div>
-      </div>
+      </header>
 
-      <div *ngIf="activity.length" class="activity-body">
+      <div *ngIf="activity.length; else noActivity" class="activity-body">
         <div class="activity-chart" role="group" aria-label="Publicaciones por día">
           <button *ngFor="let day of activity" type="button" class="activity-day"
             [attr.aria-pressed]="day === selectedDay"
-            [attr.aria-label]="formatActivityDate(day.fecha) + ', ' + day.total + ' publicaciones' + (day.parcial ? ', hoy parcial' : '')"
+            [attr.aria-label]="formatActivityDate(day.fecha) + ', ' + (day.total | number) +
+              (day.total === 1 ? ' publicación' : ' publicaciones') + (day.parcial ? ', conteo parcial' : '')"
             (click)="selectActivityDay(day)">
-            <span class="activity-volume">{{ day.total | number }}</span>
+            <span class="activity-volume" aria-hidden="true">{{ day.total | number }}</span>
             <span class="activity-track" aria-hidden="true">
               <span class="activity-bar" [style.height.%]="day.total / activityScale * 100"></span>
             </span>
-            <span class="activity-date" [title]="formatActivityDate(day.fecha)">{{ day.fecha | date:'dd/MM':'UTC' }}</span>
-            <span class="activity-partial">{{ day.parcial ? 'Parcial' : '' }}</span>
+            <span class="activity-date">{{ day.parcial ? 'Hoy' : (day.fecha | date:'dd/MM':'UTC') }}</span>
           </button>
         </div>
 
-        <aside class="activity-detail" *ngIf="selectedDay as day">
-          <div class="activity-detail-heading" aria-live="polite">
-            <span class="section-kicker">{{ formatActivityDate(day.fecha) }}</span>
-            <h3>Temas del día</h3>
+        <div *ngIf="selectedDay as day" class="activity-detail">
+          <div aria-live="polite" aria-atomic="true">
+            <h3>{{ formatActivityDate(day.fecha) }}</h3>
+            <p class="panel-note">
+              {{ day.total | number }} {{ day.total === 1 ? 'publicación' : 'publicaciones' }}
+              <span *ngIf="day.parcial"> · conteo parcial</span>
+            </p>
           </div>
-          <ul *ngIf="day.temas.length">
+          <ul *ngIf="day.temas.length" class="day-topics" aria-label="Temas más publicados del día">
             <li *ngFor="let topic of day.temas">
-              <button type="button" class="activity-topic" (click)="irATopico(topic, day.fecha)">
-                <span>{{ topic.topic_name }}</span>
-                <span>{{ topic.total | number }} <span aria-hidden="true">↗</span></span>
-              </button>
+              <a [routerLink]="['/topics', topic.topic_id]" [queryParams]="topicDetailParams(day.fecha)"
+                 [state]="{ topic_id: topic.topic_id, topic_name: topic.topic_name }">
+                <strong>{{ topic.topic_name }}</strong>
+                <span>{{ topic.total | number }} <i class="fa-solid fa-chevron-right row-arrow" aria-hidden="true"></i></span>
+              </a>
             </li>
           </ul>
-          <p *ngIf="!day.temas.length">{{ day.total ? 'No hay temas disponibles para este día.' : 'Sin publicaciones registradas.' }}</p>
-          <button *ngIf="day.total" type="button" class="activity-link"
+          <p *ngIf="day.total && !day.temas.length" class="empty-copy">No hay temas destacados para esta fecha.</p>
+          <button *ngIf="day.total" type="button" class="topic-action"
             [attr.aria-expanded]="dayPostsOpen" aria-controls="activity-posts"
             (click)="dayPostsOpen ? closeDayPosts() : loadDayPosts()">
             {{ dayPostsOpen ? 'Ocultar publicaciones' : 'Ver publicaciones del día' }}
           </button>
-        </aside>
-      </div>
-      <p *ngIf="!activity.length" class="activity-empty">No hay datos de actividad disponibles.</p>
-
-      <div *ngIf="dayPostsOpen" id="activity-posts" class="activity-posts" aria-live="polite">
-        <h3>Publicaciones del {{ selectedDay ? formatActivityDate(selectedDay.fecha) : '' }}</h3>
-        <div *ngIf="dayPostsLoading" class="nv-loading-state nv-loading-preview" role="status"><span class="nv-sr-only">Cargando publicaciones…</span></div>
-        <p *ngIf="dayPostsError">No se pudieron cargar las publicaciones.
-          <button type="button" class="activity-link" (click)="loadDayPosts(dayPostsPage)">Reintentar</button>
-        </p>
-        <p *ngIf="!dayPostsLoading && !dayPostsError && !dayPosts.length">No hay publicaciones en esta página.</p>
-        <article *ngFor="let post of dayPosts" class="activity-post">
-          <strong>{{ post.TweetUser }}</strong>
-          <p>{{ post.text }}</p>
-          <a *ngIf="post.url" [href]="post.url" target="_blank" rel="noopener noreferrer">Abrir publicación</a>
-        </article>
-        <div class="activity-pagination" *ngIf="!dayPostsLoading && !dayPostsError">
-          <button type="button" class="activity-link" [disabled]="dayPostsPage === 1" (click)="loadDayPosts(dayPostsPage - 1)">Anterior</button>
-          <span>Página {{ dayPostsPage }}</span>
-          <button type="button" class="activity-link"
-            [disabled]="dayPostsPage * dayPostsPageSize >= (selectedDay?.total ?? 0) || dayPosts.length < dayPostsPageSize"
-            (click)="loadDayPosts(dayPostsPage + 1)">Siguiente</button>
         </div>
       </div>
+      <ng-template #noActivity>
+        <p class="empty-copy">No hay datos para estos siete días.</p>
+      </ng-template>
+
+      <section id="activity-posts" class="activity-posts" [hidden]="!dayPostsOpen" aria-labelledby="activity-posts-title">
+        <h3 id="activity-posts-title" *ngIf="dayPostsOpen && selectedDay as day">Publicaciones del {{ day.fecha | date:'dd/MM/yyyy':'UTC' }}</h3>
+        <p *ngIf="dayPostsLoading" class="panel-note" role="status">Cargando publicaciones…</p>
+        <div *ngIf="dayPostsOpen && dayPostsError" class="post-error" role="alert">
+          <p>No se pudieron cargar las publicaciones.</p>
+          <button type="button" class="topic-action" (click)="loadDayPosts(dayPostsPage)">Reintentar</button>
+        </div>
+        <p *ngIf="dayPostsOpen && !dayPostsLoading && !dayPostsError && !dayPosts.length" class="empty-copy">
+          No hay publicaciones en esta página.
+        </p>
+        <article *ngFor="let post of dayPosts" class="activity-post">
+          <h4>{{ post.TweetUser }}</h4>
+          <p>{{ post.text }}</p>
+          <a *ngIf="post.url" [href]="post.url" target="_blank" rel="noopener noreferrer">
+            Abrir publicación <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+          </a>
+        </article>
+        <nav *ngIf="dayPostsOpen && (dayPostsPage > 1 || hasMoreDayPosts)" class="activity-pagination" aria-label="Páginas de publicaciones">
+          <button type="button" class="topic-action" [disabled]="dayPostsLoading || dayPostsPage === 1"
+            (click)="loadDayPosts(dayPostsPage - 1)">Anterior</button>
+          <span aria-live="polite">Página {{ dayPostsPage }}</span>
+          <button type="button" class="topic-action" [disabled]="dayPostsLoading || !hasMoreDayPosts"
+            (click)="loadDayPosts(dayPostsPage + 1)">Siguiente</button>
+        </nav>
+      </section>
     </section>
 
-    <section class="main-grid">
-
-
-      <!-- ===================================================
-           TÓPICOS
-      ==================================================== -->
-
-      <article class="panel topics-panel">
-
-        <div class="panel-header">
-
-          <div>
-
-            <h2>
-              Temas en movimiento
-            </h2>
-
+    <div class="details-grid">
+      <section class="topic-surface home-panel topics-panel" aria-labelledby="topics-title">
+        <header class="panel-heading">
+          <h2 id="topics-title">Temas con más publicaciones</h2>
+          <div class="period-selector" role="group" aria-label="Período de los temas">
+            <button type="button" [attr.aria-pressed]="activeTopicTab === 'dia'" (click)="cambiarTabTopicos('dia')">Hoy</button>
+            <button type="button" [attr.aria-pressed]="activeTopicTab === 'semana'" (click)="cambiarTabTopicos('semana')">Esta semana</button>
           </div>
+        </header>
+        <p *ngIf="topicsActivos.length" class="panel-note period-note">
+          {{ activeTopicTab === 'dia'
+            ? 'El conteo de hoy sigue en curso. Se compara con el total de ayer.'
+            : 'La semana en curso se compara con la semana anterior completa.' }}
+        </p>
 
-
-          <div
-            class="topic-tabs"
-            role="group" aria-label="Período de temas"
-          >
-
-            <button
-              type="button"
-              class="topic-tab"
-              [attr.aria-pressed]="activeTopicTab === 'dia'"
-              [class.active]="activeTopicTab === 'dia'"
-              (click)="cambiarTabTopicos('dia')"
-            >
-              Hoy
-            </button>
-
-            <button
-              type="button"
-              class="topic-tab"
-              [attr.aria-pressed]="activeTopicTab === 'semana'"
-              [class.active]="activeTopicTab === 'semana'"
-              (click)="cambiarTabTopicos('semana')"
-            >
-              Semana
-            </button>
-
-          </div>
-
-        </div>
-
-
-        <div
-          class="topics-list"
-          *ngIf="topicsActivos.length; else noTopics"
-        >
-
-          <button
-            type="button"
-            class="topic-row"
-            *ngFor="
-              let topic of topicsActivos | slice:0:5;
-              index as i;
-              trackBy: trackByTopic
-            "
-            (click)="irATopico(topic)"
-          >
-
-            <span class="topic-rank">
-              {{ (i + 1).toString().padStart(2, '0') }}
-            </span>
-
-
-            <span class="topic-main">
-
-              <strong>
-                {{ topic.topic_name }}
-              </strong>
-
-              <span class="topic-meta">
-
-                {{ getTopicActual(topic) | number }}
-                publicaciones
-
-                <span>•</span>
-
-                {{ getTopicAnteriorLabel() }}
-                {{ getTopicAnterior(topic) | number }}
-
+        <ol *ngIf="topicsActivos.length; else noTopics" id="home-topic-list" class="topic-list">
+          <li *ngFor="let topic of topicsActivos | slice:0:(showAllTopics ? topicsActivos.length : topicPreviewSize); trackBy: trackByTopic">
+            <a class="topic-row" [routerLink]="['/topics', topic.topic_id]"
+               [queryParams]="topicDetailParams(activeTopicTab === 'dia' ? todayLabel : null)"
+               [state]="{ topic_id: topic.topic_id, topic_name: topic.topic_name }">
+              <span class="topic-summary">
+                <strong>{{ topic.topic_name }}</strong>
+                <span class="topic-meta">
+                  {{ getTopicActual(topic) | number }} {{ getTopicActual(topic) === 1 ? 'publicación' : 'publicaciones' }}
+                  <span aria-hidden="true">·</span>
+                  {{ getTopicAnterior(topic) | number }} {{ activeTopicTab === 'dia' ? 'ayer' : 'la semana pasada' }}
+                </span>
               </span>
-
-            </span>
-
-
-            <span class="topic-trend">
-
-              <span
-                *ngIf="topic.tendencia === 'SUBIO'"
-                class="trend-pill trend-up"
-              >
-                ↑
-                {{
-                  topic.porcentaje
-                    ? (topic.porcentaje | number:'1.0-0') + '%'
-                    : 'Subió'
-                }}
+              <span class="topic-trend" [attr.data-trend]="topic.tendencia" [ngSwitch]="topic.tendencia">
+                <ng-container *ngSwitchCase="'NUEVO'">Nuevo</ng-container>
+                <ng-container *ngSwitchCase="'IGUAL'">Sin cambio</ng-container>
+                <ng-container *ngSwitchDefault>
+                  {{ topic.porcentaje ? (topic.porcentaje > 0 ? '+' : '−') + (absPercent(topic.porcentaje) | number:'1.0-1') + '%'
+                    : topic.tendencia === 'SUBIO' ? 'Subió' : 'Bajó' }}
+                </ng-container>
               </span>
-
-
-              <span
-                *ngIf="topic.tendencia === 'BAJO'"
-                class="trend-pill trend-down"
-              >
-                ↓
-                {{
-                  topic.porcentaje
-                    ? (topic.porcentaje | number:'1.0-0') + '%'
-                    : 'Bajó'
-                }}
-              </span>
-
-
-              <span
-                *ngIf="topic.tendencia === 'NUEVO'"
-                class="trend-pill trend-new"
-              >
-                Nuevo
-              </span>
-
-
-              <span
-                *ngIf="topic.tendencia === 'IGUAL'"
-                class="trend-pill trend-same"
-              >
-                Estable
-              </span>
-
-            </span>
-
-
-            <span class="topic-arrow">
-              →
-            </span>
-
-          </button>
-
-        </div>
-
-
+              <i class="fa-solid fa-chevron-right row-arrow" aria-hidden="true"></i>
+            </a>
+          </li>
+        </ol>
         <ng-template #noTopics>
-
-          <div class="empty-panel">
-
-            <div class="empty-icon">
-              ◌
-            </div>
-
-            <strong>
-              Todavía no hay tópicos disponibles
-            </strong>
-
-            <span>
-              Los temas aparecerán cuando exista suficiente actividad.
-            </span>
-
-          </div>
-
+          <p class="empty-copy">No hay temas para este período.</p>
         </ng-template>
 
+        <footer *ngIf="topicsActivos.length > topicPreviewSize" class="topic-footer">
+          <button type="button" class="topic-action" [attr.aria-expanded]="showAllTopics" aria-controls="home-topic-list"
+            (click)="showAllTopics = !showAllTopics">
+            {{ showAllTopics ? 'Ver menos temas' : 'Ver ' + (topicsActivos.length - topicPreviewSize) + ' temas más' }}
+          </button>
+        </footer>
+      </section>
 
-        <button
-          *ngIf="topicsActivos.length > 5"
-          type="button"
-          class="panel-link"
-          (click)="abrirTopicos(activeTopicTab)"
-        >
-          Ver todos los tópicos
-
-          <span>→</span>
-        </button>
-
-      </article>
-
-
-      <!-- ===================================================
-           ENTIDADES
-      ==================================================== -->
-
-      <article class="panel entities-panel">
-
-        <div class="panel-header">
-
-          <div>
-
-            <h2>
-              Entidades en foco
-            </h2>
-
-            <p>
-              Personas, instituciones y organizaciones más mencionadas.
-            </p>
-
-          </div>
-
-        </div>
-
-
-        <div
-          class="entities-list"
-          *ngIf="topEntidades.length"
-        >
-
-          <div
-            class="entity-row"
-            *ngFor="
-              let entity of topEntidades;
-              index as i;
-              trackBy: trackByIndex
-            "
-          >
-
-            <div class="entity-position">
-              {{ i + 1 }}
-            </div>
-
-
-            <div class="entity-content">
-
-              <div class="entity-info">
-
-                <strong>
-                  {{ entity.entidad }}
-                </strong>
-
-                <span>
-                  {{ entity.total | number }}
-                  menciones
+      <div class="detail-aside">
+        <section class="topic-surface home-panel changes-panel" aria-labelledby="changes-title">
+          <h2 id="changes-title">Mayores cambios frente a ayer</h2>
+          <ul *ngIf="insights.length; else noChanges" class="changes-list">
+            <li *ngFor="let insight of insights; trackBy: trackByIndex">
+              <a [routerLink]="['/topics', insight.topic.topic_id]" [queryParams]="topicDetailParams(todayLabel)"
+                 [state]="{ topic_id: insight.topic.topic_id, topic_name: insight.topic.topic_name }">
+                <span class="change-copy">
+                  <strong>{{ insight.topic.topic_name }}</strong>
+                  <span>{{ insight.topic.tweets_hoy | number }} hoy · {{ insight.topic.tweets_ayer | number }} ayer</span>
                 </span>
+                <span class="topic-trend" [attr.data-trend]="insight.topic.tendencia">
+                  {{ insight.topic.tweets_ayer ? (insight.delta > 0 ? '+' : '') + (insight.delta | number) : 'Nuevo' }}
+                  <span *ngIf="insight.topic.tweets_ayer" class="nv-sr-only"> publicaciones frente a ayer</span>
+                </span>
+              </a>
+            </li>
+          </ul>
+          <ng-template #noChanges>
+            <p class="empty-copy">No hay cambios destacados entre los temas de hoy.</p>
+          </ng-template>
+        </section>
 
+        <section class="topic-surface home-panel entities-panel" aria-labelledby="entities-title">
+          <h2 id="entities-title">Entidades más mencionadas</h2>
+          <ul *ngIf="topEntidades.length; else noEntities" class="entity-list">
+            <li *ngFor="let entity of topEntidades; trackBy: trackByIndex">
+              <div class="entity-label">
+                <strong>{{ entity.entidad }}</strong>
+                <span>{{ entity.total | number }} {{ entity.total === 1 ? 'mención' : 'menciones' }}</span>
               </div>
-
-
-              <div class="entity-bar-track">
-
-                <div
-                  class="entity-bar"
-                  [style.width.%]="getEntidadWidth(entity.total)"
-                ></div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <div
-          class="empty-panel compact"
-          *ngIf="!topEntidades.length"
-        >
-          No hay entidades disponibles.
-        </div>
-
-      </article>
-
-    </section>
-
-
-
-  </main>
-
-</div>
-
-
-<!-- =========================================================
-     MODAL SIN USUARIOS
-========================================================= -->
-
-<div
-  class="modal-overlay"
-  *ngIf="showNoUsersModal"
->
-
-  <div class="modal">
-
-    <div class="modal-mark">
-      N
-    </div>
-
-    <h2>
-      No hay medios configurados
-    </h2>
-
-    <p>
-      Para comenzar a ver el análisis necesitas agregar o activar
-      al menos un medio.
-    </p>
-
-    <p class="modal-help">
-      Si necesitas ayuda puedes escribir a
-      info&#64;netvora.org
-      o
-      ventas&#64;netvora.org
-    </p>
-
-
-    <div class="modal-actions">
-
-      <button
-        type="button"
-        class="btn-primary"
-        (click)="irAUsuarios()"
-      >
-        Configurar medios
-      </button>
-
-      <button
-        type="button"
-        class="btn-ghost"
-        (click)="showNoUsersModal = false"
-      >
-        Cerrar
-      </button>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- =========================================================
-     MODAL TÓPICOS
-========================================================= -->
-
-<div
-  class="topics-modal-overlay"
-  *ngIf="showTopicsModal"
-  (click)="cerrarTopicos()"
->
-
-  <div
-    class="topics-modal"
-    (click)="$event.stopPropagation()"
-  >
-
-    <div class="topics-modal-header">
-
-      <div>
-
-        <h2>
-          {{
-            tipoTopicosModal === 'dia'
-              ? 'Tópicos del día'
-              : 'Tópicos de la semana'
-          }}
-        </h2>
-
-        <p>
-          {{
-            tipoTopicosModal === 'dia'
-              ? 'Actividad y evolución de los principales temas de hoy.'
-              : 'Actividad y evolución de los principales temas de la semana.'
-          }}
-        </p>
-
+              <div class="entity-track" aria-hidden="true"><span [style.width.%]="getEntidadWidth(entity.total)"></span></div>
+            </li>
+          </ul>
+          <ng-template #noEntities>
+            <p class="empty-copy">No se registraron menciones destacadas.</p>
+          </ng-template>
+        </section>
       </div>
-
-
-      <button
-        type="button"
-        class="topics-modal-close"
-        (click)="cerrarTopicos()"
-        aria-label="Cerrar"
-      >
-        ×
-      </button>
-
     </div>
-
-
-    <!-- DÍA -->
-
-    <div
-      class="topics-modal-list"
-      *ngIf="tipoTopicosModal === 'dia'"
-    >
-
-      <button
-        type="button"
-        class="topics-modal-item"
-        *ngFor="
-          let topic of topicosDia;
-          index as i;
-          trackBy: trackByTopic
-        "
-        (click)="irATopico(topic)"
-      >
-
-        <span class="topics-modal-rank">
-          {{ i + 1 }}
-        </span>
-
-
-        <span class="topics-modal-content">
-
-          <strong class="topics-modal-name">
-            {{ topic.topic_name }}
-          </strong>
-
-
-          <span class="topics-modal-stats">
-
-            <span class="topic-stat">
-
-              <strong>
-                {{ topic.tweets_hoy | number }}
-              </strong>
-
-              <small>
-                Hoy
-              </small>
-
-            </span>
-
-
-            <span class="topic-stat">
-
-              <strong>
-                {{ topic.tweets_ayer | number }}
-              </strong>
-
-              <small>
-                Ayer
-              </small>
-
-            </span>
-
-
-            <span class="topic-stat">
-
-              <strong>
-                {{ topic.diferencia }}
-              </strong>
-
-              <small>
-                Diferencia
-              </small>
-
-            </span>
-
-          </span>
-
-        </span>
-
-
-        <span class="topics-modal-trend">
-
-          <span
-            *ngIf="topic.tendencia === 'SUBIO'"
-            class="trend-pill trend-up"
-          >
-            ↑
-            {{
-              topic.porcentaje
-                ? (topic.porcentaje | number:'1.0-0') + '%'
-                : 'Subió'
-            }}
-          </span>
-
-          <span
-            *ngIf="topic.tendencia === 'BAJO'"
-            class="trend-pill trend-down"
-          >
-            ↓
-            {{
-              topic.porcentaje
-                ? (topic.porcentaje | number:'1.0-0') + '%'
-                : 'Bajó'
-            }}
-          </span>
-
-          <span
-            *ngIf="topic.tendencia === 'NUEVO'"
-            class="trend-pill trend-new"
-          >
-            Nuevo
-          </span>
-
-          <span
-            *ngIf="topic.tendencia === 'IGUAL'"
-            class="trend-pill trend-same"
-          >
-            Estable
-          </span>
-
-        </span>
-
-
-        <span class="modal-topic-arrow">
-          →
-        </span>
-
-      </button>
-
-    </div>
-
-
-    <!-- SEMANA -->
-
-    <div
-      class="topics-modal-list"
-      *ngIf="tipoTopicosModal === 'semana'"
-    >
-
-      <button
-        type="button"
-        class="topics-modal-item"
-        *ngFor="
-          let topic of topicosSemana;
-          index as i;
-          trackBy: trackByTopic
-        "
-        (click)="irATopico(topic)"
-      >
-
-        <span class="topics-modal-rank">
-          {{ i + 1 }}
-        </span>
-
-
-        <span class="topics-modal-content">
-
-          <strong class="topics-modal-name">
-            {{ topic.topic_name }}
-          </strong>
-
-
-          <span class="topics-modal-stats">
-
-            <span class="topic-stat">
-
-              <strong>
-                {{ topic.tweets_actual | number }}
-              </strong>
-
-              <small>
-                Esta semana
-              </small>
-
-            </span>
-
-
-            <span class="topic-stat">
-
-              <strong>
-                {{ topic.tweets_anterior | number }}
-              </strong>
-
-              <small>
-                Semana anterior
-              </small>
-
-            </span>
-
-
-            <span class="topic-stat">
-
-              <strong>
-                {{ topic.diferencia }}
-              </strong>
-
-              <small>
-                Diferencia
-              </small>
-
-            </span>
-
-          </span>
-
-        </span>
-
-
-        <span class="topics-modal-trend">
-
-          <span
-            *ngIf="topic.tendencia === 'SUBIO'"
-            class="trend-pill trend-up"
-          >
-            ↑
-            {{
-              topic.porcentaje
-                ? (topic.porcentaje | number:'1.0-0') + '%'
-                : 'Subió'
-            }}
-          </span>
-
-          <span
-            *ngIf="topic.tendencia === 'BAJO'"
-            class="trend-pill trend-down"
-          >
-            ↓
-            {{
-              topic.porcentaje
-                ? (topic.porcentaje | number:'1.0-0') + '%'
-                : 'Bajó'
-            }}
-          </span>
-
-          <span
-            *ngIf="topic.tendencia === 'NUEVO'"
-            class="trend-pill trend-new"
-          >
-            Nuevo
-          </span>
-
-          <span
-            *ngIf="topic.tendencia === 'IGUAL'"
-            class="trend-pill trend-same"
-          >
-            Estable
-          </span>
-
-        </span>
-
-
-        <span class="modal-topic-arrow">
-          →
-        </span>
-
-      </button>
-
-    </div>
-
-  </div>
-
-</div>
+  </ng-container>
+</main>

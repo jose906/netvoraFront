@@ -19,6 +19,7 @@ export interface HomePageDaily {
   top_categoria: string;
   total_noticias: number;
   topics_dia: TopicDay[];
+  nuevos_topicos?: number;
   topics_semana: TopicWeek[];
 }
 export interface TopicWeek {

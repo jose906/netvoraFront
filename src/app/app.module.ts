@@ -47,6 +47,7 @@ import { SubscriptionInterceptor } from './core/interceptor/subscription.interce
 import { SubscriptionGuard } from './core/guards/subscription.guard';
 import { GuardarComponent } from './guardar/guardar.component';
 import { SettingsComponent } from './settings/settings.component';
+import { TopicCatalogComponent } from './topics/topic-catalog.component';
 import { TopicsComponent } from './topics/topics.component';
 import { CategoriaComponent } from './categoria/categoria.component';
 import { StanceComentariosComponent } from './data/stance-comentarios/stance-comentarios.component';
@@ -80,6 +81,7 @@ const routes: Routes = [
   { path:'perfil', component:PerfilComponent, canActivate:[AuthGuard]},
   { path: 'guardar', component: GuardarComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
   { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
+  { path: 'explorar-topicos', component: TopicCatalogComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
   { path: 'topics/:id', component: TopicsComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
   { path: 'topics', component: TopicsComponent, canActivate: [AuthGuard, SubscriptionGuard], data: { subscriptionRequired: true } },
   { path: 'prospectos', component: ProspectosComponent, canActivate: [AuthGuard, RoleGuard], data: { roles: ['admin'] } }
@@ -111,6 +113,7 @@ const routes: Routes = [
     GuardarComponent,
     SettingsComponent,
     TopicsComponent,
+    TopicCatalogComponent,
     CategoriaComponent,
     ProspectosComponent,
     

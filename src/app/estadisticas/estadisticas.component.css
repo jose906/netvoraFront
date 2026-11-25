@@ -527,26 +527,20 @@
 ========================================================= */
 
 .filter-context {
-  min-height: 50px;
-
   display: flex;
   align-items: center;
-  justify-content: space-between;
-
-  gap: 16px;
-
-  padding: 8px 0;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 12px 0;
 }
 
 .filter-context-left {
   min-width: 0;
-
   display: flex;
   align-items: center;
-
+  flex-wrap: wrap;
   gap: 7px;
 }
-
 
 /* =========================================================
    CHIPS DE FILTROS
@@ -585,7 +579,7 @@
 }
 
 .context-chip--search {
-  max-width: 260px;
+  max-width: min(260px, 100%);
 }
 
 .context-chip--search span {
@@ -593,50 +587,6 @@
 
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-
-/* =========================================================
-   MODIFICAR FILTROS
-========================================================= */
-
-.change-filters-button {
-  display: inline-flex;
-  align-items: center;
-
-  gap: 5px;
-
-  padding: 6px 8px;
-
-  border: 0;
-  border-radius: 7px;
-
-  background: transparent;
-
-  color: var(--muted);
-
-  font-family: inherit;
-  font-size: 11.5px;
-  font-weight: 600;
-
-  cursor: pointer;
-
-  transition:
-    background .12s ease,
-    color .12s ease;
-}
-
-.change-filters-button mat-icon {
-  width: 16px;
-  height: 16px;
-
-  font-size: 16px;
-}
-
-.change-filters-button:hover {
-  background: rgba(15, 23, 42, .04);
-
-  color: var(--text);
 }
 
 
@@ -1153,21 +1103,6 @@
     padding: 7px 0;
   }
 
-  .filter-context-left {
-    overflow-x: auto;
-
-    padding-bottom: 2px;
-
-    scrollbar-width: none;
-  }
-
-  .filter-context-left::-webkit-scrollbar {
-    display: none;
-  }
-
-  .change-filters-button {
-    display: none;
-  }
 
   .context-chip {
     flex-shrink: 0;
@@ -1284,7 +1219,7 @@
 
 
 .stats-quick-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; }
-.stats-quick-actions button, .stats-quick-actions input { font: inherit; color: inherit; background: var(--nv-surface, #fff); border: 1px solid var(--nv-border, #dfd6ef); border-radius: .5rem; padding: .35rem .6rem; }
+.stats-quick-actions button, .stats-quick-actions input { font: inherit; color: inherit; background: var(--nv-surface, #fff); border: 1px solid var(--nv-border, #dfd6ef); border-radius: .5rem; padding: .35rem .6rem; min-height: 34px; }
 .stats-quick-actions button { cursor: pointer; }
 .stats-quick-actions button:hover { background: var(--nv-accent-soft, #f3edff); }
 .stats-quick-actions input { max-width: 100%; }

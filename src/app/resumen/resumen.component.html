@@ -1,6 +1,9 @@
 <section class="nv-page">
-  <header class="nv-page-heading"><h1>Detalle de la publicación</h1></header>
-  <div class="detalle-container">
+  <header class="nv-page-heading nv-banner">
+    <img class="nv-wordmark" src="logo2.png" width="118" height="24" alt="NetVora">
+    <h1>Detalle de la publicación</h1>
+  </header>
+  <div class="detalle-container nv-quiet-surface">
     <ng-container *ngIf="dato as publicacion; else sinPublicacion">
       <p *ngIf="publicacion.categoria?.[0]"><strong>Categoría:</strong> {{ publicacion.categoria[0] }}</p>
       <p *ngIf="publicacion.texto">{{ publicacion.texto }}</p>

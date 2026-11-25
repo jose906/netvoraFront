@@ -182,17 +182,7 @@
 
   border-radius: 17px;
 
-  background:
-
-    linear-gradient(
-
-      145deg,
-
-      rgba(109, 40, 217, 0.1),
-
-      rgba(109, 40, 217, 0.035)
-
-    );
+  background: var(--purple-soft);
 
   color: var(--purple);
 
@@ -364,6 +354,10 @@
 
   gap: 5px;
 
+  padding: 3px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--theme-surface-soft);
+
   color: var(--muted);
 
   font-size: 9px;
@@ -386,7 +380,8 @@
 
 .account-state.active {
 
-  color: var(--green);
+  background: var(--theme-success-soft);
+  color: var(--theme-success);
 
 }
 
@@ -2867,4 +2862,8 @@ background .15s ease,
   .billing-plan-action { width: 100%; grid-template-columns: 1fr auto; align-items: center; }
   .billing-plan-action .billing-pay-button { width: auto; }
   .billing-dialog-footer { padding: 11px 16px; }
+}
+
+.identity-meta > span {
+  overflow-wrap: anywhere;
 }

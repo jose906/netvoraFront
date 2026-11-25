@@ -1,0 +1,142 @@
+<main class="nv-page topic-page topic-catalog" aria-labelledby="catalog-title">
+  <header class="nv-banner topic-hero">
+    <div>
+      <img class="nv-wordmark" src="logo2.png" width="118" height="24" alt="NetVora">
+      <h1 id="catalog-title">{{ onlyNew ? 'Nuevos temas' : 'Explorar tópicos' }}</h1>
+      <p *ngIf="!onlyNew">Consulta el volumen de publicaciones y las fechas de detección de cada tópico.</p>
+      <ng-container *ngIf="onlyNew">
+        <p>Temas con publicaciones en la fecha seleccionada y sin actividad el día anterior.</p>
+        <ul class="catalog-scope" aria-label="Filtros del día">
+          <li *ngIf="day">
+            <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+            <time [attr.datetime]="day">{{ day | date:'dd/MM/yyyy':'UTC' }}</time>
+          </li>
+          <li>
+            <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+            {{ accountIds.length ? (accountIds.length | number) + (accountIds.length === 1 ? ' medio' : ' medios') : 'Todos los medios' }}
+          </li>
+        </ul>
+      </ng-container>
+    </div>
+    <div class="catalog-hero-aside">
+      <div *ngIf="!state.loading && !state.error" class="catalog-total">
+        <strong>{{ state.topics.length | number }}</strong>
+        <span>{{ onlyNew ? 'Temas del día' : 'Tópicos en el catálogo' }}</span>
+      </div>
+      <a *ngIf="onlyNew; else topicFeed" class="topic-hero-link" routerLink="/explorar-topicos">
+        Ver todos los tópicos <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+      </a>
+      <ng-template #topicFeed>
+        <a class="topic-hero-link" routerLink="/topics">
+          Tópicos emergentes <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+        </a>
+      </ng-template>
+    </div>
+  </header>
+
+  <div *ngIf="state.loading" class="nv-loading-state" role="status">Cargando tópicos…</div>
+
+  <section *ngIf="state.error" class="topic-surface topic-empty" role="alert">
+    <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+    <h2>No se pudieron cargar los tópicos</h2>
+    <button class="topic-action" type="button" (click)="load()">Reintentar</button>
+  </section>
+
+  <section *ngIf="!state.loading && !state.error" class="topic-surface catalog-results" aria-label="Resultados del catálogo">
+    <div class="catalog-controls">
+      <label class="catalog-search">
+        <span>Buscar por nombre</span>
+        <span class="catalog-input">
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          <input #searchInput type="search" placeholder="Escribe un tópico" [(ngModel)]="search" (ngModelChange)="updateResults()">
+        </span>
+      </label>
+      <label class="catalog-sort">
+        <span>Ordenar por</span>
+        <span class="catalog-input">
+          <select [(ngModel)]="sort" (ngModelChange)="updateResults()">
+            <option *ngIf="!onlyNew" value="recent">Actividad reciente</option>
+            <option value="volume">Más publicaciones</option>
+            <option value="name">Nombre</option>
+          </select>
+          <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+        </span>
+      </label>
+    </div>
+
+    <p class="catalog-status" #resultStatus tabindex="-1" aria-live="polite" aria-atomic="true">
+      <ng-container *ngIf="results.length; else zeroResults">
+        <strong>{{ firstResult | number }}–{{ lastResult | number }}</strong> de
+        {{ results.length | number }} {{ results.length === 1 ? 'tópico' : 'tópicos' }}
+      </ng-container>
+      <ng-template #zeroResults>0 tópicos</ng-template>
+    </p>
+
+    <div *ngIf="!results.length" class="topic-empty catalog-empty">
+      <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+      <h2>{{ search.trim() ? 'No hay coincidencias' : onlyNew ? 'No se detectaron nuevos temas' : 'No hay tópicos disponibles' }}</h2>
+      <p *ngIf="search.trim()">Prueba con otro nombre o borra la búsqueda.</p>
+      <button *ngIf="search.trim()" class="topic-action" type="button"
+        (click)="search = ''; updateResults(); searchInput.focus()">Borrar búsqueda</button>
+    </div>
+
+    <ng-container *ngIf="results.length">
+      <div class="catalog-columns catalog-row" [class.catalog-day-row]="onlyNew" aria-hidden="true">
+        <span>Tópico</span>
+        <span>{{ onlyNew ? 'Publicaciones del día' : 'Publicaciones' }}</span>
+        <ng-container *ngIf="!onlyNew">
+          <span>Primera detección</span>
+          <span>Última detección</span>
+        </ng-container>
+      </div>
+
+      <ul class="catalog-list">
+        <li *ngFor="let topic of visibleTopics; trackBy: trackTopic">
+          <a class="catalog-link catalog-row" [class.catalog-day-row]="onlyNew"
+             [routerLink]="['/topics', topic.topic_id]"
+             [queryParams]="onlyNew ? { fecha: day || null, medios: accountIds.join(',') || null } : { periodo: 'todo' }"
+             [state]="{ topic_id: topic.topic_id, topic_name: topic.topic_name }">
+            <span class="catalog-name">
+              <i class="fa-solid fa-hashtag" aria-hidden="true"></i>
+              <strong>{{ topic.topic_name }}</strong>
+            </span>
+            <span class="catalog-volume">
+              <span class="catalog-field-label">{{ onlyNew ? 'Publicaciones del día' : 'Publicaciones' }}</span>
+              <span class="catalog-volume-value">
+                <strong>{{ publications(topic) | number }}</strong>
+                <span class="catalog-volume-track" aria-hidden="true">
+                  <span [style.width.%]="maxPublications ? publications(topic) / maxPublications * 100 : 0"></span>
+                </span>
+              </span>
+            </span>
+            <ng-container *ngIf="metadata(topic) as details">
+              <span class="catalog-date">
+                <span class="catalog-field-label">Primera detección</span>
+                {{ (details.first_seen | date:'dd/MM/yyyy':'UTC') || '—' }}
+              </span>
+              <span class="catalog-date">
+                <span class="catalog-field-label">Última detección</span>
+                {{ (details.last_seen | date:'dd/MM/yyyy':'UTC') || '—' }}
+              </span>
+            </ng-container>
+            <i class="fa-solid fa-chevron-right catalog-go" aria-hidden="true"></i>
+          </a>
+        </li>
+      </ul>
+
+      <nav *ngIf="pageCount > 1" class="catalog-pagination" aria-label="Páginas del catálogo">
+        <span>Página {{ page }} de {{ pageCount }}</span>
+        <div>
+          <button class="topic-action" type="button" [disabled]="page === 1"
+            (click)="changePage(page - 1, resultStatus)">
+            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i> Anterior
+          </button>
+          <button class="topic-action" type="button" [disabled]="page === pageCount"
+            (click)="changePage(page + 1, resultStatus)">
+            Siguiente <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          </button>
+        </div>
+      </nav>
+    </ng-container>
+  </section>
+</main>

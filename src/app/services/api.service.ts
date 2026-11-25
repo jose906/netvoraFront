@@ -6,7 +6,7 @@ import { HttpClient,HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { NewsData } from '../interfaces/NewsData';
 import { users,user,AdminUserSubscriptionsResponse } from '../interfaces/users';
-import { HomePageResponse } from '../interfaces/homePage';
+import { HomePageResponse, TopicDay } from '../interfaces/homePage';
 import { StatsResponse } from '../interfaces/data/mainDashboard';
 import { DashboardStatsResponse } from '../interfaces/data/MediaDashboard';
 import { NewsItem, PulseResponse, TopicOption } from '../interfaces/NewsItem';
@@ -236,6 +236,10 @@ getCategoryComentarios(params: any): Observable<any> {
   );
 }
 
+
+  getNewTopics(day: string, users: string[]): Observable<TopicDay[]> {
+    return this.http.post<TopicDay[]>(this.apiUrl + 'topics/new', { startDate: day, users });
+  }
 
   getTopics():Observable<TopicOption[]>{
 

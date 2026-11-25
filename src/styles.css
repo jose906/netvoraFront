@@ -1,13 +1,19 @@
 :root {
   --theme-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --theme-bg: #f6f7fb;
+  --theme-banner: linear-gradient(115deg, #201434 16%, #2f1e4d 65%, #422b66);
+  --theme-banner-pattern:
+    radial-gradient(ellipse at 88% 20%, #9663e02e, transparent 60%),
+    repeating-radial-gradient(ellipse 260px 166px at 96% 50%, transparent 0 16px, #cfb8fa1f 17px 18px, transparent 19px 29px);
+  --theme-banner-line: #433064;
+  --theme-banner-muted: #e4daf3;
   --theme-surface: #fff;
   --theme-surface-soft: #faf9fd;
   --theme-text: #172136;
   --theme-text-soft: #334155;
   --theme-muted: #526178;
   --theme-muted-light: #64748b;
-  --theme-line: #e4e7ef;
+  --theme-line: #e6dfed;
   --theme-line-strong: #cfd6e4;
   --theme-primary: #6d28d9;
   --theme-primary-dark: #5b21b6;
@@ -243,30 +249,109 @@ span.nv-loading-state {
   background: var(--theme-danger-soft);
 }
 
-/* Page hierarchy shared by feeds, account pages, and workspaces. */
-:root .nv-page .nv-page-heading {
-  min-width: 0;
-  padding-block: 12px 18px;
-  border: 0;
-  border-bottom: 1px solid var(--theme-line);
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+/* NetVora page headers and controls */
+:root :is(.nv-page .nv-banner, .nv-entry-heading) {
+  isolation: isolate;
+  position: relative;
+  box-sizing: border-box;
+  color: #fff;
+  background: var(--theme-banner);
+  border: 1px solid var(--theme-banner-line);
+  border-radius: 18px;
 }
 
-:root .nv-page .nv-page-heading h1 {
+.nv-banner::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--theme-banner-pattern);
+  mask-image: linear-gradient(90deg, transparent 30%, #000);
+  pointer-events: none;
+  content: '';
+}
+
+:root :is(.nv-page .nv-page-heading, .nv-entry-heading) {
+  min-width: 0;
+  padding: clamp(16px, 2.6vw, 30px);
+  margin-bottom: 16px;
+  box-shadow: none;
+  flex-wrap: wrap;
+}
+
+:root :is(.nv-page .nv-page-heading, .nv-entry-heading) h1 {
   margin: 0;
-  color: var(--theme-text);
-  font: 750 var(--theme-title-size)/1.15 var(--theme-font);
+  color: #fff;
+  font: 750 var(--theme-title-size)/1.12 var(--theme-font);
   letter-spacing: -.035em;
   overflow-wrap: anywhere;
 }
 
 :root .nv-page .nv-page-heading h1 + p {
-  margin-top: 6px;
-  color: var(--theme-muted);
-  font-size: 13px;
+  margin: 6px 0 0;
+  color: var(--theme-banner-muted);
+  font-size: .875rem;
   line-height: 1.5;
+}
+
+.nv-banner > * {
+  min-width: 0;
+}
+
+.nv-wordmark {
+  display: block;
+  width: 118px;
+  height: 24px;
+  margin: 0 0 7px -12px;
+  object-fit: cover;
+  object-position: center 47%;
+  filter: brightness(0) invert(1);
+}
+
+:root .nv-banner .nv-banner-action {
+  min-height: 44px;
+  max-width: 100%;
+  border: 1px solid transparent;
+  border-radius: var(--theme-radius-small);
+  background: #f4edff;
+  color: #432475;
+  text-decoration: none;
+}
+
+:root .nv-banner .nv-banner-action:hover:not(:disabled),
+:root .nv-banner .nv-banner-action[aria-expanded="true"] {
+  background: #e5d6ff;
+  color: #432475;
+  transform: none;
+}
+
+.nv-banner-action:disabled {
+  opacity: .65;
+}
+
+:root .nv-banner :is(.nv-banner-meta, .nv-banner-meta > p, .nv-banner-meta strong, .nv-banner-meta .plan-name) {
+  color: var(--theme-banner-muted);
+}
+
+:root .nv-banner .nv-banner-context {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  background: #fbf8ff;
+  border: 1px solid var(--theme-primary-border);
+  border-radius: var(--theme-radius-small);
+  color: var(--theme-text);
+  overflow-wrap: anywhere;
+}
+
+:root .nv-banner .nv-banner-context :is(span, strong) {
+  color: var(--theme-muted);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+:root .nv-banner .nv-banner-context strong {
+  color: var(--theme-text);
 }
 
 :root .nv-page .nv-feed-heading {
@@ -282,22 +367,21 @@ span.nv-loading-state {
   content: none;
 }
 
-:root .nv-page .nv-feed-heading .signal-pulse {
-  margin-top: 14px;
-}
-
-:root .nv-page .nv-quiet-surface {
+:root :is(.nv-page, .nv-dashboard-page) .nv-quiet-surface {
   border-color: var(--theme-line);
-  box-shadow: none;
+  border-radius: var(--theme-radius-card);
+  background: var(--theme-surface);
+  box-shadow: 0 1px 2px #30214808;
 }
 
 @media (max-width: 600px) {
   :root .nv-page .nv-page-heading {
-    padding-block: 8px 14px;
+    padding: 16px;
   }
 }
 
 :root .nv-page .nv-feed-heading .signal-pulse {
+  margin-top: 16px;
   border: 1px solid var(--theme-line);
   border-radius: var(--theme-radius-card);
   background: var(--theme-surface);
@@ -306,6 +390,20 @@ span.nv-loading-state {
 /* Shared layout for the topic and category explorers. */
 .nv-page.nv-explore-page {
   container: nv-explore netvora-page / inline-size;
+}
+
+.nv-banner .nv-banner-field {
+  width: 100%;
+  border-radius: 8px;
+  background: var(--theme-surface);
+}
+
+.nv-banner .nv-banner-field .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+:root .nv-banner .hero-category-label {
+  color: var(--theme-banner-muted);
 }
 
 .nv-explore-page .signal-hero .signal-hero-top {
@@ -320,7 +418,6 @@ span.nv-loading-state {
 }
 
 .nv-explore-page .signal-hero .hero-category-label {
-  color: var(--theme-muted);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: normal;

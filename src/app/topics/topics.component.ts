@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Injectable, OnDestroy, OnInit } from '@angular/core';
+import { DateAdapter, MAT_DATE_LOCALE, NativeDateAdapter } from '@angular/material/core';
 import { Subscription } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 
@@ -49,11 +50,30 @@ interface PulseData {
   activity_7d: PulseActivity[];
 }
 
+@Injectable()
+class TopicDateAdapter extends NativeDateAdapter {
+  override parse(value: unknown): Date | null {
+    const parts = typeof value === 'string' && /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(value.trim());
+    if (!parts) return super.parse(value);
+
+    const [, day, month, year] = parts;
+    const date = new Date(0);
+    date.setFullYear(Number(year), Number(month) - 1, Number(day));
+    date.setHours(0, 0, 0, 0);
+    return date.getDate() === Number(day) && date.getMonth() === Number(month) - 1
+      ? date
+      : this.invalid();
+  }
+}
 
 @Component({
   selector: 'app-topics',
   templateUrl: './topics.component.html',
-  styleUrl: './topics.component.css'
+  styleUrls: ['./topic-layout.css', './topics.component.css'],
+  providers: [
+    { provide: MAT_DATE_LOCALE, useValue: 'es-BO' },
+    { provide: DateAdapter, useClass: TopicDateAdapter }
+  ]
 })
 export class TopicsComponent implements OnInit, OnDestroy {
 
@@ -65,10 +85,14 @@ export class TopicsComponent implements OnInit, OnDestroy {
   datos: TopicItem[] = [];
 
   private postsSub?: Subscription;
+  private pulseSub?: Subscription;
+  private topicsSub?: Subscription;
   private repliesSub = new Subscription();
 
   ngOnDestroy(): void {
     this.postsSub?.unsubscribe();
+    this.pulseSub?.unsubscribe();
+    this.topicsSub?.unsubscribe();
     this.repliesSub.unsubscribe();
   }
 
@@ -83,6 +107,9 @@ export class TopicsComponent implements OnInit, OnDestroy {
 
   topics: TopicOption[] = [];
   filteredTopics: TopicOption[] = [];
+  recentTopics: TopicOption[] = [];
+  loadingTopics = true;
+  errorTopics = false;
 
   topicId: number | null = null;
   topicName: string = '';
@@ -204,6 +231,10 @@ export class TopicsComponent implements OnInit, OnDestroy {
     };
   }
 
+  get appliedPeriod() {
+    return this.postsQuery;
+  }
+
   ngOnInit(): void {
 
     const navigationState =
@@ -247,6 +278,8 @@ export class TopicsComponent implements OnInit, OnDestroy {
     if (activityDate && /^\d{4}-\d{2}-\d{2}$/.test(activityDate)) {
       this.startDate = this.parseNavigationDate(activityDate);
       this.endDate = undefined;
+    } else if (this.route.snapshot.queryParamMap?.get('periodo') === 'todo') {
+      this.startDate = undefined;
     } else if (navigationState?.startDate) {
 
       this.startDate =
@@ -269,7 +302,11 @@ export class TopicsComponent implements OnInit, OnDestroy {
     }
 
 
-    if (
+    const accountIds = this.route.snapshot.queryParamMap?.get('medios');
+
+    if (accountIds) {
+      this.selectedUsers = accountIds.split(',').filter(id => /^[0-9]{1,20}$/.test(id));
+    } else if (
       Array.isArray(
         navigationState
           ?.selectedUsers
@@ -697,8 +734,11 @@ export class TopicsComponent implements OnInit, OnDestroy {
   // =========================================================
 
   loadTopics(): void {
+    this.topicsSub?.unsubscribe();
+    this.loadingTopics = true;
+    this.errorTopics = false;
 
-    this.apiService
+    this.topicsSub = this.apiService
       .getTopics()
       .subscribe({
 
@@ -713,6 +753,8 @@ export class TopicsComponent implements OnInit, OnDestroy {
 
 
           this.filteredTopics = this.topics;
+          this.recentTopics = this.topics.slice(0, 5);
+          this.loadingTopics = false;
 
           /*
            * Si recargamos /topics/:id,
@@ -757,6 +799,9 @@ export class TopicsComponent implements OnInit, OnDestroy {
 
           this.topics = [];
           this.filteredTopics = [];
+          this.recentTopics = [];
+          this.loadingTopics = false;
+          this.errorTopics = true;
 
         }
 
@@ -785,7 +830,7 @@ export class TopicsComponent implements OnInit, OnDestroy {
   }
 
   restablecerBusqueda(input: HTMLInputElement): void {
-    input.value = this.topicName;
+    input.value = '';
     this.filteredTopics = this.topics;
   }
 
@@ -963,7 +1008,7 @@ export class TopicsComponent implements OnInit, OnDestroy {
   // =========================================================
 
   loadPulse(): void {
-
+    this.pulseSub?.unsubscribe();
     if (
       !this.topicId
     ) {
@@ -1084,7 +1129,7 @@ export class TopicsComponent implements OnInit, OnDestroy {
     // API
     // =======================================================
 
-    this.apiService
+    this.pulseSub = this.apiService
       .getTopicPulse(
         body
       )
@@ -1834,33 +1879,8 @@ export class TopicsComponent implements OnInit, OnDestroy {
   getPulseHeight(
     total: number
   ): number {
-
-    const value =
-      Number(total) ||
-      0;
-
-
-    if (
-      value <= 0 ||
-      this.pulseMax <= 0
-    ) {
-
-      return 0;
-
-    }
-
-
-    return Math.max(
-      8,
-      Math.round(
-        (
-          value /
-          this.pulseMax
-        ) *
-        100
-      )
-    );
-
+    const maximum = this.pulseMax;
+    return maximum > 0 ? total / maximum * 100 : 0;
   }
 
 

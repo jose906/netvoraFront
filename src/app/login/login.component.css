@@ -6,7 +6,7 @@
 
 /* Variables locales del login (no dependas de :root global) */
 .login-split{
-  --bg: var(--theme-surface);
+  --bg: var(--theme-bg);
   --text: var(--theme-text);
   --muted: var(--theme-muted);
   --line: var(--theme-line);
@@ -42,30 +42,6 @@
   border-radius: var(--theme-radius-large);
   background: var(--theme-surface);
   box-shadow: var(--theme-shadow);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid var(--theme-line);
-}
-
-.brand-logo{
-  width: 44px;
-  height: 44px;
-  max-width: 44px;
-  max-height: 44px;
-  object-fit: contain;
-}
-
-.title{
-  margin: 0;
-  font-size: clamp(22px, 4vw, 28px);
-  line-height: 1.15;
-  font-weight: 750;
-  letter-spacing: -.035em;
 }
 
 .form{

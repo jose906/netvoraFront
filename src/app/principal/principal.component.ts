@@ -1,11 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeEsBo from '@angular/common/locales/es-BO';
+import { Component, LOCALE_ID, OnInit } from '@angular/core';
 import { finalize } from 'rxjs/operators';
-import { Router } from '@angular/router';
 
 import { ApiService } from '../services/api.service';
 import { DashboardActivityDay, HomePageResponse } from '../interfaces/homePage';
 import { NewsItem } from '../interfaces/NewsItem';
 import { users } from '../interfaces/users';
+
+registerLocaleData(localeEsBo);
 
 interface PrincipalStatsVM {
   totalHoy: number;
@@ -45,18 +48,19 @@ export interface TopicDay {
 
 interface InsightVM {
   topic: TopicDay;
-  icon: 'up' | 'down' | 'new';
-  title: string;
+  delta: number;
 }
 
 @Component({
   selector: 'app-principal',
   templateUrl: './principal.component.html',
-  styleUrls: ['./principal.component.css']
+  styleUrls: ['../topics/topic-layout.css', './principal.component.css'],
+  providers: [{ provide: LOCALE_ID, useValue: 'es-BO' }]
 })
 export class PrincipalComponent implements OnInit {
 
   todayLabel = '';
+  private totalNuevosTopicos?: number;
   radarOverview?: { watches: number; pending: number };
 
   stats: PrincipalStatsVM = this.emptyStats();
@@ -72,7 +76,6 @@ export class PrincipalComponent implements OnInit {
 
   activity: DashboardActivityDay[] = [];
   selectedDay?: DashboardActivityDay;
-  peakDay?: DashboardActivityDay;
   activityTotal = 0;
   activityScale = 1;
   dayPosts: NewsItem[] = [];
@@ -90,20 +93,18 @@ export class PrincipalComponent implements OnInit {
   // UI
   // =========================================================
 
+  private readonly summaryDate = new Intl.DateTimeFormat('es-BO', {
+    timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long'
+  });
+
   cargando = false;
   error = '';
-
-  showNoUsersModal = false;
-
-  showTopicsModal = false;
-  tipoTopicosModal: 'dia' | 'semana' = 'dia';
+  readonly topicPreviewSize = 5;
+  showAllTopics = false;
 
   activeTopicTab: 'dia' | 'semana' = 'dia';
 
-  constructor(
-    private apiService: ApiService,
-    private router: Router
-  ) {}
+  constructor(private apiService: ApiService) {}
 
   // =========================================================
   // INIT
@@ -135,7 +136,7 @@ export class PrincipalComponent implements OnInit {
 
         if (this.users.length === 0) {
           this.cargando = false;
-          this.showNoUsersModal = true;
+          this.todayLabel = '';
           return;
         }
 
@@ -148,7 +149,7 @@ export class PrincipalComponent implements OnInit {
 
       error: () => {
         this.cargando = false;
-        this.error = 'No se pudieron cargar los medios.';
+        this.error = 'No se pudieron cargar los medios';
       }
 
     });
@@ -176,6 +177,7 @@ export class PrincipalComponent implements OnInit {
           const daily = res?.daily;
 
           this.todayLabel = daily?.fecha ?? '';
+          this.totalNuevosTopicos = daily?.nuevos_topicos;
 
           const topicsDiaRaw = Array.isArray(daily?.topics_dia)
             ? daily.topics_dia
@@ -252,7 +254,7 @@ export class PrincipalComponent implements OnInit {
         error: () => {
 
           this.error =
-            'No se pudo cargar el resumen de hoy.';
+            'No se pudo cargar el resumen de hoy';
 
           this.todayLabel = '';
 
@@ -290,42 +292,22 @@ export class PrincipalComponent implements OnInit {
     )[0];
   }
 
-  get heroTrendText(): string {
-
-    const topic = this.temaPrincipal;
-
-    if (!topic) {
-      return 'Sin actividad disponible';
-    }
-
-    switch (topic.tendencia) {
-
-      case 'SUBIO':
-        return topic.porcentaje
-          ? `Subió ${this.formatPercent(topic.porcentaje)}%`
-          : 'Está creciendo';
-
-      case 'BAJO':
-        return topic.porcentaje
-          ? `Bajó ${this.formatPercent(topic.porcentaje)}%`
-          : 'Está disminuyendo';
-
-      case 'NUEVO':
-        return 'Nuevo tema detectado';
-
-      default:
-        return 'Actividad estable';
-    }
-  }
-
   // =========================================================
   // KPI
   // =========================================================
 
   get nuevosTopicosHoy(): number {
-    return this.topicosDia.filter(
+    return this.totalNuevosTopicos ?? this.topicosDia.filter(
       topic => topic.tendencia === 'NUEVO'
     ).length;
+  }
+
+  get newTopicParams() {
+    return {
+      vista: 'nuevos',
+      fecha: this.todayLabel,
+      medios: this.users.map(user => String(user.idTweetUser)).join(',')
+    };
   }
 
   get totalSentimientos(): number {
@@ -336,73 +318,11 @@ export class PrincipalComponent implements OnInit {
     );
   }
 
-  get porcentajePositivo(): number {
-    return this.getSentimentPercentage(
-      this.stats.positivas
-    );
-  }
-
-  get porcentajeNeutro(): number {
-    return this.getSentimentPercentage(
-      this.stats.neutras
-    );
-  }
-
-  get porcentajeNegativo(): number {
-    return this.getSentimentPercentage(
-      this.stats.negativas
-    );
-  }
-
-  get sentimientoDominante(): string {
-
-    const values = [
-      {
-        label: 'Positivo',
-        value: this.stats.positivas
-      },
-      {
-        label: 'Neutral',
-        value: this.stats.neutras
-      },
-      {
-        label: 'Negativo',
-        value: this.stats.negativas
-      }
-    ];
-
-    values.sort(
-      (a, b) => b.value - a.value
-    );
-
-    if (!values[0]?.value) {
-      return 'Sin datos';
-    }
-
-    return values[0].label;
-  }
-
-  get sentimientoDominantePorcentaje(): number {
-
-    return Math.max(
-      this.porcentajePositivo,
-      this.porcentajeNeutro,
-      this.porcentajeNegativo
-    );
-  }
-
-  private getSentimentPercentage(
-    value: number
-  ): number {
-
-    if (!this.totalSentimientos) {
-      return 0;
-    }
-
-    return Math.round(
-      (value / this.totalSentimientos) * 100
-    );
-  }
+  readonly sentiments = [
+    { kind: 'positive', label: 'Positivo', key: 'positivas' },
+    { kind: 'neutral', label: 'Neutro', key: 'neutras' },
+    { kind: 'negative', label: 'Negativo', key: 'negativas' }
+  ] as const;
 
   // =========================================================
   // ENTIDADES
@@ -430,10 +350,7 @@ export class PrincipalComponent implements OnInit {
   }
 
   getEntidadWidth(total: number): number {
-    return Math.max(
-      8,
-      (total / this.maxEntidadTotal) * 100
-    );
+    return total / this.maxEntidadTotal * 100;
   }
 
   // =========================================================
@@ -451,7 +368,10 @@ export class PrincipalComponent implements OnInit {
     tipo: 'dia' | 'semana'
   ): void {
 
-    this.activeTopicTab = tipo;
+    if (this.activeTopicTab !== tipo) {
+      this.activeTopicTab = tipo;
+      this.showAllTopics = false;
+    }
   }
 
   getTopicActual(
@@ -476,12 +396,6 @@ export class PrincipalComponent implements OnInit {
     return topic.tweets_anterior;
   }
 
-  getTopicAnteriorLabel(): string {
-    return this.activeTopicTab === 'dia'
-      ? 'ayer'
-      : 'semana anterior';
-  }
-
   private isTopicDay(
     topic: TopicDay | TopicWeek
   ): topic is TopicDay {
@@ -498,26 +412,20 @@ export class PrincipalComponent implements OnInit {
       .filter(topic => !this.esTopicoEspecial(topic.topic_name) &&
         Math.max(topic.tweets_hoy, topic.tweets_ayer) >= 5 &&
         topic.tweets_hoy !== topic.tweets_ayer)
-      .sort((a, b) => Math.abs(b.tweets_hoy - b.tweets_ayer) - Math.abs(a.tweets_hoy - a.tweets_ayer))
-      .slice(0, 3)
-      .map(topic => {
-        if (!topic.tweets_ayer) {
-          return { topic, icon: 'new', title: 'Nuevo hoy' };
-        }
-        return topic.tweets_hoy > topic.tweets_ayer
-          ? { topic, icon: 'up', title: 'Subió' }
-          : { topic, icon: 'down', title: 'Bajó' };
-      });
+      .map(topic => ({ topic, delta: topic.tweets_hoy - topic.tweets_ayer }))
+      .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+      .slice(0, 3);
   }
 
   private setActivity(days: DashboardActivityDay[]): void {
     this.activity = days;
     this.activityTotal = days.reduce((total, day) => total + day.total, 0);
-    this.peakDay = days.filter(day => day.total > 0)
-      .reduce<DashboardActivityDay | undefined>((peak, day) =>
-        !peak || day.total > peak.total ? day : peak, undefined);
-    this.activityScale = this.peakDay?.total || 1;
-    this.selectActivityDay(this.peakDay ?? days[days.length - 1]);
+    this.activityScale = Math.max(1, ...days.map(day => day.total));
+    this.selectActivityDay(days.find(day => day.fecha === this.todayLabel) ?? days[days.length - 1]);
+  }
+
+  formatSummaryDate(date: string): string {
+    return this.summaryDate.format(new Date(date));
   }
 
   formatActivityDate(date: string): string {
@@ -529,6 +437,8 @@ export class PrincipalComponent implements OnInit {
     this.dayPostsRequest++;
     this.dayPostsOpen = false;
     this.dayPostsLoading = false;
+    this.dayPostsError = false;
+    this.dayPostsPage = 1;
     this.dayPosts = [];
   }
 
@@ -562,6 +472,11 @@ export class PrincipalComponent implements OnInit {
     this.selectActivityDay(this.selectedDay);
   }
 
+  get hasMoreDayPosts(): boolean {
+    return this.dayPosts.length === this.dayPostsPageSize &&
+      this.dayPostsPage * this.dayPostsPageSize < (this.selectedDay?.total ?? 0);
+  }
+
   private emptyStats(): PrincipalStatsVM {
 
     return {
@@ -588,12 +503,8 @@ export class PrincipalComponent implements OnInit {
       : 0;
   }
 
-  private formatPercent(
-    value: number
-  ): string {
-
-    return Math.abs(value)
-      .toFixed(0);
+  absPercent(value: number): number {
+    return Math.abs(value);
   }
 
   private esTopicoEspecial(
@@ -619,36 +530,8 @@ export class PrincipalComponent implements OnInit {
   // NAVEGACIÓN
   // =========================================================
 
-  irAUsuarios(): void {
-    this.router.navigate(['/settings']);
-  }
-
-  abrirTopicos(
-    tipo: 'dia' | 'semana'
-  ): void {
-
-    this.tipoTopicosModal = tipo;
-    this.showTopicsModal = true;
-  }
-
-  cerrarTopicos(): void {
-    this.showTopicsModal = false;
-  }
-
-  irATopico(
-    topic: Pick<TopicDay, 'topic_id' | 'topic_name'>, date?: string
-  ): void {
-
-    this.router.navigate(
-      ['/topics', topic.topic_id],
-      {
-        queryParams: date ? { fecha: date } : {},
-        state: {
-          selectedUsers: this.users.map(user => String(user.idTweetUser)),
-          topic_id: topic.topic_id,
-          topic_name: topic.topic_name
-        }
-      }
-    );
+  topicDetailParams(date: string | null) {
+    const medios = this.users.map(user => String(user.idTweetUser)).join(',');
+    return date ? { fecha: date, medios } : { periodo: 'todo', medios };
   }
 }

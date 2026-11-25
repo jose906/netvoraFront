@@ -1,13 +1,10 @@
 
-<section class="dash nv-dashboard-page">
+<section class="dash nv-dashboard-page breakdown-dashboard">
 
   <!-- HEADER -->
-  <header class="dashboard-header dashboard-banner">
-    <div class="dashboard-heading">
-      <h2>{{ categoria && categoria !== 'none' ? 'Actividad de ' + categoria : 'Actividad por categoría' }}</h2>
-      <p>Evolución de publicaciones, fuentes y conversaciones en el período seleccionado.</p>
-    </div>
-    <div class="header-actions">
+  <header *ngIf="!filterMessage" class="breakdown-toolbar">
+    <h2>Indicadores del período</h2>
+    <div class="header-actions" role="group" aria-label="Acciones del informe">
       <button [class.is-loading]="cargandoDashboard" [attr.aria-busy]="cargandoDashboard"
         type="button"
         class="btn dashboard-primary nv-progress-button"
@@ -53,10 +50,10 @@
   <!-- KPIS -->
   <!-- ============================================== -->
 
-  <section class="metrics-grid" aria-label="Indicadores del período">
+  <section class="metrics-grid" aria-label="Indicadores principales">
 
     <!-- PUBLICACIONES -->
-    <article class="metric-card">
+    <article class="metric-card nv-quiet-surface">
       <div class="metric-top">
         <span class="metric-label">Publicaciones</span>
         <span class="metric-icon">
@@ -101,7 +98,7 @@
 
     <!-- COMENTARIOS PRO -->
     <article
-      class="metric-card"
+      class="metric-card nv-quiet-surface"
       [class.metric-card--locked]="!accessLoading && !canViewReplies">
 
       <div class="metric-top">
@@ -161,7 +158,7 @@
     </article>
 
     <!-- MEDIOS -->
-    <article class="metric-card">
+    <article class="metric-card nv-quiet-surface">
       <div class="metric-top">
         <span class="metric-label">Medios analizados</span>
 
@@ -183,64 +180,22 @@
 
 
   <section class="section-block activity-section">
-    <div class="section-heading">
-      <div>
-        <h2>
-          Cómo se está moviendo
-          {{ categoria || 'esta categoría' }}
-        </h2>
-        <p>
-          Evolución del volumen de publicaciones según
-          el intervalo seleccionado.
-        </p>
-      </div>
-    </div>
-
     <div *ngIf="loadingTimeline" class="nv-loading-state" role="status"><span class="nv-sr-only">Preparando la línea de tiempo…</span></div>
 
     <article class="activity-chart chart">
       <div class="activity-chart-header">
-        <div>
-          <span class="activity-chart-title">
-            Evolución de publicaciones
-          </span>
+        <h2 class="activity-chart-title">Evolución de publicaciones</h2>
 
-          <span class="activity-chart-subtitle">
-            {{
-              timelineInterval === '1d'
-                ? 'Publicaciones por día'
-                : 'Publicaciones por intervalo de ' + timelineInterval
-            }}
-          </span>
+        <div class="breakdown-chart-tools">
+          <label for="categoryTimelineInterval">Intervalo</label>
+          <select id="categoryTimelineInterval" class="select" [ngModel]="timelineInterval"
+            (ngModelChange)="onTimelineIntervalChange($event)" [disabled]="loadingTimeline">
+            <option *ngFor="let interval of timelineIntervals" [ngValue]="interval.value">{{ interval.label }}</option>
+          </select>
+          <button type="button" class="iconbtn" (click)="downloadChart($event)" title="Descargar gráfico">
+            <i class="fas fa-download" aria-hidden="true"></i>
+          </button>
         </div>
-
-        <label
-          class="timeline-granularity-label"
-          for="categoryTimelineInterval">
-          Intervalo
-        </label>
-
-        <select
-          id="categoryTimelineInterval"
-          class="select timeline-granularity-select"
-          [ngModel]="timelineInterval"
-          [disabled]="loadingTimeline"
-          (ngModelChange)="onTimelineIntervalChange($event)">
-
-          <option
-            *ngFor="let item of timelineIntervals"
-            [ngValue]="item.value">
-            {{ item.label }}
-          </option>
-        </select>
-
-        <button
-          type="button"
-          class="iconbtn"
-          (click)="downloadChart($event)"
-          title="Descargar gráfico">
-          <i class="fas fa-download" aria-hidden="true"></i>
-        </button>
       </div>
 
       <div
@@ -282,31 +237,12 @@
 
   <section class="section-block topics-section">
     <div class="section-heading">
-      <div>
-        <h2>
-          Principales conversaciones de
-          {{ categoria || 'esta categoría' }}
-        </h2>
-        <p>
-          Temas que concentran el mayor volumen de publicaciones
-          en el período seleccionado.
-        </p>
-      </div>
+      <h2>Tópicos</h2>
     </div>
-
-    <div *ngIf="loadingTopicos" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando tópicos principales…</span></div>
 
     <article class="analysis-card chart">
       <div class="card-head">
-        <div>
-          <div class="card-title">
-            Tópicos con mayor actividad
-          </div>
-
-          <div class="card-sub">
-            Ranking de conversaciones según su volumen de publicaciones
-          </div>
-        </div>
+        <h3 class="card-title">Tópicos más publicados</h3>
 
         <button
           type="button"
@@ -346,6 +282,93 @@
         </div>
       </ng-template>
     </article>
+
+    <article class="explore-main-card chart">
+
+      <div class="card-head">
+
+        <h3 class="card-title">Evolución de los tópicos</h3>
+
+        <div class="breakdown-chart-tools">
+          <label for="categoryTopicInterval">Intervalo</label>
+          <select id="categoryTopicInterval" class="select" [ngModel]="topicTimelineInterval"
+            (ngModelChange)="onTopicTimelineIntervalChange($event)" [disabled]="loadingTopicos || loadingTopicTimeline">
+            <option *ngFor="let interval of timelineIntervals" [ngValue]="interval.value">{{ interval.label }}</option>
+          </select>
+          <button type="button" class="iconbtn" (click)="downloadChart($event)" title="Descargar gráfico">
+            <i class="fas fa-download" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- ESTADO DE CARGA -->
+
+      <div *ngIf="loadingTopicos || loadingTopicTimeline" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando evolución de tópicos…</span></div>
+
+      <!-- ERROR DE CONSULTA -->
+
+      <div
+        class="empty-state"
+        *ngIf="errorsPorSeccion['topics_timeline']">
+
+        <span class="material-icons">error_outline</span>
+
+        <div>
+          <strong>No se pudo cargar la evolución</strong>
+          <p>
+            {{ errorsPorSeccion['topics_timeline'] }}
+          </p>
+        </div>
+
+      </div>
+
+      <!-- GRÁFICA -->
+
+      <div
+        class="chart-wrap explore-timeline-chart"
+        *ngIf="
+          !loadingTopicTimeline &&
+          !errorsPorSeccion['topics_timeline'] &&
+          topicsTimelineData.datasets.length;
+          else noTopicsTimeline
+        ">
+
+        <canvas role="img" aria-label="Evolución de publicaciones por tópico"
+          baseChart
+          [plugins]="rankingPlugins"
+          [type]="'line'"
+          [data]="topicsTimelineData"
+          [options]="topicsTimelineOptions">
+        </canvas>
+
+      </div>
+
+      <!-- SIN DATOS -->
+
+      <ng-template #noTopicsTimeline>
+
+        <div
+          class="empty-state"
+          *ngIf="
+            !loadingTopicos &&
+            !loadingTopicTimeline &&
+            !errorsPorSeccion['topics_timeline']
+          ">
+
+          <span class="material-icons">timeline</span>
+
+          <div>
+            <strong>No hay evolución disponible</strong>
+            <p>
+              Cambia el período o las cuentas seleccionadas.
+            </p>
+          </div>
+
+        </div>
+
+      </ng-template>
+
+    </article>
   </section>
 
   <!-- ============================================== -->
@@ -360,14 +383,7 @@
 
   <section class="section-block">
     <div class="section-heading">
-      <div>
-        <h2>
-          Quiénes aparecen en {{ categoria || 'esta categoría' }}
-        </h2>
-        <p>
-          Personas, organizaciones y lugares más mencionados.
-        </p>
-      </div>
+      <h2>Personas, organizaciones y lugares</h2>
     </div>
 
     <div *ngIf="loadingEntidades" class="nv-loading-state" role="status"><span class="nv-sr-only">Identificando personas, organizaciones y lugares…</span></div>
@@ -583,13 +599,7 @@
 
   <section class="section-block media-section">
     <div class="section-heading">
-      <div>
-        <h2>Publicaciones por medio</h2>
-        <p>
-          Volumen y participación de los medios dentro de
-          {{ categoria || 'esta categoría' }}.
-        </p>
-      </div>
+      <h2>Medios y participación</h2>
     </div>
 
     <div *ngIf="loadingFuentes" class="nv-loading-state" role="status"><span class="nv-sr-only">Calculando participación de los medios…</span></div>
@@ -652,7 +662,7 @@
       <article class="analysis-card share-of-voice-card">
         <div class="card-head">
           <div>
-            <div class="card-title">Share of Voice</div>
+            <div class="card-title">Participación en las publicaciones</div>
             <div class="card-sub">
               Concentración de publicaciones entre los medios
             </div>
@@ -663,7 +673,7 @@
           </span>
         </div>
 
-        <div *ngIf="loadingFuentes && !postsByMedia.length" class="nv-loading-state" role="status"><span class="nv-sr-only">Calculando Share of Voice…</span></div>
+        <div *ngIf="loadingFuentes && !postsByMedia.length" class="nv-loading-state" role="status"><span class="nv-sr-only">Calculando Participación en las publicaciones…</span></div>
 
         <div
           class="empty-state"
@@ -773,7 +783,7 @@
           <div class="share-note">
             <span class="material-icons">info</span>
             <p>
-              El Share of Voice representa qué proporción de las
+              El Participación en las publicaciones representa qué proporción de las
               publicaciones de esta categoría corresponde a los
               medios con mayor actividad.
             </p>
@@ -792,9 +802,6 @@
     <div class="section-heading">
       <div>
         <h2>Sentimiento de las publicaciones</h2>
-        <p>
-          Sentimiento general y diferencias entre los medios analizados.
-        </p>
       </div>
     </div>
 
@@ -855,10 +862,7 @@
         <div class="card-head">
           <div>
             <div class="card-title">Sentimiento por medio</div>
-            <div class="card-sub">
-              Cómo cambia el tono entre las distintas fuentes
-            </div>
-          </div>
+                      </div>
 
           <button
             type="button"
@@ -904,10 +908,6 @@
       <div class="section-heading">
         <div>
           <h2>Reacciones en los comentarios</h2>
-          <p>
-            Cómo están respondiendo las personas a las publicaciones
-            de {{ categoria || 'esta categoría' }}.
-          </p>
         </div>
 
         <div class="view-switch">
@@ -1136,141 +1136,8 @@
 
   <section class="section-block explore-section">
     <div class="section-heading">
-      <div>
-        <h2>Evolución de temas</h2>
-        <p>
-          Profundiza en la evolución, entidades y comportamiento
-          de los medios dentro de esta categoría.
-        </p>
-      </div>
+      <h2>Análisis detallado</h2>
     </div>
-
-    <!-- EVOLUCIÓN DE TÓPICOS -->
-    <div *ngIf="loadingTopicos" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando evolución de tópicos…</span></div>
-
-    
-<!-- EVOLUCIÓN DE TÓPICOS -->
-
-<article class="explore-main-card chart">
-
-  <div class="card-head">
-
-    <div>
-      <div class="explore-card-label">
-        <span class="material-icons">timeline</span>
-        EVOLUCIÓN
-      </div>
-
-      <div class="card-title">
-        Evolución de los principales tópicos
-      </div>
-
-      <div class="card-sub">
-        Evolución de los 5 tópicos principales de
-        {{ categoria || 'esta categoría' }}
-      </div>
-    </div>
-
-    <button
-      type="button"
-      class="iconbtn"
-      (click)="downloadChart($event)"
-      title="Descargar gráfico">
-      <i class="fas fa-download" aria-hidden="true"></i>
-    </button>
-
-  </div>
-
-  <!-- SELECTOR DE INTERVALOS INDEPENDIENTE -->
-
-  <div
-    class="timeline-interval-selector"
-    style="display:flex; gap:8px; flex-wrap:wrap; margin:16px 0;">
-
-    <button
-      *ngFor="let interval of timelineIntervals"
-      type="button"
-      class="iconbtn"
-      [class.is-active]="topicTimelineInterval === interval.value"
-      [disabled]="loadingTopicos"
-      [attr.aria-pressed]="topicTimelineInterval === interval.value"
-      (click)="onTopicTimelineIntervalChange(interval.value)">
-
-      {{ interval.label }}
-
-    </button>
-
-  </div>
-
-  <!-- ESTADO DE CARGA -->
-
-  <div *ngIf="loadingTopicos || loadingTopicTimeline" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando evolución de tópicos…</span></div>
-
-  <!-- ERROR DE CONSULTA -->
-
-  <div
-    class="empty-state"
-    *ngIf="errorsPorSeccion['topics_timeline']">
-
-    <span class="material-icons">error_outline</span>
-
-    <div>
-      <strong>No se pudo cargar la evolución</strong>
-      <p>
-        {{ errorsPorSeccion['topics_timeline'] }}
-      </p>
-    </div>
-
-  </div>
-
-  <!-- GRÁFICA -->
-
-  <div
-    class="chart-wrap explore-timeline-chart"
-    *ngIf="
-      !loadingTopicTimeline &&
-      !errorsPorSeccion['topics_timeline'] &&
-      topicsTimelineData.datasets.length;
-      else noTopicsTimeline
-    ">
-
-    <canvas role="img" aria-label="Evolución de publicaciones por tópico"
-      baseChart
-      [plugins]="rankingPlugins"
-      [type]="'line'"
-      [data]="topicsTimelineData"
-      [options]="topicsTimelineOptions">
-    </canvas>
-
-  </div>
-
-  <!-- SIN DATOS -->
-
-  <ng-template #noTopicsTimeline>
-
-    <div
-      class="empty-state"
-      *ngIf="
-        !loadingTopicos &&
-        !loadingTopicTimeline &&
-        !errorsPorSeccion['topics_timeline']
-      ">
-
-      <span class="material-icons">timeline</span>
-
-      <div>
-        <strong>No hay evolución disponible</strong>
-        <p>
-          Cambia el período o las cuentas seleccionadas.
-        </p>
-      </div>
-
-    </div>
-
-  </ng-template>
-
-</article>
-
 
     <!-- ENTIDADES POR TÓPICO -->
     <div *ngIf="loadingCruces" class="nv-loading-state" role="status"><span class="nv-sr-only">Relacionando las entidades con los tópicos…</span></div>
@@ -1278,11 +1145,6 @@
     <article class="explore-main-card">
       <div class="card-head">
         <div>
-          <div class="explore-card-label">
-            <span class="material-icons">account_tree</span>
-            RELACIONES
-          </div>
-
           <div class="card-title">
             Entidades por tópico
           </div>
@@ -1406,11 +1268,6 @@
       <article class="explore-secondary-card chart">
         <div class="card-head">
           <div>
-            <div class="explore-card-label">
-              <span class="material-icons">analytics</span>
-              MEDIOS
-            </div>
-
             <div class="card-title">
               Índice de sentimiento por medio
             </div>
@@ -1462,19 +1319,11 @@
       <article class="explore-secondary-card">
         <div class="card-head">
           <div>
-            <div class="explore-card-label">
-              <span class="material-icons">leaderboard</span>
-              ACTIVIDAD
-            </div>
-
             <div class="card-title">
               Medios más activos
             </div>
 
-            <div class="card-sub">
-              Fuentes con mayor volumen de publicaciones
-            </div>
-          </div>
+                      </div>
         </div>
 
         <div *ngIf="loadingFuentes" class="nv-loading-state" role="status"><span class="nv-sr-only">Cargando medios más activos…</span></div>
@@ -1511,11 +1360,6 @@
     <article class="explore-main-card">
       <div class="card-head">
         <div>
-          <div class="explore-card-label">
-            <span class="material-icons">table_chart</span>
-            DETALLE
-          </div>
-
           <div class="card-title">
             Detalle por medio
           </div>
@@ -1596,20 +1440,11 @@
     <article class="explore-main-card">
       <div class="card-head">
         <div>
-          <div class="explore-card-label">
-            <span class="material-icons">text_fields</span>
-            LENGUAJE
-          </div>
-
           <div class="card-title">
             Palabras más utilizadas
           </div>
 
-          <div class="card-sub">
-            Términos que aparecen con mayor frecuencia dentro de
-            {{ categoria || 'esta categoría' }}
-          </div>
-        </div>
+                  </div>
 
         <button
           type="button"

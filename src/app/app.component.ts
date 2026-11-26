@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { AuthzService } from './services/authz.service';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { SubscriptionStatusResponse, SuscriptionService } from '../app/services/suscription.service';
-import { EMPTY, Observable, catchError, switchMap } from 'rxjs';
+import { EMPTY, Observable, catchError, from, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 
@@ -33,11 +33,19 @@ export class AppComponent implements OnInit {
         this.sub.clear();
         if (!user) return EMPTY;
 
-        void this.authz.refreshMe();
-        return this.sub.fetchStatus().pipe(catchError(() => EMPTY));
+        return from(this.authz.refreshMe()).pipe(
+          switchMap(() => this.authz.role === 'admin' ? EMPTY : this.sub.fetchStatus()),
+          catchError(() => EMPTY)
+        );
       }),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe();
+  }
+
+  showRenewalWarning(status: SubscriptionStatusResponse): boolean {
+    const role = status.role?.trim().toLowerCase();
+    return !!role && role !== 'admin' && this.authz.role !== 'admin' &&
+      status.subscription.status === 'active' && status.subscription.ok && !!status.subscription.warning;
   }
 
   esLogin() {

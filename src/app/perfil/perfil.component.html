@@ -589,7 +589,7 @@
            SUSCRIPCIÓN
       ================================================== -->
 
-      <section class="subscription-card">
+      <section class="subscription-card" *ngIf="canManageOwnSubscription">
 
 
         <!-- LOADING -->
@@ -1040,7 +1040,7 @@
   <!-- =====================================================
        MODAL DE COBRO QR: solo se comunica con Flask
   ====================================================== -->
-  <div class="billing-overlay" *ngIf="billing.open" (click)="closeBilling()">
+  <div class="billing-overlay" *ngIf="canManageOwnSubscription && billing.open" (click)="closeBilling()">
     <section
       class="billing-dialog"
       role="dialog"

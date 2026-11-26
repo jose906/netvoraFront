@@ -131,20 +131,21 @@
 
         </div>
 
-        <span class="overview-divider"></span>
+        <ng-container *ngIf="!accessLoading && !isAdmin">
+          <span class="overview-divider"></span>
 
-        <div class="overview-item">
+          <div class="overview-item">
 
-          <span>
-            Plan
-          </span>
+            <span>
+              Plan
+            </span>
 
-          <strong class="plan-name">
-            <ng-container *ngIf="!accessLoading">{{ planDisplayName }}</ng-container>
-            <span *ngIf="accessLoading" class="nv-loading-state" role="status"><span class="nv-sr-only">Verificando plan</span></span>
-          </strong>
+            <strong class="plan-name">
+              {{ planDisplayName }}
+            </strong>
 
-        </div>
+          </div>
+        </ng-container>
 
       </div>
 

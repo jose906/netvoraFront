@@ -14,7 +14,7 @@
     <router-outlet></router-outlet>
   </div>
   <ng-container *ngIf="(sub$ | async) as st">
-    <div *ngIf="st.subscription.ok && st.subscription.warning" class="sub-warning">
+    <div *ngIf="showRenewalWarning(st)" class="sub-warning">
       ⚠️ Tu plan vence en {{ st.subscription.days_left }} días ({{ st.subscription.end_date }}).
       <a routerLink="/perfil">Renovar ahora</a>
     </div>

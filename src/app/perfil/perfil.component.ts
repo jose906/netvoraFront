@@ -44,6 +44,11 @@ export class PerfilComponent implements OnInit, OnDestroy {
   msg: Msg = { type: 'ok', text: '' };
 
   role = 'usuario';
+  private accountRole = '';
+
+  get canManageOwnSubscription(): boolean {
+    return !!this.accountRole && this.accountRole !== 'admin' && this.authz.role !== 'admin';
+  }
   estadoUser: string | null = null;
 
   profile = {
@@ -117,7 +122,6 @@ loadingUpcoming = false;
     this.loadUserFromFirebase();
     this.loadRole();
     this.loadSubscriptionFromApi();
-    this.loadFreeTrialStatus();
   }
 
   ngOnDestroy(): void {
@@ -143,7 +147,7 @@ loadingUpcoming = false;
   }
 
   activateFreeTrial(): void {
-    if (this.loading.freeTrial || !this.freeTrial.available) return;
+    if (!this.canManageOwnSubscription || this.loading.freeTrial || !this.freeTrial.available) return;
 
     this.loading.freeTrial = true;
     const s = this.account.activateFreeTrial().subscribe({
@@ -181,7 +185,8 @@ loadingUpcoming = false;
 
   private loadRole(): void {
     const s = this.authz.role$.subscribe(r => {
-      this.role = r || 'usuario';
+      this.role = r === 'admin' ? r : this.accountRole || r || 'usuario';
+      if (r === 'admin') this.closeBilling();
     });
     this.subx.add(s);
   }
@@ -193,7 +198,8 @@ loadingUpcoming = false;
         this.estadoUser = res.user.estadoUser;
         if (res.user.display_name) this.profile.displayName = res.user.display_name;
         if (res.user.email) this.profile.email = res.user.email;
-        if (res.user.role) this.role = res.user.role;
+        this.accountRole = res.user.role?.trim().toLowerCase() || '';
+        this.role = this.authz.role === 'admin' ? 'admin' : this.accountRole || this.role;
 
         const plan = res.subscription?.plan;
         this.sub.status = res.subscription?.status || 'sin_plan';
@@ -211,7 +217,12 @@ loadingUpcoming = false;
 
         this.loading.subscription = false;
 
-        this.loadUpcomingSubscription();
+        if (this.canManageOwnSubscription) {
+          this.loadUpcomingSubscription();
+          if (!this.freeTrial.loaded) this.loadFreeTrialStatus();
+        } else {
+          this.closeBilling();
+        }
       },
       error: () => {
         this.setMsg('err', 'No se pudo cargar tu cuenta. Revisa tu sesión o tu API.');
@@ -224,6 +235,8 @@ loadingUpcoming = false;
   // ----------------------- COBROS / SUSCRIPCIONES -----------------------
 
   openBilling(): void {
+    if (!this.canManageOwnSubscription) return;
+
     this.billing.open = true;
     this.billing.error = '';
 
@@ -244,7 +257,7 @@ loadingUpcoming = false;
   }
 
   fetchBillingPlans(): void {
-    if (this.billing.loadingPlans) return;
+    if (!this.canManageOwnSubscription || this.billing.loadingPlans) return;
     this.billing.loadingPlans = true;
     this.billing.error = '';
 
@@ -266,7 +279,7 @@ loadingUpcoming = false;
   }
 
   selectPlanAndGenerateQr(plan: BillingPlan): void {
-    if (this.billing.generating || this.billing.payment?.status === 'PENDIENTE') return;
+    if (!this.canManageOwnSubscription || this.billing.generating || this.billing.payment?.status === 'PENDIENTE') return;
     if (plan.currency !== 'BOB') {
       this.billing.error = 'Este plan aún no indica moneda BOB en la respuesta de /get_plans. Confirma la moneda y el precio antes de cobrar.';
       return;
